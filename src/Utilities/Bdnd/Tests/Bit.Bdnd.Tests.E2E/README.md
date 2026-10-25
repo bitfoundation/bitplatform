@@ -40,6 +40,10 @@ box landed on screen, and the drag events as the browser raised them and the mod
 | `GridTests` | Tiles of a wrapping grid land left or right of a tile in another row; with the keyboard, Down and Up go a row and keep the column, the gap at a row break is the start of the next row, and Down on the last row goes nowhere. |
 | `VirtualizedTests` | In a 1,000-row `Virtualize`: a pointer drag scrolls the list, keeps its copy (on the vertical axis) after the dragged row's component is gone, and drops on a row rendered on the way; a keyboard drag walks past the first rendered rows. |
 | `MultiSelectTests` | A drag of a ticked card carries the whole selection (every ticked card shows as dragged), an unticked card drags alone, and the keyboard drags the selection. |
+| `PageBuilderTests` | Palette blocks are copied onto the page where the line shows (the palette keeps them) or at its end; page blocks move within the page and into the bin; the bin takes no palette block; the keyboard places a new block. |
+| `FolderDropTests` | A dropped folder is walked into its files with their paths and contents (nested folders, an empty one, readEntries in batches), an unreadable entry is skipped and marks the list incomplete, and the walk stops at the target's file limit. A scripted drag carries no folders, so the page's `webkitGetAsEntry` answers with a tree of entries for placeholder files. |
+| `ScreenReaderTests` | A keyboard source keeps its role and is described by the instructions; a handle is a focusable button described by them; the live region is an assertive, atomic status the moves are written to; the pointer copy adds nothing to the accessibility tree - on every engine, and in Chromium in the browser's own accessibility tree (`Accessibility.getPartialAXTree`). |
+| `HybridHostingTests` | In a WinForms BlazorWebView (`Tests/Bit.Bdnd.Tests.Harness.Hybrid`), driven through WebView2's DevTools port: the page runs on the WebView renderer, and native mouse, keyboard, mouse pointer and touch drags drop; a drag layer follows the pointer; insertion edges reorder; a dropped file's contents reach .NET. Windows only, with the Chromium pass. |
 | `ServerHostingTests` | On the page served over a Blazor Server circuit: native mouse, keyboard, pointer and touch drags drop; a drag sends a handful of circuit messages however long it moves (fewer than 30 for 120 moves); a drag layer follows the pointer; insertion edges reorder; a dropped file's contents stream to the server; moving between that page and the WebAssembly ones loads the page in the other render mode. |
 | `PerfTests` | Measurements only (category `Perf`): frames, the longest frame gap, long tasks and DOM mutations of a scripted drag across three stress pages, written to the test output. |
 | `DemoPagesTests` | Every demo page (the routes are read from the `@page` directives under `Demo/Client/Pages`, so a new page is swept without being listed) answers, becomes interactive, loads `bit-bdnd.js` and registers every draggable with it when it has draggables, shows its own source under "View code", and runs every button on it without a console error, an unhandled exception, a failed request or the error banner; "View code" opens and closes; navigating through every page in the app leaves a page that still drags. |
@@ -120,6 +124,59 @@ that turns those waits into flakes.
 When no browser can be launched or the demo does not start, every test reports **Inconclusive** with the reason.
 On a build server (`CI=true`) the same tests **fail** instead, so a suite that never ran cannot pass.
 
+If the browser goes away in the middle of a run (WebKit on Windows has crashed under the suite's load), the next
+test launches it again, so the crash fails the one test it happened in.
+
+### Blazor Hybrid
+
+`HybridHostingTests` starts `Tests/Bit.Bdnd.Tests.Harness.Hybrid` - a WinForms app with a `BlazorWebView`, built on
+first use when its executable is missing (build it again after changing the library or the harness) - with
+`--remote-debugging-port` and a user data folder of its own, which the app hands to WebView2 through its API (since
+WebView2 Runtime 150 an elevated process ignores the port in `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS`). Playwright
+attaches with `ConnectOverCDPAsync`, adds the suite's probe to the page and reloads it before each test. It needs
+Windows and the WebView2 Runtime (Windows 11 has it; the `e2e-hybrid` job installs it on its runner), and runs with
+the Chromium pass only, since the WebView is Chromium whatever the run drives. It needs no demo and no downloaded
+browser:
+
+```bash
+dotnet build Tests/Bit.Bdnd.Tests.Harness.Hybrid/Bit.Bdnd.Tests.Harness.Hybrid.csproj
+dotnet test --project Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj --filter "FullyQualifiedName~HybridHostingTests"
+```
+
+## Checks a person makes before a release
+
+The suite drives three engines, a Blazor Server circuit, a BlazorWebView and touch input through pointer events -
+but not a screen reader's speech, nor a real finger. Before a release, someone runs these by hand and records the
+outcome in `BDND-IMPLEMENTATION-LOG.md`.
+
+**Screen readers** - NVDA with Firefox and with Chrome, JAWS with Chrome (Windows), VoiceOver with Safari (macOS),
+VoiceOver with Safari (iOS), TalkBack with Chrome (Android), on the demo's
+[keyboard and screen readers](https://bdnd.bitplatform.dev/accessibility/keyboard) page:
+
+1. Tab to a card. Expected: its text is read, then the instructions ("To pick up, press Space or Enter...").
+2. Press Space. Expected: "Picked up <card>. N drop targets are available." - read at once, not after other speech.
+3. Press the arrows. Expected: each move is read ("<card> is over Doing."); at the end, "There is nothing further in
+   that direction...".
+4. Press Space over a column. Expected: "<card> was dropped on Doing.", and the focus is on the moved card (its text
+   is read again on the next Tab cycle without a jump to the page's top).
+5. Pick up again, press Escape. Expected: "Dragging <card> was cancelled.", the focus on the card.
+6. Use the move buttons of a card. Expected: they are reachable by Tab and named ("Move <card> to Doing").
+7. With the screen reader's own navigation (browse mode, rotor), no copy of a dragged card appears anywhere.
+
+**Touch devices** - an iPhone and an iPad (Safari), an Android phone (Chrome), a Windows touch screen (Edge), and a
+pen on the iPad or the Windows device, on the [touch and pointer drags](https://bdnd.bitplatform.dev/customize/pointer)
+page and the [single target](https://bdnd.bitplatform.dev/dustbin/single) dustbin:
+
+1. Swipe across the boxes. Expected: the page scrolls, nothing drags, no text is selected, no callout appears.
+2. Rest a finger on a box, then move. Expected: a copy follows the finger, the bin lights up under it, a release on
+   the bin drops; no context menu, no system drag of the element.
+3. Hold a box near the tray's bottom edge. Expected: the tray scrolls, faster nearer the edge.
+4. Start a drag and lift the finger off any target. Expected: nothing dropped, the copy disappears.
+5. Rest on the "About" button inside a box and lift. Expected: the button clicks, nothing drags.
+6. Repeat 2 with a pen. Expected: the same as a finger.
+
+## Running locally
+
 ### Environment variables
 
 | Variable | Effect |
@@ -128,7 +185,7 @@ On a build server (`CI=true`) the same tests **fail** instead, so a suite that n
 | `BDND_E2E_PUBLISHED_HOST` | Boot a `dotnet publish` output of the demo server (see `publish-gate.sh`) instead of the build output. A full path: `dotnet test` runs the suite in its output folder, so a relative one is refused. Not together with `BDND_E2E_BASE_URL`. |
 | `BDND_E2E_BASE_URL` | Drive an already running demo (for example one started from the IDE) instead of booting one. Not together with `BDND_E2E_PUBLISHED_HOST`. |
 | `BDND_E2E_CHANNEL` / `BDND_E2E_EXECUTABLE` | Use a specific browser: an installed Chrome/Edge (`chrome`, `msedge`), Playwright's headless shell (`chromium-headless-shell`), or a Chromium binary. Without either, the full Chromium Playwright installed is used, then its headless shell, falling back to an installed Chrome, then Edge. |
-| `BDND_E2E_BROWSER` | `chromium` (default), `firefox` or `webkit`: the engine to drive, from the browsers Playwright installed (`playwright.ps1 install firefox webkit`). The two touch tests need Chromium's DevTools protocol and are inconclusive elsewhere. |
+| `BDND_E2E_BROWSER` | `chromium` (default), `firefox` or `webkit`: the engine to drive, from the browsers Playwright installed (`playwright.ps1 install firefox webkit`). The tests that synthesize touches or a pen through Chromium's DevTools protocol, read its accessibility tree or rely on its drag controller are inconclusive elsewhere; touch through pointer events runs on every engine. |
 | `BDND_E2E_HEADED=1` | Show the browser. |
 
 ### Publish gate (trimming / AOT)

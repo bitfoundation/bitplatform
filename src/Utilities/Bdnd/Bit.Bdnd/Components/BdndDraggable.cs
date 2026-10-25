@@ -655,11 +655,24 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
         }
     }
 
+    // How often, and how long apart, a keyboard move waits for the rows a virtualized list is rendering that way.
+    private const int KeyboardRowAttempts = 20;
+    private static readonly TimeSpan KeyboardRowWait = TimeSpan.FromMilliseconds(100);
+
     private async Task MoveKeyboardDragAsync(long dragId, string command)
     {
         var manager = Manager!;
         var place = await NavigateAsync(command);
         if (IsKeyboardDrag(dragId) is false) return;
+        // The list goes on that way with rows it has not rendered, which the module scrolled into view: they take a
+        // render and a registration to become targets (a virtualized list renders them as it scrolls).
+        for (var attempt = 0; place is { Moved: false, Pending: true } && attempt < KeyboardRowAttempts; attempt++)
+        {
+            await Task.Delay(KeyboardRowWait);
+            if (IsKeyboardDrag(dragId) is false) return;
+            place = await NavigateAsync(command, waiting: true);
+            if (IsKeyboardDrag(dragId) is false) return;
+        }
 
         if (place is null)
         {
@@ -737,7 +750,7 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
     }
 
     // Asks the module for the target a keyboard command lands on, among the targets the item can be dropped on.
-    private async Task<BdndKeyboardTarget?> NavigateAsync(string command)
+    private async Task<BdndKeyboardTarget?> NavigateAsync(string command, bool waiting = false)
     {
         var manager = Manager!;
         if (_registration?.Reference is not { } registration) return null;
@@ -750,7 +763,7 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
         var currentEdge = currentId is null ? null : BdndEdgeNames.Name(manager.GetTargetEdge(currentId));
         try
         {
-            return await Interop.KeyboardNavigateAsync(registration, candidates, sourceTargets, currentId, currentEdge, command);
+            return await Interop.KeyboardNavigateAsync(registration, candidates, sourceTargets, currentId, currentEdge, command, waiting);
         }
         catch (Exception exception) when (exception is JSException or JSDisconnectedException or TaskCanceledException)
         {

@@ -139,6 +139,30 @@ public class BdndKeyboardDragTests : BdndComponentTestBase
     }
 
     [TestMethod]
+    [DataRow(false, 1)]
+    [DataRow(true, 21)] // the first answer and twenty more, a little apart, while the rows are still coming
+    public async Task AMoveWithRowsStillComingThatWayAsksAgainWaitingForThem(bool pending, int asked)
+    {
+        var cut = RenderDustbin();
+        var bin = cut.FindComponent<BdndDropTarget<string>>();
+        var binId = TargetIdOf(bin);
+        PlanCount(1);
+        PlanMove(null, "next", binId);
+        await StartAsync(Source(cut));
+        await CommandAsync(Source(cut), "next");
+        Sources.Setup<BdndKeyboardTarget?>("keyboardNavigate", i => (string?)i.Arguments[2] == binId && (string)i.Arguments[4]! == "next")
+            .SetResult(new BdndKeyboardTarget { Id = binId, Rect = new BdndDomRect { Width = 50, Height = 20 }, Position = 1, Count = 1, Moved = false, Pending = pending });
+
+        await CommandAsync(Source(cut), "next");
+
+        var asks = Sources.Invocations["keyboardNavigate"].Where(i => (string?)i.Arguments[2] == binId && (string)i.Arguments[4]! == "next").ToArray();
+        Assert.AreEqual(asked, asks.Length);
+        // only the first ask scrolls: the others wait
+        Assert.AreSequenceEqual(new[] { false }.Concat(Enumerable.Repeat(true, asked - 1)), asks.Select(i => (bool)i.Arguments[5]!));
+        Assert.AreEqual("Bin is the last drop target in that direction.", Announcements[^1]);
+    }
+
+    [TestMethod]
     public async Task SpaceOverATargetDropsOnItAndEndsTheDrag()
     {
         var cut = RenderDustbin();

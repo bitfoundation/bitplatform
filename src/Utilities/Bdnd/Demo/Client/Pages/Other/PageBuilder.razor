@@ -1,0 +1,97 @@
+﻿@page "/other/page-builder"
+
+<PageTitle>Other - Page builder · Bdnd</PageTitle>
+
+<div class="bb-intro">
+    <h1>Other - Page builder</h1>
+    <p class="bb-subtitle">
+        A palette, a page and a bin. A block dragged from the palette is a copy (<code>DropEffect="copy"</code>): the
+        palette keeps it, and the page gets a new block where the line shows - before or after the block it is dropped
+        on, or at the end. A block of the page moves within it, or into the bin; the bin takes no palette block
+        (<code>CanDropPredicate</code>). One item type carries both: the kind of a new block, or the block itself.
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="bb-demo">
+    <BdndProvider>
+        <div class="builder">
+            <ul class="builder-palette" aria-label="Palette">
+                @foreach (var kind in Kinds)
+                {
+                    <li>
+                        <BdndDraggable TItem="BuilderItem" Type="block" Item="@(new BuilderItem(kind, null))" DropEffect="copy"
+                                       Label="@($"New {kind.ToLowerInvariant()}")" class="builder-tool" Context="drag">
+                            @kind
+                        </BdndDraggable>
+                    </li>
+                }
+            </ul>
+
+            <BdndDropTarget TItem="BuilderItem" Accept="block" Label="the end of the page" class="builder-page"
+                            OnDrop="@(e => DropAtEnd(e))" Context="page">
+                @for (var i = 0; i < _blocks.Count; i++)
+                {
+                    var index = i;
+                    var block = _blocks[i];
+                    <BdndDropTarget TItem="BuilderItem" Accept="block" Edges="BdndEdges.Vertical" Label="@block.Title"
+                                    class="builder-slot" OnDrop="@(e => DropOn(e, index))" @key="block" Context="slot">
+                        <BdndDraggable TItem="BuilderItem" Type="block" Item="@(new BuilderItem(block.Kind, block))"
+                                       Label="@block.Title" class="@($"builder-block builder-block--{block.Kind.ToLowerInvariant()}")" Context="drag">
+                            @block.Title
+                        </BdndDraggable>
+                    </BdndDropTarget>
+                }
+                @if (_blocks.Count == 0)
+                {
+                    <p class="builder-empty">Drop blocks here</p>
+                }
+            </BdndDropTarget>
+
+            <BdndDropTarget TItem="BuilderItem" Accept="block" Label="the bin" class="builder-bin"
+                            CanDropPredicate="@((item, _) => item.Block is not null)" OnDrop="@(e => Remove(e.Item!))" Context="bin">
+                @(bin.IsOver && bin.CanDrop ? "Release to remove" : "Bin")
+            </BdndDropTarget>
+        </div>
+    </BdndProvider>
+
+    <p class="demo-caption builder-outline">Page: @(_blocks.Count == 0 ? "empty" : string.Join(", ", _blocks.Select(b => b.Title)))</p>
+</div>
+
+@code {
+    private static readonly string[] Kinds = ["Heading", "Text", "Image", "Button"];
+
+    // A new block of a kind (from the palette), or a block of the page.
+    public sealed record BuilderItem(string Kind, Block? Block);
+
+    public sealed record Block(string Kind, string Title);
+
+    private readonly List<Block> _blocks = [new("Heading", "Heading 1"), new("Text", "Text 1")];
+    private readonly Dictionary<string, int> _counts = new() { ["Heading"] = 1, ["Text"] = 1 };
+
+    // Dropped on a block: before or after it, as the edge says.
+    private void DropOn(BdndDropEventArgs<BuilderItem> e, int index) => Place(e.Item!, BdndList.InsertionIndex(index, e.ClosestEdge));
+
+    // Dropped on the page below its blocks (or on an empty page): at the end - unless a block took the drop already.
+    private void DropAtEnd(BdndDropEventArgs<BuilderItem> e)
+    {
+        if (e.Monitor.DidDrop() is false) Place(e.Item!, _blocks.Count);
+    }
+
+    private void Place(BuilderItem item, int insertionIndex)
+    {
+        if (item.Block is { } block)
+        {
+            BdndList.Move(_blocks, _blocks.IndexOf(block), _blocks, insertionIndex);
+            return;
+        }
+        var number = _counts[item.Kind] = _counts.GetValueOrDefault(item.Kind) + 1;
+        _blocks.Insert(insertionIndex, new Block(item.Kind, $"{item.Kind} {number}"));
+    }
+
+    private void Remove(BuilderItem item)
+    {
+        if (item.Block is { } block) _blocks.Remove(block);
+    }
+}

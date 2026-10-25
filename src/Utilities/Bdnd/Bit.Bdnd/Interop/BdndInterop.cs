@@ -59,8 +59,8 @@ public sealed class BdndInterop : IAsyncDisposable
     /// scrolled into view. Null when no candidate is in the document.
     /// </summary>
     internal async ValueTask<BdndKeyboardTarget?> KeyboardNavigateAsync(IJSObjectReference registration,
-        BdndKeyboardCandidate[] candidates, string[] sourceTargets, string? currentId, string? currentEdge, string command)
-        => await registration.InvokeAsync<BdndKeyboardTarget?>("keyboardNavigate", candidates, sourceTargets, currentId, currentEdge, command);
+        BdndKeyboardCandidate[] candidates, string[] sourceTargets, string? currentId, string? currentEdge, string command, bool waiting = false)
+        => await registration.InvokeAsync<BdndKeyboardTarget?>("keyboardNavigate", candidates, sourceTargets, currentId, currentEdge, command, waiting);
 
     /// <summary>
     /// A stream of the contents of file <paramref name="index"/> of native drop <paramref name="dropId"/>. Takes no

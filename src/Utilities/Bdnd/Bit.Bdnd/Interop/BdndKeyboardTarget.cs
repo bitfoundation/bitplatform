@@ -26,4 +26,10 @@ internal sealed class BdndKeyboardTarget
 
     /// <summary>False when there was no further target in the direction asked for, and the drag stays where it was.</summary>
     public bool Moved { get; set; }
+
+    /// <summary>
+    /// With <see cref="Moved"/> false: the list goes on that way with rows it has not rendered (a virtualized list),
+    /// which were scrolled into view - worth asking again, waiting, once they have rendered and registered.
+    /// </summary>
+    public bool Pending { get; set; }
 }

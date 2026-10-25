@@ -852,6 +852,124 @@ html.bdnd-framed .bb-demo {
     cursor: text;
 }
 
+/* ---------- Page builder ---------- */
+.builder {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 1.5rem;
+}
+
+.builder-palette {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    width: 9rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.builder-tool {
+    padding: .5rem .75rem;
+    background: var(--bb-surface);
+    border: 1px dashed var(--bb-border-strong);
+    border-radius: var(--bb-radius);
+    font-size: var(--fl-font-size-200);
+    cursor: copy;
+}
+
+.builder-page {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    width: 18rem;
+    max-width: 100%;
+    min-height: 12rem;
+    padding: .75rem .75rem 2rem;
+    background: var(--bb-bg);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+}
+
+.builder-page[data-bit-bdnd-over-shallow] {
+    border-color: var(--bb-primary);
+}
+
+.builder-slot {
+    position: relative;
+}
+
+.builder-slot[data-bit-bdnd-edge]::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--bb-primary);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.builder-slot[data-bit-bdnd-edge="top"]::after {
+    top: -5px;
+}
+
+.builder-slot[data-bit-bdnd-edge="bottom"]::after {
+    bottom: -5px;
+}
+
+@media (forced-colors: active) {
+    .builder-slot[data-bit-bdnd-edge]::after {
+        background: Highlight;
+    }
+}
+
+.builder-block {
+    padding: .75rem 1rem;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    font-size: var(--fl-font-size-200);
+    cursor: move;
+}
+
+.builder-block--heading {
+    font-weight: var(--fl-weight-semibold);
+    font-size: var(--fl-font-size-300);
+}
+
+.builder-block[data-bit-bdnd-dragging] {
+    opacity: .4;
+}
+
+.builder-tool:focus-visible,
+.builder-block:focus-visible {
+    outline: 2px solid var(--bb-primary);
+    outline-offset: 2px;
+}
+
+.builder-empty {
+    margin: auto;
+    color: var(--bb-text-muted);
+}
+
+.builder-bin {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 8rem;
+    height: 6rem;
+    border: 2px dashed var(--bb-border-strong);
+    border-radius: var(--bb-radius-lg);
+    color: var(--bb-text-muted);
+}
+
+.builder-bin[data-bit-bdnd-can-drop] {
+    border-color: var(--bb-danger, #c62828);
+    color: var(--bb-text);
+}
+
 /* ---------- Dragging several items ---------- */
 .multi-board {
     display: flex;

@@ -84,10 +84,9 @@ public sealed class VirtualizedTests : BdndTest
         for (var i = 2; i <= 24; i++)
         {
             await page.Keyboard.PressAsync("ArrowDown");
+            // pressed as fast as the announcements come: a key that reaches the last rendered row scrolls the list
+            // on and waits for the rows it brings in
             await Expect(live).ToHaveTextAsync($"Row 1 is after Row {i}.");
-            // at a person's pace: the rows ahead render as the list scrolls (a key pressed before they have finds
-            // nothing further - the README says so)
-            await WaitForQuietAsync(page, 100);
         }
         // Row 1 was scrolled out of the rendered range on the way
         await Expect(Row(page, "Row 1")).ToHaveCountAsync(0);

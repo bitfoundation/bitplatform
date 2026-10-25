@@ -168,6 +168,7 @@
     <Project Path="Utilities/Bdnd/Tests/Bit.Bdnd.Tests/Bit.Bdnd.Tests.csproj" />
     <Project Path="Utilities/Bdnd/Tests/Bit.Bdnd.Tests.Mcp/Bit.Bdnd.Tests.Mcp.csproj" />
     <Project Path="Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj" />
+    <Project Path="Utilities/Bdnd/Tests/Bit.Bdnd.Tests.Harness.Hybrid/Bit.Bdnd.Tests.Harness.Hybrid.csproj" />
   </Folder>
   <Folder Name="/Utilities/BlazeDb/">
     <File Path="Utilities/BlazeDb/README.md" />

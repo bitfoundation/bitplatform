@@ -28,7 +28,7 @@ public abstract class BdndTest
     /// (<c>preventDefault</c> and <c>dropEffect</c>), so the record is what the browser itself acts on.
     /// </para>
     /// </summary>
-    private const string BrowserProbe =
+    internal const string BrowserProbe =
         """
         (() => {
           const state = {
@@ -96,9 +96,13 @@ public abstract class BdndTest
 
     private PlaywrightSession.Session Session => _session ?? throw new InvalidOperationException("The session is opened in TestInitialize.");
 
+    /// <summary>Whether the tests drive the demo in the suite's browser (the hybrid tests drive an app of their own).</summary>
+    protected virtual bool UsesDemo => true;
+
     [TestInitialize]
     public async Task OpenSessionAsync()
     {
+        if (UsesDemo is false) return;
         _session = await PlaywrightSession.GetAsync();
         if (_session.Unavailable is not { } reason)
         {

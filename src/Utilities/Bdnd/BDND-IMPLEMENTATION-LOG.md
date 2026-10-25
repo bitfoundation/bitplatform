@@ -572,3 +572,74 @@ field inside a draggable started a native drag in Chromium, and in Firefox selec
 
 The baseline worktree used for the performance comparison was removed.
 
+## Round 10 - what remained
+
+### Reassessment and priorities
+
+Round 9 left the matrix with Blazor Hybrid, folder drops, a release outside the window, real touch input and screen
+readers untested, three rows partial (native edge scrolling, forced colors, dashboards and palettes) and a known
+limit (a fast keyboard walk through a virtualized list). Each was taken in turn, as far as an automated suite reaches.
+
+### What changed
+
+- **Blazor Hybrid under E2E.** `Tests/Bit.Bdnd.Tests.Harness.Hybrid`, a WinForms `BlazorWebView` app (the pattern of
+  the Brouter and Butil harnesses), opens WebView2's debugging port through its API; `HybridHostingTests` attaches
+  with Playwright over CDP and drags in the WebView: native mouse, keyboard, pointer, touch, a drag layer, edges and
+  file contents read into .NET. An `e2e-hybrid` job on windows-2025 runs it in CI. The base test class gained an
+  opt-out (`UsesDemo`) so these tests need neither the demo nor a downloaded browser.
+- **A native drag released outside the window** ends as a cancel: where the browser reports no end, the first
+  button-less mouse move after it (no mouse events reach a page during a native drag) ends the session.
+- **The keyboard in a virtualized list**: a move that finds nothing further among the rendered rows scrolls the list's
+  container on by about a row; .NET asks again a little later, up to ten times, as the rows it brought in register.
+- **Folder drops** tested: the page's `webkitGetAsEntry` answers with a tree of entries, which the real module walks
+  (paths, contents, batches, an empty folder, an unreadable entry, the file limit). The demo now says when the list is
+  incomplete.
+- **Touch on every engine**: pointer events of type touch drive the pointer path in Firefox and WebKit too.
+- **Screen readers**: the computed description and roles on every engine, and Chromium's own accessibility tree over
+  CDP; the pointer copy adds nothing to the accessibility tree.
+- **Forced colors** (emulated, every engine) and **native edge scrolling** (Chromium's drag controller) tested.
+- **A page builder demo**: palette copies at insertion edges, moves, a bin that refuses palette blocks, the keyboard.
+- **A checklist for people**: screen readers (NVDA, JAWS, VoiceOver, TalkBack) and devices (iPhone, iPad, Android,
+  Windows touch, pens), with expected results, in the E2E README.
+- The MCP suite's last compiler warning (a nullable dereference) is gone.
+
+### Engine notes found on the way
+
+- Playwright's Firefox driver keeps a drag session of its own after a release outside the window and takes the input
+  meanwhile: no key or mouse event reaches the page. The outside-release test checks the cancel there and the next
+  drag on the other engines.
+- WebKit on Windows crashed again once mid-suite; the relaunch kept it to one test, and the suite passed three times
+  in a row on its own.
+
+### Adversarial review (round 10)
+
+| Finding | Severity | Fix | Regression test |
+| --- | --- | --- | --- |
+| Any button-less `mousemove` ended a native drag still going: one a page script dispatched, or one from a second input device. | Medium | Only an event the browser raised counts, and only if no `drag` or `dragover` event follows within 500 ms (a live drag keeps raising them). | `A_drag_released_outside_the_window_ends_as_a_cancel_and_the_next_one_works` (the module's own end on Firefox, whose driver reports none) |
+| The keyboard's "scroll on for more" scrolled any scrollable ancestor of the last place, on every retry, for lists that are not virtualized; it never scrolled a virtualized list with a target after it, nor one scrolling with the window, nor right to left. | Medium | Rebuilt around Virtualize's spacer: a step that would leave the current list (or go nowhere) while that list has an empty, inline-sized spacer that way scrolls the spacer into view once and waits (up to 2 s, retries do not scroll). After 1.5 s it goes on as if there were none, so a look-alike element can only delay a step. | `VirtualizedTests` at full key speed on all engines; `AMoveWithRowsStillComingThatWayAsksAgainWaitingForThem` |
+| A cancel during the wait was announced after a move the retries made. | Low | A waiting ask after the keyboard session ended neither scrolls nor moves. | Reasoned (the queue serializes the cancel after the wait). |
+| The hybrid harness was built only when missing - stale against library changes - and could be built mid-run, under the running demo; a build that timed out was left running. | Medium | Built incrementally before anything runs (`BDND_E2E_SKIP_BUILD=1` skips it, as CI does after its own build step); killed on timeout; a failure is reported by the hybrid tests. | `HybridHostingTests` |
+| A failing Playwright shutdown skipped the hybrid one (a window, WebView2 processes and a profile folder left behind). | Low | try/finally. | Reasoned. |
+| Problems raised during a reload were cleared unseen; the cleanup's assertion buried a test's own failure. | Low | Cleared before the reload, asserted only after a passing test. | `HybridHostingTests` |
+| Tests that could not fail: the bin test (palette blocks are ignored by `Remove` anyway), the forced-colors test where emulation does not force colours. | Low | The bin test checks the page can take the block and that no drop was raised; the line must be drawn in the system's Highlight. | Same tests |
+| The incomplete-list caption hid when no file could be read. | Low | Shown whenever the list is incomplete. | `An_unreadable_entry_is_skipped_and_marks_the_list_incomplete` |
+
+Not changed: processes tied to the test host's lifetime (a killed test host can leave the harness window behind) -
+a Windows job object for a test-only harness was judged not worth its P/Invoke.
+
+### Validation (final)
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Build | `dotnet build Bit.Bdnd.slnx` (now with the hybrid harness) | Succeeded, no compiler warnings (the MCP suite's last one is fixed). The harness build reports the WebView2 package's `WindowsBase` reference conflict (MSB3277), as the Brouter and Butil harnesses do. |
+| Unit | `dotnet test --project Tests/Bit.Bdnd.Tests/Bit.Bdnd.Tests.csproj -f net8.0` (and net9.0, net10.0) | 382 passed on each (1146). |
+| MCP | `dotnet test --project Tests/Bit.Bdnd.Tests.Mcp/Bit.Bdnd.Tests.Mcp.csproj` | 101 passed. |
+| E2E Chromium | `dotnet test` in `Tests/Bit.Bdnd.Tests.E2E` | 143 passed, including the 8 Blazor Hybrid tests in a WebView2. |
+| E2E Firefox | `BDND_E2E_BROWSER=firefox dotnet test` | 128 passed, 14 skipped (Chromium-only and hybrid), 1 failed: the outside-release test, whose move back came inside the new half-second confirmation and met the driver's stray dragover. Fixed in the test; rerun on Firefox twice, Chromium and WebKit: passed. |
+| E2E WebKit | `BDND_E2E_BROWSER=webkit dotnet test` | 129 passed, 14 skipped, 0 failed. |
+| Trim gate | `bash Tests/Bit.Bdnd.Tests.E2E/publish-gate.sh <out>` after a clean | No trim/AOT analysis warnings originate in Bit.Bdnd. |
+| E2E on the trimmed publish | `BDND_E2E_PUBLISHED_HOST=<out> dotnet test` | 143 passed (Chromium). |
+
+The matrix has no row left Partial, Untested or Missing. What the suite cannot do - listen to screen readers, touch
+real devices - has a checklist in the E2E README, to be run and recorded here before a release.
+

@@ -44,8 +44,8 @@ Competitors: **dk** dnd-kit, **SJ** SortableJS, **RD** React DnD, **PD** Pragmat
 | Capability | How others do it | Baseline | Status | Plan / notes |
 | --- | --- | --- | --- | --- |
 | Mouse | All | Verified | Verified | Native HTML5. |
-| Touch | dk TouchSensor; SJ fallback; RD TouchBackend; IJ | **Missing (P0)** | Verified (Chromium) | Round 2 pointer backend; E2E with DevTools-protocol touches. iOS/Android devices not yet verified by hand. |
-| Pen / stylus | dk PointerSensor; IJ | Missing (P1) | Verified (Chromium) | Handled as touch (delay, threshold); round 6 E2E drives a pen through the DevTools protocol. |
+| Touch | dk TouchSensor; SJ fallback; RD TouchBackend; IJ | **Missing (P0)** | Verified | Round 2 pointer backend. E2E: touches through Chromium's DevTools protocol (also over a Server circuit and in a BlazorWebView), and touch pointer events on Chromium, Firefox and WebKit (round 10). A pass on real phones and tablets is a person's: checklist in the E2E README. |
+| Pen / stylus | dk PointerSensor; IJ | Missing (P1) | Verified (Chromium) | Handled as touch (delay, threshold); round 6 E2E drives a pen through the DevTools protocol. Real pens: the E2E README checklist. |
 | Keyboard dragging | dk KeyboardSensor; rbd | **Missing (P0)** | Verified | Round 1: Space/Enter, arrows, Home/End, Escape; unit + E2E. |
 | Activation distance | dk `activationConstraint.distance`; SJ `fallbackTolerance` | Missing (P1) | Verified | `DragThreshold`; click stays a click (E2E). |
 | Activation delay / press-and-hold | dk `delay`+`tolerance`; SJ `delay` | Missing (P1) | Verified | `TouchDelay` (250 ms) with a 4 px tolerance; swipe scrolls (E2E). |
@@ -54,7 +54,7 @@ Competitors: **dk** dnd-kit, **SJ** SortableJS, **RD** React DnD, **PD** Pragmat
 | Non-draggable regions inside a source | SJ `filter`; dk activator only | Missing (P2) | Verified | `data-bit-bdnd-no-drag` (pointer and native); form fields never start a pointer drag. |
 | Interactive descendants (inputs, buttons) | SJ ignores inputs; dk app-defined | Partial | Verified | Round 8: a press on a form field or a `data-bit-bdnd-no-drag` region holds the source non-draggable until it ends - text selects, no native drag (E2E on Chromium and Firefox; without it Chromium dragged and Firefox selected nothing). Pointer drags skip them too. |
 | Escape cancels | All | Untested | Verified | Keyboard and pointer drags (E2E); native drags by the browser. |
-| Release outside the window | N; dk pointer capture | Untested | Untested | Native. |
+| Release outside the window | N; dk pointer capture | Untested | Verified | Round 10: a native drag released outside the window ends as a cancel - at once where the browser reports it, else with the pointer's first move back (an unseen end); E2E on all three engines. Pointer drags: round 2. |
 | Window blur / tab hidden | dk cancels | Untested | Verified | Pointer drags cancel on blur and on a hidden page (round 6 E2E). |
 | Scroll vs drag on touch | dk delay + `touch-action`; SJ `touchStartThreshold` | Missing (P0) | Verified (Chromium) | Delay on sources, `touch-action: none` on handles, cancelable touchmove from registration (WebKit). |
 
@@ -94,9 +94,9 @@ Competitors: **dk** dnd-kit, **SJ** SortableJS, **RD** React DnD, **PD** Pragmat
 | --- | --- | --- | --- |
 | Kanban boards | Partial | Verified | Keyboard kanban and two-list indicators demos (E2E). |
 | Trees and outlines | Partial | Verified | Round 4 tree demo with edges, own-subtree refusal and keyboard (E2E); README recipe. |
-| Dashboards, page builders, palettes | Partial | Partial | Copy-or-move demo. |
+| Dashboards, page builders, palettes | Partial | Verified | Round 10 page builder demo: palette copies at insertion edges, moves, a bin refusing palette blocks, keyboard (E2E on all engines). |
 | Free positioning (canvas) | Verified | Verified | Drag-around demos. |
-| Virtualized lists | Untested | Verified | Round 6: 1,000-row `Virtualize` demo; pointer drag with auto-scroll past the source's removal, keyboard walk (E2E); README section. |
+| Virtualized lists | Untested | Verified | Round 6: 1,000-row `Virtualize` demo; pointer drag with auto-scroll past the source's removal (E2E). Round 10: a keyboard move that finds nothing further rendered scrolls the list on and asks again, so keys at full speed walk the list (E2E on all engines). |
 | Action drop zones (bins) | Verified | Verified | Dustbin demos. |
 
 ## F. Target detection and movement constraints
@@ -113,7 +113,7 @@ Competitors: **dk** dnd-kit, **SJ** SortableJS, **RD** React DnD, **PD** Pragmat
 
 | Capability | How others do it | Baseline | Status | Plan / notes |
 | --- | --- | --- | --- | --- |
-| Viewport edge scrolling | N (browser); dk; SJ | Partial | Partial | Pointer drags scroll the page (axes from its overflow); HTML5 drags as the browser does. |
+| Viewport edge scrolling | N (browser); dk; SJ | Partial | Verified | Pointer drags scroll containers and the page themselves (E2E, all engines); native drags scroll the page as the browser does - E2E in Chromium, whose driver goes through the browser's drag controller (round 10). |
 | Nested scroll containers | dk; SJ `scrollSensitivity` | Partial | Verified (pointer) | Innermost container that can scroll that way (E2E); HTML5 drags as the browser does. |
 
 ## H. Native data
@@ -122,7 +122,7 @@ Competitors: **dk** dnd-kit, **SJ** SortableJS, **RD** React DnD, **PD** Pragmat
 | --- | --- | --- | --- | --- |
 | Files (metadata) | RD/PD | Verified | Verified | |
 | File contents | PD gives `File` objects | Missing (P1) | Verified | `OpenReadStreamAsync` over `IJSStreamReference`; size limit; lifetime until the next drop (E2E reads a dropped file). |
-| Directories | PD `getFiles` + entries | Missing (P2) | Untested | `ExpandDirectories` walk (capped, per-entry errors, `FileListIncomplete`); synthetic drags cannot carry folder entries, so no automated test. |
+| Directories | PD `getFiles` + entries | Missing (P2) | Verified | `ExpandDirectories` walk (capped, per-entry errors, `FileListIncomplete`). Round 10 E2E on all engines: the page's `webkitGetAsEntry` answers with a tree of entries, which the real module walks. |
 | Text, URLs, HTML | RD/PD | Verified | Verified | Only accepted types are read. |
 | Editable fields inside targets | PD | Verified | Verified | |
 | MIME filtering while hovering | PD `containsFiles` | Missing (P2) | Verified | `AcceptFileTypes` (MIME-only lists refuse on hover; extensions decide at the drop); `MaxFiles`, `TotalFileCount`. |
@@ -133,11 +133,11 @@ Competitors: **dk** dnd-kit, **SJ** SortableJS, **RD** React DnD, **PD** Pragmat
 | Capability | Baseline | Status | Plan / notes |
 | --- | --- | --- | --- |
 | Keyboard pick-up, move, drop, cancel | **Missing (P0)** | Verified | Round 1; sortable lists move one place per key. |
-| Live-region announcements | **Missing (P0)** | Verified | `BdndAnnouncements`, replaceable per provider. Manual screen-reader passes not yet recorded. |
-| Screen-reader instructions | **Missing (P0)** | Verified | `aria-describedby` on hosts and handles. |
+| Live-region announcements | **Missing (P0)** | Verified | `BdndAnnouncements`, replaceable per provider. Round 10: role, liveness and atomicity checked on every engine and in Chromium's accessibility tree. A listening pass with screen readers is a person's: checklist in the E2E README. |
+| Screen-reader instructions | **Missing (P0)** | Verified | `aria-describedby` on hosts and handles; round 10 checks the computed description on every engine and in Chromium's accessibility tree. |
 | Focus kept and restored | Missing (P0) | Verified | Kept through re-renders, handed to the draggable showing the same item. `ItemFactory` sources cannot be matched. |
 | Non-drag alternatives | Missing (P1) | Verified | Documented pattern + kanban demo (move buttons, E2E). Programmatic drops: Excluded - the app's own method is the API. |
-| Forced colors / high contrast | N/A | Partial | No library visuals; the demo shows a forced-colors rule on the data attributes. |
+| Forced colors / high contrast | N/A | Verified | No library visuals; the demo draws its lines in system colours under `forced-colors: active`, checked with forced colours emulated on all three engines (round 10). |
 
 ## J. Reliability, hosting, performance
 
@@ -146,7 +146,7 @@ Competitors: **dk** dnd-kit, **SJ** SortableJS, **RD** React DnD, **PD** Pragmat
 | Deterministic lifecycle, idempotent cleanup | Verified | Verified | |
 | Blazor WebAssembly | Verified | Verified | E2E runs on WebAssembly. |
 | Blazor Server | Untested | Verified | `/hosting/server-check` over a circuit, 8 E2E tests (native, keyboard, mouse and touch pointer, layer, edges, file streams, moving between render modes). |
-| Blazor Hybrid | Untested | Untested | Same out-of-process code path as Server; no web view automation here. |
+| Blazor Hybrid | Untested | Verified | Round 10: a WinForms `BlazorWebView` harness on WebView2, driven over the DevTools protocol - native, keyboard, pointer and touch drags, a drag layer, edges, file contents (8 E2E); a CI job on windows-2025. MAUI's Android and iOS web views are not driven. |
 | Prerendering | Verified | Verified | |
 | Trimming / AOT | Verified | Verified | Publish gate + `BdndTrimmingTests`. |
 | Measured performance | Missing (P2) | Verified | `PerfTests` baseline vs current (frames, long tasks, mutations); round 7: circuit messages per drag on Blazor Server asserted (16 for a 120-move native or pointer drag; a pointer drag sent 250 before `BdndDragLayer.Accept`). |

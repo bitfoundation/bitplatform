@@ -110,7 +110,10 @@ interface Session {
     timer: number;
     onDragOver: (e: DragEvent) => void;
     onDrop: () => void;
-    onMouseMove: () => void;
+    onMouseMove: (e: MouseEvent) => void;
+    onDragEvent: () => void;
+    /** When the last drag or dragover event of the drag came. */
+    lastDragEvent: number;
 }
 
 interface DropEffectState {
@@ -134,6 +137,8 @@ interface KeyboardSession {
     ended: boolean;
     /** Ended in .NET: it answered that the drag is over (or never began). */
     dotNetDone: boolean;
+    /** When the current key started waiting for the rows of a virtualized list (0: not waiting). */
+    pendingSince: number;
     observer: MutationObserver | null;
     onKeyDown: (e: KeyboardEvent) => void;
     onFocusIn: (e: FocusEvent) => void;
@@ -198,6 +203,8 @@ interface KeyboardPlace {
     position: number;
     count: number;
     moved: boolean;
+    /** The list goes on that way with rows not rendered yet (a virtualized list), which were scrolled into view. */
+    pending: boolean;
 }
 
 // Marks drags started by a registered source; the handler id follows the prefix.
@@ -214,8 +221,16 @@ const TEXT_DRAG_TYPES = ['text/plain', 'text/uri-list', 'text/html'];
 const TEXT_INPUT_TYPES = ['text', 'search', 'url', 'tel', 'email', 'password', 'number'];
 
 // Firefox can raise a mousemove right as a drag starts, so mouse movement is only taken as
-// "the drag is over" after this delay (the same approach as React DnD's HTML5 backend).
+// "the drag is over" after this delay (the same approach as React DnD's HTML5 backend): when the source was removed,
+// or when no button is down any more.
 const SOURCE_REMOVED_CHECK_DELAY = 1000;
+
+// How long after a button-less mouse move a native drag must have raised no drag event to count as ended: longer than
+// the gap between two dragover events of a drag held still (Firefox raises them every 350 ms or so).
+const UNSEEN_END_WAIT = 500;
+
+// How long a keyboard step waits for the rows a virtualized list renders before it goes on as if there were none.
+const PENDING_ROWS_LIMIT = 1500;
 
 const claimedEvents = new WeakSet<Event>(); // dragstart events already handled by an inner source
 const dropEffectStates = new WeakMap<Event, DropEffectState>(); // dragenter/dragover event -> nested targets' decision
@@ -487,8 +502,8 @@ export function registerDragSource(element: HTMLElement | null, dotNetRef: DotNe
             setTimeout(() => (cancelRequested = false), 0);
         },
         keyboardNavigate: (candidates: KeyboardCandidate[] | null, sourceTargets: string[] | null, currentId: string | null,
-            currentEdge: string | null, command: string) =>
-            keyboardNavigate(source, candidates || [], sourceTargets || [], currentId, currentEdge, command),
+            currentEdge: string | null, command: string, waiting: boolean) =>
+            keyboardNavigate(source, candidates || [], sourceTargets || [], currentId, currentEdge, command, waiting === true),
         adoptFocus: () => adoptFocus(source),
         dispose: () => {
             element.removeEventListener('dragstart', onDragStart);
@@ -514,7 +529,12 @@ function beginSession(source: DragSource, startEvent: DragEvent): void {
         sentY: NaN,
         frame: 0,
         timer: 0,
+        lastDragEvent: performance.now(),
+        onDragEvent: () => {
+            s.lastDragEvent = performance.now();
+        },
         onDragOver: (e: DragEvent) => {
+            s.lastDragEvent = performance.now();
             s.x = e.clientX;
             s.y = e.clientY;
             // on Blazor Server every move is a message over the circuit: send them only when followed
@@ -531,10 +551,23 @@ function beginSession(source: DragSource, startEvent: DragEvent): void {
         // Browsers may never raise 'dragend' for a source that was removed from the DOM (e.g. by
         // the re-render a drop causes), so also end the drag after a drop or once the mouse moves.
         onDrop: () => { setTimeout(() => endIfSourceRemoved(s), 0); },
-        onMouseMove: () => endIfSourceRemoved(s),
+        // No mouse events reach the page while a native drag runs: one the browser raised, with no button down, means
+        // the drag may be over with its end unseen (released outside the window, where some engines report no
+        // dragend). It is a cancel once no drag event has come for a moment after it - a live drag keeps raising them.
+        onMouseMove: (e: MouseEvent) => {
+            if (!e.isTrusted || e.buttons !== 0) {
+                endIfSourceRemoved(s);
+                return;
+            }
+            const at = performance.now();
+            setTimeout(() => {
+                if (session === s && s.lastDragEvent < at) endSession(true);
+            }, UNSEEN_END_WAIT);
+        },
     };
 
     document.addEventListener('dragover', s.onDragOver, true);
+    document.addEventListener('drag', s.onDragEvent, true);
     document.addEventListener('drop', s.onDrop, true);
     s.timer = window.setTimeout(
         () => window.addEventListener('mousemove', s.onMouseMove, true),
@@ -551,6 +584,7 @@ function endSession(notify: boolean): void {
     if (!s) return;
     session = null;
     document.removeEventListener('dragover', s.onDragOver, true);
+    document.removeEventListener('drag', s.onDragEvent, true);
     document.removeEventListener('drop', s.onDrop, true);
     window.removeEventListener('mousemove', s.onMouseMove, true);
     clearTimeout(s.timer);
@@ -1693,6 +1727,7 @@ function startKeyboardSession(source: DragSource, activator: HTMLElement): void 
         position: -1,
         ended: false,
         dotNetDone: false,
+        pendingSince: 0,
         observer: null,
         onKeyDown: (e) => onKeyboardSessionKey(s, e),
         // the focus moved to another element (Tab, a click, the page focusing something): the drag is over. Also
@@ -1941,8 +1976,10 @@ function areNeighbours(a: { element: HTMLElement; parentId: string | null }, b: 
 // element (a list reordered under the drag) - 'down' and 'up' do the same except in a layout that wraps (see
 // rowPlace), and 'first', 'last', or 'stay' only count them. The target landed on is scrolled into view.
 function keyboardNavigate(source: DragSource, candidates: KeyboardCandidate[], sourceTargets: string[],
-    currentId: string | null, currentEdge: string | null, command: string): KeyboardPlace | null {
+    currentId: string | null, currentEdge: string | null, command: string, waiting = false): KeyboardPlace | null {
     const s = keyboardSession && keyboardSession.source === source ? keyboardSession : null;
+    // asked again for rows that were coming in, after the drag was cancelled or dropped in the browser: no move
+    if (waiting && (!s || s.ended)) return { id: '', edge: null, before: null, rect: null, label: null, position: 0, count: 0, moved: false, pending: false };
     const element = s ? s.element : source.element;
     const all: { id: string; element: HTMLElement; parentId: string | null; edges: number }[] = [];
     for (const candidate of candidates) {
@@ -2049,11 +2086,36 @@ function keyboardNavigate(source: DragSource, candidates: KeyboardCandidate[], s
         next = rowPlace(places, next, command === 'down', reference);
     }
 
+    // A step that would leave the current list - or go nowhere - while that list has rows that way it has not rendered
+    // (a virtualized list): they come first. The place they stand in is scrolled into view, once per key, and .NET
+    // asks again (waiting) as they render and register.
+    let pending = false;
+    const stepping = command === 'next' || command === 'previous' || command === 'down' || command === 'up';
+    const reference = !fromElement && index >= 0 ? { element: places[index].element, parentId: places[index].parentId }
+        : connected ? { element: slot, parentId: containerId } : null;
+    if (!waiting && s) s.pendingSince = 0;
+    if (stepping && s && !s.ended && reference && (next < 0 || next === index || !sameListAs(reference)(places[next]))
+        && !(waiting && s.pendingSince > 0 && performance.now() - s.pendingSince > PENDING_ROWS_LIMIT)) {
+        const spacer = unrenderedRows(places, reference, command === 'next' || command === 'down');
+        if (spacer) {
+            if (!waiting) {
+                s.pendingSince = performance.now();
+                try {
+                    spacer.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' as ScrollBehavior });
+                } catch {
+                    /* ignore */
+                }
+            }
+            pending = true;
+            next = index;
+        }
+    }
+
     const navigating = command === 'next' || command === 'previous' || command === 'down' || command === 'up'
         || command === 'first' || command === 'last';
-    const moved = navigating && next >= 0 && (next !== index || fromElement);
+    const moved = !pending && navigating && next >= 0 && (next !== index || fromElement);
     if (!moved && navigating) next = index; // nothing further that way: stay where the drag is
-    if (next < 0) return { id: '', edge: null, before: null, rect: null, label: null, position: 0, count: list.length, moved: false };
+    if (next < 0) return { id: '', edge: null, before: null, rect: null, label: null, position: 0, count: list.length, moved: false, pending };
 
     const chosen = places[next];
     if (moved) {
@@ -2073,7 +2135,34 @@ function keyboardNavigate(source: DragSource, candidates: KeyboardCandidate[], s
         position: chosen.targetIndex + 1,
         count: list.length,
         moved,
+        pending,
     };
+}
+
+// The places of the reference's list: those of the target it is in - or, with no list target, those beside it in the
+// same parent element.
+function sameListAs(reference: { element: HTMLElement; parentId: string | null }): (p: Place) => boolean {
+    return (p: Place) => p.parentId === reference.parentId
+        && (reference.parentId !== null || p.element.parentElement === reference.element.parentElement);
+}
+
+// Virtualize renders the rows around what is in view, and an empty spacer element of the height (or width) of the
+// rows it leaves out before and after them. One past the list's last rendered place that way (the first, going back) -
+// beside it, or beside the element it sits in - means the list goes on there.
+function unrenderedRows(places: Place[], reference: { element: HTMLElement; parentId: string | null }, forward: boolean): HTMLElement | null {
+    const own = places.filter(sameListAs(reference));
+    const edge = own.length > 0 ? (forward ? own[own.length - 1] : own[0]).element : reference.element;
+    for (const start of [edge, edge.parentElement]) {
+        for (let el = start && (forward ? start.nextElementSibling : start.previousElementSibling); el;
+            el = forward ? el.nextElementSibling : el.previousElementSibling) {
+            // its size is an inline style, as Virtualize sets it - not a stylesheet's, as a decorative element's is
+            if (!(el instanceof HTMLElement) || el.childElementCount > 0 || (el.textContent || '').trim() !== ''
+                || (!el.style.height && !el.style.width)) continue;
+            const r = el.getBoundingClientRect();
+            if (r.height > 1 || r.width > 1) return el;
+        }
+    }
+    return null;
 }
 
 // Up and Down in a layout that wraps (a grid of cards, chips that break into lines): when the reference - the current
@@ -2083,8 +2172,7 @@ function keyboardNavigate(source: DragSource, candidates: KeyboardCandidate[], s
 function rowPlace(places: Place[], linear: number, down: boolean,
     reference: { element: HTMLElement; parentId: string | null; x: number }): number {
     const from = rectOf(reference.element);
-    const sameList = (p: Place) => p.parentId === reference.parentId
-        && (reference.parentId !== null || p.element.parentElement === reference.element.parentElement);
+    const sameList = sameListAs(reference);
     const list = places.map((p, i) => ({ i, place: p, rect: rectOf(p.element) }))
         .filter((c) => c.place.element !== reference.element && sameList(c.place));
     // beside the reference: on its row, and not above or below it

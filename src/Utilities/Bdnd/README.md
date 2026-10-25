@@ -68,8 +68,8 @@ put down in another - including files, text and links dragged in from outside th
 - **Isolated contexts** through nestable providers, and a read-only `IBdndMonitor` over the live drag state.
 - **Robust** across re-renders: a dragged item may be re-parented, re-keyed or removed mid-drag and its `OnEnd` still
   runs; hover survives the target's children being re-rendered.
-- Works on **Blazor WebAssembly, Blazor Server, Blazor Web App and Blazor Hybrid**, on .NET 8, 9 and 10 - the first
-  three driven by the end-to-end suite in Chromium, Firefox and WebKit.
+- Works on **Blazor WebAssembly, Blazor Server, Blazor Web App and Blazor Hybrid**, on .NET 8, 9 and 10 - driven by
+  the end-to-end suite in Chromium, Firefox and WebKit, over a Server circuit and in a WinForms `BlazorWebView`.
 
 ## Quick start
 
@@ -125,8 +125,8 @@ user can open the same example on both sides: the chessboard tutorial, dustbins 
 or move, inside an iframe, a stress test), drag-around (naive and with a custom drag layer), nesting (drag sources
 and drop targets), sortable lists (simple, cancel on drop outside, a hundred-item stress test), handles and previews,
 drop effects, and native files and HTML - and pages of its own: drop indicators, a sortable grid, a virtualized
-list, a folder tree, touch and pointer drags, a keyboard kanban board, and a Blazor Server page that drags over a
-SignalR circuit. Every page can show its own source.
+list, several items at once, a page builder, a folder tree, touch and pointer drags, a keyboard kanban board, and a
+Blazor Server page that drags over a SignalR circuit. Every page can show its own source.
 
 To run it locally:
 
@@ -407,7 +407,8 @@ runs when it ends - dropped or cancelled - with a `BdndDragEndContext<TItem>`:
 | `Monitor` | The provider's monitor. |
 
 `OnEnd` runs even if the draggable was removed during the drag - for instance because the drop re-rendered the list
-it was in. The drag state is cleared right after `OnEnd`'s synchronous part, so an async handler does not keep every
+it was in - and for a mouse drag released outside the browser window, as a cancel: when the browser reports it, or,
+where it reports nothing, at the pointer's first move back over the page. The drag state is cleared right after `OnEnd`'s synchronous part, so an async handler does not keep every
 target highlighted.
 
 ```razor
@@ -823,12 +824,11 @@ demo's [grid](https://bdnd.bitplatform.dev/sortable/grid) page is the complete e
 Draggables and drop targets work inside `Virtualize<TItem>` as anywhere else: each rendered row registers itself, and
 a row scrolled out of the rendered range unregisters - except the one being dragged, whose registration stays until
 its drag ends, so `OnEnd` still runs. Pointer drags scroll the list's container near its edges (`AutoScroll`) and the
-rows rendered as it scrolls take the drag at once; mouse drags scroll it as the browser does. Two limits follow from
-rows that are not rendered: the keyboard reaches only the rendered rows (each move scrolls the place it lands on into
-view, which renders the rows around it, so a list is walked a row at a time but `End` stops at the last rendered
-row - and a key pressed before the rows ahead have rendered finds nothing further, until they have), and `@key` the
-rows by item, so a row that comes back is the same component. An `OverscanCount` of a few rows keeps rows ahead
-rendered.
+rows rendered as it scrolls take the drag at once; mouse drags scroll it as the browser does. The keyboard walks the
+list a row at a time however fast the keys come: each move scrolls the place it lands on into view, and a key that
+would leave the list - or go nowhere - while the list has rows it has not rendered that way (the spacer `Virtualize`
+leaves for them) scrolls them into view and waits for them, up to a second and a half, before going on. `End` goes
+to the last rendered row. `@key` the rows by item, so a row that comes back is the same component.
 
 ## Native drags
 
@@ -1225,8 +1225,9 @@ client project with `InteractiveWebAssembly` (or `InteractiveAuto`); the demo is
 
 In a MAUI, WPF or Windows Forms `BlazorWebView` the JS runtime is not in-process, so the components behave as on
 Blazor Server (without the network latency). Desktop web views support HTML5 drags for the mouse; touch on mobile
-web views drags through pointer drags like any touch browser. The end-to-end suite does not run in a web view: what
-it covers is the Blazor Server path, which a web view shares.
+web views drags through pointer drags like any touch browser. The end-to-end suite drags in a WinForms
+`BlazorWebView` on WebView2 - native mouse, keyboard, pointer and touch drags, a drag layer, insertion edges and
+dropped files - the way MAUI renders on Windows too; MAUI's Android and iOS web views are not driven.
 
 ### Prerendering
 

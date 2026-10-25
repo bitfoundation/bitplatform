@@ -50,6 +50,12 @@
         <p class="demo-caption native-documents-status">@_documentsStatus</p>
     }
 
+    @if (_incomplete)
+    {
+        <p class="demo-caption native-incomplete">
+            Not every file is listed: an entry could not be read, or the walk stopped at the limit of @MaxFiles.
+        </p>
+    }
     @if (_files.Count > 0)
     {
         <h4 class="demo-result-title">Dropped files (@_files.Count@(_total > _files.Count ? $" of {_total}" : ""))</h4>
@@ -91,6 +97,7 @@
     private readonly List<BdndNativeFile> _files = [];
     private readonly Dictionary<BdndNativeFile, string> _previews = [];
     private int _total;
+    private bool _incomplete;
     private string? _imagesStatus;
     private string? _documentsStatus;
 
@@ -100,6 +107,7 @@
         _previews.Clear();
         _files.AddRange(e.Files);
         _total = e.TotalFileCount;
+        _incomplete = e.FileListIncomplete;
         StateHasChanged();
 
         // the contents of the small text files, read from the browser as streams

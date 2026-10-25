@@ -41,6 +41,46 @@ public sealed class PointerTests : BdndTest
         Assert.IsEmpty(await DragStartsAsync(page.MainFrame), "no native drag was involved");
     }
 
+    // Pointer events of type touch, made by the page itself: what a touch screen raises, on every engine - the module
+    // works from pointer events alone, so Firefox and WebKit run the touch path here too (layout, hit testing, the
+    // copy in the top layer). Real devices add only what raises the events.
+    private const string SyntheticTouch =
+        """
+        ([type, x, y, buttons]) => {
+          const target = type === 'pointerdown' ? document.elementFromPoint(x, y) : (window.__touchTarget ?? document);
+          if (type === 'pointerdown') window.__touchTarget = target;
+          target.dispatchEvent(new PointerEvent(type, {
+            pointerId: 7, pointerType: 'touch', isPrimary: true, bubbles: true, cancelable: true, composed: true,
+            clientX: x, clientY: y, button: type === 'pointermove' ? -1 : 0, buttons, width: 20, height: 20,
+          }));
+        }
+        """;
+
+    [TestMethod]
+    public async Task A_touch_drag_through_pointer_events_drops_on_every_engine()
+    {
+        var page = await OpenAsync("/dustbin/single", hasTouch: true);
+        var bin = page.Locator(".dustbin");
+        var glass = page.Locator(".box:not([data-bit-bdnd-preview] *)", new() { HasText = "Glass" });
+        var from = (await BoxAsync(glass)).Centre;
+        var to = (await BoxAsync(bin)).Centre;
+        Task TouchAsync(string type, Point at, int buttons) => page.EvaluateAsync(SyntheticTouch, new object[] { type, at.X, at.Y, buttons });
+
+        await TouchAsync("pointerdown", from, 1);
+        await Expect(page.Locator(Preview)).ToHaveCountAsync(1); // it rested for the TouchDelay: the drag began
+        for (var i = 1; i <= 8; i++)
+        {
+            await TouchAsync("pointermove", new Point(from.X + (to.X - from.X) * i / 8, from.Y + (to.Y - from.Y) * i / 8), 1);
+        }
+        await Expect(bin).ToHaveTextAsync("Release to drop");
+        await Expect(glass).ToHaveCSSAsync("opacity", "0.4");
+        await TouchAsync("pointerup", to, 0);
+
+        await Expect(bin).ToHaveTextAsync("Last dropped: Glass (total 1)");
+        await Expect(page.Locator(Preview)).ToHaveCountAsync(0);
+        await Expect(glass).ToHaveCSSAsync("opacity", "1");
+    }
+
     [TestMethod]
     public async Task A_quick_swipe_over_a_box_drags_nothing()
     {

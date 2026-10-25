@@ -53,6 +53,12 @@ public static class E2EEnvironment
     public static bool Headed { get; } = Read("BDND_E2E_HEADED") == "1";
 
     /// <summary>
+    /// <c>BDND_E2E_SKIP_BUILD=1</c>: do not build the Blazor Hybrid harness before the run (CI builds it in a step of
+    /// its own).
+    /// </summary>
+    public static bool SkipBuild { get; } = Read("BDND_E2E_SKIP_BUILD") == "1";
+
+    /// <summary>
     /// True on a build server (<c>CI=true</c>, which GitHub Actions sets). A missing browser or a demo that
     /// does not start makes the tests inconclusive on a developer machine, but on a build server that would
     /// turn "the browser tests never ran" into a green build, so the tests fail there instead.

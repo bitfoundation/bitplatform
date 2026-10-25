@@ -153,4 +153,37 @@ public sealed class IndicatorTests : BdndTest
         await Expect(Order(page)).ToHaveTextAsync("Backlog: Bravo, Charlie, Delta | Sprint: Echo, Foxtrot, Alpha");
         Assert.AreNotEqual(Start, await Order(page).TextContentAsync());
     }
+
+    [TestMethod]
+    public async Task The_insertion_line_stays_visible_in_forced_colors()
+    {
+        var page = await OpenAsync("/sortable/indicators");
+        // Windows high contrast: the page's colours are replaced by the system's - the demo draws the line in Highlight
+        await page.EmulateMediaAsync(new() { ForcedColors = ForcedColors.Active });
+        await page.Locator("[draggable]", new() { HasText = "Alpha" }).FocusAsync();
+
+        await page.Keyboard.PressAsync("Space");
+        await page.Keyboard.PressAsync("ArrowDown");
+        var slot = page.Locator(".indicator-slot[data-bit-bdnd-edge]");
+        await Expect(slot).ToHaveCountAsync(1);
+
+        // drawn in the system's Highlight, which an element given that colour shows - against the page's Canvas
+        var line = await slot.EvaluateAsync<string[]>(
+            """
+            el => {
+              const a = getComputedStyle(el, '::after');
+              const probe = document.createElement('div');
+              probe.style.backgroundColor = 'Highlight';
+              document.body.appendChild(probe);
+              const highlight = getComputedStyle(probe).backgroundColor;
+              probe.remove();
+              return [a.content, a.height, a.backgroundColor, highlight, getComputedStyle(document.body).backgroundColor];
+            }
+            """);
+        Assert.AreEqual("\"\"", line[0], "the line is drawn");
+        Assert.AreEqual("3px", line[1]);
+        Assert.AreEqual(line[3], line[2], "the line is drawn in Highlight");
+        Assert.AreNotEqual(line[4], line[2], "the line shows against the page");
+        await page.Keyboard.PressAsync("Escape");
+    }
 }

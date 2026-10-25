@@ -69,22 +69,16 @@ adversarially review, update this plan and the matrix, decide whether to continu
 | 7 | Performance | Circuit messages per drag on Blazor Server (found: any drag layer made every source send every pointer move; fixed with `BdndDragLayer.Accept`), frame rates against the baseline. |
 | 8 | Interactive content, previews, selections (revised) | Fields and no-drag regions inside draggables, `PreviewAxis` and offset helpers, a multi-select demo; the round 6/7 review's fixes (row breaks, the copy's styling and visibility, own targets by the DOM). |
 | 9 | Cross-browser validation and release readiness | Full E2E on Chromium, Firefox and WebKit; the remaining failures fixed or recorded; documentation, MCP catalogue and file hygiene; the release recommendation. |
-| 10 | Reserve - not used | Round 9 left no release-blocking work; what remains (below) needs hardware, people or a web view host rather than another round here. |
+| 10 | What remained | Blazor Hybrid under E2E (a WinForms BlazorWebView harness), folder drops, a release outside the window, touch on every engine, screen-reader semantics in the accessibility tree, forced colors, native edge scrolling, the virtualized keyboard walk, a page builder demo; a checklist for what only people and devices can check. |
 
 The scope of later rounds is revised at the end of every round from what the round found.
 
-## Where it stands after round 9
+## Where it stands after round 10
 
-Three rows stay Partial by choice: viewport edge scrolling for native mouse drags is the browser's (pointer drags
-scroll containers and the page themselves); dashboards and palettes are shown by the copy-or-move demo only; forced
-colors are the app's to style, since Bdnd draws nothing (the demo shows a rule). Otherwise every capability is
-Verified or Excluded, except these, which need what this environment does not have:
+Every capability in the matrix is Verified, Excluded or not applicable. Two checks are left to people, with a written
+checklist in the E2E README and a place to record the outcome in the log:
 
-- **Blazor Hybrid**: the out-of-process path it shares with Blazor Server is tested; no web view host is automated.
-- **Screen readers**: announcements, instructions and focus are tested; a manual pass with NVDA, JAWS, VoiceOver and
-  TalkBack has not been recorded.
-- **Touch on real devices**: touch and pen are tested through Chromium's DevTools protocol; iOS Safari and Android
-  Chrome have not been tried by hand.
-- **Folder drops**: the walk is implemented and reasoned through; a synthetic drag cannot carry folder entries.
-- **A mouse released outside the window** during a native drag: the browser's to handle; not automated.
-
+- **Screen readers**: what they are given is tested (descriptions, roles, the live region, in Chromium's
+  accessibility tree too); hearing NVDA, JAWS, VoiceOver and TalkBack read it is a listening pass.
+- **Real touch devices and pens**: the touch path runs on all three engines from pointer events and in Chromium from
+  synthesized touches; a finger on an iPhone, an iPad, an Android phone and a Windows touch screen is a hands-on pass.

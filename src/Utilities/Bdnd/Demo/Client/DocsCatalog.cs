@@ -205,6 +205,10 @@ public static class DocsCatalog
                 "Selected text, links and HTML dropped from a page, read from the native DataTransfer.",
                 "native html text url link selection BdndNativeTypes DataTransfer",
                 typeof(Pages.Other.NativeHtml)),
+            new("/other/page-builder", "Page builder",
+                "A palette whose blocks are copied onto a page where the line shows, blocks moved within the page or into a bin that takes no palette block - with the mouse or the keyboard.",
+                "page builder dashboard palette widgets blocks copy move bin trash canvas CanDropPredicate DropEffect insertion",
+                typeof(Pages.Other.PageBuilder)),
         ]),
         new("Accessibility",
         [

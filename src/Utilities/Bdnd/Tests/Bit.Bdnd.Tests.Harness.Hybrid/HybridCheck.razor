@@ -1,0 +1,88 @@
+﻿@namespace Bit.Bdnd.Tests.Harness.Hybrid
+
+@* The page the E2E suite drags in inside the WebView: every way the library drags - native mouse drags, the keyboard,
+   pointer and touch drags, a drag layer, insertion edges and dropped files - with the renderer out of the browser's
+   process, as Blazor Hybrid runs it. *@
+
+<main class="hybrid-check" data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")">
+    <h1>Bdnd in a BlazorWebView</h1>
+    <p>Running on: <strong class="hybrid-renderer">@RendererInfo.Name</strong></p>
+
+    <BdndProvider>
+        <div class="hybrid-row">
+            @foreach (var box in Boxes)
+            {
+                <BdndDraggable TItem="string" Type="box" Item="box" Label="@box" class="hybrid-box" Context="drag">
+                    @box
+                </BdndDraggable>
+            }
+            <BdndDraggable TItem="string" Type="box" Item="@("Pointer")" Label="Pointer" PointerDrag="BdndPointerDrag.All"
+                           class="hybrid-box hybrid-pointer" Context="drag">
+                Pointer
+            </BdndDraggable>
+            <BdndDraggable TItem="string" Type="@Layered" Item="@("Layered")" Label="Layered" UseCustomDragLayer="true"
+                           class="hybrid-box hybrid-layered" Context="drag">
+                Layered
+            </BdndDraggable>
+        </div>
+
+        <BdndDropTarget TItem="string" AcceptTypes="@BinTypes" Label="the bin" class="hybrid-zone hybrid-bin"
+                        OnDrop="@(e => _dropped = $"{e.Item} ({e.Monitor.GetDragInput()})")" Context="bin">
+            @(bin.IsOver ? "Release" : _dropped is null ? "Drop a box here" : $"Dropped: {_dropped}")
+        </BdndDropTarget>
+
+        <BdndDragLayer TItem="string" Accept="@Layered" Context="layer">
+            @if (layer.IsDragging && layer.SourceClientOffset is { } at)
+            {
+                <div class="hybrid-box hybrid-preview" style="position:fixed;pointer-events:none;left:@(at.X.ToString("0", CultureInfo.InvariantCulture))px;top:@(at.Y.ToString("0", CultureInfo.InvariantCulture))px;">
+                    preview
+                </div>
+            }
+        </BdndDragLayer>
+
+        <div class="hybrid-list">
+            @for (var i = 0; i < _list.Count; i++)
+            {
+                var index = i;
+                var item = _list[i];
+                <BdndDropTarget TItem="string" Accept="row" Edges="BdndEdges.Vertical" Label="@item" class="hybrid-slot"
+                                OnDrop="@(e => BdndList.Move(_list, _list.IndexOf(e.Item!), _list, BdndList.InsertionIndex(index, e.ClosestEdge)))"
+                                @key="item" Context="slot">
+                    <BdndDraggable TItem="string" Type="row" Item="item" Label="@item" class="hybrid-row-item" Context="drag">
+                        @item
+                    </BdndDraggable>
+                </BdndDropTarget>
+            }
+        </div>
+        <p class="hybrid-order">Order: @string.Join(", ", _list)</p>
+
+        <BdndDropTarget TItem="object" Accept="@BdndNativeTypes.File" class="hybrid-zone hybrid-files"
+                        OnNativeDrop="ReadFiles" Context="files">
+            @(files.IsOver ? "Release the files" : "Drop text files here")
+        </BdndDropTarget>
+        <p class="hybrid-file-contents">@_contents</p>
+    </BdndProvider>
+</main>
+
+@code {
+    private static readonly string[] Boxes = ["Glass", "Banana"];
+    private const string Layered = "layered";
+    private static readonly string[] BinTypes = ["box", Layered];
+
+    private readonly List<string> _list = ["One", "Two", "Three"];
+    private string? _dropped;
+    private string _contents = "";
+
+    // the contents come from the WebView's page into .NET through JS interop, as a stream
+    private async Task ReadFiles(BdndNativeDropEventArgs e)
+    {
+        var parts = new List<string>();
+        foreach (var file in e.Files.Where(f => f.CanRead))
+        {
+            await using var stream = await file.OpenReadStreamAsync();
+            using var reader = new StreamReader(stream);
+            parts.Add($"{file.Name}: {await reader.ReadToEndAsync()}");
+        }
+        _contents = string.Join(" | ", parts);
+    }
+}
