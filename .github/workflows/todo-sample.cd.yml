@@ -503,7 +503,7 @@ jobs:
     - name: Install vpk
       shell: pwsh
       run: |
-        dotnet tool install vpk --version 1.2.161 --tool-path "$env:RUNNER_TEMP/vpk"
+        dotnet tool install vpk --version 1.3.39-g8d2844f --tool-path "$env:RUNNER_TEMP/vpk"
         Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/vpk"
 
     # Needed for delta packages. Fails on the first run, when the bucket is empty.

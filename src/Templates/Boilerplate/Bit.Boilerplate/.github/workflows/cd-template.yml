@@ -319,7 +319,7 @@ jobs:
         run: |
           cd src\Client\Boilerplate.Client.Windows\
           dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APP_VERSION }}" --self-contained -p:Environment=${{ inputs.ENV_NAME }}
-          dnx vpk@1.2.161 -- pack -u ${{ vars.APP_ID }} -v "${{ vars.APP_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle '${{ vars.APP_TITLE }}'
+          dnx vpk@1.3.39-g8d2844f -- pack -u ${{ vars.APP_ID }} -v "${{ vars.APP_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle '${{ vars.APP_TITLE }}'
 
       - name: Upload artifact
         id: artifact
