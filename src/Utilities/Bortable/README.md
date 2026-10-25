@@ -558,9 +558,9 @@ before the drag.
 ```
 
 It is asked on the list the item lands in, with the move as committed: `NewIndex` is where the item is now. No other
-drag starts until it answers, and the lists must not be changed meanwhile - a refusal puts back what they held at
-the drop. A `ConfirmDrop` that throws puts the lists back too, raises `OnEnd` with `Canceled`, and the exception is
-passed on.
+drag starts until it answers, and the lists must not be changed meanwhile - a refusal puts back what they held
+before the drag. A `ConfirmDrop` that throws puts the lists back too, raises `OnEnd` with `Canceled`, and the
+exception is passed on.
 
 ## Cancelling a drag
 
