@@ -29,16 +29,19 @@ public static class BormSignature
     // The two images FromStrokes and FromTypedName write, and nothing else: a path of moves and lines, or a name
     // whose markup is escaped. An SVG embedded in a page rather than shown through an <img> runs what it holds,
     // so a value that only starts like one - posted by anyone who can post the form - is not taken for one.
+    // Every loop in these stops at a character it cannot match, so a match never retries what it has read and
+    // takes as long as the value is, whatever was posted: NonBacktracking is not needed, and on .NET 8 it refuses
+    // patterns as long as these.
     private static readonly Regex Drawn = new(
         @"\A<svg xmlns='http://www\.w3\.org/2000/svg' viewBox='0 0 [0-9.]+ [0-9.]+' width='[0-9.]+' height='[0-9.]+'>"
         + @"<path d='[ML0-9. ]*' fill='none' stroke='" + Ink + "' stroke-width='2\\.5' stroke-linecap='round' stroke-linejoin='round'/></svg>\\z",
-        RegexOptions.CultureInvariant | RegexOptions.NonBacktracking);
+        RegexOptions.CultureInvariant);
 
     private static readonly Regex Typed = new(
         @"\A<svg xmlns='http://www\.w3\.org/2000/svg' viewBox='0 0 [0-9]+ 72' width='[0-9]+' height='72'>"
         + @"<text x='12' y='48' font-family='Segoe Script, Brush Script MT, Lucida Handwriting, cursive' font-size='34' fill='" + Ink + "'>"
         + @"(?:[^<>&""']|&(?:amp|lt|gt|quot|apos);)*</text></svg>\z",
-        RegexOptions.CultureInvariant | RegexOptions.NonBacktracking);
+        RegexOptions.CultureInvariant);
 
     /// <summary>Whether <paramref name="value"/> is a signature image this library would show: one in the shape it writes.</summary>
     public static bool IsImage(string? value) => ToSvg(value) is not null;

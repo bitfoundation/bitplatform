@@ -138,10 +138,6 @@
 
     private bool _open;
     private bool _isApple;
-
-    // The visible label and the key hints, in the order they appear: someone using speech input says what they see
-    // (WCAG 2.5.3), and a screen reader still hears the name when a narrow screen hides both.
-    private string SearchLabel => SiteInfo.PaletteCtrlK ? $"Search docs {(_isApple ? "⌘" : "Ctrl")} K" : "Search docs /";
     private bool _focusPending;
     private bool _restorePending;
     private bool _revealPending;
