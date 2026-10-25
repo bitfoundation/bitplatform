@@ -250,7 +250,8 @@ adds another, so the helper tells them apart by package and takes the newest of 
 where the helper finds it. It is a Google Play image, so after a cold boot it updates Android System WebView on its
 own; note the version (`adb shell dumpsys webviewupdate`) in the report, since a jump explains Android failures that no
 code change does. An APK signed with another key than the installed app, or older than it, goes in only
-after uninstalling the app, which drops its data.
+after uninstalling the app, which drops its data, and so does one the AVD has no room for next to the old copy: its
+system app updates fill it up over time. The helper does both on its own.
 
 **Windows.** `windows`. The apps are Velopack installs in `%LocalAppData%\<AppId>`: the Boilerplate's
 `AdminPanel.Client.Windows`, `SalesModule.Client.Windows` and `TodoSample.Client.Windows`. The nav-panel version
@@ -444,6 +445,11 @@ devcontainers CLI brings its container up, and `bit doctor` runs inside it.
 - With `-Sha`, bit and the template come from that commit, as in CI: bit is packed into a feed the container mounts,
   and the project's `nuget.config` maps `Bit.Cli` to that feed alone, so a newer prerelease on nuget.org can't stand
   in for it. Without `-Sha`, it tests what nuget.org serves, which is what users get.
+- Right after a version is published, nuget.org takes a while to list every package of it, and a restore in that time
+  keeps the lists without it for half an hour. NuGet then takes the nearest version it has (NU1603), such as an
+  11.0 prerelease, and the project fails to build on dozens of missing BlazorUI types; `bit new` can also fail to get
+  the template at all. Wait until every `Bit.*` package the template takes lists the version, and if a restore ran
+  before that, `dotnet nuget locals http-cache --clear`.
 - `-PrereleasePackages` puts the packages of the newest Prerelease nuget packages run into that feed too, bit's
   aside, and maps every `Bit.*` to it: a template that already uses library changes nuget.org's build of its version
   doesn't have compiles against them.
