@@ -1276,7 +1276,9 @@ What bit Bcrdt does not do, deliberately or not yet:
   when that matters.
 - **History needs `GarbageCollect = false`.** Snapshots restore only from documents that keep their tombstones.
 - **Scale-out hosting.** A document host keeps one replica per document per process; behind a backplane set
-  `ScaleOut`, give every instance the same store, and prefer routing a document's connections to one instance.
+  `ScaleOut`, give every instance the same store - one built for several processes writing at once, which
+  `BcrdtFileSystemDocumentStore` is not: each of its directories belongs to one process - and prefer routing a
+  document's connections to one instance.
 - **Indivisible values.** One byte array or embedded object larger than a relay's message limit cannot be split.
 - **One process per file-store directory.**
 - **SignalR fan-out waits for the slowest member.** The hub sends to a document's group through SignalR, which completes

@@ -424,7 +424,7 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
             case BcrdtSyncMessageKind.SyncStep1Reply:
                 // The host holds everything every connection sent, so unless some connections are on
                 // other instances its answer is the whole answer, and the room need not hear the question.
-                await AnswerAsync(document, connection, message).ConfigureAwait(false);
+                if (!await AnswerAsync(document, connection, message).ConfigureAwait(false)) return Drop("malformed");
                 return _options.ScaleOut;
 
             case BcrdtSyncMessageKind.AwarenessUpdate:
@@ -643,18 +643,22 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
         }
     }
 
-    private async ValueTask AnswerAsync(HostedDocument document, IBcrdtHostConnection connection, BcrdtSyncMessage message)
+    /// <summary>Answers a handshake to the connection that sent it, and says whether it was well-formed.</summary>
+    private async ValueTask<bool> AnswerAsync(HostedDocument document, IBcrdtHostConnection connection, BcrdtSyncMessage message)
     {
         List<byte[]> replies = [];
-        if (!await TryEnterAsync(document).ConfigureAwait(false)) return;
+
+        // A closed document cannot answer, but that says nothing against the message.
+        if (!await TryEnterAsync(document).ConfigureAwait(false)) return true;
         try
         {
             BcrdtSyncExchange.Handle(document.Crdt, message, connection, replies, _options.MaxMessageSize);
         }
         catch (BcrdtFormatException ex)
         {
-            _logger.LogDebug(ex, "Ignored a malformed handshake on document {DocumentId} from connection {ConnectionId}.", document.Id, connection.Id);
-            return;
+            // Relaying it would hand every other client the same problem.
+            _logger.LogDebug(ex, "Dropped a malformed handshake on document {DocumentId} from connection {ConnectionId}.", document.Id, connection.Id);
+            return false;
         }
         finally
         {
@@ -663,6 +667,7 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
 
         // Answered to the asker alone: the others did not ask.
         foreach (byte[] reply in replies) connection.Send(reply);
+        return true;
     }
 
     internal void Leave(HostedDocument document, IBcrdtHostConnection connection)

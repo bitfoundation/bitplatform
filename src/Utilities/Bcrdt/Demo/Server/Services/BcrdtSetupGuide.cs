@@ -252,7 +252,9 @@ public static partial class BcrdtSetupGuide
         4. On the relay: `builder.Services.AddBitBcrdtHub()` - not a bare `AddSignalR`, whose 32 KB receive limit disconnects
            every client once a document outgrows it - and `app.MapHub<BcrdtHub>("/hub/bcrdt")`; or `app.UseWebSockets()`
            BEFORE `app.MapBitBcrdtWebSocket("/ws/bcrdt/{documentId}")`. Either relay only relays; add
-           `builder.Services.AddBitBcrdtDocumentHost(...)` to keep every document on the server as well.
+           `builder.Services.AddBitBcrdtDocumentHost(...)` to keep every document on the server as well. The hub picks
+           the host up from the container; the WebSocket mapping does not, so pass it in `options: new() { DocumentHost =
+           app.Services.GetRequiredService<BcrdtDocumentHost>() }`.
         5. Add `@using Bit.Bcrdt` and `@using Bit.Bcrdt.Blazor` to `_Imports.razor`.
         6. Open a document with `<BcrdtCollaborationScope DocumentId="..." User="...">`, which opens it, cascades it and
            releases it - and on .NET 9 and later waits until the page is interactive by itself - or with

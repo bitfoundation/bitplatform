@@ -240,8 +240,11 @@
         {
             // The circuit is gone; there is nothing left to update.
         }
-        catch (Exception ex) when (ex is JSException or TaskCanceledException or InvalidOperationException && !_isDisposed)
+        catch (Exception ex) when (ex is JSException or TaskCanceledException or InvalidOperationException)
         {
+            // Disposed meanwhile: the failure belongs to a control nobody sees any more.
+            if (_isDisposed) return;
+
             // The module could not be loaded or the control attached - a content security policy, a
             // missing static asset, a timed-out call. Typing into the control would then reach nobody
             // and be lost silently, so it is disabled, and the failure is handed to the application.

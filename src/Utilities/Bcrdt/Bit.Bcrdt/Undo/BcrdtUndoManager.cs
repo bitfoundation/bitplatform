@@ -659,12 +659,16 @@ public sealed class BcrdtUndoManager : IDisposable
         {
             // The document went first; there is nothing left to reclaim.
         }
-        _doc.UndoManagers.Remove(this);
+        finally
+        {
+            // Unregistered whatever happened above, so the other managers stop keeping content for its steps.
+            _doc.UndoManagers.Remove(this);
 
-        _undoStack.Clear();
-        _redoStack.Clear();
-        StackItemAdded = null;
-        StackItemUpdated = null;
-        StackItemPopped = null;
+            _undoStack.Clear();
+            _redoStack.Clear();
+            StackItemAdded = null;
+            StackItemUpdated = null;
+            StackItemPopped = null;
+        }
     }
 }

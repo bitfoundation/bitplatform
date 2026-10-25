@@ -67,6 +67,16 @@ else if (LoadingContent is not null)
         // store - fail outright, because there is no browser yet. The interactive render opens it.
         if (!IsInteractive) return Task.CompletedTask;
 
+        // A failure kept for ErrorContent that has since been taken away is thrown, as it would have been
+        // without it, and the attempt forgotten so the same identifier can be retried.
+        if (_openFailure is not null && ErrorContent is null && string.Equals(_requestedId, DocumentId, StringComparison.Ordinal))
+        {
+            Exception failure = _openFailure;
+            _openFailure = null;
+            _requestedId = null;
+            return Task.FromException(failure);
+        }
+
         return FollowDocumentIdAsync();
     }
 
