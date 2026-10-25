@@ -357,6 +357,7 @@ public class DemoTests
                 Assert.AreEqual(0, replica.Document.Text(ConflictLabSession.TextKey).Count);
                 Assert.AreEqual(0, replica.Document.Array(ConflictLabSession.ListKey).Count);
                 Assert.AreEqual(0, replica.Document.GetMap(ConflictLabSession.MapKey).Count);
+                Assert.AreEqual(0, replica.Document.Set(ConflictLabSession.SetKey).Count);
             }
         }
         finally
@@ -387,7 +388,48 @@ public class DemoTests
             {
                 Assert.AreSequenceEqual(new object?[] { "seed item" }, replica.Document.Array(ConflictLabSession.ListKey).ToArray());
                 Assert.AreEqual("seed text. ", Text(replica));
+                Assert.AreSequenceEqual(new object?[] { ConflictLabSession.SeedTag }, replica.Document.Set(ConflictLabSession.SetKey).ToArray());
             }
+        }
+        finally
+        {
+            await DisposeAllAsync(replicas);
+        }
+    }
+
+    /// <summary>
+    /// The version-history page's premise: replicas opened to keep their history can rebuild a version one of them
+    /// saved, once they hold everything it names - and not before.
+    /// </summary>
+    [TestMethod]
+    public async Task Replicas_that_keep_history_restore_a_version_saved_by_another()
+    {
+        DemoWorkspace workspace = CreateWorkspace();
+        IReadOnlyList<DemoReplica> replicas = await workspace.OpenReplicasAsync("doc", keepHistory: true, "A", "B");
+
+        try
+        {
+            Assert.IsTrue(replicas.All(replica => !replica.Document.Crdt.GarbageCollect), "the replicas reclaim deleted content");
+
+            BcrdtText a = replicas[0].Document.Text("body");
+            a.Insert(0, "first draft");
+            byte[] saved = BcrdtSnapshot.Capture(replicas[0].Document.Crdt).Encode();
+            a.Delete(0, 5);
+            a.Insert(0, "second");
+            await WaitUntilAsync(() => Text(replicas[1]) == "second draft", "B holds A's edits");
+
+            BcrdtSnapshot version = BcrdtSnapshot.Decode(saved);
+            Assert.IsTrue(replicas[1].Document.Crdt.GetStateVector().IsSupersetOf(version.StateVector));
+            using (BcrdtDocument then = BcrdtSnapshot.RestoreDocument(replicas[1].Document.Crdt, version))
+            {
+                Assert.AreEqual("first draft", then.GetText("body").ToString());
+            }
+
+            // A version saved by A while B is offline names content B has not received.
+            await replicas[1].GoOfflineAsync();
+            a.Insert(a.Count, " and more");
+            BcrdtSnapshot later = BcrdtSnapshot.Capture(replicas[0].Document.Crdt);
+            Assert.IsFalse(replicas[1].Document.Crdt.GetStateVector().IsSupersetOf(later.StateVector));
         }
         finally
         {
@@ -418,6 +460,7 @@ public class DemoTests
         string text = Text(replica);
         List<object?> list = replica.Document.Array(ConflictLabSession.ListKey).ToArray();
         BcrdtMap map = replica.Document.GetMap(ConflictLabSession.MapKey);
+        BcrdtSet tags = replica.Document.Set(ConflictLabSession.SetKey);
 
         switch (scenario.Title)
         {
@@ -453,6 +496,19 @@ public class DemoTests
                 Assert.Contains("inserted by A", list);
                 Assert.Contains("inserted by B", list);
                 Assert.ContainsSingle(value => Equals(value, "seed item"), list);
+                break;
+
+            case "Concurrent addition of the same tag":
+                // Two additions of an equal value are one member, beside the untouched seed.
+                Assert.AreEqual(2, tags.Count);
+                Assert.IsTrue(tags.Contains("urgent"));
+                Assert.IsTrue(tags.Contains(ConflictLabSession.SeedTag));
+                break;
+
+            case "One replica removes a tag while the other re-adds it":
+                // A removed the member it saw; B's re-addition is a member A never saw, so it stands.
+                Assert.AreEqual(1, tags.Count);
+                Assert.IsTrue(tags.Contains(ConflictLabSession.SeedTag));
                 break;
 
             default:

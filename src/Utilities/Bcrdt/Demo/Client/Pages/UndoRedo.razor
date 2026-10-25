@@ -14,7 +14,10 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Two replicas, two undo stacks</h3>
     <p class="bb-card-desc">
-        Each replica has its own undo stack, tracking only its own edits.
+        Each replica has its own undo stack, tracking only its own edits. <em>Undo</em> reverses this replica's most
+        recent step and <em>Redo</em> puts it back. Typing that pauses for less than half a second is one step;
+        <em>End the current step</em> closes the step being typed at once, so the next keystroke starts a new one.
+        The footer counts the steps on each stack.
     </p>
 
     @if (!Ready)
@@ -86,7 +89,7 @@
         Note also that consecutive keystrokes collapse into one undo step, so undo removes a word or
         a phrase rather than a single character. A remote edit arriving between two of your
         keystrokes ends the current step, which is what keeps the boundaries sensible when several
-        people are working at once.
+        people are working at once. And as in any editor, a fresh edit after an undo empties the redo stack.
     </p>
 </div>
 
@@ -103,14 +106,49 @@
         something, bring it back, and the undo reaches its peer whenever the connection returns.
     </p>
     <pre class="bb-code"><span class="c">// One stack per editing surface, scoped to the text it edits.</span>
-<span class="k">var</span> undo = <span class="k">new</span> BcrdtUndoManager(document.Text(<span class="s">"body"</span>), <span class="k">new</span> BcrdtUndoManagerOptions
-{
-    <span class="c">// Adds to the default set, which already tracks untagged (null-origin) edits.</span>
-    TrackedOrigins = { <span class="k">typeof</span>(BcrdtTextArea) },
-});
+<span class="k">using var</span> undo = <span class="k">new</span> BcrdtUndoManager(document.Text(<span class="s">"body"</span>));
 
-undo.Undo();   <span class="c">// removes what I did, not what they did</span>
-undo.Redo();</pre>
+undo.Undo();             <span class="c">// removes what I did, not what they did</span>
+undo.Redo();
+undo.StopCapturing();    <span class="c">// the next edit starts a step of its own</span></pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What a stack captures</h3>
+    <p class="bb-card-desc">
+        A stack has a <strong>scope</strong> - the types it watches - and captures only transactions that touched
+        them. Here each stack is scoped to one text, which is the rule worth following: a stack over the whole
+        document would undo an edit made in an unrelated field minutes ago. Every document opened through the
+        collaboration service also comes with a default stack over its root map, <code>document.Undo</code>, and
+        <code>document.CreateUndoManager(...)</code> makes more.
+    </p>
+    <p class="bb-card-desc">
+        A stack also captures only transactions whose <strong>origin</strong> it tracks. Edits made with no origin -
+        <code>BcrdtTextArea</code>'s keystrokes, and any code that does not tag its transactions - are tracked by
+        default, while updates received from a peer carry their sync provider as origin and are never captured.
+        Code that tags its own edits (<code>document.Transact(..., origin: myTool)</code>) adds that origin to
+        <code>TrackedOrigins</code> to make them undoable.
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>BcrdtUndoManagerOptions</th><th>Default</th><th>What it decides</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key">CaptureTimeout</td><td>500 ms</td><td>How long consecutive changes keep merging into one step. Zero makes every transaction a step.</td></tr>
+                <tr><td class="bb-table-key">TrackedOrigins</td><td>untagged edits</td><td>Which transaction origins the stack is responsible for.</td></tr>
+                <tr><td class="bb-table-key">MaxStackItems</td><td>100</td><td>How many steps each stack keeps; the oldest makes way, and the deleted content it was keeping for an undo is reclaimed. Zero keeps every step.</td></tr>
+                <tr><td class="bb-table-key">IgnoreRemoteMapChanges</td><td>false</td><td>Whether redoing a map key overwrites a value somebody else has written there since. By default the redo is abandoned instead.</td></tr>
+                <tr><td class="bb-table-key">DeleteFilter</td><td>none</td><td>A veto on removing a particular block while undoing.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="bb-card-desc">
+        The buttons above enable and disable through the stack's own events - <code>StackItemAdded</code>,
+        <code>StackItemUpdated</code> and <code>StackItemPopped</code> - and read <code>CanUndo</code>,
+        <code>CanRedo</code>, <code>UndoCount</code> and <code>RedoCount</code>. A step's <code>Meta</code> dictionary
+        holds whatever an application wants to restore with it, such as the caret position.
+    </p>
 </div>
 
 @code {
@@ -133,25 +171,22 @@ undo.Redo();</pre>
     /// </para>
     /// <para>
     /// Origins matter too. A stack captures only transactions whose origin it tracks - untagged
-    /// local edits by default - so the editing component's own type is tracked as well. Whichever
-    /// way the textarea tags its edits, typing lands on this stack; edits arriving from the peer
-    /// carry the sync provider as their origin and stay out of it.
+    /// local edits by default, which is how the textarea makes its edits - so typing lands on this
+    /// stack with no options at all, while edits arriving from the peer carry the sync provider as
+    /// their origin and stay out of it.
     /// </para>
     /// </remarks>
     protected override void OnReplicasOpened()
     {
         foreach (DemoReplica replica in Replicas)
         {
-            var stack = new BcrdtUndoManager(replica.Document.Text(Field), new BcrdtUndoManagerOptions
-            {
-                // Adds to the default set, which already tracks untagged (null-origin) edits.
-                TrackedOrigins = { typeof(BcrdtTextArea) },
-            });
+            var stack = new BcrdtUndoManager(replica.Document.Text(Field));
             _stacks[replica] = stack;
 
             // The buttons enable and disable as the stacks change, so the page has to re-render when
             // they do rather than only when the document does.
             stack.StackItemAdded += _ => RequestRender();
+            stack.StackItemUpdated += _ => RequestRender();
             stack.StackItemPopped += _ => RequestRender();
 
             TrackDisposable(stack);

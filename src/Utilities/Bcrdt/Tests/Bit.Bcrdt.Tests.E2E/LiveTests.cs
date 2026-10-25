@@ -153,6 +153,27 @@ public sealed class LiveTests : BcrdtTest
         }
         """);
 
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("websocket")]
+    public async Task A_read_only_tab_follows_the_document_but_cannot_change_it(string? relay)
+    {
+        var room = NewRoom();
+        var writer = await OpenTabAsync(room, relay);
+        var reader = await OpenTabAsync(room, relay, readOnly: true);
+
+        // The relay granted the read-only link read access, and the editor turned read-only by itself.
+        await Assertions.Expect(reader.Page.Locator(".live-readonly")).ToBeVisibleAsync();
+        await Assertions.Expect(Editor(reader.Page)).Not.ToBeEditableAsync();
+        await Assertions.Expect(writer.Page.Locator(".live-readonly")).ToHaveCountAsync(0);
+        await Assertions.Expect(Editor(writer.Page)).ToBeEditableAsync();
+
+        // It still receives every change, and still publishes its presence.
+        await TypeAtEndAsync(Editor(writer.Page), "Written by the editor.");
+        await Assertions.Expect(Editor(reader.Page)).ToHaveValueAsync("Written by the editor.");
+        await Assertions.Expect(Presence(writer.Page)).ToContainTextAsync(await NameAsync(reader.Page));
+    }
+
     /// <summary>A room no other test uses, in the alphabet the page accepts.</summary>
     private static string NewRoom() => "e2e-" + Guid.NewGuid().ToString("N")[..12];
 
@@ -160,13 +181,16 @@ public sealed class LiveTests : BcrdtTest
     /// Opens the room in a browser context of its own - another person's browser - and waits until its replica is
     /// open and connected to the relay. Records the WebSockets the page opens, to tell which relay it used.
     /// </summary>
-    private async Task<Tab> OpenTabAsync(string room, string? relay)
+    private async Task<Tab> OpenTabAsync(string room, string? relay, bool readOnly = false)
     {
         var page = await NewPageAsync(await NewContextAsync());
         var sockets = new List<string>();
         page.WebSocket += (_, socket) => { lock (sockets) sockets.Add(socket.Url); };
 
-        await GotoAsync(page, $"/live/{room}" + (relay is null ? "" : "?relay=" + relay));
+        List<string> query = [];
+        if (relay is not null) query.Add("relay=" + relay);
+        if (readOnly) query.Add("access=read");
+        await GotoAsync(page, $"/live/{room}" + (query.Count > 0 ? "?" + string.Join('&', query) : ""));
         await WaitForInteractiveAsync(page);
         await WaitForReplicasAsync(page, 1);
         await Assertions.Expect(page.Locator(".live-relay-active")).ToHaveTextAsync(relay is null ? "SignalR hub" : "WebSocket endpoint");

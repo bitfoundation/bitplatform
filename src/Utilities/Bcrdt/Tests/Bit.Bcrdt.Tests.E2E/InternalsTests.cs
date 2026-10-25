@@ -58,6 +58,34 @@ public sealed class InternalsTests : BcrdtTest
         await ExpectSameProjectionsAsync(page);
     }
 
+    [TestMethod]
+    public async Task A_transaction_is_one_update_and_the_metrics_count_the_traffic()
+    {
+        var page = await OpenReplicasAsync("/internals", 2);
+        ILocator a = Replica(page, "Replica A"), b = Replica(page, "Replica B");
+
+        await a.GetByRole(AriaRole.Button, new() { Name = "500 insertions in one transaction" }).ClickAsync();
+        await Assertions.Expect(Stat(b, Characters)).ToHaveTextAsync("500");
+
+        // Five hundred insertions in one transaction are one update: one row for the replica that made it, one for
+        // the replica that received it.
+        var log = page.Locator("table.log-table tbody tr");
+        await Assertions.Expect(log.Filter(new() { HasTextString = "Replica A" }).Filter(new() { HasTextString = "local edit" })).ToHaveCountAsync(1);
+        await Assertions.Expect(log.Filter(new() { HasTextString = "Replica B" }).Filter(new() { HasTextString = "received from a peer" })).ToHaveCountAsync(1);
+
+        // And one change event, whose delta is the whole run.
+        await Assertions.Expect(page.Locator("main")).ToContainTextAsync("(500 characters)  (from the other replica)");
+
+        // The page listens to the library's meter: the update went out and came in.
+        foreach (var instrument in new[] { "bcrdt.sync.messages.sent", "bcrdt.sync.messages.received", "bcrdt.sync.bytes.sent" })
+        {
+            var total = page.Locator("tr", new() { Has = page.Locator("td", new() { HasTextString = instrument }) }).Locator("td").Nth(1);
+            await EventuallyAsync(
+                async () => long.Parse(await total.InnerTextAsync(), NumberStyles.AllowThousands, CultureInfo.InvariantCulture) > 0,
+                () => $"{instrument} counted something");
+        }
+    }
+
     /// <summary>One read-out of the panel's statistics list, by position.</summary>
     private static ILocator Stat(ILocator panel, int index) => panel.Locator("dl.stats dd").Nth(index);
 

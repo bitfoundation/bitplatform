@@ -8,6 +8,7 @@ using Bit.Bcrdt.Demo.Server.Controllers;
 using Bit.Bcrdt.Demo.Server.Services;
 using Bit.Bcrdt.Server;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.SignalR;
 using ModelContextProtocol.Protocol;
 using System.Text.Json.Serialization;
 
@@ -105,11 +106,12 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 
 // The hub picks the registered host up by itself; the WebSocket endpoint is given it, so both relays
-// share one replica of each live document.
-app.MapHub<BcrdtHub>("/hub/bcrdt");
+// share one replica of each live document. Both grant access the same way - see LiveHub below.
+app.MapHub<LiveHub>("/hub/bcrdt");
 app.MapBitBcrdtWebSocket("/ws/bcrdt/{documentId}", options: new BcrdtWebSocketEndpointOptions
 {
     DocumentHost = app.Services.GetRequiredService<BcrdtDocumentHost>(),
+    AuthorizeAccess = (context, documentId) => ValueTask.FromResult(LiveHub.AccessOf(context)),
 });
 
 // Both are literal routes, so they are matched before any component route regardless of order;
@@ -128,3 +130,20 @@ app.Run();
 /// internal Program, which WebApplicationFactory cannot reach from another assembly on its own.
 /// </summary>
 public partial class Program;
+
+/// <summary>
+/// The live page's SignalR relay: <see cref="BcrdtHub"/> with the demo's access policy, which the WebSocket
+/// endpoint applies too - a link that asks for read-only access (<c>?access=read</c>) gets it. An application
+/// decides from the signed-in user (<c>Context.User</c>) instead; either way the relay enforces the grant.
+/// </summary>
+public sealed class LiveHub : BcrdtHub
+{
+    /// <summary>What a request may do with a live document, read from its address.</summary>
+    public static BcrdtDocumentAccess AccessOf(HttpContext? context) =>
+        context is not null && string.Equals(context.Request.Query["access"], "read", StringComparison.Ordinal)
+            ? BcrdtDocumentAccess.ReadOnly
+            : BcrdtDocumentAccess.ReadWrite;
+
+    protected override ValueTask<BcrdtDocumentAccess> AuthorizeAccessAsync(string documentId) =>
+        ValueTask.FromResult(AccessOf(Context.GetHttpContext()));
+}

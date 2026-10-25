@@ -593,7 +593,9 @@ Every metric is published on one meter, `BcrdtDiagnostics.MeterName` (`"Bit.Bcrd
 builder.Services.AddOpenTelemetry().WithMetrics(metrics => metrics.AddMeter(BcrdtDiagnostics.MeterName));
 ```
 
-or `dotnet-counters monitor --counters Bit.Bcrdt`. Messages and bytes sent and received by kind, handshake durations,
+or `dotnet-counters monitor --counters Bit.Bcrdt`. In Blazor WebAssembly the SDK turns `System.Diagnostics.Metrics` off
+by default, leaving every meter silent; set `<MetricsSupport>true</MetricsSupport>` in the project to collect them in the
+browser. Messages and bytes sent and received by kind, handshake durations,
 reconnections, provider errors by exception type, store writes, failures and compactions, and - on a server - loaded
 documents, connections and the messages a host dropped, by reason. No measurement carries a document identifier, a
 client identifier or any content. `BcrdtSyncProvider.Error`, `BcrdtDocumentPersistence.WriteFailed` and

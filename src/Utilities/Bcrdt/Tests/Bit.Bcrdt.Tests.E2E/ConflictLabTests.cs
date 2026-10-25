@@ -7,7 +7,7 @@ namespace Bit.Bcrdt.Tests.E2E;
 /// <summary>
 /// The conflict laboratory, run from its own buttons: every provoked conflict - seed, disconnect both replicas, edit
 /// both, reconnect - ends with the two replicas identical, and the outcomes the page states before a scenario runs
-/// are the ones the replicas show afterwards.
+/// are the ones the replicas show afterwards, on the text, the list, the map and the set.
 /// </summary>
 [TestClass]
 public sealed class ConflictLabTests : BcrdtTest
@@ -20,9 +20,9 @@ public sealed class ConflictLabTests : BcrdtTest
         var page = await OpenReplicasAsync("/conflicts", 2);
 
         var scenarios = page.Locator("article.lab-case");
-        await Assertions.Expect(scenarios).ToHaveCountAsync(6);
+        await Assertions.Expect(scenarios).ToHaveCountAsync(8);
 
-        for (var i = 0; i < 6; i++)
+        for (var i = 0; i < 8; i++)
         {
             var title = await scenarios.Nth(i).Locator("h3").InnerTextAsync();
             await RunAsync(page, title, expectedRuns: i + 1);
@@ -59,6 +59,17 @@ public sealed class ConflictLabTests : BcrdtTest
         await Assertions.Expect(Field(a, "Map")).ToContainTextAsync("set by B");
         await ExpectPanelsAgreeAsync(page);
 
+        // The same tag added on both sides is one member, not two.
+        await RunAsync(page, "Concurrent addition of the same tag", expectedRuns: 4);
+        var tags = await Field(a, "Set").InnerTextAsync();
+        Assert.AreEqual(1, tags.Split("\"urgent\"").Length - 1, $"\"urgent\" must be in the set exactly once: {tags}");
+        await Assertions.Expect(Field(b, "Set")).ToHaveTextAsync(tags);
+
+        // A removal racing a re-addition of the same tag: the re-addition wins.
+        await RunAsync(page, "One replica removes a tag while the other re-adds it", expectedRuns: 5);
+        await Assertions.Expect(Field(a, "Set")).ToContainTextAsync("seed tag");
+        await ExpectPanelsAgreeAsync(page);
+
         // The reset clears every field on both replicas and empties the log.
         await page.GetByRole(AriaRole.Button, new() { Name = "Reset the document" }).ClickAsync();
         await Assertions.Expect(page.Locator(".lab-log")).ToHaveCountAsync(0);
@@ -91,11 +102,11 @@ public sealed class ConflictLabTests : BcrdtTest
         await Assertions.Expect(scenario.GetByRole(AriaRole.Button)).ToBeEnabledAsync();
     }
 
-    /// <summary>One of the read-outs (Text, List, Map) a replica's panel shows its state in.</summary>
+    /// <summary>One of the read-outs (Text, List, Map, Set) a replica's panel shows its state in.</summary>
     private static ILocator Field(ILocator panel, string name) =>
         panel.Locator($"xpath=.//h4[normalize-space()='{name}']/following-sibling::pre[1]");
 
-    /// <summary>The two panels show the same text, list and map, character for character.</summary>
+    /// <summary>The two panels show the same text, list, map and set, character for character.</summary>
     private static async Task ExpectPanelsAgreeAsync(IPage page)
     {
         IReadOnlyList<string> a = [], b = [];
@@ -103,7 +114,7 @@ public sealed class ConflictLabTests : BcrdtTest
         {
             a = await Replica(page, "Replica A").Locator("pre.json").AllInnerTextsAsync();
             b = await Replica(page, "Replica B").Locator("pre.json").AllInnerTextsAsync();
-            return a.Count == 3 && a.SequenceEqual(b);
+            return a.Count == 4 && a.SequenceEqual(b);
         }, () => $"both panels show the same state; A shows {Quote(a)} and B shows {Quote(b)}");
     }
 }

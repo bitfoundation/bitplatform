@@ -6,7 +6,8 @@ namespace Bit.Bcrdt.Tests.E2E;
 /// <summary>
 /// The headline demo, three independent replicas of one text side by side: what is typed into one reaches the
 /// other two, a replica taken offline diverges and is reconciled when it comes back without anybody losing a word,
-/// and a deletion merges like any other edit.
+/// a dropped connection repairs itself, collaborators' carets stay on their characters, and a deletion merges like
+/// any other edit.
 /// </summary>
 [TestClass]
 public sealed class CollaborativeTextTests : BcrdtTest
@@ -121,6 +122,44 @@ public sealed class CollaborativeTextTests : BcrdtTest
         await Editor(b).PressSequentiallyAsync("_");
         var merged = await ExpectConvergedAsync(editors, "XXhello_ world");
         Assert.AreEqual("XXhello_ world", merged);
+    }
+
+    [TestMethod]
+    public async Task A_dropped_connection_reconnects_by_itself_and_catches_up()
+    {
+        var page = await OpenReplicasAsync("/text", 3);
+        ILocator a = Replica(page, "Replica A"), b = Replica(page, "Replica B");
+
+        // Not "Go offline": the plug is pulled while A still wants its connection, so its provider's backoff loop
+        // is what brings it back - after a randomized delay, which is why this waits for the outcome.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Drop Replica A's connection" }).ClickAsync();
+        await TypeAtEndAsync(Editor(b), "Written while A was down.");
+
+        await Assertions.Expect(Editor(a)).ToHaveValueAsync("Written while A was down.", new() { Timeout = 30_000 });
+        await Assertions.Expect(Badge(a)).ToHaveTextAsync("synced");
+        await Assertions.Expect(a.Locator(".panel-toggle")).ToHaveTextAsync("Go offline");
+    }
+
+    [TestMethod]
+    public async Task Each_replica_sees_a_collaborators_caret_anchored_to_the_text()
+    {
+        var page = await OpenReplicasAsync("/text", 3);
+        ILocator a = Replica(page, "Replica A"), b = Replica(page, "Replica B"), c = Replica(page, "Replica C");
+        ILocator[] editors = [Editor(a), Editor(b), Editor(c)];
+
+        await TypeAtEndAsync(Editor(a), "hello world");
+        await ExpectConvergedAsync(editors, "hello world");
+
+        // B places its caret after "hello"; the others read it from presence, resolved against their own text.
+        await Editor(b).ClickAsync();
+        await Editor(b).EvaluateAsync("element => { element.setSelectionRange(5, 5); element.dispatchEvent(new Event('select')); }");
+        await Assertions.Expect(page.Locator("main")).ToContainTextAsync("Replica B - caret at 5");
+
+        // Text inserted before it, without B losing focus, moves the caret with the characters it is anchored to.
+        await Editor(a).EvaluateAsync(
+            "element => { element.value = 'XX' + element.value; element.dispatchEvent(new Event('input', { bubbles: true })); }");
+        await ExpectConvergedAsync(editors, "XXhello world");
+        await Assertions.Expect(page.Locator("main")).ToContainTextAsync("Replica B - caret at 7");
     }
 
     [TestMethod]

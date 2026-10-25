@@ -11,6 +11,9 @@
              way a Blazor Web App's client project is expected to contribute them. -->
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
         <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+        <!-- The WebAssembly SDK turns System.Diagnostics.Metrics off by default, which leaves every Meter inert; the
+             internals page listens to the library's meter in the browser, so it is turned back on. -->
+        <MetricsSupport>true</MetricsSupport>
     </PropertyGroup>
 
     <ItemGroup>

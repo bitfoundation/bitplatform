@@ -8,17 +8,32 @@
     <p class="bb-subtitle">
         The other pages show collaboration working. This one is for disbelieving it: each scenario gives two replicas
         the same starting point, takes them both offline, makes a specific pair of conflicting edits - the exact cases
-        that break naïve synchronization - and reconnects them, so you can watch what the merge actually does.
+        that break naïve synchronization, on a text, a list, a map and a set - and reconnects them, so you can watch
+        what the merge actually does.
     </p>
 </div>
 
-@* Six scenario tiles and two state read-outs side by side want the full width of the column. *@
+@* Eight scenario tiles and two state read-outs side by side want the full width of the column. *@
 <div class="bb-card bb-page-wide">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Six scenarios</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Eight scenarios</h3>
     <p class="bb-card-desc">
         Every scenario states its expectation before you run it. The point is not that something
         happens, but that the <em>stated</em> thing happens, on both replicas, every time.
     </p>
+    <p class="bb-card-desc">
+        Pressing <em>Run this scenario</em> does five things, and the log below the tiles records each one:
+    </p>
+    <ol class="bb-detail-list">
+        <li><strong>Seed.</strong> With both replicas connected, Replica A writes the shared starting point - a seed
+            text, a seed list item and a seed tag - if it is not there already, and waits until B holds it too. A
+            starting point written by each replica separately would be two look-alike values, not one shared one.</li>
+        <li><strong>Isolate.</strong> Both replicas disconnect, so neither can see what the other is about to do.</li>
+        <li><strong>Edit both.</strong> A makes its edit, then B makes the conflicting one. Without the disconnect,
+            B's edit would come <em>after</em> A's rather than at the same time, which is not a conflict at all.</li>
+        <li><strong>Reconnect.</strong> The synchronization handshake sends each replica what the other is missing.</li>
+        <li><strong>Compare.</strong> The page waits until both replicas project identical state (or two seconds pass)
+            and reports what each one holds.</li>
+    </ol>
 
     @if (!Ready || _session is null)
     {
@@ -77,8 +92,11 @@
     <div class="bb-card">
         <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The two replicas</h3>
         <p class="bb-card-desc">
-            The raw state of each replica - the text, the list and the map every scenario writes to - read
-            straight from its own document.
+            The raw state of each replica - the <code>BcrdtText</code>, the <code>BcrdtArray</code>, the
+            <code>BcrdtMap</code> and the <code>BcrdtSet</code> the scenarios write to - read straight from its own
+            document. The scenarios build on one another: run them in any order, as often as you like, and the two
+            read-outs agree after every run. The connection buttons still work, too - take a replica offline and edit
+            nothing, or run a scenario while it is offline, and watch the scenario bring it back.
         </p>
         <div class="bb-split replicas">
             @foreach (DemoReplica replica in Replicas)
@@ -93,6 +111,9 @@
 
                         <h4 class="sub">Map</h4>
                         <pre class="json bb-code">@DemoJson.Format(replica.Document.GetMap(ConflictLabSession.MapKey).ToJson())</pre>
+
+                        <h4 class="sub">Set</h4>
+                        <pre class="json bb-code">@DemoJson.Format(replica.Document.Set(ConflictLabSession.SetKey).ToJson())</pre>
                     </ChildContent>
                 </ReplicaPanel>
             }
@@ -100,10 +121,48 @@
 
         <div class="bb-toolbar">
             <button type="button" class="btn btn-secondary" @onclick="ResetAsync" disabled="@_busy">Reset the document</button>
-            <span class="bb-soft">Clears all three fields on both replicas and empties the log.</span>
+            <span class="bb-soft">Clears all four fields on both replicas and empties the log.</span>
         </div>
     </div>
 }
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> The rule behind each outcome</h3>
+    <p class="bb-card-desc">
+        No scenario's result is chosen by this page: each is the merge rule of the type it edits, applied the same way
+        on every replica, whichever order the updates arrive in.
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Type</th><th>Concurrent edits</th><th>Why</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="bb-table-key">BcrdtText, BcrdtArray</td>
+                    <td>Every insertion survives, each run in one piece, in one agreed order. A deletion removes only what its author could see.</td>
+                    <td>Every character or element is a block with a unique identity and the identity of what it was inserted next to, so a position is never "index 7" but "after that block".</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">BcrdtMap</td>
+                    <td>Different keys never conflict; one key keeps one value, the same one everywhere.</td>
+                    <td>A key holds one value. Which of two concurrent writes wins follows the order the engine integrates them in - the same on every replica, but unrelated to which was typed last.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">BcrdtSet</td>
+                    <td>Equal values are one member; an add wins over a concurrent remove - if the add created a member.</td>
+                    <td>A member is keyed by its value, and a removal deletes the member it observed rather than the value for ever.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="bb-card-desc">
+        To see what a merge of your own would decide before you build on it, ask the
+        <a href="mcp-server">MCP server</a>'s <code>InspectBcrdtMerge</code>: it runs the real engine on any set of
+        concurrent edits by two to four replicas, in every delivery order -
+        <a href="/api/mcp/InspectBcrdtMerge?operations=A%3A%20map%20meta%20set%20title%20%22Draft%22%3B%20B%3A%20map%20meta%20set%20title%20%22Final%22%3B%20A%3A%20set%20tags%20add%20%22urgent%22%3B%20B%3A%20set%20tags%20add%20%22urgent%22" target="_blank" rel="noopener">try one in the browser</a>.
+    </p>
+</div>
 
 @code {
     // The procedure lives in ConflictLabSession rather than here, so that the sequence this page
