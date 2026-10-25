@@ -717,3 +717,37 @@ in the library.
 | E2E Firefox | `BDND_E2E_BROWSER=firefox dotnet test` | 136 passed, 14 skipped (Chromium-only and hybrid). |
 | E2E WebKit | `BDND_E2E_BROWSER=webkit dotnet test` | 136 passed, 14 skipped. |
 
+## Round 13 - every feature on a demo page
+
+Each demo page was read against the README and the feature matrix: what the page shows, what its text says, and which
+public parameter, event or helper no page showed at all. The landing page still answered two questions with what was
+true before rounds 2 and 3, and a dozen features had tests and documentation but no page.
+
+| Finding | Where | Fix | Test |
+| --- | --- | --- | --- |
+| The landing page's FAQ said Bdnd has no touch support and cannot read a dropped file's contents. | Home | Rewritten from what the library does (pointer drags, `OpenReadStreamAsync`, folders); a keyboard question added; capability cards for drop indicators, touch and the keyboard; the comparison table lists touch and keyboard. | - |
+| No page used the provider's `OnDragStart`/`OnDragEnd`, a target's `OnEnter`/`OnLeave` or `Disabled`, or a `Manager` read from outside the provider. | New page | `/other/drag-events`: a log of every event of a drag, an undo history built from `OnDragEnd`'s drop result, a tray that can be closed, the drag state read through the page's own manager. | `DragEventsTests` |
+| No page showed separate drag contexts. | New page | `/other/contexts`: providers side by side, one nested in another, and two providers sharing one manager. | `ContextsTests` |
+| Nested drop targets had no `OnDrop`: the drop order and the result rule were nowhere to be seen. | Nesting - drop targets | Every level logs its `OnDrop` and sets a result; `OnEnd` shows the one that won; a "greedy" switch (`Monitor.DidDrop()`). Rewritten as a Razor template instead of a render-tree builder. | `A_drop_reaches_the_nested_targets_innermost_first...`, `Greedy_targets_leave_a_drop...` |
+| `CanDrag` and `CanDragPredicate` were on no page. | Nesting - drag sources; page builder | "Forbid drag" switches (React DnD's own example has them); a page of six blocks at most, whose palette stops dragging. | `A_source_that_may_not_drag_hands_the_press...`, `A_full_page_stops_the_palette_from_dragging...` |
+| `SourceClientOffsetOn`, `KeepTo`, `SnapTo` and `Clamp` were on no page; neither were most of the layer's offsets. | Drag around - custom layer | Four modes (free, horizontal only, snap to grid, inside an area) applied to the preview and the drop alike; a second layer shows every offset live; the layer takes `Accept`. | `Snapped_to_the_grid...`, `Kept_to_the_horizontal_axis...` |
+| `BdndAnnouncements` and the provider's `AllowKeyboard` were on no page, and a sighted reader could not see what the live region says. | Keyboard | English or German texts, a panel with what was announced, a keyboard switch, and a column that can be locked (`Disabled`). | `Announcements_given_to_the_provider...`, `The_provider_can_turn_keyboard_dragging_off...` |
+| `TouchDelay`, `DragThreshold`, `AutoScroll` and the other `PointerDrag` modes could not be tried. | Touch and pointer drags | Controls under the tray, and a note on what each does. | existing `PointerTests` |
+| `BdndList.ReorderIndex`/`Reorder` and `reversed` were on no page. | Grid; drop indicators | The grid reorders with them; the labels can be laid out right to left. | `Right_to_left_a_label_dropped_on_the_left_edge...` |
+| The README's "a drag layer can draw 3 cards" had no example; nothing gave the archived cards back. | Dragging several items | A `BdndDragLayer` badge (skipped for keyboard drags through `GetDragInput()`) and "Put them back". | `A_drag_layer_says_how_many_cards...` |
+| `LastModified`, `Data` and the editable-field rule of native drops were on no page. | Native files; native HTML | A "Modified" column; the drop's `Data` listed; a text-only target with a field inside. | `Files_dragged_in_from_the_system...` (date), `Text_dropped_on_a_field_inside_a_target...` |
+| Only `copy` and `move` drop effects were shown. | Drop effects | `link` and `copyMove` boxes; every value in the note. | existing `CustomizeTests` |
+| Texts that left things out: the tutorial's colours, the handle page's "previews", what a dashed bin means, keyboard use on the sortable pages; sortable cards had no `Label`; the knight and the squares had none. | Several | Legends and sentences added (details in notes under the samples, so every sample stays above the fold); `Label` on the sortable cards, the knight and every square (chess notation). | existing tests |
+
+The first full run showed the limit of that: four tests failed because a longer subtitle (or controls above a tray)
+had pushed a sample below the 900-pixel viewport, where the suite's mouse cannot reach. Subtitles say what a page shows;
+the rest went into notes under the samples, and the pointer page's controls under its tray.
+
+### Validation
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Build | `dotnet build Demo/Server/Bit.Bdnd.Demo.Server.csproj` | Succeeded, no warnings from the demo. |
+| MCP | `dotnet test --project Tests/Bit.Bdnd.Tests.Mcp/Bit.Bdnd.Tests.Mcp.csproj` | 101 passed. |
+| E2E Chromium | `dotnet test` in `Tests/Bit.Bdnd.Tests.E2E` (all but the hybrid and perf classes) | 156 passed, the 15 new tests included. |
+| E2E Firefox | `BDND_E2E_BROWSER=firefox dotnet test`, the classes of the pages this round changed | 134 passed, 5 skipped (Chromium-only). |

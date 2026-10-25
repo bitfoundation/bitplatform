@@ -81,10 +81,10 @@ public sealed class FolderDropTests : BdndTest
             """);
 
         await Expect(page.GetByRole(AriaRole.Heading, new() { Name = "Dropped files (4)" })).ToBeVisibleAsync();
-        await Expect(Rows(page).Nth(0).Locator("td")).ToHaveTextAsync(["photos/a.txt", "text/plain", "5 B", "alpha"]);
-        await Expect(Rows(page).Nth(1).Locator("td")).ToHaveTextAsync(["photos/raw/b.txt", "text/plain", "5 B", "bravo"]);
-        await Expect(Rows(page).Nth(2).Locator("td")).ToHaveTextAsync(["photos/c.txt", "text/plain", "7 B", "charlie"]);
-        await Expect(Rows(page).Nth(3).Locator("td")).ToHaveTextAsync(["note.txt", "text/plain", "4 B", "note"]);
+        await Expect(Rows(page).Nth(0).Locator("td:not(.native-modified)")).ToHaveTextAsync(["photos/a.txt", "text/plain", "5 B", "alpha"]);
+        await Expect(Rows(page).Nth(1).Locator("td:not(.native-modified)")).ToHaveTextAsync(["photos/raw/b.txt", "text/plain", "5 B", "bravo"]);
+        await Expect(Rows(page).Nth(2).Locator("td:not(.native-modified)")).ToHaveTextAsync(["photos/c.txt", "text/plain", "7 B", "charlie"]);
+        await Expect(Rows(page).Nth(3).Locator("td:not(.native-modified)")).ToHaveTextAsync(["note.txt", "text/plain", "4 B", "note"]);
         await Expect(page.Locator(".native-incomplete")).ToHaveCountAsync(0);
     }
 
@@ -107,7 +107,7 @@ public sealed class FolderDropTests : BdndTest
         await DropAsync(page, tree, "dt.items.add(new File([], 'docs'))");
 
         await Expect(page.GetByRole(AriaRole.Heading, new() { Name = "Dropped files (1)" })).ToBeVisibleAsync();
-        await Expect(Rows(page).Nth(0).Locator("td")).ToHaveTextAsync(["docs/open.txt", "text/plain", "4 B", "open"]);
+        await Expect(Rows(page).Nth(0).Locator("td:not(.native-modified)")).ToHaveTextAsync(["docs/open.txt", "text/plain", "4 B", "open"]);
         await Expect(page.Locator(".native-incomplete")).ToBeVisibleAsync();
     }
 

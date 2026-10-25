@@ -75,4 +75,24 @@ public sealed class MultiSelectTests : BdndTest
 
         await Expect(Archived(page)).ToHaveTextAsync("Archived: Alpha, Charlie");
     }
+
+    [TestMethod]
+    public async Task A_drag_layer_says_how_many_cards_the_drag_carries_and_the_archive_gives_them_back()
+    {
+        var page = await OpenAsync("/sortable/multi-select");
+        var badge = page.Locator(".multi-preview");
+        await Check(page, "Alpha").CheckAsync();
+        await Check(page, "Charlie").CheckAsync();
+        await Check(page, "Echo").CheckAsync();
+        await Expect(badge).ToHaveCountAsync(0);
+
+        await DragAsync(page, Card(page, "Charlie"), Archive(page), () => Expect(badge).ToHaveTextAsync("3 cards"));
+
+        await Expect(badge).ToHaveCountAsync(0);
+        await Expect(Archived(page)).ToHaveTextAsync("Archived: Alpha, Charlie, Echo");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Put them back" }).ClickAsync();
+        await Expect(Archived(page)).ToHaveTextAsync("Archived: nothing yet");
+        await Expect(page.Locator(".multi-card:not([data-bit-bdnd-preview])")).ToHaveCountAsync(6);
+    }
 }

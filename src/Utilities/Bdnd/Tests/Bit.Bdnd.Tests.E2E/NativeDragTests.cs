@@ -16,7 +16,7 @@ public sealed class NativeDragTests : BdndTest
 {
     private const string TwoFiles =
         """
-        dt.items.add(new File(['hello'], 'hello.txt', { type: 'text/plain' }));
+        dt.items.add(new File(['hello'], 'hello.txt', { type: 'text/plain', lastModified: Date.UTC(2024, 0, 15, 12) }));
         dt.items.add(new File([new Uint8Array(2048)], 'data.bin'))
         """;
 
@@ -43,8 +43,10 @@ public sealed class NativeDragTests : BdndTest
         var rows = page.Locator(".demo-table tbody tr");
         await Expect(rows).ToHaveCountAsync(2);
         // the text file's contents are streamed from the browser into .NET
-        await Expect(rows.Nth(0).Locator("td")).ToHaveTextAsync(["hello.txt", "text/plain", "5 B", "hello"]);
-        await Expect(rows.Nth(1).Locator("td")).ToHaveTextAsync(["data.bin", "-", "2 KB", "-"]);
+        await Expect(rows.Nth(0).Locator("td:not(.native-modified)")).ToHaveTextAsync(["hello.txt", "text/plain", "5 B", "hello"]);
+        await Expect(rows.Nth(1).Locator("td:not(.native-modified)")).ToHaveTextAsync(["data.bin", "-", "2 KB", "-"]);
+        // its date, shown in the browser's time zone: noon UTC is the 15th or the 16th anywhere
+        await Expect(rows.Nth(0).Locator(".native-modified")).ToHaveTextAsync(new System.Text.RegularExpressions.Regex(@"^2024-01-1[56] \d\d:\d\d$"));
 
         // No dragleave follows a drop: the hover is cleared all the same, and the browser was kept from opening the files.
         await Expect(bin).ToHaveTextAsync("Drag files here from your OS");
@@ -230,5 +232,33 @@ public sealed class NativeDragTests : BdndTest
 
         await Expect(bin).ToHaveTextAsync("Drag selected text / a link here");
         await Expect(result.Locator("h4")).ToHaveTextAsync("Last native drop - __NATIVE_TEXT__");
+    }
+
+    [TestMethod]
+    public async Task Text_dropped_on_a_field_inside_a_target_is_the_fields_and_around_it_the_targets()
+    {
+        var page = await OpenAsync("/other/native-html");
+        var notes = page.Locator(".native-notes");
+        var field = page.Locator(".native-notes__field");
+        var last = page.Locator(".native-notes__last");
+
+        // over the field the browser decides: the module neither accepts nor refuses the drag there, and no drop
+        // reaches the target
+        var text = await NativeDataTransferAsync(page, "dt.setData('text/plain', 'into the field')");
+        await DispatchDragAsync(field, "dragenter", text);
+        await DispatchDragAsync(field, "dragover", text);
+        var over = await LastDragOverAsync(field);
+        Assert.IsFalse(over.Prevented, $"the module took a text drag over an editable field: {over}");
+        await DispatchDragAsync(field, "drop", text);
+        await WaitForQuietAsync(page);
+        await Expect(last).ToHaveTextAsync("Dropped around the field: nothing yet");
+
+        // around the field it is the target's, which takes text only
+        text = await NativeDataTransferAsync(page, "dt.setData('text/plain', 'around the field')");
+        await DispatchDragAsync(notes, "dragenter", text);
+        await Expect(notes).ToHaveAttributeAsync("data-bit-bdnd-over", "");
+        await DispatchDragAsync(notes, "dragover", text);
+        await DispatchDragAsync(notes, "drop", text);
+        await Expect(last).ToHaveTextAsync("Dropped around the field: around the field");
     }
 }

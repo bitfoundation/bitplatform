@@ -5,9 +5,11 @@
 <div class="bb-intro">
     <h1>Dustbin - Stress Test</h1>
     <p class="bb-subtitle">
-        Many sources and many targets at once. Each box has a random type; each dustbin accepts
-        a random subset. Use this to gauge how the engine behaves with a lot of registered
-        handlers re-rendering on every state change.
+        Many sources and many targets at once. Each box has a random type (its name and border colour say which);
+        each dustbin accepts a random subset. Use this to gauge how the engine behaves with a lot of registered
+        handlers: a draggable or drop target re-renders only when the state it renders from changes - when a drag
+        begins or ends, and as the pointer crosses a bin, that bin alone. "Shuffle types" deals new types and
+        accept lists, and "Add 10 boxes" registers more sources on the fly.
     </p>
 </div>
 

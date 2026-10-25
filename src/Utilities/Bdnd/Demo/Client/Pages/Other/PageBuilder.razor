@@ -9,6 +9,11 @@
         palette keeps it, and the page gets a new block where the line shows - before or after the block it is dropped
         on, or at the end. A block of the page moves within it, or into the bin; the bin takes no palette block
         (<code>CanDropPredicate</code>). One item type carries both: the kind of a new block, or the block itself.
+        The page holds @MaxBlocks blocks at most: once it is full, the palette's <code>CanDragPredicate</code> answers
+        false - asked as the palette renders and again as a drag starts - so its blocks render
+        <code>draggable="false"</code> and leave the tab order until a block goes into the bin. With the keyboard,
+        <kbd>Space</kbd> on a palette block picks up a copy, and the arrows step through the places between the
+        page's blocks.
     </p>
 </div>
 
@@ -22,6 +27,7 @@
                 {
                     <li>
                         <BdndDraggable TItem="BuilderItem" Type="block" Item="@(new BuilderItem(kind, null))" DropEffect="copy"
+                                       CanDragPredicate="@(() => _blocks.Count < MaxBlocks)"
                                        Label="@($"New {kind.ToLowerInvariant()}")" class="builder-tool" Context="drag">
                             @kind
                         </BdndDraggable>
@@ -57,10 +63,16 @@
     </BdndProvider>
 
     <p class="demo-caption builder-outline">Page: @(_blocks.Count == 0 ? "empty" : string.Join(", ", _blocks.Select(b => b.Title)))</p>
+    <p class="demo-caption builder-capacity">
+        @(_blocks.Count < MaxBlocks ? $"{_blocks.Count} of {MaxBlocks} blocks." : $"The page is full ({MaxBlocks} blocks): drop a block into the bin to add another.")
+    </p>
 </div>
 
 @code {
     private static readonly string[] Kinds = ["Heading", "Text", "Image", "Button"];
+
+    // The most blocks the page holds: a full page takes no new block, so the palette does not drag.
+    private const int MaxBlocks = 6;
 
     // A new block of a kind (from the palette), or a block of the page.
     public sealed record BuilderItem(string Kind, Block? Block);

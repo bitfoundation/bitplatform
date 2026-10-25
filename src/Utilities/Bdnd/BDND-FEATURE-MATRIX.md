@@ -25,16 +25,16 @@ Competitors: **dk** dnd-kit, **SJ** SortableJS, **RD** React DnD, **PD** Pragmat
 | Typed payloads and type-based acceptance | RD `type`/`accept`; PD `canDrop`; dk `data` + `accepts` | Verified | Verified | Strings match types, `TItem` types the payload. |
 | Custom acceptance predicate | RD `canDrop`; PD `canDrop`; dk collision filter | Verified | Verified | `CanDropPredicate`. |
 | Combined source + target elements | All | Verified | Verified | Nest a target in a draggable. |
-| Multiple independent contexts | RD `DndProvider`; dk `DndContext` | Verified | Verified | Nested providers ignore each other's drags. |
-| Shared context across regions | RD/dk one provider | Verified | Verified | One provider, or one `Manager` for two providers. |
+| Multiple independent contexts | RD `DndProvider`; dk `DndContext` | Verified | Verified | Nested providers ignore each other's drags (separate contexts demo). |
+| Shared context across regions | RD/dk one provider | Verified | Verified | One provider, or one `Manager` for two providers (separate contexts demo). |
 | Nested targets, deep and shallow hover | RD `isOver({shallow})`; PD `dropTargets` chain | Verified | Verified | |
-| Nested drop propagation order | RD innermost first, outer may override result | Verified | Verified | |
-| Enter / leave notifications | PD `onDragEnter`/`onDragLeave`; dk `onDragOver` | Partial | Verified | `OnEnter`/`OnLeave` for in-app drags of every input (unit). Native drags: state only. |
+| Nested drop propagation order | RD innermost first, outer may override result | Verified | Verified | Nested drop targets demo logs the order and the result, greedy or not. |
+| Enter / leave notifications | PD `onDragEnter`/`onDragLeave`; dk `onDragOver` | Partial | Verified | `OnEnter`/`OnLeave` for in-app drags of every input (unit; drag events demo). Native drags: state only. |
 | Begin / end / drop callbacks | All | Verified | Verified | |
 | Drop results and `DidDrop` | RD | Verified | Verified | |
 | Async drop handling | PD (app-defined) | Verified | Verified | `OnEnd` waits for async `OnDrop`s. |
-| Disabled sources | All | Verified | Verified | `CanDrag`, `CanDragPredicate`. |
-| Disabled targets | dk `disabled`; PD `canDrop` | Partial | Verified | `Disabled` (unit). |
+| Disabled sources | All | Verified | Verified | `CanDrag` (nested drag sources demo), `CanDragPredicate` (page builder demo). |
+| Disabled targets | dk `disabled`; PD `canDrop` | Partial | Verified | `Disabled` (unit; keyboard and drag events demos). |
 | Exceptions from callbacks reach the app | - | **Missing (P0)** | Verified | Round 1: JS-invoked callbacks dispatch to the renderer, through the provider once the component is gone. |
 | Source removed mid-drag | RD | Verified | Verified | |
 | Target removed mid-drag | RD | Verified | Verified | |
@@ -86,7 +86,7 @@ Competitors: **dk** dnd-kit, **SJ** SortableJS, **RD** React DnD, **PD** Pragmat
 | Swap sorting, FLIP animation, thresholds | SJ | Excluded | Excluded | Bit.Bortable implements SortableJS. |
 | Grids / wrapping layouts | dk `rectSortingStrategy`; SJ | Partial | Verified | Round 6: grid demo; pointer drops across rows; keyboard Up/Down go a row (E2E). |
 | Capacity limits, duplicate prevention | app-defined everywhere | Verified | Verified | `CanDropPredicate`. |
-| Undo/redo integration | app-defined | Partial | Verified | Drop results + `OnDragEnd`/`DragEnded` with `DidDrop` and the result (README recipe, unit). |
+| Undo/redo integration | app-defined | Partial | Verified | Drop results + `OnDragEnd`/`DragEnded` with `DidDrop` and the result (README recipe, unit, drag events demo). |
 
 ## E. Complex interfaces
 
@@ -106,7 +106,7 @@ Competitors: **dk** dnd-kit, **SJ** SortableJS, **RD** React DnD, **PD** Pragmat
 | Pointer intersection | N hit test; dk `pointerWithin` | Verified | Verified | |
 | Rectangle / closest-center / closest-corner collision | dk | Excluded | Excluded | N decides the target from the element under the pointer; the pointer backend keeps the same rule so both backends agree. |
 | Nested precedence | RD | Verified | Verified | Innermost first. |
-| Axis lock, snapping, bounds | dk modifiers; IJ modifiers | Partial | Verified | Round 8: `PreviewAxis` keeps the pointer copy on an axis (E2E, virtualized list); `BdndXYCoord.KeepTo`/`SnapTo`/`Clamp` and `SourceClientOffsetOn` for drag layers (unit). The browser's native drag image cannot be constrained. |
+| Axis lock, snapping, bounds | dk modifiers; IJ modifiers | Partial | Verified | Round 8: `PreviewAxis` keeps the pointer copy on an axis (E2E, virtualized list); `BdndXYCoord.KeepTo`/`SnapTo`/`Clamp` and `SourceClientOffsetOn` for drag layers (unit; custom drag layer demo). The browser's native drag image cannot be constrained. |
 | Exclusion regions | SJ `filter` | Missing (P2) | Verified | `data-bit-bdnd-no-drag`. |
 
 ## G. Auto-scrolling

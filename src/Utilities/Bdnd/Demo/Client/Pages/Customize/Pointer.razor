@@ -21,7 +21,8 @@
         <div class="row-wrap pointer-palette">
             @foreach (var box in Boxes)
             {
-                <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="box" Label="@box" PointerDrag="BdndPointerDrag.All"
+                <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="box" Label="@box" PointerDrag="_mode"
+                               TouchDelay="_touchDelay" DragThreshold="_dragThreshold" AutoScroll="_autoScroll"
                                class="box pointer-box" Context="drag">
                     @box
                     <button type="button" class="pointer-box__info" data-bit-bdnd-no-drag
@@ -44,6 +45,39 @@
     </BdndProvider>
 
     <p class="demo-caption pointer-status">@_status</p>
+
+    <h2 class="demo-result-title">The boxes' parameters</h2>
+    <div class="bb-fields pointer-options">
+        <div class="bb-field">
+            <span id="pointer-mode">PointerDrag</span>
+            <span class="bb-segmented" role="group" aria-labelledby="pointer-mode">
+                @foreach (var mode in Enum.GetValues<BdndPointerDrag>())
+                {
+                    <button type="button" aria-pressed="@(_mode == mode ? "true" : "false")" @onclick="() => _mode = mode">@mode</button>
+                }
+            </span>
+        </div>
+        <label class="bb-field">
+            TouchDelay (ms)
+            <input type="number" min="0" max="2000" step="50" @bind="_touchDelay" />
+        </label>
+        <label class="bb-field">
+            DragThreshold (px)
+            <input type="number" min="0" max="50" @bind="_dragThreshold" />
+        </label>
+        <label class="bb-check">
+            <input type="checkbox" @bind="_autoScroll" /> AutoScroll
+        </label>
+    </div>
+    <p class="demo-caption pointer-mode-hint">@ModeHint</p>
+</div>
+
+<div class="bb-note">
+    <code>TouchDelay</code> is how long a finger rests on a box before the drag starts (not on a
+    <code>BdndDragHandle</code>, which drags at once): moving more than <code>DragThreshold</code> pixels before then
+    gives the press up, so a swipe across the boxes still scrolls the page. The mouse and a pen on a handle start once
+    they have moved <code>DragThreshold</code> pixels, so a click stays a click. <code>AutoScroll</code> lets a pointer
+    drag scroll the innermost container under the pointer - the tray, here - or the page, faster the nearer its edge.
 </div>
 
 @code {
@@ -54,6 +88,21 @@
     private readonly Dictionary<int, string> _slots = [];
 
     private string _status = "Nothing put anywhere yet.";
+
+    // The draggables' parameters; the defaults of BdndDraggable but for PointerDrag.
+    private BdndPointerDrag _mode = BdndPointerDrag.All;
+    private int _touchDelay = 250;
+    private double _dragThreshold = 5;
+    private bool _autoScroll = true;
+
+    private string ModeHint => _mode switch
+    {
+        BdndPointerDrag.All =>
+            "All: the mouse, touch and pen all drag through pointer events - a copy follows the pointer, and the drag stays in the page.",
+        BdndPointerDrag.Touch =>
+            "Touch: touch and pen drag through pointer events; the mouse drags through the browser's native drag and drop.",
+        _ => "None: only the browser's native drag and drop - most touch browsers then drag nothing.",
+    };
 
     private void ShowInfo(string box) => _status = $"{box} is a box.";
 

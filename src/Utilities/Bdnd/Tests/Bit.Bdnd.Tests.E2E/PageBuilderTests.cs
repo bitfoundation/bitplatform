@@ -102,4 +102,32 @@ public sealed class PageBuilderTests : BdndTest
 
         await Expect(Outline(page)).ToHaveTextAsync("Page: Heading 1, Image 1, Text 1");
     }
+
+    [TestMethod]
+    public async Task A_full_page_stops_the_palette_from_dragging_until_a_block_goes()
+    {
+        var page = await OpenAsync("/other/page-builder");
+        var capacity = page.Locator(".builder-capacity");
+        await Expect(capacity).ToHaveTextAsync("2 of 6 blocks.");
+
+        // each new block dropped on the page below its blocks, at its end: the page grows downwards, so it is kept in view
+        for (var count = 3; count <= 6; count++)
+        {
+            await capacity.ScrollIntoViewIfNeededAsync();
+            var area = await BoxAsync(page.Locator(".builder-page"));
+            await StartDragAsync(page, Tool(page, "Text"));
+            await DragToAsync(page, new Point(area.Centre.X, area.Bottom - 12));
+            await Expect(capacity).ToHaveTextAsync(count < 6 ? $"{count} of 6 blocks." : "The page is full (6 blocks): drop a block into the bin to add another.");
+        }
+        await Expect(Outline(page)).ToHaveTextAsync("Page: Heading 1, Text 1, Text 2, Text 3, Text 4, Text 5");
+
+        // CanDragPredicate answers false: the palette is not draggable, and the keyboard skips it
+        await Expect(Tool(page, "Image")).ToHaveAttributeAsync("draggable", "false");
+        await Expect(Tool(page, "Image")).Not.ToHaveAttributeAsync("tabindex", "0");
+
+        var bin = page.Locator(".builder-bin");
+        await DragAsync(page, Block(page, "Heading 1"), bin, () => Expect(bin).ToHaveTextAsync("Release to remove"));
+        await Expect(capacity).ToHaveTextAsync("5 of 6 blocks.");
+        await Expect(Tool(page, "Image")).ToHaveAttributeAsync("draggable", "true");
+    }
 }

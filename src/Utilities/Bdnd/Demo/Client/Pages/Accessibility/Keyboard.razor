@@ -6,27 +6,45 @@
     <h1>Keyboard and screen readers</h1>
     <p class="bb-subtitle">
         Every draggable can be dragged without a pointer. Tab to a card, press <kbd>Space</kbd> or <kbd>Enter</kbd>
-        to pick it up, use the arrow keys to move it between the columns that can take it, and press
-        <kbd>Space</kbd> or <kbd>Enter</kbd> to drop it or <kbd>Escape</kbd> to cancel. A live region tells screen
-        readers what happens, using each source's and target's <code>Label</code>. The arrow buttons on each card
-        are the single-pointer alternative WCAG 2.5.7 asks for: the same move, without dragging. The columns are
-        styled from the <code>data-bit-bdnd-*</code> attributes alone.
+        to pick it up, use the arrow keys to move it between the columns that can take it (<kbd>Home</kbd> and
+        <kbd>End</kbd> jump to the first and the last), and press <kbd>Space</kbd> or <kbd>Enter</kbd> to drop it or
+        <kbd>Escape</kbd> to cancel. A live region tells screen readers what happens, using each source's and target's
+        <code>Label</code>; the panel under the board shows what it said. The arrow buttons on each card are the
+        single-pointer alternative WCAG 2.5.7 asks for: the same move, without dragging. The columns are styled from
+        the <code>data-bit-bdnd-*</code> attributes alone.
     </p>
 </div>
 
 <DemoCode />
 
 <div class="bb-demo">
-    <BdndProvider>
+    <div class="bb-fields">
+        <div class="bb-field">
+            <span id="kanban-language">Announcements</span>
+            <span class="bb-segmented" role="group" aria-labelledby="kanban-language">
+                <button type="button" aria-pressed="@(_german ? "false" : "true")" @onclick="() => _german = false">English</button>
+                <button type="button" aria-pressed="@(_german ? "true" : "false")" @onclick="() => _german = true">Deutsch</button>
+            </span>
+        </div>
+        <label class="bb-check">
+            <input type="checkbox" @bind="_allowKeyboard" /> Keyboard dragging (<code>AllowKeyboard</code>)
+        </label>
+        <label class="bb-check">
+            <input type="checkbox" @bind="_doneLocked" /> Lock Done (<code>Disabled</code>)
+        </label>
+    </div>
+
+    <BdndProvider Announcements="@(_german ? _germanTexts : _englishTexts)" AllowKeyboard="_allowKeyboard">
         <div class="kanban">
             @foreach (var column in Columns)
             {
                 <BdndDropTarget TItem="KanbanTask" Accept="task" Tag="section" Label="@column" class="kanban-column" Context="drop"
+                                Disabled="@(column == "Done" && _doneLocked)"
                                 CanDropPredicate="@((task, _) => CanMove(task, column))"
                                 OnDrop="@(e => Move(e.Item!, column))" aria-label="@column">
                     <h2 class="kanban-column__title">
                         @column
-                        <small>@TasksIn(column).Count()@(column == "Doing" ? $" of {DoingLimit}" : "")</small>
+                        <small>@TasksIn(column).Count()@(column == "Doing" ? $" of {DoingLimit}" : "")@(column == "Done" && _doneLocked ? " · locked" : "")</small>
                     </h2>
                     @foreach (var task in TasksIn(column))
                     {
@@ -49,6 +67,27 @@
     </BdndProvider>
 
     <p class="demo-caption kanban-status" aria-live="polite">@_status</p>
+
+    <h2 class="demo-result-title">What a screen reader hears</h2>
+    <ol class="kanban-heard">
+        @if (_heard.Count == 0)
+        {
+            <li>Nothing yet: pick a card up with the keyboard. (Mouse and touch drags are not announced - a screen reader user drags with the keyboard.)</li>
+        }
+        @foreach (var line in _heard)
+        {
+            <li>@line</li>
+        }
+    </ol>
+</div>
+
+<div class="bb-note">
+    <code>Announcements</code> on the provider replaces the texts: each one is a function of what happened - the
+    source's and the target's names, the target's place and count, the item - and one that answers
+    <code>null</code> is not read out. <code>AllowKeyboard="false"</code> on the provider takes every card out of
+    keyboard dragging at once (on a single draggable, just that one): the cards leave the tab order, and the move
+    buttons are what is left. A <code>Disabled</code> target takes nothing - no hover, no drop - and the arrow keys
+    skip it, as they skip the full "Doing" column, whose <code>CanDropPredicate</code> refuses a third card.
 </div>
 
 @code {
@@ -74,6 +113,53 @@
 
     private string _status = "Nothing moved yet.";
 
+    private bool _german;
+    private bool _allowKeyboard = true;
+    private bool _doneLocked;
+
+    // The texts in German - every one replaceable, the rest kept from BdndAnnouncements.Default.
+    private static readonly BdndAnnouncements German = new()
+    {
+        Instructions = "Leertaste oder Eingabe zum Aufnehmen; Pfeiltasten zum Bewegen, Pos1 und Ende zum ersten oder letzten Ablageziel; Leertaste oder Eingabe zum Ablegen; Escape zum Abbrechen.",
+        DragStarted = a => $"{a.SourceLabel} aufgenommen. {a.TargetCount} Ablageziele verfügbar.",
+        DraggedOver = a => a.TargetLabel is null ? $"{a.SourceLabel} ist über keinem Ablageziel." : $"{a.SourceLabel} ist über {a.TargetLabel}.",
+        NoFurtherTarget = _ => "In dieser Richtung gibt es kein weiteres Ablageziel.",
+        Dropped = a => $"{a.SourceLabel} auf {a.TargetLabel} abgelegt.",
+        Cancelled = a => $"Ziehen von {a.SourceLabel} abgebrochen.",
+    };
+
+    private readonly BdndAnnouncements _englishTexts;
+    private readonly BdndAnnouncements _germanTexts;
+    private readonly List<string> _heard = [];
+
+    public Keyboard()
+    {
+        _englishTexts = Transcribed(BdndAnnouncements.Default);
+        _germanTexts = Transcribed(German);
+    }
+
+    // Only for the panel under the board: the same texts, each also written down as it is announced.
+    private BdndAnnouncements Transcribed(BdndAnnouncements texts) => new()
+    {
+        Instructions = texts.Instructions,
+        UnnamedSource = texts.UnnamedSource,
+        UnnamedTarget = texts.UnnamedTarget,
+        DragStarted = a => Heard(texts.DragStarted(a)),
+        DraggedOver = a => Heard(texts.DraggedOver(a)),
+        NoFurtherTarget = a => Heard(texts.NoFurtherTarget(a)),
+        Dropped = a => Heard(texts.Dropped(a)),
+        Cancelled = a => Heard(texts.Cancelled(a)),
+    };
+
+    private string? Heard(string? text)
+    {
+        if (string.IsNullOrEmpty(text)) return text;
+        _heard.Add(text);
+        if (_heard.Count > 6) _heard.RemoveAt(0);
+        _ = InvokeAsync(StateHasChanged);
+        return text;
+    }
+
     private IEnumerable<KanbanTask> TasksIn(string column) => _tasks.Where(t => t.Column == column);
 
     private bool CanMove(KanbanTask? task, string column) =>
@@ -83,12 +169,12 @@
 
     private string? NextOf(KanbanTask task) => NearestOf(task, 1);
 
-    // The nearest column that way the task can move to: a full column is skipped, as the arrow keys skip it.
+    // The nearest column that way the task can move to: a full or locked column is skipped, as the arrow keys skip it.
     private string? NearestOf(KanbanTask task, int step)
     {
         for (var index = Array.IndexOf(Columns, task.Column) + step; index >= 0 && index < Columns.Length; index += step)
         {
-            if (CanMove(task, Columns[index])) return Columns[index];
+            if (CanMove(task, Columns[index]) && (Columns[index] != "Done" || _doneLocked is false)) return Columns[index];
         }
         return null;
     }

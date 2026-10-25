@@ -91,6 +91,11 @@ builder.Services.AddBitBdndServices();</pre>
                 </div>
             </BdndDropTarget>
         </BdndProvider>
+
+        <p class="demo-caption">
+            Drag a box with the mouse, press and hold one with a finger, or <kbd>Tab</kbd> to it and press
+            <kbd>Space</kbd>, an arrow key and <kbd>Space</kbd> again: the same markup takes all three.
+        </p>
     </div>
 
     <div class="bb-note">
@@ -128,8 +133,16 @@ builder.Services.AddBitBdndServices();</pre>
                     <td><code>IBdndMonitor</code>, a read-only view of the live drag state, on every collected state and callback argument as <code>Monitor</code>.</td>
                 </tr>
                 <tr>
-                    <td class="bb-table-key">Backend</td>
-                    <td>The browser's native HTML5 drag events, so files, text and links dragged in from outside the browser drop too.</td>
+                    <td class="bb-table-key">Callbacks</td>
+                    <td><code>OnBegin</code> and <code>OnEnd</code> on a source; <code>OnHover</code>, <code>OnEnter</code>, <code>OnLeave</code> and <code>OnDrop</code> on a target; <code>OnDragStart</code> and <code>OnDragEnd</code> on the provider for every drag. A target can publish a result from <code>OnDrop</code>, which the source's <code>OnEnd</code> receives with <code>DidDrop</code>.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Input</td>
+                    <td>The browser's own HTML5 drag and drop for the mouse - so files, text and links dragged in from outside the browser drop too - pointer events for touch and pen, and the keyboard (<kbd>Space</kbd>, the arrow keys, <kbd>Space</kbd>) for everyone. Every input runs the same callbacks.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Styling hooks</td>
+                    <td>Hosts carry <code>data-bit-bdnd-dragging</code>, <code>data-bit-bdnd-can-drop</code>, <code>data-bit-bdnd-over</code>, <code>data-bit-bdnd-over-shallow</code> and <code>data-bit-bdnd-edge</code> while a drag is in progress, so a stylesheet can follow it. Bdnd ships no stylesheet of its own.</td>
                 </tr>
             </tbody>
         </table>
@@ -140,10 +153,13 @@ builder.Services.AddBitBdndServices();</pre>
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Where to go next</h3>
     <div class="bb-try">
         <a href="tutorial" class="btn btn-outline">Allow only legal moves →</a>
-        <a href="sortable/simple" class="btn btn-outline">Reorder a list →</a>
+        <a href="sortable/indicators" class="btn btn-outline">Reorder a list →</a>
         <a href="drag-around/custom-layer" class="btn btn-outline">Draw your own preview →</a>
         <a href="customize/handles" class="btn btn-outline">Drag by a handle →</a>
+        <a href="customize/pointer" class="btn btn-outline">Drag on a touch screen →</a>
+        <a href="accessibility/keyboard" class="btn btn-outline">Drag with the keyboard →</a>
         <a href="other/native-files" class="btn btn-outline">Accept dropped files →</a>
+        <a href="other/drag-events" class="btn btn-outline">Watch every drag →</a>
     </div>
 </div>
 

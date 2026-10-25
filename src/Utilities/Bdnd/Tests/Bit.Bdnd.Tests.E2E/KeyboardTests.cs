@@ -213,4 +213,47 @@ public sealed class KeyboardTests : BdndTest
         // the revert re-rendered the card back into its place, and it still has the focus
         await EventuallyAsync(() => IsFocusedAsync(source), "the reverted card keeps the focus");
     }
+
+    [TestMethod]
+    public async Task Announcements_given_to_the_provider_are_what_screen_readers_hear()
+    {
+        var page = await OpenAsync("/accessibility/keyboard");
+        var card = Card(page, "Write the docs");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Deutsch" }).ClickAsync();
+        // the instructions a screen reader reads on focus are the provider's too
+        await Expect(card).ToHaveAccessibleDescriptionAsync(new System.Text.RegularExpressions.Regex("^Leertaste"));
+        await FocusAsync(page, card);
+
+        await page.Keyboard.PressAsync("Space");
+        await Expect(LiveRegion(page)).ToHaveTextAsync("Write the docs aufgenommen. 2 Ablageziele verfügbar.");
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(LiveRegion(page)).ToHaveTextAsync("Write the docs ist über Doing.");
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(LiveRegion(page)).ToHaveTextAsync("Ziehen von Write the docs abgebrochen.");
+
+        // the panel under the board shows what was said
+        await Expect(page.Locator(".kanban-heard li")).ToHaveTextAsync(
+            ["Write the docs aufgenommen. 2 Ablageziele verfügbar.", "Write the docs ist über Doing.", "Ziehen von Write the docs abgebrochen."]);
+    }
+
+    [TestMethod]
+    public async Task The_provider_can_turn_keyboard_dragging_off_and_a_disabled_column_is_skipped()
+    {
+        var page = await OpenAsync("/accessibility/keyboard");
+        var card = Card(page, "Fix the build");
+
+        await page.GetByLabel("Keyboard dragging").UncheckAsync();
+        await Expect(card).Not.ToHaveAttributeAsync("tabindex", "0");
+        await page.GetByLabel("Keyboard dragging").CheckAsync();
+        await Expect(card).ToHaveAttributeAsync("tabindex", "0");
+
+        // locked, "Done" takes nothing: from "Doing" only "To do" is left, and the button towards "Done" is off
+        await page.GetByLabel("Lock Done").CheckAsync();
+        await Expect(card.Locator(".kanban-card__move").Nth(1)).ToBeDisabledAsync();
+        await FocusAsync(page, card);
+        await page.Keyboard.PressAsync("Space");
+        await Expect(LiveRegion(page)).ToHaveTextAsync("Picked up Fix the build. 1 drop target is available.");
+        await Expect(page.Locator(".kanban-column[data-bit-bdnd-can-drop]")).ToHaveCountAsync(2);
+        await page.Keyboard.PressAsync("Escape");
+    }
 }

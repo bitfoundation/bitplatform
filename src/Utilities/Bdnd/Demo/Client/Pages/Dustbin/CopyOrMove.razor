@@ -9,7 +9,9 @@
         <em>copy</em> box can be dropped any number of times, while the <em>move</em> box is
         removed from the palette once it has been accepted by the dustbin (using the
         <code>OnEnd</code> callback and its <code>DidDrop</code>). Each box also sets its
-        <code>DropEffect</code>, so the cursor shows whether it will be copied or moved.
+        <code>DropEffect</code>, so the cursor shows whether it will be copied or moved. Released anywhere but the
+        bin - or cancelled with <kbd>Escape</kbd> - the drag ends with <code>DidDrop</code> false, and the move box
+        stays where it was.
     </p>
 </div>
 

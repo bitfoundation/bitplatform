@@ -6,7 +6,11 @@
     <h1>Dustbin - Single Target</h1>
     <p class="bb-subtitle">
         The simplest setup: a single <code>BdndDropTarget</code> that accepts one item type.
-        Drag a box onto the dustbin and it reacts to hover and records the drop.
+        Drag a box onto the dustbin and it reacts to hover (<code>IsOver</code>) and records the drop
+        (<code>OnDrop</code>). Every draggable takes every input: the mouse, a finger held on a box for a moment,
+        and the keyboard - <kbd>Tab</kbd> to a box, <kbd>Space</kbd> to pick it up, an arrow key to move it over the
+        bin and <kbd>Space</kbd> to drop it. This bin has no <code>Label</code>, so a screen reader names it by its
+        place, "drop target 1 of 1"; the other pages name their targets.
     </p>
 </div>
 

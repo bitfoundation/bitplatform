@@ -46,8 +46,11 @@
             }
         </div>
 
-        <h2 class="demo-result-title">Labels</h2>
-        <div class="indicator-chips">
+        <div class="indicator-chips-bar">
+            <h2 class="demo-result-title">Labels</h2>
+            <label class="bb-check"><input type="checkbox" @bind="_rtl" /> Right to left</label>
+        </div>
+        <div class="indicator-chips" dir="@(_rtl ? "rtl" : null)">
             @for (var i = 0; i < _labels.Count; i++)
             {
                 var index = i;
@@ -65,6 +68,15 @@
     <p class="demo-caption indicator-labels">Labels: @string.Join(", ", _labels)</p>
 
     <p class="demo-caption indicator-order">@string.Join(" | ", _lists.Select(l => $"{l.Name}: {string.Join(", ", l.Cards.Select(c => c.Title))}"))</p>
+</div>
+
+<div class="bb-note">
+    Each list is a drop target too: a drop below its cards, or on an empty list, lands on the list, which puts the card
+    at its end - unless a card of the list took the drop first, which <code>Monitor.DidDrop()</code> tells, since drops
+    reach the innermost target first. The keyboard visits that place as well ("Alpha is over the end of Backlog"), and
+    every other place between two cards once ("Alpha is after Bravo"). Edges are where they are on screen: laid out
+    right to left, the left edge of a label is <em>after</em> it, so the drop passes <code>reversed: true</code> to
+    <code>BdndList.InsertionIndex</code> - the keyboard turns its arrows around by itself.
 </div>
 
 @code {
@@ -94,11 +106,13 @@
     }
 
     private readonly List<string> _labels = ["bug", "urgent", "docs", "ui"];
+    private bool _rtl;
 
+    // Edges are where they are on screen: right to left, a label's left edge is after it in the list.
     private void MoveLabel(BdndDropEventArgs<string> e, int index)
     {
         if (e.Item is not { } label) return;
-        BdndList.Move(_labels, _labels.IndexOf(label), _labels, BdndList.InsertionIndex(index, e.ClosestEdge));
+        BdndList.Move(_labels, _labels.IndexOf(label), _labels, BdndList.InsertionIndex(index, e.ClosestEdge, reversed: _rtl));
     }
 
     private (CardList List, int Index)? Find(Card card)

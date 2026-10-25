@@ -1,8 +1,9 @@
 ﻿@inject BdndInterop Interop
 
-<BdndDraggable TItem="DragItem" Type="@ItemTypes.Card" Item="_dragItem" Context="d"
+@* Label names the card to screen readers, as the source and as the place a keyboard drag moves over. *@
+<BdndDraggable TItem="DragItem" Type="@ItemTypes.Card" Item="_dragItem" Label="@Card.Text" Context="d"
                OnBegin="HandleBegin" OnEnd="HandleEnd">
-    <BdndDropTarget TItem="DragItem" Accept="@ItemTypes.Card" OnHover="HandleHover"
+    <BdndDropTarget TItem="DragItem" Accept="@ItemTypes.Card" OnHover="HandleHover" Label="@Card.Text"
                     OnDrop="HandleDrop" style="display:contents">
         <div class="sortable-card" data-card="@Card.Id" @ref="_el" style="opacity:@(d.IsDragging ? "0.2" : "1")">
             @Card.Text

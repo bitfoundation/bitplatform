@@ -206,4 +206,20 @@ public sealed class IndicatorTests : BdndTest
         Assert.AreNotEqual(line[4], line[2], "the line shows against the page");
         await page.Keyboard.PressAsync("Escape");
     }
+
+    [TestMethod]
+    public async Task Right_to_left_a_label_dropped_on_the_left_edge_of_another_goes_after_it()
+    {
+        var page = await OpenAsync("/sortable/indicators");
+        await page.GetByLabel("Right to left").CheckAsync();
+        var urgent = page.Locator(".indicator-chip:not([data-bit-bdnd-preview])", new() { HasText = "urgent" });
+        var urgentSlot = page.Locator(".indicator-chip-slot", new() { Has = urgent });
+        var box = await BoxAsync(urgent);
+
+        await StartDragAsync(page, page.Locator(".indicator-chip:not([data-bit-bdnd-preview])", new() { HasText = "bug" }));
+        await DragToAsync(page, new Point(box.X + 4, box.Centre.Y), () => Expect(urgentSlot).ToHaveAttributeAsync("data-bit-bdnd-edge", "left"));
+
+        // the list runs right to left: the left edge of "urgent" is after it
+        await Expect(page.Locator(".indicator-labels")).ToHaveTextAsync("Labels: urgent, bug, docs, ui");
+    }
 }

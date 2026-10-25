@@ -125,8 +125,9 @@ user can open the same example on both sides: the chessboard tutorial, dustbins 
 or move, inside an iframe, a stress test), drag-around (naive and with a custom drag layer), nesting (drag sources
 and drop targets), sortable lists (simple, cancel on drop outside, a hundred-item stress test), handles and previews,
 drop effects, and native files and HTML - and pages of its own: drop indicators, a sortable grid, a virtualized
-list, several items at once, a page builder, a folder tree, touch and pointer drags, a keyboard kanban board, and a
-Blazor Server page that drags over a SignalR circuit. Every page can show its own source.
+list, several items at once, a page builder, a folder tree, touch and pointer drags, a keyboard kanban board, the
+events of a drag with an undo history, separate drag contexts, and a Blazor Server page that drags over a SignalR
+circuit. Every page can show its own source.
 
 To run it locally:
 
@@ -297,7 +298,9 @@ around each region that drags independently - or one around the whole layout whe
 
 Providers nest. The components inside an inner provider belong to its manager and ignore drags of the outer one:
 an item of the outer provider is not accepted by a target of the inner provider, even when its type matches, and a
-nested target's shallow hover only considers targets of its own provider.
+nested target's shallow hover only considers targets of its own provider. The demo's
+[separate contexts](https://bdnd.bitplatform.dev/other/contexts) page shows providers side by side, one nested in
+another, and two providers sharing one manager.
 
 ### Supplying your own manager
 
@@ -343,7 +346,8 @@ cleared and the source's `OnEnd` began - so it sees the monitor no longer draggi
 outside the manager's update, so what they render or throw lands on its own. The manager raises the same moments
 synchronously as the `DragStarted` and `DragEnded` events, for code outside the provider (a manager passed with
 `Manager`); a handler of those that throws does not stop the drag from beginning or ending, and its exception reaches
-the renderer through the provider.
+the renderer through the provider. The demo's [drag events and undo](https://bdnd.bitplatform.dev/other/drag-events)
+page logs every one of these moments and builds an undo history from `OnDragEnd`.
 
 ## Draggables
 
@@ -479,7 +483,8 @@ dragged, and a target receives the whole list:
 A `BdndDragLayer<IReadOnlyList<Card>>` can draw "3 cards" as the preview. The keyboard drags the selection the same
 way (Space on a selected card picks them all up). The demo's
 [dragging several items](https://bdnd.bitplatform.dev/sortable/multi-select) page is the complete example, with a
-checkbox per card so the selection can be made with the keyboard too.
+checkbox per card so the selection can be made with the keyboard too, and a drag layer that draws how many cards a
+drag carries.
 
 ### Custom isDragging
 
@@ -545,7 +550,9 @@ target can accept, and the drop's final pointer position is recorded first, so
 Set `args.Result` in `OnDrop` to tell the source what happened. The source reads it in `OnEnd` as `DropResult`
 (or `Monitor.GetDropResult<T>()`). With nested targets every accepting target's `OnDrop` runs, innermost first, and
 a non-null result set by an outer target overrides an inner one - React DnD's rule. An outer target can check
-`args.Monitor.DidDrop()` to see whether an inner one already handled the drop.
+`args.Monitor.DidDrop()` to see whether an inner one already handled the drop. The demo's
+[nested drop targets](https://bdnd.bitplatform.dev/nesting/drop-targets) page logs the order and the result, with
+and without such "greedy" targets.
 
 An async `OnDrop` may set `args.Result` after an `await`. The drop counts as soon as the handler starts - an outer
 target's `DidDrop()` is true while the inner handler is still running - and the drag ends, running `OnEnd` with the
@@ -662,8 +669,10 @@ coordinates.
 To keep the preview on one axis, snap it to a grid or hold it inside an area, draw it at an offset the helpers of
 `BdndXYCoord` work out: `layer.SourceClientOffsetOn(BdndAxis.Vertical)` keeps it to the list's axis,
 `offset.SnapTo(40, 40, origin)` moves it cell by cell, and `offset.Clamp(min, max)` keeps its corner inside an area.
-They only move the preview: where the drop lands is still decided by the pointer. A pointer drag's own copy keeps to
-an axis with `PreviewAxis` on the draggable.
+They only move the preview: where the drop lands is still decided by the pointer - a drop handler that wants the item
+where its preview was works the drop's offset out the same way, as the demo's
+[custom drag layer](https://bdnd.bitplatform.dev/drag-around/custom-layer) page does for each of the three. A pointer
+drag's own copy keeps to an axis with `PreviewAxis` on the draggable.
 
 A layer follows every drag of its provider. Give it `Accept` (or `AcceptTypes`) to draw the drags of some item types
 only: a drag of another type is no drag to it (`IsDragging` false), and - what matters on Blazor Server, where each
