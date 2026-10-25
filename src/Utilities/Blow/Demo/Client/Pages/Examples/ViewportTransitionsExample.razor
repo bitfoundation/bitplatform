@@ -3,13 +3,21 @@
 <PageTitle>Viewport Transitions · Blow</PageTitle>
 
 <ExampleScaffold Title="Viewport Transitions"
-                 Summary="Every viewport helper has an async twin that takes a duration. Jumping between two far-apart parts of a graph loses the reader; a short eased transition tells them which way they travelled. Grabbing the pane mid-flight abandons the transition rather than fighting it.">
+                 Summary="Every viewport helper has an async twin that takes a duration. Jumping between two far-apart parts of a graph loses the reader; a short eased transition tells them which way they travelled. Grabbing the pane mid-flight abandons the transition rather than fighting it. ReducedMotion follows the operating system's reduce-motion setting by default: with it on, every transition jumps straight to its destination and animated edges stop moving.">
     <Toolbar>
         <label>
             Duration
             <input type="range" min="0" max="1500" step="100" value="@_duration"
                    @oninput="@(e => SetDuration(e.Value))" />
             <span class="duration">@(_duration == 0 ? "instant" : $"{_duration} ms")</span>
+        </label>
+        <label>
+            Motion
+            <select @bind="_motion">
+                <option value="@BlowReducedMotion.System">Follow the system</option>
+                <option value="@BlowReducedMotion.Always">Reduce</option>
+                <option value="@BlowReducedMotion.Never">Always animate</option>
+            </select>
         </label>
         <button class="btn btn-secondary" @onclick="FlyToStart">Fly to Start</button>
         <button class="btn btn-secondary" @onclick="FlyToFinish">Fly to Finish</button>
@@ -22,6 +30,7 @@
                     Nodes="_nodes"
                     Edges="_edges"
                     MinZoom="0.1"
+                    ReducedMotion="_motion"
                     OnMoveStart="OnMoveStart"
                     OnMoveEnd="OnMoveEnd"
                     FitViewOnInit="true">
@@ -54,6 +63,8 @@
 </style>
 
 @code {
+    private BlowReducedMotion _motion = BlowReducedMotion.System;
+
     private BlowCanvas _flow = default!;
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];

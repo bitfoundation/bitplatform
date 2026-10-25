@@ -374,6 +374,16 @@ export function installInteractionGuards(paneEl: HTMLElement | null, noDragClass
         const t = e.target;
         if (!(t instanceof Element) || isEditable(t)) return;
 
+        // A minimap that can be steered keeps the keys it acts on from scrolling the page - only those, and never with
+        // a modifier held: Ctrl with plus zooms the page and Alt with an arrow goes back, as everywhere else.
+        if (t.matches('.bit-blow-minimap[tabindex]') && t.closest(`.${ROOT_CLASS}`) === pane) {
+            if (e.ctrlKey || e.metaKey || e.altKey || !e.key) return;
+            const pans = t.classList.contains('pannable') && e.key.startsWith('Arrow');
+            const zooms = t.classList.contains('zoomable') && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '_');
+            if (pans || zooms || e.key === 'Home') e.preventDefault();
+            return;
+        }
+
         // The pane itself, or one of this flow's own nodes or edges - not a button or an input
         // inside a node, which keep their own keys, and not the elements of a nested flow.
         const onElement = t !== pane
@@ -410,6 +420,30 @@ export function releasePointerCapture(el: Element | null, pointerId: number): vo
     try {
         if (el?.hasPointerCapture(pointerId)) el.releasePointerCapture(pointerId);
     } catch { /* the pointer is already gone */ }
+}
+
+// True when the operating system asks applications to reduce motion. Read once when a canvas starts: the
+// viewport transitions are C#'s, so C# has to be told; the edge animation follows the media query in CSS.
+export function prefersReducedMotion(): boolean {
+    return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+// Moves keyboard focus to one of this flow's own nodes or edges - found among the direct children of its layers, so a
+// flow nested inside a node, whose ids may well be the same, is never the one reached. False when the element is not
+// in the page (culled, hidden) or would not take focus.
+export function focusElement(pane: HTMLElement, kind: string, id: string): boolean {
+    const viewport = pane.querySelector(':scope > .bit-blow-viewport');
+    const layer = kind === 'edge' ? viewport?.querySelector(':scope > svg.bit-blow-edges') : viewport;
+    if (!layer) return false;
+
+    const className = kind === 'edge' ? 'bit-blow-edge' : 'bit-blow-node';
+    for (const child of Array.from(layer.children)) {
+        if (child.classList.contains(className) && child.getAttribute('data-id') === id) {
+            (child as HTMLElement | SVGElement).focus({ preventScroll: true });
+            return document.activeElement === child;
+        }
+    }
+    return false;
 }
 
 // True when focus sits in something the user is typing into, so the flow can ignore

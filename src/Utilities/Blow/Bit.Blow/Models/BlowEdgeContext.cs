@@ -82,4 +82,5 @@ internal readonly record struct BlowEdgeGeometryKey(
     BlowEdgeType Type,
     double? Curvature, double? BorderRadius, double? Offset, double? StepPosition,
     double? LoopRadius,
-    bool MarkerStart, bool MarkerEnd, BlowMarkerSpec Marker);
+    bool MarkerStart, bool MarkerEnd, BlowMarkerSpec Marker,
+    int RouteVersion = 0);

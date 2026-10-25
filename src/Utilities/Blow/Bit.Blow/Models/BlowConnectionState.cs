@@ -30,6 +30,13 @@ public sealed class BlowConnectionLineContext
 
     /// <summary>True when the pointer is currently over a valid drop target.</summary>
     public bool IsValid { get; init; }
+
+    /// <summary>
+    /// Why the handle the line ends at - the one under the pointer, or the nearest within snapping distance -
+    /// would refuse the connection, or <see cref="BlowConnectionRejection.None"/> when it would not, or when there
+    /// is no handle nearby. A custom connection line can show the reason as the user drags.
+    /// </summary>
+    public BlowConnectionRejection Rejection { get; init; }
 }
 
 /// <summary>
@@ -54,4 +61,11 @@ public readonly record struct BlowConnectEndInfo(
 
     /// <summary>True when the gesture was dragging one end of an existing edge rather than drawing a new one.</summary>
     public bool IsReconnect { get; init; }
+
+    /// <summary>
+    /// Why the gesture did not connect, when a handle refused it: the user let go on (or near) a handle the rules
+    /// turned down, or <c>OnBeforeConnect</c> declined. <see cref="BlowConnectionRejection.None"/> when it
+    /// connected, or ended on empty space.
+    /// </summary>
+    public BlowConnectionRejection Rejection { get; init; }
 }

@@ -27,9 +27,82 @@ public sealed class BlowAriaLabels
     /// <summary>What a screen reader calls the kind of thing an edge is.</summary>
     public string EdgeRoleDescription { get; init; } = "edge";
 
-    /// <summary>Accessible name of an edge that carries no label of its own.</summary>
+    /// <summary>
+    /// Accessible name of an edge that carries no label of its own. Receives the names of the source and target
+    /// nodes - each node's aria label, label or id, as a node is announced.
+    /// </summary>
     public Func<string, string, string> EdgeLabel { get; init; }
         = (source, target) => $"Edge from {source} to {target}";
+
+    /// <summary>
+    /// The state of a node, read after its name as its description: selected or not, its connections, and what a
+    /// validation found wrong with it (<c>BlowCanvas.Validation</c>). An empty result leaves only the keyboard
+    /// instructions.
+    /// </summary>
+    public Func<BlowNodeState, string> NodeState { get; init; } = DefaultNodeState;
+
+    /// <summary>The state of an edge, read after its name as its description; see <see cref="NodeState"/>.</summary>
+    public Func<BlowEdgeState, string> EdgeState { get; init; } = DefaultEdgeState;
+
+    private static string DefaultNodeState(BlowNodeState state)
+    {
+        var parts = new List<string>();
+        if (state.Node.Selected) parts.Add("Selected");
+        if (state.Node.Collapsed) parts.Add("Collapsed");
+        if (DefaultRunState(state.Run) is { } run) parts.Add(run);
+        AddIssues(parts, state.Issues);
+        parts.Add((state.Incoming, state.Outgoing) switch
+        {
+            (0, 0) => "Not connected",
+            (var i, 0) => $"{Count(i, "incoming connection")}",
+            (0, var o) => $"{Count(o, "outgoing connection")}",
+            (var i, var o) => $"{Count(i, "incoming connection")} and {Count(o, "outgoing connection")}",
+        });
+        return string.Join(". ", parts) + ".";
+    }
+
+    private static string? DefaultRunState(BlowRunState run)
+    {
+        var status = run.Status switch
+        {
+            BlowRunStatus.Queued => "Queued",
+            BlowRunStatus.Running => "Running",
+            BlowRunStatus.Succeeded => "Succeeded",
+            BlowRunStatus.Failed => "Failed",
+            BlowRunStatus.Skipped => "Skipped",
+            _ => null,
+        };
+        if (status is null) return null;
+        return string.IsNullOrEmpty(run.Message) ? status : $"{status}: {run.Message.TrimEnd('.')}";
+    }
+
+    private static string DefaultEdgeState(BlowEdgeState state)
+    {
+        var parts = new List<string>();
+        if (state.Edge.Selected) parts.Add("Selected");
+        AddIssues(parts, state.Issues);
+        return parts.Count == 0 ? "" : string.Join(". ", parts) + ".";
+    }
+
+    private static void AddIssues(List<string> parts, IReadOnlyList<BlowValidationIssue> issues)
+    {
+        // A handful is what a listener can take in; the rest are counted.
+        const int Spoken = 3;
+        for (var i = 0; i < issues.Count && i < Spoken; i++)
+        {
+            var issue = issues[i];
+            var severity = issue.Severity switch
+            {
+                BlowValidationSeverity.Error => "Error",
+                BlowValidationSeverity.Warning => "Warning",
+                _ => "Note",
+            };
+            parts.Add($"{severity}: {issue.Message.TrimEnd('.')}");
+        }
+        if (issues.Count > Spoken) parts.Add(Count(issues.Count - Spoken, "more problem"));
+    }
+
+    private static string Count(int count, string noun) => count == 1 ? $"1 {noun}" : $"{count} {noun}s";
 
     /// <summary>Announced when a node becomes selected.</summary>
     public Func<string, string> NodeSelected { get; init; } = name => $"{name} selected";
@@ -52,7 +125,94 @@ public sealed class BlowAriaLabels
     /// <summary>Announced when several nodes were moved together with the keyboard.</summary>
     public Func<int, string> NodesMoved { get; init; } = count => $"{count} nodes moved";
 
+    /// <summary>Announced when a node is collapsed. Receives its name and how many nodes were folded away into it.</summary>
+    public Func<string, int, string> NodeCollapsed { get; init; } = (name, count) => $"{name} collapsed, {Count(count, "node")} hidden";
+
+    /// <summary>Announced when a node is expanded. Receives its name and how many nodes came back into view.</summary>
+    public Func<string, int, string> NodeExpanded { get; init; } = (name, count) => $"{name} expanded, {Count(count, "node")} shown";
+
     /// <summary>Announced after a deletion.</summary>
     public Func<int, int, string> Deleted { get; init; }
         = (nodes, edges) => $"Deleted {nodes} node(s) and {edges} edge(s)";
+
+    /// <summary>Announced when a connection is made. Receives the names of the source and target nodes.</summary>
+    public Func<string, string, string> Connected { get; init; }
+        = (source, target) => $"Connected {source} to {target}";
+
+    /// <summary>Announced when a connection the user tried to make was refused, with the reason.</summary>
+    public Func<BlowConnectionRejection, string> ConnectionRejected { get; init; } = DefaultRejection;
+
+    /// <summary>
+    /// Announced when a connection is started from the keyboard (<c>BlowCanvas.ConnectionKey</c>). Receives the
+    /// node's name, the port's label (its declared label, else its id; null for an unnamed handle) and the
+    /// connection key, upper-cased.
+    /// </summary>
+    public Func<string, string?, string, string> KeyboardConnectionStarted { get; init; } = (node, port, key) =>
+        $"Connecting from {node}{(port is null ? "" : $", {port}")}. Move to another node and press Enter to "
+        + $"connect, {key} to choose another port, or Escape to cancel.";
+
+    /// <summary>
+    /// Announced while connecting from the keyboard, when focus reaches a node the connection could end on.
+    /// Receives the node's name and the port's label, as <see cref="KeyboardConnectionStarted"/> does.
+    /// </summary>
+    public Func<string, string?, string> KeyboardConnectionTarget { get; init; } = (node, port) =>
+        $"Press Enter to connect to {node}{(port is null ? "" : $", {port}")}.";
+
+    /// <summary>Announced when a connection started from the keyboard is abandoned.</summary>
+    public string KeyboardConnectionCancelled { get; init; } = "Connection cancelled.";
+
+    /// <summary>
+    /// Announced when the connection key is pressed on a node no connection can start from - it takes none, or
+    /// every port it has is full.
+    /// </summary>
+    public Func<string, string> KeyboardConnectionUnavailable { get; init; } =
+        node => $"No connection can start from {node}.";
+
+    private static string DefaultRejection(BlowConnectionRejection reason) => reason switch
+    {
+        BlowConnectionRejection.NotConnectable => "Cannot connect: that node does not take connections",
+        BlowConnectionRejection.SameHandleType => "Cannot connect: an output must be joined to an input",
+        BlowConnectionRejection.SelfConnection => "Cannot connect a node to itself",
+        BlowConnectionRejection.Duplicate => "Cannot connect: those two are already connected",
+        BlowConnectionRejection.IncompatibleTypes => "Cannot connect: the two ports carry incompatible types",
+        BlowConnectionRejection.SourceFull => "Cannot connect: the output has no free connections",
+        BlowConnectionRejection.TargetFull => "Cannot connect: the input has no free connections",
+        BlowConnectionRejection.Cycle => "Cannot connect: the connection would create a cycle",
+        BlowConnectionRejection.MissingNode => "Cannot connect: the node is no longer there",
+        _ => "Cannot connect",
+    };
+
+    /// <summary>
+    /// How to use the flow from the keyboard, read by a screen reader as the description of the flow itself
+    /// (through <c>aria-describedby</c>), after its name. An empty string leaves the flow undescribed.
+    /// </summary>
+    /// <remarks>
+    /// A canvas gives a screen-reader user nothing to discover its keys by: there is no visible menu, and the
+    /// shortcuts are the flow's own. Saying once, where focus first lands, what the keys do is what makes the rest
+    /// of the keyboard support findable.
+    /// </remarks>
+    public string PaneInstructions { get; init; }
+        = "Press Tab to move between the nodes and edges of the diagram.";
+
+    /// <summary>
+    /// The description of a node (through <c>aria-describedby</c>): what can be done with the focused node. An
+    /// empty string leaves nodes undescribed.
+    /// </summary>
+    public string NodeInstructions { get; init; }
+        = "Press Enter or Space to select it, Shift with Enter to add it to the selection, the arrow keys to move "
+          + "the selected nodes, Delete to remove them and Escape to clear the selection.";
+
+    /// <summary>
+    /// Added to <see cref="NodeInstructions"/> while connections can be made from the keyboard. Receives the key, as
+    /// <c>BlowCanvas.ConnectionKey</c> names it, upper-cased.
+    /// </summary>
+    public Func<string, string> KeyboardConnectionInstructions { get; init; }
+        = key => $"Press {key} to start a connection from it.";
+
+    /// <summary>
+    /// The description of an edge (through <c>aria-describedby</c>): what can be done with the focused edge. An
+    /// empty string leaves edges undescribed.
+    /// </summary>
+    public string EdgeInstructions { get; init; }
+        = "Press Enter or Space to select it, Delete to remove it and Escape to clear the selection.";
 }

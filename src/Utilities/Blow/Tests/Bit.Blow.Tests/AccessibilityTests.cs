@@ -44,8 +44,9 @@ public class AccessibilityTests : BunitContext
         // region instead, which is what a screen reader user actually hears.
         Assert.IsNull(rendered[0].GetAttribute("aria-selected"));
 
+        // The nodes an edge joins are named as they are announced, not by their ids.
         var edge = cut.Find(".bit-blow-edge");
-        Assert.AreEqual("Edge from 1 to 2", edge.GetAttribute("aria-label"));
+        Assert.AreEqual("Edge from Start to The end", edge.GetAttribute("aria-label"));
     }
 
     [TestMethod]

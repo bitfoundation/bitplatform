@@ -60,6 +60,17 @@ internal sealed class BlowInterop : IAsyncDisposable
     public async ValueTask ReleasePointerCaptureAsync(object element, long pointerId)
         => await (await _moduleTask.Value).InvokeVoidAsync("releasePointerCapture", element, pointerId);
 
+    /// <summary>True when the operating system asks applications to reduce motion.</summary>
+    public async ValueTask<bool> PrefersReducedMotionAsync()
+        => await (await _moduleTask.Value).InvokeAsync<bool>("prefersReducedMotion");
+
+    /// <summary>
+    /// Moves keyboard focus to one of the pane's own nodes or edges (<paramref name="kind"/> is <c>node</c> or
+    /// <c>edge</c>) - not one of a flow nested inside it. False when it is not in the page or would not take focus.
+    /// </summary>
+    public async ValueTask<bool> FocusElementAsync(object pane, string kind, string id)
+        => await (await _moduleTask.Value).InvokeAsync<bool>("focusElement", pane, kind, id);
+
     /// <summary>True when focus currently sits in a text input, textarea, select or contenteditable.</summary>
     public async ValueTask<bool> IsEditableFocusedAsync()
         => await (await _moduleTask.Value).InvokeAsync<bool>("isEditableFocused");

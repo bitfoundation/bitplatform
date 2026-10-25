@@ -1,0 +1,101 @@
+﻿@page "/examples/layouts-and-collapsing"
+<PageTitle>Layouts &amp; Collapsing · Blow</PageTitle>
+
+<ExampleScaffold Title="Layouts &amp; Collapsing"
+                 Summary="Tree, radial and force layouts next to the layered one, applied with LayoutAsync to the whole graph or - with something selected - to the selection only, tidied where it stands as one undo step. The group folds away with SetCollapsedAsync (or a double-click): its children are hidden, the edges that ran into them are drawn to the group, and expanding brings everything back.">
+    <Toolbar>
+        @foreach (var (label, layout) in _layouts)
+        {
+            <button class="btn btn-secondary" @onclick="@(() => Arrange(layout))">@label</button>
+        }
+        <span class="lc-sep"></span>
+        <button class="btn btn-secondary" @onclick="ToggleGroup">@(Group?.Collapsed == true ? "Expand" : "Collapse") group</button>
+        <button class="btn btn-secondary" disabled="@(!_history.CanUndo)" @onclick="() => _flow!.UndoAsync()">↶ Undo @_history.UndoLabel</button>
+        <span class="lc-hint">@Hint</span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" HistoryEnabled="true"
+                    OnHistoryChanged="s => _history = s"
+                    OnSelectionChange="s => _selected = s.Nodes.Count"
+                    OnNodeDoubleClick="OnDoubleClick">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowMiniMap Pannable="true" Zoomable="true" />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .lc-sep { display: inline-block; width: 1rem; }
+    .lc-hint { margin-left: auto; font-size: 12px; color: var(--bb-text-soft); }
+    .bit-blow-node-group.collapsed { border-style: dashed; }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private BlowHistoryState _history;
+    private int _selected;
+
+    private readonly (string Label, IBlowLayout Layout)[] _layouts =
+    [
+        ("Layered", new BlowLayeredLayoutOptions { Direction = BlowLayoutDirection.LeftToRight }),
+        ("Tree", new BlowTreeLayoutOptions()),
+        ("Radial", new BlowRadialLayoutOptions()),
+        ("Force", new BlowForceLayoutOptions()),
+        ("Grid", new BlowGridLayoutOptions()),
+    ];
+
+    private BlowNode? Group => _nodes.FirstOrDefault(n => n.Id == "services");
+
+    private string Hint => _selected > 1
+        ? $"Layouts arrange the {_selected} selected nodes"
+        : "Layouts arrange the whole graph; select some nodes to arrange just those";
+
+    protected override void OnInitialized()
+    {
+        BlowNode Node(string id, string label, double x, double y, string? parent = null) =>
+            new() { Id = id, Label = label, Position = new(x, y), Width = 130, Height = 40, ParentId = parent, ExtentParent = parent is not null };
+
+        _nodes =
+        [
+            Node("web", "Web app", 0, 0),
+            Node("mobile", "Mobile app", 0, 120),
+            Node("gateway", "API gateway", 220, 60),
+            new() { Id = "services", Type = "group", Label = "Services", Position = new(440, -40), Width = 360, Height = 300 },
+            Node("orders", "Orders", 30, 50, "services"),
+            Node("billing", "Billing", 200, 50, "services"),
+            Node("stock", "Stock", 30, 160, "services"),
+            Node("mail", "Mail", 200, 160, "services"),
+            Node("db", "Database", 880, 0),
+            Node("queue", "Queue", 880, 160),
+        ];
+
+        _edges =
+        [
+            new() { Id = "web-gw", Source = "web", Target = "gateway" },
+            new() { Id = "mob-gw", Source = "mobile", Target = "gateway" },
+            new() { Id = "gw-orders", Source = "gateway", Target = "orders" },
+            new() { Id = "gw-billing", Source = "gateway", Target = "billing" },
+            new() { Id = "orders-stock", Source = "orders", Target = "stock" },
+            new() { Id = "billing-mail", Source = "billing", Target = "mail" },
+            new() { Id = "orders-db", Source = "orders", Target = "db" },
+            new() { Id = "billing-db", Source = "billing", Target = "db" },
+            new() { Id = "mail-queue", Source = "mail", Target = "queue" },
+        ];
+    }
+
+    private async Task Arrange(IBlowLayout layout)
+    {
+        if (_flow is null) return;
+        await _flow.LayoutAsync(layout);
+        _flow.UpdateNodeInternals();
+        if (_selected <= 1) _flow.FitView();
+    }
+
+    private Task ToggleGroup() => Group is { } group && _flow is not null ? _flow.SetCollapsedAsync(group) : Task.CompletedTask;
+
+    private Task OnDoubleClick(BlowNodeMouseEvent e)
+        => e.Node.Type == "group" && _flow is not null ? _flow.SetCollapsedAsync(e.Node) : Task.CompletedTask;
+}

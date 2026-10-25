@@ -107,6 +107,13 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// Return false to reject; rejected targets are highlighted differently.
     /// </summary>
     [Parameter] public Func<BlowConnection, bool>? IsValidConnection { get; set; }
+    /// <summary>
+    /// Raised once for every completed edit, with what kind of edit it was, where it came from, and the nodes and edges
+    /// it added, changed or removed - at the end of a drag rather than on every move. The place to persist, validate,
+    /// or send an operation to a collaboration server; see <see cref="BlowGraphChange"/>.
+    /// </summary>
+    [Parameter] public EventCallback<BlowGraphChange> OnGraphChanged { get; set; }
+
     /// <summary>Raised after the canvas has changed the node list, for persistence or two-way binding.</summary>
     [Parameter] public EventCallback<List<BlowNode>> NodesChanged { get; set; }
     /// <summary>Raised after the canvas has changed the edge list, for persistence or two-way binding.</summary>
@@ -255,6 +262,33 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// </summary>
     [Parameter] public bool ConnectOnClick { get; set; }
 
+    /// <summary>
+    /// The key that starts a connection from the focused node - and, while one is being made, picks another port on
+    /// the focused node. Tab to the node to connect to and press Enter; Escape cancels. Null turns connecting from the
+    /// keyboard off, as do <see cref="DisableKeyboardA11y"/> and <see cref="NodesConnectable"/>.
+    /// </summary>
+    /// <remarks>Ignored with Ctrl, Cmd or Alt held, and while focus is in a text field inside the node.</remarks>
+    [Parameter] public string? ConnectionKey { get; set; } = "c";
+
+    /// <summary>
+    /// A validation result to show on the graph - from <see cref="BlowGraphValidator"/> or rules of your own. Nodes,
+    /// edges and ports with an error or a warning are marked by more than colour (a badge and a ring on a node, a
+    /// dashed line for an edge), and a screen reader hears the problems as part of the element's description. Null
+    /// marks nothing.
+    /// </summary>
+    [Parameter] public BlowValidationResult? Validation { get; set; }
+
+    /// <summary>
+    /// Where each node is in a run of the graph - a workflow executing, a build, a state machine - keyed by node id.
+    /// A node with a state gets the class <c>bit-blow-run-{status}</c> and a badge whose shape differs by status (a
+    /// ring while it runs, a tick, a cross), and a screen reader hears the status and its message with the node. Pass
+    /// a new dictionary, or the same one again, as the run moves on; nodes not in it show nothing.
+    /// </summary>
+    [Parameter] public IReadOnlyDictionary<string, BlowRunState>? RunStates { get; set; }
+
+    /// <summary>How <see cref="BlowEdgeType.Routed"/> edges are routed around the nodes in their way; the defaults when null.</summary>
+    [Parameter] public BlowRoutingOptions? Routing { get; set; }
+
     /// <summary>Which modifier key adds to the current selection (multi-select). Defaults to Shift.</summary>
     [Parameter] public BlowModifierKey MultiSelectionKey { get; set; } = BlowModifierKey.Shift;
     /// <summary>Path type given to edges the user creates, unless BlowDefaultEdgeOptions overrides it.</summary>
@@ -287,6 +321,13 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
     /// <summary>Color theme applied to the flow.</summary>
     [Parameter] public BlowColorMode ColorMode { get; set; } = BlowColorMode.Light;
+
+    /// <summary>
+    /// Whether viewport transitions ease and animated edges move. <see cref="BlowReducedMotion.System"/> (the
+    /// default) follows the operating system's "reduce motion" setting: with it on, every animated viewport helper
+    /// jumps straight to its destination and animated edges stop moving while keeping their dash.
+    /// </summary>
+    [Parameter] public BlowReducedMotion ReducedMotion { get; set; } = BlowReducedMotion.System;
 
     /// <summary>
     /// Default origin (0,0 = top-left, 0.5,0.5 = center) defining which point of a node its
@@ -521,6 +562,29 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// </summary>
     [Parameter] public bool AllowSelfConnections { get; set; }
 
+    /// <summary>
+    /// When true, a connection that would close a directed cycle is refused - for pipelines, dependency graphs and
+    /// any other flow that has to stay acyclic. A self-connection counts as a cycle. Off by default.
+    /// </summary>
+    [Parameter] public bool PreventCycles { get; set; }
+
+    /// <summary>
+    /// Decides whether data of a source port's <see cref="BlowPort.DataType"/> may flow into a target port's. When
+    /// null, <see cref="BlowConnectionRules.AreTypesCompatible"/> applies: untyped ports and <c>"*"</c> accept
+    /// anything, and otherwise the two comma-separated type lists must share a type, ignoring case.
+    /// </summary>
+    [Parameter] public Func<string?, string?, bool>? ConnectionTypeCompatibility { get; set; }
+
+    /// <summary>
+    /// An asynchronous last word on a connection the user has just completed - asking a server whether the user
+    /// may make it, say. Runs once, after the user lets go on a valid handle and before the edge is added (or an
+    /// existing edge rewired); returning false abandons it. The graph may change while it runs, so the connection
+    /// is checked against every rule again once it returns, and dropped if it is no longer allowed. Leave it null
+    /// for the ordinary synchronous connect: the rules a connection has to pass while it is dragged belong in
+    /// <see cref="IsValidConnection"/>.
+    /// </summary>
+    [Parameter] public Func<BlowConnection, Task<bool>>? OnBeforeConnect { get; set; }
+
     /// <summary>Enables Ctrl/Cmd+A to select every selectable element.</summary>
     [Parameter] public bool SelectAllKeyEnabled { get; set; } = true;
 
@@ -643,7 +707,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
     /// <summary>The flow this one is nested in (inside one of its nodes, say), or null for a top-level flow.</summary>
-    [CascadingParameter] private IBlowContext? EnclosingFlow { get; set; }
+    [CascadingParameter(Name = BlowCascadingNames.Context)] private IBlowContext? EnclosingFlow { get; set; }
 
     /// <summary>
     /// True when this flow sits inside another one. Its pane then keeps its input to itself: a press,
@@ -656,7 +720,40 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
     private ElementReference _paneRef;
     private ElementReference _viewportRef;
+
+    /// <summary>Makes the ids of this canvas's elements unique on a page that holds several flows.</summary>
+    private readonly string _idPrefix = Guid.NewGuid().ToString("N");
+
     private readonly string _markerPrefix = $"bit-blow-arrow-{Guid.NewGuid():N}";
+
+    /// <summary>The id of one of the hidden keyboard-instruction elements.</summary>
+    private string DescriptionId(string kind) => $"bit-blow-{kind}-help-{_idPrefix}";
+
+    /// <summary>
+    /// The pane's <c>aria-describedby</c>: the flow's own instructions, after whatever the app described it by
+    /// through an attribute of its own, so neither replaces the other.
+    /// </summary>
+    private string? PaneDescribedBy
+    {
+        get
+        {
+            var own = string.IsNullOrEmpty(AriaLabels.PaneInstructions) ? null : DescriptionId("pane");
+            var app = AdditionalAttributes?.GetValueOrDefault("aria-describedby")?.ToString();
+            return string.IsNullOrWhiteSpace(app) ? own : own is null ? app : $"{app} {own}";
+        }
+    }
+
+    /// <summary>What a focused node is described by, or null when nodes are not described (or not focusable).</summary>
+    private string? NodeDescriptionId =>
+        DisableKeyboardA11y || !NodesFocusable || string.IsNullOrEmpty(AriaLabels.NodeInstructions)
+            ? null
+            : DescriptionId("node");
+
+    /// <summary>What a focused edge is described by, or null when edges are not described (or not focusable).</summary>
+    private string? EdgeDescriptionId =>
+        DisableKeyboardA11y || !EdgesFocusable || string.IsNullOrEmpty(AriaLabels.EdgeInstructions)
+            ? null
+            : DescriptionId("edge");
 
     private BlowViewport _viewport = BlowViewport.Identity;
     private BlowDomRect? _paneRect;
@@ -674,6 +771,267 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
     private bool _needsMeasure = true;
 
+    // ---- render scoping ----
+    //
+    // Most renders of a busy canvas change very little: a frame of a pan moves the viewport transform and nothing
+    // else, a frame of a drag moves a node or two. Re-rendering every node, edge and handle component for them is
+    // what made a pan of a 1,000-node graph cost a full render of 6,000 components per frame. So every render is
+    // tagged with what it may have changed, and the parts that draw something else are told nothing:
+    //
+    //   Overlay   - only the canvas's own markup: the viewport transform, the connection line, guides.
+    //   Geometry  - nodes may have moved or changed size (drag, resize, measurement).
+    //   Full      - anything (selection, the lists, parameters, a render of the host component).
+    //
+    // A render nobody tagged - the automatic one after an event handler, a parameter update - is Full. The version
+    // numbers below are cascaded (see BlowCascadingNames) and passed to the node and edge renderers, which compare
+    // them, and the node or edge they draw, with what they last rendered.
+
+    [Flags]
+    private enum RenderScope { None = 0, Overlay = 1, Geometry = 2, Full = 4 }
+
+    private RenderScope _pendingScope;
+    private int _viewportVersion, _geometryVersion, _graphVersion, _connectionVersion;
+    private BlowViewport _renderedViewport;
+    private BlowDomRect? _renderedPane;
+
+    /// <summary>Queues a render that may have changed anything. Every unqualified call in the canvas means this.</summary>
+    private new void StateHasChanged()
+    {
+        _pendingScope |= RenderScope.Full;
+
+        // Inside EditAsync the edit renders once, at its end; the scope is kept for that render.
+        if (InEdit) return;
+        base.StateHasChanged();
+    }
+
+    /// <summary>Queues a render of the canvas's own markup only: the viewport, the connection line, the guides.</summary>
+    private void RenderOverlay()
+    {
+        _pendingScope |= RenderScope.Overlay;
+        base.StateHasChanged();
+    }
+
+    /// <summary>Queues a render in which nodes may have moved or been resized, and nothing else changed.</summary>
+    private void RenderGeometry()
+    {
+        _pendingScope |= RenderScope.Geometry;
+        base.StateHasChanged();
+    }
+
+    // ---- the callbacks each node and edge is rendered with ----
+    //
+    // A node is handed nine callbacks and an edge eight, each bound to that node or edge. Written as lambdas in the
+    // markup they would be allocated afresh for every element on every render - two megabytes a frame on a
+    // 1,000-node graph, most of the garbage a pan made. They are made once per element instead, and made again only
+    // when the canvas's parameters change, since which of them are wired up depends on which events the app handles.
+
+    private readonly Dictionary<BlowNode, BlowNodeCallbacks> _nodeCallbacks = new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<BlowEdge, BlowEdgeCallbacks> _edgeCallbacks = new(ReferenceEqualityComparer.Instance);
+
+    // What every node and edge renderer is told alike, rebuilt only when something in it changes - so a thousand
+    // renderers share one object rather than each being handed a dozen boxed values on every frame.
+    private BlowNodeRenderSettings _nodeSettings = new();
+    private BlowEdgeRenderSettings _edgeSettings = new();
+
+    private void UpdateRenderSettings()
+    {
+        var nodesFocusable = !DisableKeyboardA11y && NodesFocusable;
+        var elevate = ZIndexMode != BlowZIndexMode.Manual && ElevateNodesOnSelect;
+        var elevateDragged = ZIndexMode != BlowZIndexMode.Manual;
+        var connectionKey = KeyboardConnections ? ConnectionKey : null;
+        if (!_nodeSettings.SameAs(NodeTemplate, _graphVersion, nodesFocusable, NodeDescriptionId, elevate, elevateDragged, AriaLabels,
+                connectionKey))
+        {
+            _nodeSettings = new BlowNodeRenderSettings
+            {
+                Template = NodeTemplate,
+                RenderEpoch = _graphVersion,
+                Focusable = nodesFocusable,
+                DescribedBy = NodeDescriptionId,
+                Elevate = elevate,
+                ElevateWhileDragging = elevateDragged,
+                AriaLabels = AriaLabels,
+                ConnectionKey = connectionKey,
+                State = _nodeStateOf ??= NodeStateOf,
+            };
+        }
+
+        var edgesFocusable = !DisableKeyboardA11y && EdgesFocusable;
+        var suppressLabel = EdgeLabelTemplate is not null;
+        if (!_edgeSettings.SameAs(EdgeTemplate, suppressLabel, _graphVersion, edgesFocusable, EdgeDescriptionId, AriaLabels))
+        {
+            _edgeSettings = new BlowEdgeRenderSettings
+            {
+                Template = EdgeTemplate,
+                SuppressLabel = suppressLabel,
+                RenderEpoch = _graphVersion,
+                Focusable = edgesFocusable,
+                DescribedBy = EdgeDescriptionId,
+                AriaLabels = AriaLabels,
+                State = _edgeStateOf ??= EdgeStateOf,
+                NodeName = _nodeNameOf ??= NameOf,
+            };
+        }
+    }
+
+    // ---- what a node or an edge is described by ----
+
+    private Func<BlowNode, BlowNodeState>? _nodeStateOf;
+    private Func<BlowEdge, BlowEdgeState>? _edgeStateOf;
+    private Func<string, string>? _nodeNameOf;
+
+    /// <summary>How many edges end at and start from each node, counted once per graph version.</summary>
+    private readonly Dictionary<string, (int In, int Out)> _degrees = new(StringComparer.Ordinal);
+    private int _degreesVersion = -1;
+
+    /// <summary>A node's state, for its description and its validation marks. Asked for by its renderer.</summary>
+    private BlowNodeState NodeStateOf(BlowNode node)
+    {
+        if (_degreesVersion != _graphVersion)
+        {
+            _degrees.Clear();
+            _ = Index;
+            foreach (var edge in Edges)
+            {
+                // Counted where the edge is drawn: an edge into a collapsed group's child is the group's.
+                if (edge.Hidden || !IsEdgeVisible(edge)) continue;
+                if (DisplayedEndpoint(edge.Source, out _) is not { } from || DisplayedEndpoint(edge.Target, out _) is not { } to) continue;
+                var source = _degrees.GetValueOrDefault(from.Id);
+                _degrees[from.Id] = (source.In, source.Out + 1);
+                var target = _degrees.GetValueOrDefault(to.Id);
+                _degrees[to.Id] = (target.In + 1, target.Out);
+            }
+            _degreesVersion = _graphVersion;
+        }
+
+        var (incoming, outgoing) = _degrees.GetValueOrDefault(node.Id);
+        return new BlowNodeState(node, incoming, outgoing, MostSeriousFirst(Validation?.ForNode(node.Id)),
+            RunStates?.GetValueOrDefault(node.Id) ?? default);
+    }
+
+    /// <summary>An edge's state, for its description and its validation marks. Asked for by its renderer.</summary>
+    private BlowEdgeState EdgeStateOf(BlowEdge edge) => new(edge, MostSeriousFirst(Validation?.ForEdge(edge.Id)));
+
+    private static IReadOnlyList<BlowValidationIssue> MostSeriousFirst(IReadOnlyList<BlowValidationIssue>? issues)
+        => issues is null or { Count: 0 } ? []
+            : issues.Count == 1 ? issues
+            : issues.OrderByDescending(i => i.Severity).ToList();
+
+    /// <summary>The most serious problem the validation found at one port of a node, or null when none.</summary>
+    public BlowValidationSeverity? ValidationSeverityAt(string nodeId, BlowHandleType handleType, string? handleId)
+    {
+        if (Validation is null) return null;
+
+        BlowValidationSeverity? worst = null;
+        foreach (var issue in Validation.ForNode(nodeId))
+        {
+            if (issue.PortType != handleType || !string.Equals(issue.PortId ?? "", handleId ?? "", StringComparison.Ordinal)) continue;
+            if (worst is null || issue.Severity > worst) worst = issue.Severity;
+        }
+        return worst;
+    }
+
+    private BlowNodeCallbacks CallbacksFor(BlowNode node)
+    {
+        if (_nodeCallbacks.TryGetValue(node, out var callbacks)) return callbacks;
+
+        callbacks = new BlowNodeCallbacks
+        {
+            DragStart = EventCallback.Factory.Create<PointerEventArgs>(this, e => StartNodeDrag(node, e)),
+            Activate = EventCallback.Factory.Create<bool>(this, additive => ActivateNode(node, additive)),
+            Connect = KeyboardConnections ? EventCallback.Factory.Create(this, () => OnNodeConnectKey(node)) : default,
+            Focus = NodeFocusHandler(node),
+            Click = EventCallback.Factory.Create<MouseEventArgs>(this, _ => OnNodeClickHandler(node)),
+            DoubleClick = NodeMouse(OnNodeDoubleClick, node),
+            ContextMenu = NodeContextMenu(node),
+            MouseEnter = NodeMouse(OnNodeMouseEnter, node),
+            MouseMove = NodeMouse(OnNodeMouseMove, node),
+            MouseLeave = NodeMouse(OnNodeMouseLeave, node),
+        };
+        _nodeCallbacks[node] = callbacks;
+        return callbacks;
+    }
+
+    private BlowEdgeCallbacks CallbacksFor(BlowEdge edge)
+    {
+        if (_edgeCallbacks.TryGetValue(edge, out var callbacks)) return callbacks;
+
+        callbacks = new BlowEdgeCallbacks
+        {
+            Activate = EventCallback.Factory.Create<bool>(this, additive => ActivateEdge(edge, additive)),
+            Select = EventCallback.Factory.Create<PointerEventArgs>(this, e => SelectEdge(edge, e)),
+            Click = EventCallback.Factory.Create<MouseEventArgs>(this, _ => OnEdgeClickHandler(edge)),
+            DoubleClick = EdgeMouse(OnEdgeDoubleClick, edge),
+            ContextMenu = EdgeMouse(OnEdgeContextMenu, edge),
+            MouseEnter = EdgeMouse(OnEdgeMouseEnter, edge),
+            MouseMove = EdgeMouse(OnEdgeMouseMove, edge),
+            MouseLeave = EdgeMouse(OnEdgeMouseLeave, edge),
+        };
+        _edgeCallbacks[edge] = callbacks;
+        return callbacks;
+    }
+
+    /// <summary>
+    /// Drops the callbacks of nodes and edges that have left the graph. Nothing is scanned while there are no more
+    /// entries than elements, which is every render that removed nothing.
+    /// </summary>
+    private void EvictStaleCallbacks()
+    {
+        if (_nodeCallbacks.Count > Nodes.Count)
+        {
+            foreach (var node in _nodeCallbacks.Keys.ToArray())
+            {
+                if (!ReferenceEquals(_index.GetValueOrDefault(node.Id), node)) _nodeCallbacks.Remove(node);
+            }
+        }
+
+        if (_edgeCallbacks.Count > Edges.Count)
+        {
+            var edges = EdgeIndex;
+            foreach (var edge in _edgeCallbacks.Keys.ToArray())
+            {
+                if (!ReferenceEquals(edges.GetValueOrDefault(edge.Id), edge)) _edgeCallbacks.Remove(edge);
+            }
+        }
+    }
+
+    /// <summary>The version of the node and edge layers; see <see cref="BlowRenderGate"/>.</summary>
+    private int _layerVersion;
+
+    /// <summary>
+    /// Settles what the render that is starting has to tell the parts it draws. Called once per render. Returns
+    /// false for a render that can only have moved the viewport, which leaves the graph exactly as last drawn.
+    /// </summary>
+    private bool AdvanceRenderVersions()
+    {
+        var scope = _pendingScope;
+        _pendingScope = RenderScope.None;
+        var graphMayHaveChanged = true;
+
+        if (scope == RenderScope.None || (scope & RenderScope.Full) != 0)
+        {
+            _graphVersion++;
+            _geometryVersion++;
+        }
+        else if ((scope & RenderScope.Geometry) != 0)
+        {
+            _geometryVersion++;
+        }
+        else
+        {
+            graphMayHaveChanged = false;
+        }
+
+        if (_viewport != _renderedViewport || !Equals(_paneRect, _renderedPane))
+        {
+            _viewportVersion++;
+            _renderedViewport = _viewport;
+            _renderedPane = _paneRect;
+        }
+
+        return graphMayHaveChanged;
+    }
+
     /// <summary>Per-handle validation predicates and connect callbacks, keyed by handle.</summary>
     private readonly Dictionary<string, BlowHandleRegistration> _handles = [];
 
@@ -689,7 +1047,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// <summary>Tracks the measured/unmeasured transition so OnNodesInitialized fires on the edge.</summary>
     private bool _nodesInitialized;
 
-    /// <summary>Depth guard for parent chains; also breaks accidental parent cycles.</summary>
+    /// <summary>Depth guard for parent chains. Cycles are caught separately and reported as parent-cycle.</summary>
     private const int MaxParentDepth = 50;
 
     // per-render caches (rebuilt by PrepareRender)
@@ -711,6 +1069,19 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// <see cref="PrepareRender"/> and emitted before any edge references it.
     /// </summary>
     private readonly Dictionary<string, BlowMarkerSpec> _markerDefs = [];
+
+    /// <summary>
+    /// The id key of every arrowhead spec seen so far. Building a key formats a string, and the marker of every
+    /// visible edge is looked up on every render; there are only ever a handful of distinct specs.
+    /// </summary>
+    private readonly Dictionary<BlowMarkerSpec, string> _markerKeys = [];
+
+    private string MarkerKey(BlowMarkerSpec spec)
+    {
+        if (_markerKeys.TryGetValue(spec, out var key)) return key;
+        if (_markerKeys.Count > 1024) _markerKeys.Clear(); // a graph styling every edge differently
+        return _markerKeys[spec] = spec.Key;
+    }
 
     /// <summary>Ids of the currently selected elements, used to suppress no-op selection events.</summary>
     private readonly HashSet<string> _lastSelection = [];
@@ -807,11 +1178,19 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// <summary>The valid handle within snapping distance of the connection's loose end, if any.</summary>
     private (string nodeId, string? handleId, BlowHandleType type)? _connSnap;
 
+    /// <summary>
+    /// When no handle within snapping distance would accept the connection, the nearest one that refuses it and
+    /// why - what the connection line's context reports as its rejection.
+    /// </summary>
+    private (string NodeId, string? HandleId, BlowHandleType Type, BlowConnectionRejection Rejection)? _connNear;
+
+    /// <summary>Why the gesture is about to end without connecting, when a handle refused it.</summary>
+    private BlowConnectionRejection _connRejection;
+
     /// <summary>Set while a released drag is being resolved, so the end event can say it was a drop.</summary>
     private bool _connDropping;
     private BlowEdge? _reconnectEdge;
     private bool _reconnectRewired;
-    private readonly HashSet<string> _existingConnectionKeys = [];
 
     // resize
     private bool _resizing;
@@ -867,6 +1246,12 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         // drag does, and a controlled parent re-renders on every step of it too.
         if (!IsGesturing && !_wheelActive && _viewportAnimationCts is null) _needsMeasure = true;
 
+        // The host re-rendered: its templates may draw anything differently now, and which of the node and edge
+        // callbacks are wired up depends on the event parameters it just handed over.
+        _pendingScope |= RenderScope.Full;
+        _nodeCallbacks.Clear();
+        _edgeCallbacks.Clear();
+
         _indexDirty = true;
         _edgeIndexDirty = true;
 
@@ -893,6 +1278,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
             _initialFitPending = FitViewOnInit;
             await RefreshPaneRectAsync();
             await StartResizeObserverAsync();
+            await ReadMotionPreferenceAsync();
         }
 
         await InstallInteractionGuardsAsync();
@@ -902,8 +1288,9 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
             _needsMeasure = false;
             var changed = await MeasureAsync();
             if (_initialFitPending && TryInitialFit()) changed = true;
+            // Sizes and handle anchors: edges move, nodes do not change what they draw.
             if (changed)
-                StateHasChanged();
+                RenderGeometry();
         }
 
         await FlushErrorsAsync();
@@ -1063,6 +1450,26 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// <summary>Set once <see cref="DisposeAsync"/> has run, for work that was in flight across it.</summary>
     private bool _disposed;
 
+    /// <summary>What the operating system's <c>prefers-reduced-motion</c> said when the canvas started.</summary>
+    private bool _systemReducesMotion;
+
+    /// <summary>
+    /// True when the flow is not animating: <see cref="ReducedMotion"/> asks for that outright, or leaves it to an
+    /// operating system set to reduce motion. Viewport transitions then jump instead of easing.
+    /// </summary>
+    public bool ReducesMotion => ReducedMotion switch
+    {
+        BlowReducedMotion.Always => true,
+        BlowReducedMotion.Never => false,
+        _ => _systemReducesMotion,
+    };
+
+    private async Task ReadMotionPreferenceAsync()
+    {
+        try { _systemReducesMotion = await _interop.PrefersReducedMotionAsync(); }
+        catch (Exception ex) when (IsInteropTeardown(ex) || ex is JSException) { }
+    }
+
     /// <summary>
     /// Called from JS when the pane or any node changes size. Nothing in C# can observe this,
     /// yet both the pane rectangle (screen &lt;-&gt; flow conversions, minimap mask) and the node
@@ -1086,7 +1493,8 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
         // A pure scroll only refreshes the cached rectangle; nothing rendered depends on it,
         // so there is no need to re-render.
-        if (paneResized || nodesChanged) StateHasChanged();
+        if (nodesChanged) RenderGeometry();
+        else if (paneResized) RenderOverlay();
     }
 
     /// <summary>
@@ -1176,7 +1584,17 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// </summary>
     private void PrepareRender()
     {
+        var graphMayHaveChanged = AdvanceRenderVersions();
+        UpdateRenderSettings();
+
+        // A frame that moved nothing but the viewport keeps the layout and the draw lists of the last one, and the
+        // node and edge layers stay behind their gate. With culling the lists depend on the viewport, so they are
+        // rebuilt on every frame.
+        if (!graphMayHaveChanged && !OnlyRenderVisibleElements) return;
+        _layerVersion++;
+
         ComputeLayout();
+        _handleCounts = null;
 
         _renderNodes.Clear();
         _renderEdges.Clear();
@@ -1221,6 +1639,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
         CollectMarkerDefs();
         EvictStaleEdgeContexts();
+        EvictStaleCallbacks();
     }
 
     /// <summary>
@@ -1251,7 +1670,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         {
             if (!e.MarkerStart && !e.MarkerEnd) continue;
             var spec = e.ResolveMarker(DefaultMarkerColor);
-            _markerDefs.TryAdd(spec.Key, spec);
+            _markerDefs.TryAdd(MarkerKey(spec), spec);
         }
     }
 
@@ -1411,13 +1830,24 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
         if (guard < MaxParentDepth && n.ParentId is { } pid)
         {
-            if (_index.TryGetValue(pid, out var parent) && !ReferenceEquals(parent, n))
+            if (_index.TryGetValue(pid, out var parent) && (ReferenceEquals(parent, n) || _resolving.Contains(parent.Id)))
             {
+                // The parent is this node, or is still waiting on this node's own position: a cycle. Walking it
+                // would add the same offsets round and round until the depth guard gave up, flinging every
+                // node on it far off screen, so it is cut here and this node laid out as a root.
+                ReportError(BlowErrorCode.ParentCycle, n.Id,
+                    $"Node '{n.Id}' is its own ancestor: following its parents leads back to it. "
+                    + "It is laid out as a root node instead.");
+            }
+            else if (parent is not null)
+            {
+                _resolving.Add(n.Id);
                 var (pp, pd) = ResolveRaw(parent, guard + 1);
+                _resolving.Remove(n.Id);
                 pos = new BlowXYPosition(pp.X + n.Position.X, pp.Y + n.Position.Y);
                 depth = pd + 1;
             }
-            else if (!_index.ContainsKey(pid))
+            else
             {
                 ReportError(BlowErrorCode.MissingParentNode, n.Id,
                     $"Node '{n.Id}' names parent '{pid}', which is not in the node list; "
@@ -1429,6 +1859,9 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         _depth[n.Id] = depth;
         return (pos, depth);
     }
+
+    /// <summary>The nodes whose parent chain is being resolved right now, for <see cref="ResolveRaw"/> to spot a cycle.</summary>
+    private readonly HashSet<string> _resolving = [];
 
     private int Depth(BlowNode n) => _depth.TryGetValue(n.Id, out var d) ? d : 0;
 
@@ -1452,7 +1885,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         return false;
     }
 
-    private BlowEdgeContext GetEdgeContext(BlowEdge edge)
+    internal BlowEdgeContext GetEdgeContext(BlowEdge edge)
     {
         // The edge layer, the reconnect anchors and the HTML label overlay all ask for the same
         // edge within one render, and across renders the answer usually has not changed either:
@@ -1479,16 +1912,16 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// </summary>
     private BlowEdgeGeometryKey EdgeGeometryKey(BlowEdge edge)
     {
-        var index = Index;
-        index.TryGetValue(edge.Source, out var source);
-        index.TryGetValue(edge.Target, out var target);
+        _ = Index;
+        var source = DisplayedEndpoint(edge.Source, out var sourceMoved);
+        var target = DisplayedEndpoint(edge.Target, out var targetMoved);
 
         var (sx, sy, sPos) = source is null
             ? (0d, 0d, BlowPosition.Bottom)
-            : ResolveAnchor(source, BlowHandleType.Source, edge.SourceHandle, source.SourcePosition);
+            : EndpointAnchor(source, sourceMoved, BlowHandleType.Source, edge.SourceHandle);
         var (tx, ty, tPos) = target is null
             ? (0d, 0d, BlowPosition.Top)
-            : ResolveAnchor(target, BlowHandleType.Target, edge.TargetHandle, target.TargetPosition);
+            : EndpointAnchor(target, targetMoved, BlowHandleType.Target, edge.TargetHandle);
 
         var options = edge.PathOptions;
         var selfLoop = IsSelfLoop(edge, source, target);
@@ -1501,7 +1934,9 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
             edge.Type,
             options?.Curvature, options?.BorderRadius, options?.Offset, options?.StepPosition,
             options?.LoopRadius,
-            edge.MarkerStart, edge.MarkerEnd, edge.ResolveMarker(DefaultMarkerColor));
+            edge.MarkerStart, edge.MarkerEnd, edge.ResolveMarker(DefaultMarkerColor),
+            // A routed edge goes round the other nodes, so any of them moving can change its path.
+            edge.Type == BlowEdgeType.Routed ? _geometryVersion : 0);
     }
 
     private BlowEdgeContext BuildEdgeContext(BlowEdge edge, BlowEdgeGeometryKey key)
@@ -1523,15 +1958,19 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
             };
         }
 
-        var (sx, sy, sPos) = ResolveAnchor(source, BlowHandleType.Source, edge.SourceHandle, source.SourcePosition);
-        var (tx, ty, tPos) = ResolveAnchor(target, BlowHandleType.Target, edge.TargetHandle, target.TargetPosition);
+        source = DisplayedEndpoint(edge.Source, out var sourceMoved)!;
+        target = DisplayedEndpoint(edge.Target, out var targetMoved)!;
+        var (sx, sy, sPos) = EndpointAnchor(source, sourceMoved, BlowHandleType.Source, edge.SourceHandle);
+        var (tx, ty, tPos) = EndpointAnchor(target, targetMoved, BlowHandleType.Target, edge.TargetHandle);
 
         // An edge that comes back to the node it left has no meaningful "between the two nodes"
         // for an ordinary path algorithm to route through, so it is looped instead.
         var geometry = IsSelfLoop(edge, source, target)
             ? BlowEdgePath.Loop(sx, sy, sPos, tx, ty, tPos,
                 edge.PathOptions?.LoopRadius ?? BlowEdgePath.DefaultLoopRadius, source.GetRect())
-            : BlowEdgePath.Compute(edge.Type, sx, sy, sPos, tx, ty, tPos, edge.PathOptions);
+            : edge.Type == BlowEdgeType.Routed && RouteAround(source, target, sx, sy, sPos, tx, ty, tPos) is { } routed
+                ? routed
+                : BlowEdgePath.Compute(edge.Type, sx, sy, sPos, tx, ty, tPos, edge.PathOptions);
 
         return new BlowEdgeContext
         {
@@ -1548,6 +1987,62 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     }
 
     /// <summary>
+    /// The path of a <see cref="BlowEdgeType.Routed"/> edge, round the shown nodes near it - its own two included, so
+    /// it does not cut back across them, but not the groups either end sits in, which it has to run inside. Null when
+    /// no route was found, for the caller to fall back to a smooth step.
+    /// </summary>
+    private BlowPathResult? RouteAround(BlowNode source, BlowNode target, double sx, double sy, BlowPosition sPos,
+        double tx, double ty, BlowPosition tPos)
+    {
+        var containers = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var end in new[] { source, target })
+        {
+            var current = end;
+            for (var guard = 0; guard < MaxParentDepth && current.ParentId is { } pid && Index.TryGetValue(pid, out var parent); guard++)
+            {
+                containers.Add(pid);
+                current = parent;
+            }
+        }
+
+        // Only what is near the edge: the grid the router searches grows with the square of the obstacles it sees.
+        const double Reach = 150;
+        var s = source.GetRect();
+        var t = target.GetRect();
+        var left = Math.Min(s.Left, t.Left) - Reach;
+        var top = Math.Min(s.Top, t.Top) - Reach;
+        var area = new BlowRect(left, top, Math.Max(s.Right, t.Right) + Reach - left, Math.Max(s.Bottom, t.Bottom) + Reach - top);
+
+        var obstacles = new List<BlowRect>();
+        foreach (var node in Nodes)
+        {
+            if (node.Hidden || containers.Contains(node.Id)) continue;
+            var rect = node.GetRect();
+            if (RectsIntersect(rect, area)) obstacles.Add(rect);
+        }
+
+        // The edge's geometry is asked for again whenever any node moved; the search is only run again when its own
+        // ends, or what is near enough to be in its way, did.
+        var request = new RouteRequest(new BlowXYPosition(sx, sy), sPos, new BlowXYPosition(tx, ty), tPos, Routing);
+        if (_routes.TryGetValue((source.Id, target.Id), out var cached)
+            && cached.Request == request && cached.Obstacles.SequenceEqual(obstacles))
+        {
+            return cached.Result;
+        }
+
+        var result = BlowEdgeRouting.Route(request.Source, sPos, request.Target, tPos, obstacles, Routing);
+        if (_routes.Count > 2 * Edges.Count + 64) _routes.Clear();
+        _routes[(source.Id, target.Id)] = (request, obstacles, result);
+        return result;
+    }
+
+    private readonly record struct RouteRequest(BlowXYPosition Source, BlowPosition SourceSide, BlowXYPosition Target,
+        BlowPosition TargetSide, BlowRoutingOptions? Options);
+
+    /// <summary>The last route found between two nodes' anchors, and what it went round.</summary>
+    private readonly Dictionary<(string, string), (RouteRequest Request, List<BlowRect> Obstacles, BlowPathResult? Result)> _routes = [];
+
+    /// <summary>
     /// True when both ends of the edge land on the same node. Compared by reference rather than
     /// by id so a graph carrying a duplicate id still agrees with what was actually rendered.
     /// </summary>
@@ -1562,11 +2057,46 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// </summary>
     private bool IsEdgeVisible(BlowEdge edge)
     {
-        var index = _index;
-        if (index.TryGetValue(edge.Source, out var source) && source.Hidden) return false;
-        if (index.TryGetValue(edge.Target, out var target) && target.Hidden) return false;
-        return true;
+        var source = DisplayedEndpoint(edge.Source, out var sourceMoved);
+        var target = DisplayedEndpoint(edge.Target, out var targetMoved);
+        if (source is { Hidden: true } || target is { Hidden: true }) return false;
+
+        // Both ends folded into the same collapsed node: the edge is inside it, out of sight with the rest.
+        return !((sourceMoved || targetMoved) && source is not null && ReferenceEquals(source, target));
     }
+
+    /// <summary>
+    /// The node an edge is drawn to for one of its ends: the node itself, or - when it is hidden inside a collapsed
+    /// node - the nearest collapsed ancestor that is on show, with <paramref name="moved"/> set. Null when the id names
+    /// no node.
+    /// </summary>
+    private BlowNode? DisplayedEndpoint(string nodeId, out bool moved)
+    {
+        moved = false;
+        var index = _index;
+        if (!index.TryGetValue(nodeId, out var node)) return null;
+        if (!node.Hidden) return node;
+
+        var current = node;
+        for (var guard = 0; guard < MaxParentDepth && current.ParentId is { } pid && index.TryGetValue(pid, out var parent); guard++)
+        {
+            if (parent.Collapsed && !parent.Hidden)
+            {
+                moved = true;
+                return parent;
+            }
+            current = parent;
+        }
+        return node;
+    }
+
+    /// <summary>
+    /// Where one end of an edge is drawn: at its handle, or - for an end folded into a collapsed node - at that node's
+    /// side, since the handle it named is out of sight.
+    /// </summary>
+    private (double x, double y, BlowPosition pos) EndpointAnchor(BlowNode node, bool moved, BlowHandleType type, string? handleId)
+        => ResolveAnchor(node, type, moved ? null : handleId,
+            type == BlowHandleType.Source ? node.SourcePosition : node.TargetPosition);
 
     private string? MarkerUrl(BlowEdge edge, bool show)
     {
@@ -1576,9 +2106,9 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
         // An edge culled out of the render list (or reached before PrepareRender) still needs a
         // usable url, so register on demand rather than assuming the collection pass saw it.
-        _markerDefs.TryAdd(spec.Key, spec);
+        _markerDefs.TryAdd(MarkerKey(spec), spec);
 
-        return $"url(#{_markerPrefix}-{spec.Key})";
+        return $"url(#{_markerPrefix}-{MarkerKey(spec)})";
     }
 
     private (double x, double y, BlowPosition pos) ResolveAnchor(
@@ -1606,7 +2136,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// cursor for it looks like a glitch. Click-to-connect is exempt: there the line is the
     /// only feedback that a connection is pending.
     /// </summary>
-    private bool ShowConnectionLine => _connecting && (_connMoved || ConnectOnClick);
+    private bool ShowConnectionLine => _connecting && (_connMoved || ConnectOnClick || _keyboardConnecting);
 
     private string ConnectionLinePath()
     {
@@ -1620,6 +2150,8 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     private BlowConnectionLineContext BuildConnectionLineContext()
     {
         var s = _connSource;
+        var valid = _connSnap is not null
+                    || (_connHover is { } h && HoverCheck(h.nodeId, h.handleId, h.type).IsValid);
         return new BlowConnectionLineContext
         {
             FromNode = s.NodeId,
@@ -1629,9 +2161,19 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
             From = s.Anchor,
             To = _connEnd,
             ToPosition = OppositePosition(s.Position),
-            IsValid = _connSnap is not null
-                      || (_connHover is { } h && IsValidConnectionTarget(h.nodeId, h.handleId, h.type)),
+            IsValid = valid,
+            Rejection = valid ? BlowConnectionRejection.None : HoverRejection(),
         };
+    }
+
+    /// <summary>
+    /// Why the handle the line currently ends at would refuse it: the handle under the pointer when the canvas
+    /// knows it, else the nearest one within snapping distance, else nothing.
+    /// </summary>
+    private BlowConnectionRejection HoverRejection()
+    {
+        if (_connHover is { } h) return HoverCheck(h.nodeId, h.handleId, h.type).Rejection;
+        return _connNear?.Rejection ?? BlowConnectionRejection.None;
     }
 
     private void NotifyConnectionChange()
@@ -1680,10 +2222,13 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
             return;
         }
 
-        // A pending click-connection is cancelled by clicking empty space.
+        // A pending click-connection is cancelled by clicking empty space - and so is one made from the keyboard,
+        // which then says so.
         if (_connecting)
         {
+            var keyboard = _keyboardConnecting;
             CancelConnection();
+            if (keyboard) Announce(AriaLabels.KeyboardConnectionCancelled);
             return;
         }
 
@@ -1907,9 +2452,17 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         // cannot report hovering. Whether the line currently ends where it could connect is
         // worked out from its position instead - the same snap a release would use - and only
         // when something is going to show it.
-        _connSnap = OnConnectionChange.HasDelegate || ConnectionLineTemplate is not null
-            ? ClosestValidHandle()
-            : null;
+        if (OnConnectionChange.HasDelegate || ConnectionLineTemplate is not null)
+        {
+            var (valid, nearest) = ClosestHandles();
+            _connSnap = valid;
+            _connNear = nearest;
+        }
+        else
+        {
+            _connSnap = null;
+            _connNear = null;
+        }
 
         NotifyConnectionChange();
     }
@@ -1991,7 +2544,8 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
                     else if (_connecting) UpdateConnectionEnd(px, py);
 
                     _ = OnMove.InvokeAsync(_viewport);
-                    StateHasChanged();
+                    if (_draggingNodes) RenderGeometry();
+                    else RenderOverlay();
                 });
             }
         }
@@ -2051,7 +2605,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
         _viewport = ClampViewport(new BlowViewport(px - flowX * newZoom, py - flowY * newZoom, newZoom));
         _ = OnMove.InvokeAsync(_viewport);
-        StateHasChanged();
+        RenderOverlay();
     }
 
     private double PointerDistance()
@@ -2103,8 +2657,12 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// A pointer merely resting on the pane counts: its position has to keep being tracked so a
     /// second finger can start a pinch from an up-to-date baseline.
     /// </remarks>
+    /// <remarks>
+    /// A connection made from the keyboard is not one: the pointer has nothing to do with it, so the pane does not
+    /// listen to the pointer for it, and a mouse resting on the canvas can neither steer the line nor end it.
+    /// </remarks>
     private bool IsGesturing =>
-        _panning || _draggingNodes || _connecting || _selecting || _resizing || _pinching
+        _panning || _draggingNodes || (_connecting && !_keyboardConnecting) || _selecting || _resizing || _pinching
         || _activePointers.Count > 0;
 
     /// <summary>
@@ -2123,6 +2681,10 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
     private void OnPanePointerMove(PointerEventArgs e)
     {
+        // Pointer moves are the busiest event there is, and most of them change only what the canvas draws itself.
+        // The render that follows the handler is scoped to that unless a branch below says otherwise.
+        _pendingScope |= RenderScope.Overlay;
+
         if (_activePointers.ContainsKey(e.PointerId)) TrackPointer(e);
 
         if (_pinching)
@@ -2143,15 +2705,15 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
                 Y = _panStartViewport.Y + dy,
             });
             _ = OnMove.InvokeAsync(_viewport);
-            StateHasChanged();
+            RenderOverlay();
         }
         else if (_draggingNodes)
         {
             ApplyNodeDrag(e.ClientX, e.ClientY);
             UpdateAutoPan(e.ClientX, e.ClientY);
-            StateHasChanged();
+            RenderGeometry();
         }
-        else if (_connecting)
+        else if (_connecting && !_keyboardConnecting)
         {
             // Below the threshold the gesture is still a click on the handle, so the line is
             // not drawn yet and a click-to-connect can still complete on release.
@@ -2165,7 +2727,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
             UpdateConnectionEnd(e.ClientX, e.ClientY);
             UpdateAutoPan(e.ClientX, e.ClientY);
-            StateHasChanged();
+            RenderOverlay();
         }
         else if (_selecting)
         {
@@ -2176,7 +2738,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         else if (_resizing && _resizeNode is not null)
         {
             ApplyResize(e);
-            StateHasChanged();
+            RenderGeometry();
         }
     }
 
@@ -2219,7 +2781,8 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
             var dragged = _dragPrimary;
             var moved = _dragArmed;
             var wasSelectionDrag = IsSelectionDrag;
-            var draggedSet = wasSelectionDrag && OnSelectionDragStop.HasDelegate ? DraggedNodes() : null;
+            var movedNodes = DraggedNodes();
+            var draggedSet = wasSelectionDrag && OnSelectionDragStop.HasDelegate ? movedNodes : null;
             _dragPrimary = null;
             _guides = [];
             foreach (var (node, _) in _dragSet) node.Dragging = false;
@@ -2233,12 +2796,13 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
                 await OnSelectionDragStop.InvokeAsync(new BlowSelectionMouseEvent(draggedSet, e));
             if (moved)
             {
-                CaptureHistory();
-                await NodesChanged.InvokeAsync(Nodes);
+                Commit(BlowChangeKind.Moved, "move", movedNodes, origin: BlowChangeOrigin.User);
+                await RaiseNodesChangedAsync();
             }
         }
 
-        if (_connecting)
+        // A connection made from the keyboard is no business of a pointer being released or leaving the pane.
+        if (_connecting && !_keyboardConnecting)
         {
             // Click-to-connect: a press-and-release without travel leaves the connection pending
             // so the next handle click can complete it.
@@ -2253,8 +2817,11 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
             // A press-and-release that never moved only ever completes on an exact hit: it would
             // be surprising for a plain click on a handle to wire it to a neighbour.
             _connDropping = _connMoved;
-            var completed = await TryCompleteByHitTestAsync(e.ClientX, e.ClientY)
-                            || (_connMoved && TryCompleteByProximity());
+            var drop = await TryCompleteByHitTestAsync(e.ClientX, e.ClientY);
+            var completed = drop == HitTestDrop.Completed
+                            // Released right on a handle that refused: that verdict stands. Snapping to a valid
+                            // handle nearby instead would connect somewhere the user did not let go.
+                            || (drop == HitTestDrop.NoHandle && _connMoved && TryCompleteByProximity());
             if (!completed) CancelConnection();
         }
 
@@ -2275,10 +2842,11 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
                 rn.Resizing = false;
                 await OnNodeResizeEnd.InvokeAsync(rn);
             }
+            var resized = _resizeNode;
             _resizeNode = null;
             _needsMeasure = true; // size changed: re-measure handle anchors
-            CaptureHistory();
-            await NodesChanged.InvokeAsync(Nodes);
+            Commit(BlowChangeKind.Resized, "resize", resized is null ? null : [resized], origin: BlowChangeOrigin.User);
+            await RaiseNodesChangedAsync();
             StateHasChanged();
         }
 
@@ -2389,7 +2957,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// This makes drops work even when <see cref="ConnectionRadius"/> is 0 and the pointer was
     /// captured by the pane (so the handle never saw the pointer-up itself).
     /// </summary>
-    private async Task<bool> TryCompleteByHitTestAsync(double clientX, double clientY)
+    private async Task<HitTestDrop> TryCompleteByHitTestAsync(double clientX, double clientY)
     {
         BlowHandleHit? hit;
         try
@@ -2398,24 +2966,36 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         }
         catch (Exception ex) when (IsInteropTeardown(ex))
         {
-            return false;
+            return HitTestDrop.NoHandle;
         }
 
-        if (hit?.NodeId is not { Length: > 0 } nodeId) return false;
-
-        // A handle that refuses drops is painted as rejected; releasing on it must not connect.
-        if (hit.ConnectableEnd == false) return false;
+        if (hit?.NodeId is not { Length: > 0 } nodeId) return HitTestDrop.NoHandle;
 
         var type = hit.HandleType == "target" ? BlowHandleType.Target : BlowHandleType.Source;
         var handleId = string.IsNullOrEmpty(hit.HandleId) ? null : hit.HandleId;
-        if (!IsValidConnectionTarget(nodeId, handleId, type)) return false;
+
+        // A handle that refuses drops is painted as rejected; releasing on it must not connect.
+        var check = hit.ConnectableEnd == false
+            ? new BlowConnectionCheck(BlowConnectionRejection.NotConnectable)
+            : CheckConnection(nodeId, handleId, type);
+        if (!check.IsValid)
+        {
+            _connRejection = check.Rejection;
+            return HitTestDrop.Refused;
+        }
 
         CompleteConnection(nodeId, handleId, type);
-        return true;
+        return HitTestDrop.Completed;
     }
+
+    /// <summary>What was under the pointer when a connection was let go.</summary>
+    private enum HitTestDrop { NoHandle, Refused, Completed }
 
     private async Task OnWheel(WheelEventArgs e)
     {
+        // A wheel pans or zooms: the render after it is the viewport's, like a pointer move's.
+        _pendingScope |= RenderScope.Overlay;
+
         await OnPaneScroll.InvokeAsync(e);
         if (_paneRect is null) await RefreshPaneRectAsync();
 
@@ -2459,7 +3039,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         });
         await OnViewportChanged.InvokeAsync(_viewport);
         await OnMove.InvokeAsync(_viewport);
-        StateHasChanged();
+        RenderOverlay();
     }
 
     /// <summary>
@@ -2582,8 +3162,23 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         ? EventCallback.Factory.Create<FocusEventArgs>(this, () => _panKeyHeld = false)
         : default;
 
+    /// <summary>A key a part inside the pane (the minimap) has acted on, which the pane must not act on as well.</summary>
+    private string? _keyHandled;
+
+    /// <summary>
+    /// Tells the canvas that the key being pressed was acted on by a part inside it - the minimap's arrows - so the
+    /// pane, which hears the same key press next, leaves it alone: the arrows would move the selection too.
+    /// </summary>
+    public void MarkKeyHandled(string key) => _keyHandled = key;
+
     private async Task OnKeyDown(KeyboardEventArgs e)
     {
+        if (_keyHandled is { } handled)
+        {
+            _keyHandled = null;
+            if (handled == e.Key) return;
+        }
+
         if (PanActivationKey is { } panKey && e.Key == panKey && !_panKeyHeld)
         {
             _panKeyHeld = true;
@@ -2595,8 +3190,10 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
             // Escape means "undo what I am in the middle of" before it means "deselect": with a
             // selection box half-drawn or a node half-dragged, clearing the selection instead
             // would leave the gesture running and finish it a moment later anyway.
+            var keyboardConnection = _keyboardConnecting;
             if (CancelActiveGesture())
             {
+                if (keyboardConnection) Announce(AriaLabels.KeyboardConnectionCancelled);
                 StateHasChanged();
                 return;
             }
@@ -2655,16 +3252,19 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
             case HistoryCommand.Redo: await RedoAsync(); return;
         }
 
+        // The edits made from here are the user's. The origin is handed down rather than set for the duration: the
+        // app's handlers awaited along the way (OnPaste, NodesChanged, ...) are not the user, and nor is anything
+        // else that happens to run meanwhile.
         switch (clipboard)
         {
             case ClipboardCommand.Copy: Copy(); return;
-            case ClipboardCommand.Cut: await CutAsync(); return;
-            case ClipboardCommand.Paste: await PasteAsync(); return;
-            case ClipboardCommand.Duplicate: await DuplicateSelectionAsync(); return;
+            case ClipboardCommand.Cut: await CutAsync(BlowChangeOrigin.User); return;
+            case ClipboardCommand.Paste: await PasteAsync(_clipboard, null, "paste", BlowChangeOrigin.User); return;
+            case ClipboardCommand.Duplicate: await DuplicateSelectionAsync(BlowChangeOrigin.User); return;
         }
 
         if (isSelectAll) await SelectAllAsync();
-        else if (isDelete) await DeleteSelectionAsync();
+        else if (isDelete) await DeleteSelectionAsync("delete", BlowChangeOrigin.User);
         else await MoveSelectedNodesAsync(e);
     }
 
@@ -2695,6 +3295,19 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
             _ => (0.0, 0.0),
         };
 
+        await MoveSelectionAsync(dx, dy, BlowChangeOrigin.User);
+    }
+
+    /// <summary>
+    /// Moves the selected nodes by the given distance, in flow units - what the arrow keys do, for a single-pointer
+    /// alternative to dragging (WCAG 2.5.7): move buttons on a node toolbar, say. Draggable, visible nodes only; a
+    /// node moves with its parent rather than twice; positions snap to the grid and stay inside extents, and a parent
+    /// with <c>ExpandParent</c> children grows, all as for a drag. One undo step (<c>move</c>), announced.
+    /// </summary>
+    public Task MoveSelectionAsync(double dx, double dy) => MoveSelectionAsync(dx, dy, BlowChangeOrigin.Api);
+
+    private async Task MoveSelectionAsync(double dx, double dy, BlowChangeOrigin origin)
+    {
         // The same test a pointer drag applies, hidden included: a node nobody can see is not one
         // an arrow key should be quietly shifting around.
         var moving = NodesDraggable
@@ -2704,6 +3317,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
         var moved = 0;
         BlowNode? last = null;
+        var movedNodes = new List<BlowNode>();
         foreach (var n in moving)
         {
             // As in a drag, a node whose ancestor is moving already travels with it; stepping it
@@ -2721,16 +3335,17 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
             moved++;
             last = n;
+            movedNodes.Add(n);
         }
 
         if (moved > 0)
         {
             _needsMeasure = true;
-            CaptureHistory();
+            Commit(BlowChangeKind.Moved, "move", movedNodes, origin: origin);
             Announce(moved == 1 && last is not null
                 ? AriaLabels.NodeMoved(NameOf(last), last.Position)
                 : AriaLabels.NodesMoved(moved));
-            await NodesChanged.InvokeAsync(Nodes);
+            await RaiseNodesChangedAsync();
             StateHasChanged();
         }
     }
@@ -2818,6 +3433,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
     private void StartNodeDrag(BlowNode node, PointerEventArgs e)
     {
+        AbandonKeyboardConnection();
         _suppressNextClick = false;
         SelectOnPointerDown(node, e);
 
@@ -2927,6 +3543,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
     private void SelectEdge(BlowEdge edge, PointerEventArgs e)
     {
+        AbandonKeyboardConnection();
         if (ElementsSelectable && edge.Selectable)
         {
             if (!IsMultiSelect(e)) ClearSelection();
@@ -2948,6 +3565,13 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// </summary>
     private async Task ActivateNode(BlowNode node, bool additive)
     {
+        // While connecting from the keyboard, Enter on a node is the end of the connection, not a selection.
+        if (_keyboardConnecting)
+        {
+            await CompleteKeyboardConnectionAsync(node);
+            return;
+        }
+
         if (!ElementsSelectable || !node.Selectable) return;
 
         // The node's key handler also hears keys typed into an input inside it, and a space or a
@@ -2970,9 +3594,22 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// Only wire up node focus when something is actually going to be done with it - an empty
     /// callback makes the renderer omit the attribute for every node in the graph.
     /// </summary>
-    private EventCallback<FocusEventArgs> NodeFocusHandler(BlowNode node) => AutoPanOnNodeFocus
-        ? EventCallback.Factory.Create<FocusEventArgs>(this, () => BringNodeIntoView(node))
+    private EventCallback<FocusEventArgs> NodeFocusHandler(BlowNode node) => AutoPanOnNodeFocus || KeyboardConnections
+        ? EventCallback.Factory.Create<FocusEventArgs>(this, () => OnNodeFocused(node))
         : default;
+
+    private void OnNodeFocused(BlowNode node)
+    {
+        // Moving focus is how a keyboard connection is aimed: the line follows it to the node, and the reader hears
+        // whether Enter would connect there.
+        if (_keyboardConnecting)
+        {
+            if (node.Id == _connSource.NodeId) ClearKeyboardTarget();
+            else TargetKeyboardConnection(node, after: null);
+        }
+
+        BringNodeIntoView(node);
+    }
 
     /// <summary>
     /// Pans the viewport so a node that has just taken keyboard focus is on screen. Tabbing into
@@ -2985,7 +3622,9 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         if (!AutoPanOnNodeFocus || _paneRect is null) return;
 
         // Ignore focus that lands on a node while it is being dragged or connected from: the
-        // viewport belongs to that gesture.
+        // viewport belongs to that gesture. A connection made from the keyboard is not a gesture
+        // in that sense (see IsGesturing): focus is how it is aimed, and the node it reaches has
+        // to be on screen.
         if (IsGesturing) return;
 
         var rect = node.GetRect();
@@ -3024,8 +3663,8 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         edge.Selected = !additive || !edge.Selected;
         await NotifySelectionChangedAsync();
         Announce(edge.Selected
-            ? AriaLabels.EdgeSelected(edge.Source, edge.Target)
-            : AriaLabels.EdgeDeselected(edge.Source, edge.Target));
+            ? AriaLabels.EdgeSelected(NameOf(edge.Source), NameOf(edge.Target))
+            : AriaLabels.EdgeDeselected(NameOf(edge.Source), NameOf(edge.Target)));
         StateHasChanged();
     }
 
@@ -3082,17 +3721,63 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// or when the graph is identical to the step already recorded - so it is safe to call from
     /// anywhere an edit might have happened without checking first.
     /// </summary>
-    public void CaptureHistory()
+    public void CaptureHistory() => CaptureHistory(null);
+
+    /// <summary>
+    /// Records the current graph as an undo step labelled with what changed - the label <see cref="BlowHistory.UndoLabel"/>
+    /// reports for it. Only the nodes and edges that changed since the last step are copied.
+    /// </summary>
+    /// <remarks>Inside <see cref="EditAsync(Action, string?, BlowChangeOrigin, bool)"/> it does nothing: the edit is recorded as a whole when it ends.</remarks>
+    public void CaptureHistory(string? label)
     {
-        if (_history is null || _restoring) return;
-        if (_history.Capture(ToObject())) NotifyHistoryChanged();
+        if (_history is null || _restoring || InEdit) return;
+        if (_history.Capture(Nodes, Edges, _viewport, label)) NotifyHistoryChanged();
+    }
+
+    /// <summary>What an edit does to the built-in history.</summary>
+    private enum HistoryAction
+    {
+        /// <summary>Records the edit as an undo step.</summary>
+        Record,
+
+        /// <summary>Leaves the history alone (a restore: the app records one if it means to).</summary>
+        Skip,
+
+        /// <summary>Writes the edit into every recorded step, so no undo takes it back (an edit from elsewhere).</summary>
+        Rebase,
+    }
+
+    /// <summary>
+    /// Closes an edit: records it as an undo step and tells <see cref="OnGraphChanged"/> about it. Every edit the canvas
+    /// makes ends here, once.
+    /// </summary>
+    private void Commit(BlowChangeKind kind, string label, IReadOnlyList<BlowNode>? nodes = null, IReadOnlyList<BlowEdge>? edges = null,
+        IReadOnlyList<BlowNode>? removedNodes = null, IReadOnlyList<BlowEdge>? removedEdges = null,
+        BlowChangeOrigin origin = BlowChangeOrigin.Api, HistoryAction history = HistoryAction.Record)
+    {
+        // Inside EditAsync the edit as a whole is committed once, at its end.
+        if (InEdit) return;
+
+        if (history == HistoryAction.Record) CaptureHistory(label);
+        else if (history == HistoryAction.Rebase && _history is not null && !_restoring && _history.Rebase(Nodes, Edges, _viewport))
+            NotifyHistoryChanged();
+        if (!OnGraphChanged.HasDelegate) return;
+
+        _ = OnGraphChanged.InvokeAsync(new BlowGraphChange(kind, origin)
+        {
+            Nodes = nodes ?? [],
+            Edges = edges ?? [],
+            RemovedNodes = removedNodes ?? [],
+            RemovedEdges = removedEdges ?? [],
+            Label = label,
+        });
     }
 
     /// <summary>Goes back one step. Returns false when there was nothing to go back to.</summary>
     public async Task<bool> UndoAsync()
     {
         if (_history?.Undo() is not { } snapshot) return false;
-        await ApplyHistoryAsync(snapshot);
+        await ApplyHistoryAsync(snapshot, "undo");
         return true;
     }
 
@@ -3100,18 +3785,18 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     public async Task<bool> RedoAsync()
     {
         if (_history?.Redo() is not { } snapshot) return false;
-        await ApplyHistoryAsync(snapshot);
+        await ApplyHistoryAsync(snapshot, "redo");
         return true;
     }
 
-    private async Task ApplyHistoryAsync(BlowSnapshot snapshot)
+    private async Task ApplyHistoryAsync(BlowSnapshot snapshot, string label)
     {
         _restoring = true;
         try
         {
             // The graph only, not the viewport: undoing an edit should not also throw away where
             // the user had scrolled to since making it.
-            await RestoreAsync(snapshot, restoreViewport: false);
+            await RestoreCoreAsync(snapshot, restoreViewport: false, detach: true, BlowChangeOrigin.History, label);
         }
         finally
         {
@@ -3125,7 +3810,11 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     {
         if (_history is null || !OnHistoryChanged.HasDelegate) return;
         _ = OnHistoryChanged.InvokeAsync(new BlowHistoryState(
-            _history.CanUndo, _history.CanRedo, _history.UndoDepth, _history.RedoDepth));
+            _history.CanUndo, _history.CanRedo, _history.UndoDepth, _history.RedoDepth)
+        {
+            UndoLabel = _history.UndoLabel,
+            RedoLabel = _history.RedoLabel,
+        });
     }
 
     /// <summary>
@@ -3181,10 +3870,12 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     }
 
     /// <summary>Copies the current selection, then deletes it.</summary>
-    public async Task<BlowFragment> CutAsync()
+    public Task<BlowFragment> CutAsync() => CutAsync(BlowChangeOrigin.Api);
+
+    private async Task<BlowFragment> CutAsync(BlowChangeOrigin origin)
     {
         var copied = Copy();
-        await DeleteSelectionAsync();
+        await DeleteSelectionAsync("cut", origin);
         return copied;
     }
 
@@ -3195,7 +3886,10 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     public Task<BlowFragment> PasteAsync() => PasteAsync(_clipboard);
 
     /// <summary>Adds a fresh copy of the given fragment to the graph.</summary>
-    public async Task<BlowFragment> PasteAsync(BlowFragment fragment, BlowXYPosition? offset = null)
+    public Task<BlowFragment> PasteAsync(BlowFragment fragment, BlowXYPosition? offset = null)
+        => PasteAsync(fragment, offset, "paste", BlowChangeOrigin.Api);
+
+    private async Task<BlowFragment> PasteAsync(BlowFragment fragment, BlowXYPosition? offset, string label, BlowChangeOrigin origin)
     {
         if (fragment.IsEmpty) return BlowFragment.Empty;
 
@@ -3217,11 +3911,11 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         _edgeIndexDirty = true;
         _needsMeasure = true;
 
-        CaptureHistory();
+        Commit(BlowChangeKind.Added, label, pasted.Nodes, pasted.Edges, origin: origin);
         await NotifySelectionChangedAsync();
         await OnPaste.InvokeAsync(pasted);
-        await NodesChanged.InvokeAsync(Nodes);
-        await EdgesChanged.InvokeAsync(Edges);
+        await RaiseNodesChangedAsync();
+        await RaiseEdgesChangedAsync();
         StateHasChanged();
 
         return pasted;
@@ -3231,13 +3925,15 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// Copies the selection and pastes it in one step, leaving the clipboard untouched - the
     /// Ctrl+D that every editor has, and which should not cost you what you had copied.
     /// </summary>
-    public async Task<BlowFragment> DuplicateSelectionAsync()
+    public Task<BlowFragment> DuplicateSelectionAsync() => DuplicateSelectionAsync(BlowChangeOrigin.Api);
+
+    private async Task<BlowFragment> DuplicateSelectionAsync(BlowChangeOrigin origin)
     {
         var selected = Nodes.Where(n => n.Selected).ToList();
         if (selected.Count == 0) return BlowFragment.Empty;
 
         var fragment = BlowClipboard.Copy(selected, Edges, NodeOrigin);
-        return await PasteAsync(fragment);
+        return await PasteAsync(fragment, null, "duplicate", origin);
     }
 
     /// <summary>Selects every selectable, visible node and edge. Mirrors a Ctrl+A style select-all.</summary>
@@ -3245,7 +3941,8 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     {
         if (!ElementsSelectable) return;
         foreach (var n in Nodes) n.Selected = n.Selectable && !n.Hidden;
-        foreach (var ed in Edges) ed.Selected = ed.Selectable && !ed.Hidden;
+        _ = Index;
+        foreach (var ed in Edges) ed.Selected = ed.Selectable && !ed.Hidden && IsEdgeVisible(ed);
         await NotifySelectionChangedAsync();
         StateHasChanged();
     }
@@ -3343,7 +4040,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
     private static string EdgeKey(string id) => "e\u001f" + id;
 
-    private async Task DeleteSelectionAsync()
+    private async Task DeleteSelectionAsync(string label, BlowChangeOrigin origin)
     {
         var nodesToDelete = WithDescendants(Nodes.Where(n => n.Selected && n.Deletable).ToList());
         var edgesToDelete = Edges.Where(ed => ed.Selected && ed.Deletable).ToList();
@@ -3372,12 +4069,12 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
         _indexDirty = true;
         _edgeIndexDirty = true;
-        CaptureHistory();
+        Commit(BlowChangeKind.Removed, label, removedNodes: nodesToDelete, removedEdges: removedEdges, origin: origin);
         await NotifySelectionChangedAsync();
         Announce(AriaLabels.Deleted(nodesToDelete.Count, removedEdges.Count));
         await RaiseDeleteEventsAsync(nodesToDelete, removedEdges);
-        await NodesChanged.InvokeAsync(Nodes);
-        await EdgesChanged.InvokeAsync(Edges);
+        await RaiseNodesChangedAsync();
+        await RaiseEdgesChangedAsync();
         StateHasChanged();
     }
 
@@ -3431,8 +4128,17 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     public void StartConnection(string nodeId, string? handleId, BlowHandleType handleType,
         BlowPosition position, long pointerId, double clientX, double clientY)
     {
-        if (!NodesConnectable) return;
-        if (!Index.TryGetValue(nodeId, out var node) || !node.Connectable) return;
+        AbandonKeyboardConnection();
+
+        // A full port starts nothing: every connection from it would be refused anyway.
+        if (!CanStartConnection(nodeId, handleId, handleType)) return;
+        var node = Index[nodeId];
+
+        // Nothing of an earlier gesture's aim carries over into this one.
+        _connHover = null;
+        _connSnap = null;
+        _connNear = null;
+        _connRejection = BlowConnectionRejection.None;
 
         var (x, y, pos) = ResolveAnchor(node, handleType, handleId, position);
         _connSource = new ConnectionSource(nodeId, handleId, handleType, pos, new BlowXYPosition(x, y));
@@ -3450,10 +4156,11 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         _connStartClientY = clientY;
 
         _connecting = true;
+        _connectionVersion++;
         _connEndValid = false;
         _connMoved = false;
         _reconnectEdge = null;
-        RefreshConnectionKeys();
+        BeginConnectionSession();
         CapturePane(pointerId);
         _ = OnConnectStart.InvokeAsync(new BlowConnectionStartInfo(nodeId, handleId, handleType));
         NotifyConnectionChange();
@@ -3468,6 +4175,11 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     private void StartReconnect(BlowEdge edge, BlowHandleType movingEnd, PointerEventArgs e)
     {
         if (e.Button != 0 || !EdgesReconnectable || !edge.Reconnectable) return;
+        AbandonKeyboardConnection();
+        _connHover = null;
+        _connSnap = null;
+        _connNear = null;
+        _connRejection = BlowConnectionRejection.None;
 
         var fixedType = movingEnd == BlowHandleType.Target ? BlowHandleType.Source : BlowHandleType.Target;
         var fixedNodeId = fixedType == BlowHandleType.Source ? edge.Source : edge.Target;
@@ -3482,10 +4194,11 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         _connEndClientX = e.ClientX;
         _connEndClientY = e.ClientY;
         _connecting = true;
+        _connectionVersion++;
         _connEndValid = false;
         _connMoved = true; // a reconnect is always a drag gesture, never a click-to-connect
         _reconnectEdge = edge;
-        RefreshConnectionKeys();
+        BeginConnectionSession();
         CapturePane(e.PointerId);
         _ = OnReconnectStart.InvokeAsync(new BlowEdgeReconnectStart(edge, movingEnd));
         _ = OnConnectStart.InvokeAsync(new BlowConnectionStartInfo(node.Id, fixedHandle, fixedType));
@@ -3502,70 +4215,168 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     }
 
     /// <summary>Completes the in-progress connection on the given handle, if it is a valid target.</summary>
+    /// <remarks>
+    /// With <see cref="OnBeforeConnect"/> set, the outcome arrives later: the gesture ends here, and the edge is
+    /// added once the confirmation comes back.
+    /// </remarks>
     public void CompleteConnection(string nodeId, string? handleId, BlowHandleType handleType)
     {
         if (!_connecting) return;
 
-        if (IsValidConnectionTarget(nodeId, handleId, handleType))
+        // The session was built when the drag began, and the graph may have changed since - an edit from code, a
+        // collaborator's edge. What the user let go on is judged against the graph as it is now.
+        var check = CheckConnection(nodeId, handleId, handleType);
+        var drop = new ConnectionDrop(_connSource.NodeId, _connSource.HandleId, _connSource.Type, nodeId, handleId, handleType);
+        if (check.IsValid) check = RecheckConnection(drop, _reconnectEdge);
+        if (!check.IsValid)
         {
-            _connEndValid = true;
-            // Normalize so the edge always flows source-handle -> target-handle.
-            var (sourceNode, sourceHandle, targetNode, targetHandle) =
-                _connSource.Type == BlowHandleType.Source
-                    ? (_connSource.NodeId, _connSource.HandleId, nodeId, handleId)
-                    : (nodeId, handleId, _connSource.NodeId, _connSource.HandleId);
-
-            if (_reconnectEdge is { } re)
-            {
-                // Reconnecting an existing edge: rewire it in place.
-                re.Source = sourceNode;
-                re.SourceHandle = sourceHandle;
-                re.Target = targetNode;
-                re.TargetHandle = targetHandle;
-                var conn = new BlowConnection(sourceNode, targetNode, sourceHandle, targetHandle);
-                _needsMeasure = true;
-                _reconnectRewired = true;
-                CaptureHistory();
-                _ = OnReconnect.InvokeAsync(new BlowEdgeReconnect(re, conn));
-                _ = EdgesChanged.InvokeAsync(Edges);
-            }
-            else
-            {
-                var connection = new BlowConnection(sourceNode, targetNode, sourceHandle, targetHandle);
-
-                // The id is derived from the wiring, so it can already be taken: by a parallel
-                // edge when duplicates are allowed, or by an edge that was created here and has
-                // since been reconnected elsewhere (reconnecting keeps the id). Reusing it would
-                // give two edges one id, and the second would silently never be drawn.
-                var id = BlowGraphUtils.BuildEdgeId(connection);
-                if (EdgeIndex.ContainsKey(id))
-                {
-                    var suffix = 2;
-                    while (EdgeIndex.ContainsKey($"{id}-{suffix}")) suffix++;
-                    id = $"{id}-{suffix}";
-                }
-
-                var edge = new BlowEdge
-                {
-                    Id = id,
-                    Source = sourceNode,
-                    Target = targetNode,
-                    SourceHandle = sourceHandle,
-                    TargetHandle = targetHandle,
-                    Type = DefaultEdgeType,
-                };
-                DefaultEdgeOptions?.ApplyTo(edge, DefaultEdgeType);
-                Edges.Add(edge);
-                _edgeIndexDirty = true;
-                CaptureHistory();
-                _ = OnConnect.InvokeAsync(connection);
-                _ = EdgesChanged.InvokeAsync(Edges);
-                NotifyHandlesConnected(connection);
-            }
+            _connRejection = check.Rejection;
+            CancelConnection();
+            return;
         }
 
-        CancelConnection();
+        var connection = DescribeConnection(nodeId, handleId, handleType);
+        var reconnecting = _reconnectEdge;
+
+        if (OnBeforeConnect is not { } confirm)
+        {
+            ApplyConnection(connection, reconnecting);
+            _connEndValid = true;
+            _reconnectRewired = reconnecting is not null;
+            CancelConnection();
+            return;
+        }
+
+        // The gesture is over as far as the user can see: the line goes now, not when the answer comes back. The
+        // confirmation runs on its own, so the pointer release that got here finishes - releasing its capture -
+        // without waiting on a server, and the user can start the next gesture meanwhile.
+        var end = TakeConnectionEnd();
+        StateHasChanged();
+        _ = SurfaceFailureAsync(ConfirmConnectionAsync(confirm, connection, drop, reconnecting, end));
     }
+
+    /// <summary>Hands an exception from work nobody awaits to the renderer, rather than losing it.</summary>
+    private async Task SurfaceFailureAsync(Task work)
+    {
+        try { await work; }
+        catch (Exception ex) when (!_disposed) { await DispatchExceptionAsync(ex); }
+    }
+
+    /// <summary>Which two handles a connection joins, each as the kind of handle it physically is.</summary>
+    private readonly record struct ConnectionDrop(
+        string FromNode, string? FromHandle, BlowHandleType FromType, string ToNode, string? ToHandle, BlowHandleType ToType);
+
+    private async Task ConfirmConnectionAsync(Func<BlowConnection, Task<bool>> confirm, BlowConnection connection,
+        ConnectionDrop drop, BlowEdge? reconnecting, ConnectionEnd end)
+    {
+        var raised = false;
+        try
+        {
+            var confirmed = await confirm(connection);
+            if (_disposed) return;
+
+            // The graph may have moved on while the confirmation ran - another connection made, the edge being
+            // reconnected deleted, a node removed by a collaborator - so the connection is judged again as of now.
+            var now = confirmed
+                ? RecheckConnection(drop, reconnecting)
+                : new BlowConnectionCheck(BlowConnectionRejection.RejectedByRule);
+            if (now.IsValid) ApplyConnection(connection, reconnecting);
+
+            raised = true;
+            RaiseConnectionEnd(end with
+            {
+                Valid = now.IsValid,
+                Rewired = now.IsValid && reconnecting is not null,
+                Rejection = now.Rejection,
+            });
+            StateHasChanged();
+        }
+        finally
+        {
+            // A confirmation that threw still ends the gesture it was confirming: every start has its end.
+            if (!raised && !_disposed) RaiseConnectionEnd(end with { Valid = false, Rejection = BlowConnectionRejection.RejectedByRule });
+        }
+    }
+
+    /// <summary>
+    /// Checks a connection against the graph as it is now, with a session built afresh - the one built when the
+    /// drag began may describe a graph that no longer exists. Each end is looked up as the kind of handle it
+    /// physically is, exactly as the session the drag used does, so loose mode is judged the same way twice.
+    /// </summary>
+    private BlowConnectionCheck RecheckConnection(ConnectionDrop drop, BlowEdge? reconnecting)
+    {
+        if (!NodesConnectable) return new BlowConnectionCheck(BlowConnectionRejection.NotConnectable);
+        if (reconnecting is not null && !Edges.Contains(reconnecting))
+            return new BlowConnectionCheck(BlowConnectionRejection.MissingNode);
+
+        var session = BlowConnectionRules.Begin(new BlowGraphIndex(Nodes, Edges),
+            drop.FromNode, drop.FromHandle, drop.FromType, ConnectionPolicy(), reconnecting);
+        var check = session.Check(drop.ToNode, drop.ToHandle, drop.ToType);
+        if (!check.IsValid) return check;
+
+        var connection = session.Describe(drop.ToNode, drop.ToHandle, drop.ToType);
+        if (HandleFor(drop.ToNode, drop.ToType, drop.ToHandle)?.IsValidConnection is { } targetRule && !targetRule(connection))
+            return new BlowConnectionCheck(BlowConnectionRejection.RejectedByRule);
+
+        if (HandleFor(drop.FromNode, drop.FromType, drop.FromHandle)?.IsValidConnection is { } sourceRule && !sourceRule(connection))
+            return new BlowConnectionCheck(BlowConnectionRejection.RejectedByRule);
+
+        return check;
+    }
+
+    /// <summary>
+    /// Makes the edge a completed connection describes: a new one, or the rewired edge being reconnected. Touches no
+    /// gesture state - after an asynchronous confirmation the user may already be in the middle of the next one.
+    /// </summary>
+    private void ApplyConnection(BlowConnection connection, BlowEdge? reconnecting)
+    {
+        if (reconnecting is { } re)
+        {
+            // Reconnecting an existing edge: rewire it in place.
+            re.Source = connection.Source!;
+            re.SourceHandle = connection.SourceHandle;
+            re.Target = connection.Target!;
+            re.TargetHandle = connection.TargetHandle;
+            _needsMeasure = true;
+            Commit(BlowChangeKind.Reconnected, "reconnect", edges: [re], origin: BlowChangeOrigin.User);
+            _ = OnReconnect.InvokeAsync(new BlowEdgeReconnect(re, connection));
+            _ = RaiseEdgesChangedAsync();
+            return;
+        }
+
+        // The id is derived from the wiring, so it can already be taken: by a parallel
+        // edge when duplicates are allowed, or by an edge that was created here and has
+        // since been reconnected elsewhere (reconnecting keeps the id). Reusing it would
+        // give two edges one id, and the second would silently never be drawn.
+        var id = BlowGraphUtils.BuildEdgeId(connection);
+        if (EdgeIndex.ContainsKey(id))
+        {
+            var suffix = 2;
+            while (EdgeIndex.ContainsKey($"{id}-{suffix}")) suffix++;
+            id = $"{id}-{suffix}";
+        }
+
+        var edge = new BlowEdge
+        {
+            Id = id,
+            Source = connection.Source!,
+            Target = connection.Target!,
+            SourceHandle = connection.SourceHandle,
+            TargetHandle = connection.TargetHandle,
+            Type = DefaultEdgeType,
+        };
+        DefaultEdgeOptions?.ApplyTo(edge, DefaultEdgeType);
+        Edges.Add(edge);
+        _edgeIndexDirty = true;
+        Commit(BlowChangeKind.Connected, "connect", edges: [edge], origin: BlowChangeOrigin.User);
+        Announce(AriaLabels.Connected(NameOf(connection.Source!), NameOf(connection.Target!)));
+        _ = OnConnect.InvokeAsync(connection);
+        _ = RaiseEdgesChangedAsync();
+        NotifyHandlesConnected(connection);
+    }
+
+    /// <summary>The name a node id is announced by, or the id itself for a node no longer in the graph.</summary>
+    private string NameOf(string nodeId) => Index.TryGetValue(nodeId, out var node) ? NameOf(node) : nodeId;
 
     /// <summary>
     /// Raises the <c>OnConnect</c> callback of both handles a new connection joins. The pane
@@ -3593,22 +4404,31 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
     private bool TryCompleteByProximity()
     {
-        if (ClosestValidHandle() is not { } bh) return false;
+        var (valid, nearest) = ClosestHandles();
+        if (valid is not { } bh)
+        {
+            // Dropped close to a handle that refused, and to none that would accept: say why it did not connect.
+            if (_connRejection == BlowConnectionRejection.None && nearest is { } refused) _connRejection = refused.Rejection;
+            return false;
+        }
+
         CompleteConnection(bh.nodeId, bh.handleId, bh.type);
         return true;
     }
 
     /// <summary>
-    /// The nearest handle within <see cref="ConnectionRadius"/> of the connection's loose end that
-    /// the connection could legally complete on, or null.
+    /// The handles within <see cref="ConnectionRadius"/> of the connection's loose end: the nearest one the
+    /// connection could legally complete on, and, when there is none, the nearest one that refuses it and why.
     /// </summary>
-    private (string nodeId, string? handleId, BlowHandleType type)? ClosestValidHandle()
+    private ((string nodeId, string? handleId, BlowHandleType type)? Valid,
+        (string NodeId, string? HandleId, BlowHandleType Type, BlowConnectionRejection Rejection)? Refused) ClosestHandles()
     {
-        if (ConnectionRadius <= 0) return null;
+        if (ConnectionRadius <= 0) return (null, null);
         var radius = ConnectionRadius / _viewport.Zoom;
 
-        double best = double.MaxValue;
+        double best = double.MaxValue, bestRefused = double.MaxValue;
         (string nodeId, string? handleId, BlowHandleType type)? bestHandle = null;
+        (string, string?, BlowHandleType, BlowConnectionRejection)? refused = null;
 
         foreach (var n in Nodes)
         {
@@ -3622,47 +4442,85 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
                 var dx = hx - _connEnd.X;
                 var dy = hy - _connEnd.Y;
                 var d = Math.Sqrt(dx * dx + dy * dy);
-                if (d > radius || d >= best) continue;
+                if (d > radius || (d >= best && d >= bestRefused)) continue;
 
                 var hid = string.IsNullOrEmpty(h.HandleId) ? null : h.HandleId;
-                if (!IsValidConnectionTarget(n.Id, hid, h.Type)) continue;
 
-                best = d;
-                bestHandle = (n.Id, hid, h.Type);
+                // The handle the line comes out of is where it started, not somewhere it was refused.
+                if (IsConnectionSource(n.Id, hid, h.Type)) continue;
+
+                var check = CheckConnection(n.Id, hid, h.Type);
+                if (check.IsValid)
+                {
+                    if (d >= best) continue;
+                    best = d;
+                    bestHandle = (n.Id, hid, h.Type);
+                }
+                else if (d < bestRefused)
+                {
+                    bestRefused = d;
+                    refused = (n.Id, hid, h.Type, check.Rejection);
+                }
             }
         }
 
-        return bestHandle;
+        return (bestHandle, bestHandle is null ? refused : null);
     }
 
     private void CancelConnection()
     {
-        var start = new BlowConnectionStartInfo(_connSource.NodeId, _connSource.HandleId, _connSource.Type);
-        var reconnected = _reconnectEdge;
-        var rewired = _reconnectRewired;
-        var endInfo = new BlowConnectEndInfo(start, _connEnd, _connEndClientX, _connEndClientY, _connEndValid)
-        {
-            IsDropped = _connDropping,
-            IsReconnect = reconnected is not null,
-        };
+        var end = TakeConnectionEnd();
+        RaiseConnectionEnd(end);
+        StateHasChanged();
+    }
+
+    /// <summary>Everything the end of a connection gesture reports, captured before its state is reset.</summary>
+    private readonly record struct ConnectionEnd(
+        BlowConnectionStartInfo Start, BlowXYPosition FlowPosition, double ClientX, double ClientY, bool Valid,
+        bool Dropped, BlowEdge? Reconnected, bool Rewired, BlowConnectionRejection Rejection);
+
+    /// <summary>Ends the gesture: records how it ended and resets the connection state, raising nothing yet.</summary>
+    private ConnectionEnd TakeConnectionEnd()
+    {
+        var end = new ConnectionEnd(
+            new BlowConnectionStartInfo(_connSource.NodeId, _connSource.HandleId, _connSource.Type),
+            _connEnd, _connEndClientX, _connEndClientY, _connEndValid, _connDropping, _reconnectEdge,
+            _reconnectRewired, _connEndValid ? BlowConnectionRejection.None : _connRejection);
 
         _connecting = false;
+        _keyboardConnecting = false;
+        _connectionVersion++;
         _connMoved = false;
         _connDropping = false;
         _connHover = null;
         _connSnap = null;
+        _connNear = null;
+        _connRejection = BlowConnectionRejection.None;
+        _connEndValid = false;
+        _connSession = null;
         _reconnectEdge = null;
         _reconnectRewired = false;
         NotifyConnectionChange();
+        return end;
+    }
 
-        if (reconnected is not null && OnReconnectEnd.HasDelegate)
+    private void RaiseConnectionEnd(ConnectionEnd end)
+    {
+        if (end.Rejection != BlowConnectionRejection.None)
+            Announce(AriaLabels.ConnectionRejected(end.Rejection));
+
+        if (end.Reconnected is { } reconnected && OnReconnectEnd.HasDelegate)
         {
-            var movingEnd = _connSource.Type == BlowHandleType.Source ? BlowHandleType.Target : BlowHandleType.Source;
-            _ = OnReconnectEnd.InvokeAsync(new BlowEdgeReconnectEnd(reconnected, movingEnd, rewired));
+            var movingEnd = end.Start.HandleType == BlowHandleType.Source ? BlowHandleType.Target : BlowHandleType.Source;
+            _ = OnReconnectEnd.InvokeAsync(new BlowEdgeReconnectEnd(reconnected, movingEnd, end.Rewired));
         }
 
-        _ = OnConnectEnd.InvokeAsync(endInfo);
-        StateHasChanged();
+        _ = OnConnectEnd.InvokeAsync(new BlowConnectEndInfo(end.Start, end.FlowPosition, end.ClientX, end.ClientY, end.Valid)
+        {
+            IsDropped = end.Dropped,
+            IsReconnect = end.Reconnected is not null,
+            Rejection = end.Rejection,
+        });
     }
 
     /// <summary>Tells the canvas the pointer has entered or left a handle while connecting.</summary>
@@ -3671,6 +4529,21 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         if (!_connecting) return;
         _connHover = isOver ? (nodeId, handleId, handleType) : null;
         NotifyConnectionChange();
+    }
+
+    /// <summary>
+    /// The verdict on a handle the pointer is over: the rules', unless the handle itself refuses drops (its
+    /// <c>IsConnectableEnd</c> or <c>IsConnectable</c>), which only its measured anchor records.
+    /// </summary>
+    private BlowConnectionCheck HoverCheck(string nodeId, string? handleId, BlowHandleType handleType)
+    {
+        if (Index.TryGetValue(nodeId, out var node)
+            && node.Handles.TryGetValue(BlowHandleBounds.Key(handleType, handleId), out var bounds)
+            && !bounds.ConnectableEnd)
+        {
+            return new BlowConnectionCheck(BlowConnectionRejection.NotConnectable);
+        }
+        return CheckConnection(nodeId, handleId, handleType);
     }
 
     /// <summary>
@@ -3685,46 +4558,34 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
     /// <summary>True when the in-progress connection could legally complete on the given handle.</summary>
     public bool IsValidConnectionTarget(string nodeId, string? handleId, BlowHandleType handleType)
+        => CheckConnection(nodeId, handleId, handleType).IsValid;
+
+    /// <summary>
+    /// Whether the in-progress connection could complete on the given handle, and if not, why. Every rule is
+    /// consulted, in the order <see cref="BlowConnectionRules"/> documents: the canvas-wide ones, the ports'
+    /// data types and limits, <see cref="IsValidConnection"/>, and finally the rules of the two handles involved.
+    /// Outside a connection gesture every handle is refused as <see cref="BlowConnectionRejection.NotConnectable"/>.
+    /// </summary>
+    public BlowConnectionCheck CheckConnection(string nodeId, string? handleId, BlowHandleType handleType)
     {
-        if (!_connecting || !NodesConnectable) return false;
-        if (ConnectionMode == BlowConnectionMode.Strict && handleType == _connSource.Type) return false; // strict: source<->target only
+        if (!_connecting || !NodesConnectable || _connSession is not { } session)
+            return new BlowConnectionCheck(BlowConnectionRejection.NotConnectable);
 
-        if (nodeId == _connSource.NodeId)
-        {
-            // A self-connection needs an explicit opt-in, and must still join two *different* handles.
-            if (!AllowSelfConnections) return false;
-            if (handleId == _connSource.HandleId && handleType == _connSource.Type) return false;
-        }
-
-        if (!Index.TryGetValue(nodeId, out var target) || !target.Connectable || target.Hidden) return false;
-
-        var (sourceNode, sourceHandle, targetNode, targetHandle) =
-            _connSource.Type == BlowHandleType.Source
-                ? (_connSource.NodeId, _connSource.HandleId, nodeId, handleId)
-                : (nodeId, handleId, _connSource.NodeId, _connSource.HandleId);
-
-        if (PreventDuplicateEdges && IsDuplicateConnection(sourceNode, sourceHandle, targetNode, targetHandle))
-            return false;
-
-        var connection = new BlowConnection(sourceNode, targetNode, sourceHandle, targetHandle);
-
-        if (IsValidConnection is not null && !IsValidConnection(connection)) return false;
+        var check = session.Check(nodeId, handleId, handleType);
+        if (!check.IsValid) return check;
 
         // Both ends get a say: the handle being dropped on, and the one the drag started from.
-        if (HandleFor(nodeId, handleType, handleId)?.IsValidConnection is { } targetRule
-            && !targetRule(connection))
-        {
-            return false;
-        }
+        var connection = session.Describe(nodeId, handleId, handleType);
+        if (HandleFor(nodeId, handleType, handleId)?.IsValidConnection is { } targetRule && !targetRule(connection))
+            return new BlowConnectionCheck(BlowConnectionRejection.RejectedByRule);
 
-        if (HandleFor(_connSource.NodeId, _connSource.Type, _connSource.HandleId)?.IsValidConnection
-                is { } sourceRule
+        if (HandleFor(_connSource.NodeId, _connSource.Type, _connSource.HandleId)?.IsValidConnection is { } sourceRule
             && !sourceRule(connection))
         {
-            return false;
+            return new BlowConnectionCheck(BlowConnectionRejection.RejectedByRule);
         }
 
-        return true;
+        return check;
     }
 
     /// <summary>
@@ -3737,30 +4598,118 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
             : new BlowConnection(nodeId, _connSource.NodeId, handleId, _connSource.HandleId);
 
     /// <summary>
-    /// True when an identical edge already exists. The edge currently being reconnected is
-    /// ignored so dropping it back where it came from is still allowed.
+    /// The rules the running connection gesture is checked against, bound to the handle it started from. Built
+    /// once when the gesture starts: every handle re-evaluates its validity on every render while a connection is
+    /// being dragged, and the session answers each of them in a few lookups rather than a scan of the edge list.
     /// </summary>
-    /// <remarks>
-    /// Backed by a set snapshotted when the gesture starts: every handle re-evaluates its
-    /// validity on every render while a connection is being dragged, so a linear scan of the
-    /// edge list here would be O(handles x edges) per frame.
-    /// </remarks>
-    private bool IsDuplicateConnection(string source, string? sourceHandle, string target, string? targetHandle)
-        => _existingConnectionKeys.Contains(ConnectionKey(source, sourceHandle, target, targetHandle));
+    private BlowConnectionSession? _connSession;
 
-    private static string ConnectionKey(string source, string? sourceHandle, string target, string? targetHandle)
-        => $"{source}\u001f{sourceHandle}\u001f{target}\u001f{targetHandle}";
+    private void BeginConnectionSession()
+        => _connSession = BlowConnectionRules.Begin(new BlowGraphIndex(Nodes, Edges),
+            _connSource.NodeId, _connSource.HandleId, _connSource.Type, ConnectionPolicy(), _reconnectEdge);
 
-    /// <summary>Snapshots the existing wiring so duplicate checks during the gesture are O(1).</summary>
-    private void RefreshConnectionKeys()
+    /// <summary>The canvas's connection parameters as the policy <see cref="BlowConnectionRules"/> applies.</summary>
+    private BlowConnectionPolicy ConnectionPolicy() => new()
     {
-        _existingConnectionKeys.Clear();
-        foreach (var e in Edges)
+        Mode = ConnectionMode,
+        AllowSelfConnections = AllowSelfConnections,
+        PreventDuplicates = PreventDuplicateEdges,
+        PreventCycles = PreventCycles,
+        TypeCompatibility = ConnectionTypeCompatibility,
+        IsValidConnection = IsValidConnection,
+        ResolvePort = ResolvePort,
+    };
+
+    /// <summary>
+    /// The port standing for a handle: the one declared on the node's model, with whatever the rendered
+    /// <c>BlowHandle</c> says about its data type and limit laid over it.
+    /// </summary>
+    private BlowPort? ResolvePort(BlowNode node, BlowHandleType type, string? handleId)
+    {
+        var port = node.FindPort(type, handleId);
+        if (HandleFor(node.Id, type, handleId) is not { } handle || (handle.DataType is null && handle.MaxConnections is null))
+            return port;
+
+        return new BlowPort
         {
-            if (ReferenceEquals(e, _reconnectEdge)) continue;
-            _existingConnectionKeys.Add(ConnectionKey(e.Source, e.SourceHandle, e.Target, e.TargetHandle));
-        }
+            Id = handleId,
+            Type = type,
+            Position = port?.Position,
+            Label = port?.Label,
+            DataType = handle.DataType ?? port?.DataType,
+            MaxConnections = handle.MaxConnections ?? port?.MaxConnections,
+            MinConnections = port?.MinConnections ?? 0,
+            Data = port?.Data,
+        };
     }
+
+    /// <summary>
+    /// Whether a connection can be started from the given handle right now: the canvas and the node take
+    /// connections and the handle's port is not already at its <c>MaxConnections</c>. Used by <c>BlowHandle</c>,
+    /// which neither starts a drag nor shows itself as connectable when this is false.
+    /// </summary>
+    public bool CanStartConnection(string nodeId, string? handleId, BlowHandleType handleType)
+        => NodesConnectable && Index.TryGetValue(nodeId, out var node) && node.Connectable && !node.Hidden
+           && !IsHandleAtLimit(nodeId, handleId, handleType);
+
+    /// <summary>
+    /// True when the given handle's port already has as many edges as its <c>MaxConnections</c> allows. Such a
+    /// handle neither starts nor accepts connections, and is not drawn as connectable.
+    /// </summary>
+    public bool IsHandleAtLimit(string nodeId, string? handleId, BlowHandleType handleType)
+    {
+        if (!Index.TryGetValue(nodeId, out var node) || ResolvePort(node, handleType, handleId)?.MaxConnections is not { } max)
+            return false;
+
+        var count = CountConnections(nodeId, handleType, handleId);
+
+        // The edge being reconnected is the one this connection replaces: dropping it back where it came from is
+        // allowed, so its own handle must not look full because of it.
+        if (_reconnectEdge is { } re && Attaches(re, nodeId, handleType, handleId)) count--;
+
+        return count >= max;
+    }
+
+    /// <summary>
+    /// True when the edge is attached to the given handle: at the end of the handle's own type, or in loose mode -
+    /// where any handle can be either end - at either end with that handle id.
+    /// </summary>
+    private bool Attaches(BlowEdge edge, string nodeId, BlowHandleType handleType, string? handleId)
+    {
+        var atSource = edge.Source == nodeId && BlowGraphIndex.SameHandle(edge.SourceHandle, handleId);
+        var atTarget = edge.Target == nodeId && BlowGraphIndex.SameHandle(edge.TargetHandle, handleId);
+        if (ConnectionMode == BlowConnectionMode.Loose) return atSource || atTarget;
+        return handleType == BlowHandleType.Source ? atSource : atTarget;
+    }
+
+    /// <summary>
+    /// How many edges are attached to one handle: leaving it for a source handle, arriving for a target - or in
+    /// <see cref="BlowConnectionMode.Loose"/> mode, where a handle can be either end, both. Counted once per render
+    /// for all handles.
+    /// </summary>
+    public int CountConnections(string nodeId, BlowHandleType handleType, string? handleId)
+    {
+        if (_handleCounts is null)
+        {
+            _handleCounts = new Dictionary<(string, BlowHandleType, string), int>();
+            foreach (var e in Edges)
+            {
+                Increment((e.Source, BlowHandleType.Source, e.SourceHandle ?? string.Empty));
+                Increment((e.Target, BlowHandleType.Target, e.TargetHandle ?? string.Empty));
+            }
+        }
+        var at = _handleCounts.GetValueOrDefault((nodeId, handleType, handleId ?? string.Empty));
+        if (ConnectionMode != BlowConnectionMode.Loose) return at;
+
+        // In loose mode a handle can be either end of an edge, so both ends with its id count against it.
+        var other = handleType == BlowHandleType.Source ? BlowHandleType.Target : BlowHandleType.Source;
+        return at + _handleCounts.GetValueOrDefault((nodeId, other, handleId ?? string.Empty));
+
+        void Increment((string, BlowHandleType, string) key) => _handleCounts[key] = _handleCounts.GetValueOrDefault(key) + 1;
+    }
+
+    /// <summary>Edges per handle, built on first use after each render's preparation; see <see cref="CountConnections"/>.</summary>
+    private Dictionary<(string, BlowHandleType, string), int>? _handleCounts;
 
     // ---- viewport controls ----
 
@@ -3800,7 +4749,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         StopViewportAnimation();
 
         var from = _viewport;
-        if (durationMs <= 0 || from == target)
+        if (durationMs <= 0 || from == target || ReducesMotion)
         {
             ApplyViewport(target);
             return;
@@ -3864,7 +4813,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         _viewport = viewport;
         _ = OnViewportChanged.InvokeAsync(_viewport);
         _ = OnMove.InvokeAsync(_viewport);
-        StateHasChanged();
+        RenderOverlay();
     }
 
     // ---- public imperative API (the useReactFlow() equivalent, accessed via @ref) ----
@@ -4002,8 +4951,8 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         _indexDirty = true;
         // Deleting through the API is an undo step, so adding through it has to be one too:
         // otherwise undoing straight after an "add" would take back whatever came before it.
-        CaptureHistory();
-        _ = NodesChanged.InvokeAsync(Nodes);
+        Commit(BlowChangeKind.Added, "add", nodes);
+        _ = RaiseNodesChangedAsync();
         StateHasChanged();
     }
 
@@ -4013,8 +4962,8 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         if (edges.Length == 0) return;
         Edges.AddRange(edges);
         _edgeIndexDirty = true;
-        CaptureHistory();
-        _ = EdgesChanged.InvokeAsync(Edges);
+        Commit(BlowChangeKind.Added, "add", edges: edges);
+        _ = RaiseEdgesChangedAsync();
         StateHasChanged();
     }
 
@@ -4046,11 +4995,11 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
         _indexDirty = true;
         _edgeIndexDirty = true;
-        CaptureHistory();
+        Commit(BlowChangeKind.Removed, "delete", removedNodes: nodeList, removedEdges: removedEdges);
         await NotifySelectionChangedAsync();
         await RaiseDeleteEventsAsync(nodeList, removedEdges);
-        await NodesChanged.InvokeAsync(Nodes);
-        await EdgesChanged.InvokeAsync(Edges);
+        await RaiseNodesChangedAsync();
+        await RaiseEdgesChangedAsync();
         StateHasChanged();
     }
 
@@ -4065,7 +5014,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     public async Task AlignSelectionAsync(BlowAlignEdge edge)
     {
         var moved = BlowAlign.Align(SelectedDraggableNodes(), edge, NodeOrigin);
-        await AfterNodesMovedAsync(moved);
+        await AfterNodesMovedAsync(moved, "align");
     }
 
     /// <summary>Spaces the selected nodes evenly across the span they already occupy.</summary>
@@ -4076,7 +5025,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     public async Task DistributeSelectionAsync(bool horizontal, double? gap = null)
     {
         var moved = BlowAlign.Distribute(SelectedDraggableNodes(), horizontal, NodeOrigin, gap);
-        await AfterNodesMovedAsync(moved);
+        await AfterNodesMovedAsync(moved, "distribute");
     }
 
     private List<BlowNode> SelectedDraggableNodes()
@@ -4086,7 +5035,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// Common tail for the imperative move helpers: keep the moved nodes inside whatever
     /// constrains them, re-measure, announce, and tell the caller its list changed.
     /// </summary>
-    private async Task AfterNodesMovedAsync(IReadOnlyList<BlowNode> moved)
+    private async Task AfterNodesMovedAsync(IReadOnlyList<BlowNode> moved, string label)
     {
         if (moved.Count == 0) return;
 
@@ -4097,10 +5046,734 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         }
 
         _needsMeasure = true;
-        CaptureHistory();
+        Commit(BlowChangeKind.Moved, label, moved);
         Announce(AriaLabels.NodesMoved(moved.Count));
-        await NodesChanged.InvokeAsync(Nodes);
+        await RaiseNodesChangedAsync();
         StateHasChanged();
+    }
+
+    // ---- connecting from the keyboard ----
+
+    /// <summary>True while a connection started with <see cref="ConnectionKey"/> waits for the node it ends on.</summary>
+    private bool _keyboardConnecting;
+
+    /// <summary>Whether connections can be made from the keyboard at all.</summary>
+    private bool KeyboardConnections => !DisableKeyboardA11y && NodesConnectable && !string.IsNullOrEmpty(ConnectionKey);
+
+    /// <summary>The connection key as the instructions name it: a letter upper-cased, anything else as given.</summary>
+    private string ConnectionKeyName => ConnectionKey is { Length: 1 } key ? key.ToUpperInvariant() : ConnectionKey ?? "";
+
+    /// <summary>The keyboard instructions of a node, with how to connect from it when that can be done.</summary>
+    private string NodeInstructionsText => KeyboardConnections
+        ? $"{AriaLabels.NodeInstructions} {AriaLabels.KeyboardConnectionInstructions(ConnectionKeyName)}"
+        : AriaLabels.NodeInstructions;
+
+    /// <summary>
+    /// A node's measured handles in the order the connection key steps through them: outputs first, then in reading
+    /// order.
+    /// </summary>
+    private static List<BlowHandleBounds> PortsOf(BlowNode node) => node.Handles.Values
+        .OrderBy(h => h.Type == BlowHandleType.Source ? 0 : 1)
+        .ThenBy(h => h.OffsetY)
+        .ThenBy(h => h.OffsetX)
+        .ToList();
+
+    /// <summary>A handle's id as edges record it: null for the unnamed handle.</summary>
+    private static string? HandleIdOf(BlowHandleBounds handle) => string.IsNullOrEmpty(handle.HandleId) ? null : handle.HandleId;
+
+    /// <summary>What a port is called when announced: its declared label, else its id; null for an unnamed handle.</summary>
+    private static string? PortLabel(BlowNode node, BlowHandleBounds handle)
+        => node.FindPort(handle.Type, HandleIdOf(handle))?.Label ?? HandleIdOf(handle);
+
+    private static int IndexOfPort(List<BlowHandleBounds> ports, string? handleId, BlowHandleType type)
+        => ports.FindIndex(p => p.Type == type && HandleIdOf(p) == handleId);
+
+    /// <summary>The connection key pressed on a focused node: start a connection from it, or pick another port.</summary>
+    private async Task OnNodeConnectKey(BlowNode node)
+    {
+        if (!KeyboardConnections || !await ShouldHandleKeyAsync()) return;
+
+        if (_keyboardConnecting)
+        {
+            if (node.Id == _connSource.NodeId) StartKeyboardConnection(node, after: (_connSource.HandleId, _connSource.Type));
+            else TargetKeyboardConnection(node, after: _connHover is { } hover && hover.nodeId == node.Id ? (hover.handleId, hover.type) : null);
+            return;
+        }
+
+        // A connection being drawn with the pointer is not the keyboard's to take over.
+        if (_connecting) return;
+        StartKeyboardConnection(node, after: null);
+    }
+
+    /// <summary>
+    /// Starts a connection from the first port of <paramref name="node"/> one can start from - the first after
+    /// <paramref name="after"/>, when stepping on to the next.
+    /// </summary>
+    private void StartKeyboardConnection(BlowNode node, (string? HandleId, BlowHandleType Type)? after)
+    {
+        var ports = PortsOf(node);
+        var start = after is { } current ? IndexOfPort(ports, current.HandleId, current.Type) + 1 : 0;
+        for (var k = 0; k < ports.Count; k++)
+        {
+            var port = ports[(start + k) % ports.Count];
+            if (!CanStartConnection(node.Id, HandleIdOf(port), port.Type)) continue;
+
+            // Stepping to another port ends the connection from the previous one, as releasing a drag would.
+            if (_connecting) RaiseConnectionEnd(TakeConnectionEnd());
+
+            StartConnection(node.Id, HandleIdOf(port), port.Type, port.Position);
+            if (!_connecting) continue;
+
+            _keyboardConnecting = true;
+            Announce(AriaLabels.KeyboardConnectionStarted(NameOf(node), PortLabel(node, port), ConnectionKeyName));
+            return;
+        }
+
+        if (!_keyboardConnecting) Announce(AriaLabels.KeyboardConnectionUnavailable(NameOf(node)));
+    }
+
+    /// <summary>
+    /// Aims the keyboard connection at <paramref name="node"/>: at the first of its ports the connection could end on
+    /// (after <paramref name="after"/>, when stepping on), or - when none could - at its first port, so the reason it
+    /// cannot can be given.
+    /// </summary>
+    private void TargetKeyboardConnection(BlowNode node, (string? HandleId, BlowHandleType Type)? after)
+    {
+        if (!_keyboardConnecting) return;
+
+        // The node the connection started from went (deleted, a collaborator's edit): there is nothing to connect.
+        if (!Index.ContainsKey(_connSource.NodeId))
+        {
+            RaiseConnectionEnd(TakeConnectionEnd());
+            Announce(AriaLabels.ConnectionRejected(BlowConnectionRejection.MissingNode));
+            StateHasChanged();
+            return;
+        }
+
+        var ports = PortsOf(node)
+            .Where(p => !(node.Id == _connSource.NodeId && p.Type == _connSource.Type && HandleIdOf(p) == _connSource.HandleId))
+            .Where(p => ConnectionMode == BlowConnectionMode.Loose || p.Type != _connSource.Type)
+            .ToList();
+
+        if (ports.Count == 0)
+        {
+            ClearKeyboardTarget();
+            Announce(AriaLabels.ConnectionRejected(BlowConnectionRejection.NotConnectable));
+            return;
+        }
+
+        var start = after is { } current ? IndexOfPort(ports, current.HandleId, current.Type) + 1 : 0;
+        var chosen = ports[start % ports.Count];
+        var check = HoverCheck(node.Id, HandleIdOf(chosen), chosen.Type);
+        for (var k = 0; k < ports.Count && !check.IsValid; k++)
+        {
+            var port = ports[(start + k) % ports.Count];
+            var verdict = HoverCheck(node.Id, HandleIdOf(port), port.Type);
+            if (!verdict.IsValid) continue;
+            (chosen, check) = (port, verdict);
+        }
+
+        var (x, y, _) = ResolveAnchor(node, chosen.Type, HandleIdOf(chosen), chosen.Position);
+        SetKeyboardEnd(new BlowXYPosition(x, y));
+        _connHover = (node.Id, HandleIdOf(chosen), chosen.Type);
+        _connEndValid = check.IsValid;
+        _connRejection = check.Rejection;
+        NotifyConnectionChange();
+        Announce(check.IsValid
+            ? AriaLabels.KeyboardConnectionTarget(NameOf(node), PortLabel(node, chosen))
+            : AriaLabels.ConnectionRejected(check.Rejection));
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Ends a connection made from the keyboard because the pointer has started something else - a press on the pane,
+    /// a node, an edge or a handle - and says so, as Escape would.
+    /// </summary>
+    private void AbandonKeyboardConnection()
+    {
+        if (!_keyboardConnecting) return;
+        RaiseConnectionEnd(TakeConnectionEnd());
+        Announce(AriaLabels.KeyboardConnectionCancelled);
+        StateHasChanged();
+    }
+
+    /// <summary>Where the keyboard connection's line ends, on screen - reported by OnConnectEnd like a pointer's release point.</summary>
+    private void SetKeyboardEnd(BlowXYPosition flow)
+    {
+        _connEnd = flow;
+        var screen = FlowToScreenPosition(flow);
+        _connEndClientX = screen.X;
+        _connEndClientY = screen.Y;
+    }
+
+    /// <summary>Takes the keyboard connection's aim off any node: the line ends back at its source.</summary>
+    private void ClearKeyboardTarget()
+    {
+        _connHover = null;
+        SetKeyboardEnd(_connSource.Anchor);
+        _connEndValid = false;
+        _connRejection = BlowConnectionRejection.None;
+        NotifyConnectionChange();
+        StateHasChanged();
+    }
+
+    /// <summary>Enter on a node while connecting from the keyboard: connect to it when it can be, else say why not.</summary>
+    private async Task CompleteKeyboardConnectionAsync(BlowNode node)
+    {
+        if (!await ShouldHandleKeyAsync()) return;
+
+        // The connection may have ended while that was asked - a click on the pane, say.
+        if (!_keyboardConnecting) return;
+
+        if (_connHover is not { } aim || aim.nodeId != node.Id) TargetKeyboardConnection(node, after: null);
+        if (_connHover is not { } target || target.nodeId != node.Id || !_connEndValid) return; // the reason was announced
+
+        CompleteConnection(target.nodeId, target.handleId, target.type);
+    }
+
+    // ---- focus, selection and search ----
+
+    /// <summary>
+    /// Takes the user to a node: centres the view on it and moves keyboard focus to it, so a screen reader reads it
+    /// out and the keys act on it - for a search result, a validation problem, a "go to" command.
+    /// </summary>
+    /// <param name="nodeId">The node.</param>
+    /// <param name="select">True to make it the selection as well.</param>
+    /// <param name="zoom">The zoom to show it at; null keeps the current one.</param>
+    /// <param name="durationMs">How long the view takes to travel there; 0 jumps. With reduced motion it always jumps.</param>
+    /// <returns>
+    /// False when there is no such node, it is hidden, or its element could not take focus (nodes are not focusable).
+    /// </returns>
+    public async Task<bool> FocusNodeAsync(string nodeId, bool select = false, double? zoom = null, int durationMs = 0)
+    {
+        ArgumentNullException.ThrowIfNull(nodeId);
+        if (!Index.TryGetValue(nodeId, out var node) || node.Hidden) return false;
+
+        ComputeLayout();
+        if (select) await SelectAsync([node]);
+
+        var rect = node.GetRect();
+        await SetCenterAsync(rect.X + rect.Width / 2, rect.Y + rect.Height / 2, zoom, durationMs);
+        return await FocusElementAsync("node", nodeId);
+    }
+
+    /// <summary>Takes the user to an edge: centres the view between its ends and moves keyboard focus to it.</summary>
+    /// <param name="edgeId">The edge.</param>
+    /// <param name="select">True to make it the selection as well.</param>
+    /// <param name="zoom">The zoom to show it at; null keeps the current one.</param>
+    /// <param name="durationMs">How long the view takes to travel there; 0 jumps. With reduced motion it always jumps.</param>
+    /// <returns>False when there is no such visible edge, or its element could not take focus.</returns>
+    public async Task<bool> FocusEdgeAsync(string edgeId, bool select = false, double? zoom = null, int durationMs = 0)
+    {
+        ArgumentNullException.ThrowIfNull(edgeId);
+        if (!EdgeIndex.TryGetValue(edgeId, out var edge) || edge.Hidden || !IsEdgeVisible(edge)) return false;
+
+        ComputeLayout();
+        if (select) await SelectAsync(edges: [edge]);
+
+        var (source, target) = GetEdgeEndpoints(edge);
+        await SetCenterAsync((source.X + target.X) / 2, (source.Y + target.Y) / 2, zoom, durationMs);
+        return await FocusElementAsync("edge", edgeId);
+    }
+
+    private async Task<bool> FocusElementAsync(string kind, string id)
+    {
+        // The element has to be in the page before it can take focus - culled while it was off screen, it comes back
+        // in the render the move to it makes - so the render goes first.
+        StateHasChanged();
+        await Task.Yield();
+        try
+        {
+            return await _interop.FocusElementAsync(_paneRef, kind, id);
+        }
+        catch (Exception ex) when (IsInteropTeardown(ex))
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Makes the given nodes and edges the selection - or adds them to it, with <paramref name="additive"/>. Elements
+    /// that cannot be selected, or are hidden, are passed over.
+    /// </summary>
+    public async Task SelectAsync(IEnumerable<BlowNode>? nodes = null, IEnumerable<BlowEdge>? edges = null, bool additive = false)
+    {
+        if (!ElementsSelectable) return;
+        if (!additive) ClearSelection();
+        foreach (var node in nodes ?? []) if (node.Selectable && !node.Hidden) node.Selected = true;
+        _ = Index;
+        foreach (var edge in edges ?? []) if (edge.Selectable && !edge.Hidden && IsEdgeVisible(edge)) edge.Selected = true;
+        await NotifySelectionChangedAsync();
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// The nodes matching a search, best matches first; see <see cref="BlowGraphSearch.FindNodes"/>.
+    /// </summary>
+    public IReadOnlyList<BlowNode> FindNodes(string query, Func<BlowNode, string?>? text = null)
+        => BlowGraphSearch.FindNodes(Nodes.Where(n => !n.Hidden), query, text);
+
+    /// <summary>The edges matching a search, best matches first; see <see cref="BlowGraphSearch.FindEdges"/>.</summary>
+    public IReadOnlyList<BlowEdge> FindEdges(string query, Func<BlowEdge, string?>? text = null)
+    {
+        _ = Index; // brought up to date: IsEdgeVisible reads it directly
+        return BlowGraphSearch.FindEdges(Edges.Where(e => !e.Hidden && IsEdgeVisible(e)), query, NameOf, text);
+    }
+
+    // ---- transactions, grouping and stacking ----
+
+    // An edit is open from the start of EditAsync to its end, and the code running inside it - the edit itself and
+    // everything it calls or awaits - carries the edit's token in an async-local. Asking both is what tells the edit's
+    // own calls, which it folds in, from a key press or a server push handled while it awaits, which are edits of
+    // their own; and from work it started without awaiting, which outlives it.
+    private readonly AsyncLocal<object?> _editScope = new();
+    private readonly HashSet<object> _openEdits = [];
+
+    /// <summary>True for code running inside an open <see cref="EditAsync(Func{Task}, string?, BlowChangeOrigin, bool)"/>.</summary>
+    private bool InEdit => _editScope.Value is { } token && _openEdits.Contains(token);
+
+    /// <summary>Raises <see cref="NodesChanged"/>, unless inside an edit, which raises it once at its end.</summary>
+    private Task RaiseNodesChangedAsync() => InEdit ? Task.CompletedTask : NodesChanged.InvokeAsync(Nodes);
+
+    /// <summary>Raises <see cref="EdgesChanged"/>, unless inside an edit, which raises it once at its end.</summary>
+    private Task RaiseEdgesChangedAsync() => InEdit ? Task.CompletedTask : EdgesChanged.InvokeAsync(Edges);
+
+    /// <summary>
+    /// Makes several changes to the graph as one edit: one undo step, one <see cref="OnGraphChanged"/>, one
+    /// <see cref="NodesChanged"/> and <see cref="EdgesChanged"/>, and one render - however many nodes and edges
+    /// <paramref name="edit"/> adds, removes or changes.
+    /// </summary>
+    /// <param name="edit">
+    /// The changes: mutate <see cref="Nodes"/>, <see cref="Edges"/> and their elements directly, or call the canvas's
+    /// own methods (<see cref="AddNodes"/>, <see cref="DeleteElementsAsync"/>, ...), whose steps and change events are
+    /// folded into this edit's.
+    /// </param>
+    /// <param name="label">What the edit is called in the history and in its change; <c>edit</c> by default.</param>
+    /// <param name="origin">
+    /// Where the edit comes from. A collaboration adapter applying another user's edit passes
+    /// <see cref="BlowChangeOrigin.Remote"/>, so its own change listener can tell what not to send back.
+    /// </param>
+    /// <param name="recordHistory">
+    /// False makes the edit one the local user cannot undo - for remote edits. It is not recorded as a step; it is
+    /// written into every step the history holds instead, so neither undoing nor redoing takes it back.
+    /// </param>
+    /// <remarks>
+    /// <para>
+    /// The change raised lists the nodes and edges the edit added and removed; changes to elements that stayed are
+    /// not itemized, so a listener should treat an <see cref="BlowChangeKind.Edited"/> change as "the graph changed".
+    /// The specific events of what happens inside - <see cref="OnSelectionChange"/>, <see cref="OnDelete"/>,
+    /// <see cref="OnPaste"/> - are raised as it happens.
+    /// </para>
+    /// <para>
+    /// When <paramref name="edit"/> throws, what it changed before throwing is committed as the edit all the same,
+    /// and the exception is rethrown: the changes are already in the lists, and left unrecorded they would be folded
+    /// into whatever step came next.
+    /// </para>
+    /// <para>
+    /// Only the edit's own code is folded in. An edit the canvas handles while an asynchronous edit is waiting - a key
+    /// press, a server push - is an edit of its own; keep what an edit awaits short, since an undo in that window
+    /// changes the lists under it.
+    /// </para>
+    /// </remarks>
+    public Task EditAsync(Action edit, string? label = null, BlowChangeOrigin origin = BlowChangeOrigin.Api, bool recordHistory = true)
+    {
+        ArgumentNullException.ThrowIfNull(edit);
+        return EditAsync(() =>
+        {
+            edit();
+            return Task.CompletedTask;
+        }, label, origin, recordHistory);
+    }
+
+    /// <inheritdoc cref="EditAsync(Action, string?, BlowChangeOrigin, bool)"/>
+    public async Task EditAsync(Func<Task> edit, string? label = null, BlowChangeOrigin origin = BlowChangeOrigin.Api, bool recordHistory = true)
+    {
+        ArgumentNullException.ThrowIfNull(edit);
+
+        // An edit nested in another one is part of it: the outer edit commits for both.
+        if (InEdit)
+        {
+            await edit();
+            return;
+        }
+
+        var nodesBefore = new HashSet<BlowNode>(Nodes, ReferenceEqualityComparer.Instance);
+        var edgesBefore = new HashSet<BlowEdge>(Edges, ReferenceEqualityComparer.Instance);
+
+        var token = new object();
+        _openEdits.Add(token);
+        _editScope.Value = token;
+        try
+        {
+            await edit();
+        }
+        finally
+        {
+            _openEdits.Remove(token);
+            _editScope.Value = null;
+            await CommitEditAsync(nodesBefore, edgesBefore, label ?? "edit", origin,
+                recordHistory ? HistoryAction.Record : HistoryAction.Rebase);
+        }
+    }
+
+    private async Task CommitEditAsync(HashSet<BlowNode> nodesBefore, HashSet<BlowEdge> edgesBefore, string label,
+        BlowChangeOrigin origin, HistoryAction history)
+    {
+        var nodesAfter = new HashSet<BlowNode>(Nodes, ReferenceEqualityComparer.Instance);
+        var edgesAfter = new HashSet<BlowEdge>(Edges, ReferenceEqualityComparer.Instance);
+
+        _indexDirty = true;
+        _edgeIndexDirty = true;
+        _needsMeasure = true;
+
+        Commit(BlowChangeKind.Edited, label,
+            Nodes.Where(n => !nodesBefore.Contains(n)).ToList(),
+            Edges.Where(e => !edgesBefore.Contains(e)).ToList(),
+            nodesBefore.Where(n => !nodesAfter.Contains(n)).ToList(),
+            edgesBefore.Where(e => !edgesAfter.Contains(e)).ToList(),
+            origin, history);
+
+        await NotifySelectionChangedAsync();
+        await RaiseNodesChangedAsync();
+        await RaiseEdgesChangedAsync();
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Puts the selected nodes in a new group: a node of type <c>group</c>, sized to enclose them with
+    /// <paramref name="padding"/> to spare, becomes their parent. Nothing moves on screen - each node's position is
+    /// made relative to the group - and the group becomes the selection.
+    /// </summary>
+    /// <param name="group">
+    /// The node to group them in, when the application wants its own (a custom type, an id of its choosing); its
+    /// position, size and parent are set here. Null creates a <c>group</c> node with a fresh id.
+    /// </param>
+    /// <param name="padding">Space left between the grouped nodes and the group's border, in flow units.</param>
+    /// <returns>
+    /// The group, or null when nothing was grouped: no node is selected, or the selected nodes do not all sit in the
+    /// same parent (grouping across parents would have to move nodes between coordinate spaces the user can see).
+    /// </returns>
+    public async Task<BlowNode?> GroupSelectionAsync(BlowNode? group = null, double padding = 20)
+    {
+        ComputeLayout();
+
+        var selected = Nodes.Where(n => n.Selected && !n.Hidden).ToList();
+        var selectedIds = selected.Select(n => n.Id).ToHashSet();
+
+        // Only the outermost selected nodes: a selected child goes along with its selected parent.
+        var members = selected.Where(n => !HasAncestorIn(n, selectedIds)).ToList();
+        if (members.Count == 0 || members.Select(n => n.ParentId).Distinct().Count() != 1) return null;
+
+        // A child's position is measured from its parent's position point - the point its own Position names, which
+        // NodeOrigin can put anywhere in it - so that, not the top-left corner, is what everything is relative to.
+        var parentId = members[0].ParentId;
+        var parentPoint = parentId is not null && Index.TryGetValue(parentId, out var parent) ? PositionPoint(parent) : BlowXYPosition.Zero;
+        var memberPoints = members.Select(PositionPoint).ToList();
+        var bounds = BlowGraphUtils.GetNodesBounds(members);
+        var topLeft = new BlowXYPosition(bounds.X - padding, bounds.Y - padding);
+
+        group ??= new BlowNode { Id = UniqueNodeId("group"), Type = "group" };
+        group.ParentId = parentId;
+        group.Width = bounds.Width + 2 * padding;
+        group.Height = bounds.Height + 2 * padding;
+        var groupPoint = OriginPosition(group, topLeft);
+        group.Position = groupPoint.Subtract(parentPoint);
+
+        for (var i = 0; i < members.Count; i++)
+        {
+            members[i].Position = memberPoints[i].Subtract(groupPoint);
+            members[i].ParentId = group.Id;
+        }
+
+        // Before its first member, so the list order - which the Basic and Manual z-index modes draw by - keeps the
+        // group behind what it contains.
+        Nodes.Insert(Nodes.IndexOf(members[0]), group);
+        foreach (var node in Nodes) node.Selected = ReferenceEquals(node, group);
+
+        await FinishEditAsync(BlowChangeKind.Edited, "group", [group, .. members]);
+        return group;
+    }
+
+    /// <summary>
+    /// Dissolves a group: its children move up to the group's own parent, staying where they are on screen, and the
+    /// group node is removed - with any edges attached to it.
+    /// </summary>
+    /// <returns>The nodes that were in the group.</returns>
+    /// <remarks>
+    /// Removing the group is a deletion like any other: a group whose <see cref="BlowNode.Deletable"/> is off is not
+    /// dissolved, <see cref="OnBeforeDelete"/> can veto it, and <see cref="OnNodesDelete"/> and
+    /// <see cref="OnEdgesDelete"/> report it.
+    /// </remarks>
+    public async Task<IReadOnlyList<BlowNode>> UngroupAsync(BlowNode group)
+    {
+        ArgumentNullException.ThrowIfNull(group);
+        if (!Nodes.Contains(group) || !group.Deletable) return [];
+
+        ComputeLayout();
+
+        var children = Nodes.Where(n => n.ParentId == group.Id).ToList();
+        var removedEdges = Edges.Where(e => e.Source == group.Id || e.Target == group.Id).ToList();
+        if (OnBeforeDelete is not null && !OnBeforeDelete([group], removedEdges)) return [];
+
+        var newParentPoint = group.ParentId is { } pid && Index.TryGetValue(pid, out var newParent)
+            ? PositionPoint(newParent)
+            : BlowXYPosition.Zero;
+        var childPoints = children.Select(PositionPoint).ToList();
+
+        for (var i = 0; i < children.Count; i++)
+        {
+            children[i].Position = childPoints[i].Subtract(newParentPoint);
+            children[i].ParentId = group.ParentId;
+        }
+
+        Edges.RemoveAll(e => e.Source == group.Id || e.Target == group.Id);
+        Nodes.Remove(group);
+
+        await FinishEditAsync(BlowChangeKind.Edited, "ungroup", children, removedNodes: [group], removedEdges: removedEdges);
+        await RaiseDeleteEventsAsync([group], removedEdges);
+        return children;
+    }
+
+    /// <summary>
+    /// Draws the given nodes - the selection when none are given - above the others, by moving them, with everything
+    /// nested in them, to the end of <see cref="Nodes"/>. Nodes keep their order among themselves. An explicit
+    /// <see cref="BlowNode.ZIndex"/> still wins, and in <see cref="BlowZIndexMode.Auto"/> a child is still drawn above
+    /// its parent.
+    /// </summary>
+    public Task BringToFrontAsync(IEnumerable<BlowNode>? nodes = null) => ReorderAsync(nodes, toFront: true);
+
+    /// <summary>Draws the given nodes - the selection when none are given - below the others; see <see cref="BringToFrontAsync"/>.</summary>
+    public Task SendToBackAsync(IEnumerable<BlowNode>? nodes = null) => ReorderAsync(nodes, toFront: false);
+
+    private async Task ReorderAsync(IEnumerable<BlowNode>? nodes, bool toFront)
+    {
+        var picked = (nodes ?? Nodes.Where(n => n.Selected)).ToHashSet(ReferenceEqualityComparer.Instance);
+        if (picked.Count == 0) return;
+
+        // A node moves with everything nested in it, so a parent never ends up after (in front of) its own children.
+        var ids = picked.Cast<BlowNode>().Select(n => n.Id).ToHashSet();
+        var block = Nodes.Where(n => picked.Contains(n) || HasAncestorIn(n, ids)).ToList();
+        var inBlock = block.ToHashSet(ReferenceEqualityComparer.Instance);
+        var rest = Nodes.Where(n => !inBlock.Contains(n)).ToList();
+
+        if (toFront)
+        {
+            rest.AddRange(block);
+        }
+        else
+        {
+            // To the back of its own parent, not of the whole list: before its parent it would be drawn beneath it. Each
+            // moved subtree goes right after its parent - or to the very start, for a root - taken last to first so
+            // the moved nodes keep their order among themselves.
+            var roots = block.Where(n => !HasAncestorIn(n, ids)).ToList();
+            for (var r = roots.Count - 1; r >= 0; r--)
+            {
+                var root = roots[r];
+                var subtree = block.Where(n => ReferenceEquals(n, root) || HasAncestorIn(n, [root.Id])).ToList();
+                var parentAt = root.ParentId is { } pid ? rest.FindIndex(n => n.Id == pid) : -1;
+                rest.InsertRange(parentAt + 1, subtree);
+            }
+        }
+
+        Nodes.Clear();
+        Nodes.AddRange(rest);
+        await FinishEditAsync(BlowChangeKind.Edited, "order", block);
+    }
+
+    /// <summary>
+    /// Arranges nodes with a layout - the top level of the graph, or a set of nodes such as the selection - as one undo
+    /// step.
+    /// </summary>
+    /// <param name="layout">
+    /// The layout: a built-in one's options (<see cref="BlowTreeLayoutOptions"/>, <see cref="BlowLayeredLayoutOptions"/>,
+    /// ...) or an <see cref="IBlowLayout"/> of your own. A built-in layout is told the canvas's <see cref="NodeOrigin"/>.
+    /// </param>
+    /// <param name="nodes">
+    /// The nodes to arrange. Null takes the selection when something is selected, else every top-level node. Only the
+    /// nodes sharing the first one's parent are arranged - positions in different parents are not comparable - and
+    /// hidden nodes are left where they are. The layout sees the edges among them - an edge into a node's children
+    /// counting as an edge into the node, so a group is placed by what its contents connect to.
+    /// </param>
+    /// <param name="keepPlace">
+    /// True moves the arrangement so its top-left corner stays where the nodes' top-left corner was, so laying out a
+    /// selection tidies it where it is instead of moving it to the layout's origin.
+    /// </param>
+    /// <returns>The nodes that were arranged.</returns>
+    public async Task<IReadOnlyList<BlowNode>> LayoutAsync(IBlowLayout layout, IEnumerable<BlowNode>? nodes = null, bool keepPlace = true)
+    {
+        ArgumentNullException.ThrowIfNull(layout);
+        ComputeLayout();
+
+        var chosen = (nodes ?? (Nodes.Exists(n => n.Selected && !n.Hidden) ? Nodes.Where(n => n.Selected) : Nodes.Where(n => n.ParentId is null)))
+            .Where(n => !n.Hidden)
+            .ToList();
+        if (chosen.Count == 0) return [];
+
+        var parentId = chosen[0].ParentId;
+        var set = chosen.Where(n => n.ParentId == parentId).Distinct().ToList();
+        var ids = set.Select(n => n.Id).ToHashSet();
+        var edges = new List<BlowEdge>();
+        var lifted = new HashSet<(string, string)>();
+        foreach (var edge in Edges)
+        {
+            if (MemberOf(edge.Source) is not { } source || MemberOf(edge.Target) is not { } target || source == target) continue;
+            if (source == edge.Source && target == edge.Target) edges.Add(edge);
+            else if (lifted.Add((source, target))) edges.Add(new BlowEdge { Id = edge.Id, Source = source, Target = target });
+        }
+
+        var before = TopLeftOf(set);
+        if (layout is BlowLayoutOptions options)
+        {
+            // The canvas's origin for this run only: the options object is the caller's.
+            var callersOrigin = options.NodeOrigin;
+            options.NodeOrigin = NodeOrigin;
+            try { layout.Arrange(set, edges); }
+            finally { options.NodeOrigin = callersOrigin; }
+        }
+        else
+        {
+            layout.Arrange(set, edges);
+        }
+
+        // Pinned nodes hold the arrangement where it is: moving it would move them.
+        var pinned = layout is BlowForceLayoutOptions { IsPinned: { } isPinned } && set.Exists(n => isPinned(n));
+        if (keepPlace && !pinned)
+        {
+            var after = TopLeftOf(set);
+            var shift = before.Subtract(after);
+            foreach (var node in set) node.Position = new BlowXYPosition(node.Position.X + shift.X, node.Position.Y + shift.Y);
+        }
+
+        await FinishEditAsync(BlowChangeKind.Moved, "layout", set);
+        return set;
+
+        // The node being laid out that a node is, or is nested in; null for one outside the set.
+        string? MemberOf(string id)
+        {
+            string? current = id;
+            for (var guard = 0; guard <= MaxParentDepth && current is not null; guard++)
+            {
+                if (ids.Contains(current)) return current;
+                current = Index.TryGetValue(current, out var node) ? node.ParentId : null;
+            }
+            return null;
+        }
+
+        // The top-left corner of the nodes' boxes together, in their parent's space.
+        BlowXYPosition TopLeftOf(List<BlowNode> group)
+        {
+            double left = double.MaxValue, top = double.MaxValue;
+            foreach (var node in group)
+            {
+                var origin = node.Origin ?? NodeOrigin;
+                var size = node.EffectiveSize;
+                left = Math.Min(left, node.Position.X - origin.X * size.Width);
+                top = Math.Min(top, node.Position.Y - origin.Y * size.Height);
+            }
+            return new BlowXYPosition(left, top);
+        }
+    }
+
+    /// <summary>
+    /// Collapses or expands a node with children. Collapsing hides everything nested in it and deselects it; edges that
+    /// ran into it from outside are drawn to the node itself, and edges among its children are hidden with them.
+    /// Expanding shows the children again - all but those inside a nested node that is itself still collapsed. One
+    /// undo step either way, and announced.
+    /// </summary>
+    /// <param name="node">The node.</param>
+    /// <param name="collapsed">True to collapse, false to expand, null to toggle.</param>
+    /// <remarks>
+    /// The children's <see cref="BlowNode.Hidden"/> is what collapsing sets, so a saved graph reopens collapsed; and
+    /// expanding shows a child that was hidden for another reason as well.
+    /// </remarks>
+    public async Task SetCollapsedAsync(BlowNode node, bool? collapsed = null)
+    {
+        ArgumentNullException.ThrowIfNull(node);
+        if (!Nodes.Contains(node)) return;
+
+        var collapse = collapsed ?? !node.Collapsed;
+        node.Collapsed = collapse;
+
+        var changed = new List<BlowNode> { node };
+        var descendants = WithDescendants([node]).Where(d => !ReferenceEquals(d, node)).ToList();
+        var count = 0;
+        foreach (var descendant in descendants)
+        {
+            // A node that is itself out of sight - inside a collapsed ancestor, or hidden - keeps its children out of
+            // sight when it is expanded: they come back with it.
+            var hide = collapse || node.Hidden || InsideCollapsed(descendant, node);
+            if (hide) descendant.Selected = false;
+            if (descendant.Hidden == hide) continue;
+            descendant.Hidden = hide;
+            changed.Add(descendant);
+            count++;
+        }
+
+        // An edge folded away with the children goes out of the selection with them, or the delete key would remove
+        // what nobody can see.
+        _ = Index;
+        foreach (var edge in Edges)
+        {
+            if (edge.Selected && !IsEdgeVisible(edge)) edge.Selected = false;
+        }
+
+        Announce(collapse ? AriaLabels.NodeCollapsed(NameOf(node), count) : AriaLabels.NodeExpanded(NameOf(node), count));
+        await FinishEditAsync(BlowChangeKind.Edited, collapse ? "collapse" : "expand", changed);
+
+        // True when a node between this descendant and the node being expanded is collapsed in its own right.
+        bool InsideCollapsed(BlowNode descendant, BlowNode top)
+        {
+            var current = descendant;
+            for (var guard = 0; guard < MaxParentDepth && current.ParentId is { } pid && pid != top.Id
+                 && Index.TryGetValue(pid, out var parent); guard++)
+            {
+                if (parent.Collapsed) return true;
+                current = parent;
+            }
+            return false;
+        }
+    }
+
+    /// <summary>The common tail of the editing commands: commit, tell, render.</summary>
+    private async Task FinishEditAsync(BlowChangeKind kind, string label, IReadOnlyList<BlowNode> nodes,
+        IReadOnlyList<BlowNode>? removedNodes = null, IReadOnlyList<BlowEdge>? removedEdges = null)
+    {
+        _indexDirty = true;
+        _edgeIndexDirty = true;
+        _needsMeasure = true;
+        Commit(kind, label, nodes, removedNodes: removedNodes, removedEdges: removedEdges);
+        await NotifySelectionChangedAsync();
+        await RaiseNodesChangedAsync();
+        if (removedEdges is { Count: > 0 }) await RaiseEdgesChangedAsync();
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Where a node's position point sits in flow space: the point its <see cref="BlowNode.Position"/> names, and the
+    /// one its children's positions are measured from. Valid after <see cref="ComputeLayout"/>.
+    /// </summary>
+    private BlowXYPosition PositionPoint(BlowNode node) => ResolveRaw(node, 0).Position;
+
+    /// <summary>
+    /// Where a node's position point would sit, in flow space, with its top-left corner at <paramref name="topLeft"/> -
+    /// the position names the node's origin point, which is the top-left only by default.
+    /// </summary>
+    private BlowXYPosition OriginPosition(BlowNode node, BlowXYPosition topLeft)
+    {
+        var origin = node.Origin ?? NodeOrigin;
+        var size = node.EffectiveSize;
+        return new BlowXYPosition(topLeft.X + origin.X * size.Width, topLeft.Y + origin.Y * size.Height);
+    }
+
+    /// <summary>A node id starting with <paramref name="prefix"/> that no node uses yet.</summary>
+    private string UniqueNodeId(string prefix)
+    {
+        var index = Index;
+        for (var i = 1; ; i++)
+        {
+            var id = $"{prefix}-{i}";
+            if (!index.ContainsKey(id)) return id;
+        }
     }
 
     /// <summary>Returns the nodes overlapping the given flow-space rectangle.</summary>
@@ -4147,6 +5820,57 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         ? new BlowSnapshot(Nodes.Select(n => n.Clone()).ToList(), Edges.Select(e => e.Clone()).ToList(), _viewport)
         : new BlowSnapshot(Nodes.ToList(), Edges.ToList(), _viewport);
 
+    /// <summary>
+    /// The graph and the viewport as a document, ready for <see cref="BlowSerializer"/>. Holds the live nodes and
+    /// edges, not copies: serialize it straight away.
+    /// </summary>
+    public BlowDocument ToDocument() => new() { Nodes = [.. Nodes], Edges = [.. Edges], Viewport = _viewport };
+
+    /// <summary>Saves the graph and the viewport as JSON. See <see cref="BlowSerializer"/>.</summary>
+    /// <exception cref="BlowSerializationException">A node or edge carries data no mapping says how to save.</exception>
+    public string ToJson(BlowSerializerOptions? options = null) => BlowSerializer.Serialize(ToDocument(), options);
+
+    /// <summary>
+    /// Reads a saved document and, when it was read without errors, replaces the graph with it - in place, as
+    /// <see cref="RestoreAsync"/> does - and records the load as an undo step when the built-in history is on.
+    /// </summary>
+    /// <param name="json">The document, as <see cref="ToJson"/> or <see cref="BlowSerializer"/> wrote it.</param>
+    /// <param name="options">Data mappings, limits and migrations; the same options it was saved with.</param>
+    /// <param name="restoreViewport">Whether to adopt the document's viewport, when it has one.</param>
+    /// <returns>
+    /// What reading found. When <see cref="BlowImportResult.Succeeded"/> is false the graph on screen is left as it
+    /// was, and the issues say what was wrong and where.
+    /// </returns>
+    public async Task<BlowImportResult> LoadJsonAsync(string json, BlowSerializerOptions? options = null, bool restoreViewport = true)
+    {
+        var result = BlowSerializer.Deserialize(json, options);
+        if (!result.Succeeded || result.Document is not { } document) return result;
+
+        await RestoreCoreAsync(document.ToSnapshot(), restoreViewport && document.Viewport is not null, detach: false,
+            BlowChangeOrigin.Api, "load");
+        CaptureHistory("load");
+        return result;
+    }
+
+    /// <summary>
+    /// The graph as it is on screen, as a standalone SVG image - for documentation, a report, printing; see
+    /// <see cref="BlowSvgExport"/>. Measured handles, the canvas's <see cref="NodeOrigin"/> and its
+    /// <see cref="Routing"/> are used, so edges attach and route as they are drawn here.
+    /// </summary>
+    public string ToSvg(BlowSvgExportOptions? options = null)
+    {
+        ComputeLayout();
+        var o = options ?? new BlowSvgExportOptions();
+        if (options is null && AriaLabel is { Length: > 0 } name) o.Title = name;
+
+        // The canvas's origin and routing for this export only: the options object is the caller's.
+        var (callersOrigin, callersRouting) = (o.NodeOrigin, o.Routing);
+        o.NodeOrigin = NodeOrigin;
+        o.Routing ??= Routing;
+        try { return BlowSvgExport.ToSvg(Nodes, Edges, o); }
+        finally { (o.NodeOrigin, o.Routing) = (callersOrigin, callersRouting); }
+    }
+
     /// <summary>Re-renders the canvas, optionally re-measuring node sizes and handle anchors first.</summary>
     /// <param name="remeasure">True to re-read node geometry from the DOM before rendering.</param>
     public void Refresh(bool remeasure)
@@ -4185,8 +5909,13 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// drag edit the snapshot too - which is how restoring the same history step twice ends up
     /// restoring two different graphs. Pass false only when you mean to hand over the instances.
     /// </param>
-    public async Task RestoreAsync(BlowSnapshot snapshot, bool restoreViewport = true, bool detach = true)
+    public Task RestoreAsync(BlowSnapshot snapshot, bool restoreViewport = true, bool detach = true)
+        => RestoreCoreAsync(snapshot, restoreViewport, detach, BlowChangeOrigin.Api, "restore");
+
+    private async Task RestoreCoreAsync(BlowSnapshot snapshot, bool restoreViewport, bool detach, BlowChangeOrigin origin, string label)
     {
+        var removedNodes = Nodes.ToList();
+        var removedEdges = Edges.ToList();
         var source = detach ? snapshot.Detach() : snapshot;
 
         Nodes.Clear();
@@ -4205,9 +5934,11 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
         if (restoreViewport) SetViewport(snapshot.Viewport);
 
+        // Restoring is not an undo step of its own (an app records one when it means to), so only the change is told.
+        Commit(BlowChangeKind.Replaced, label, Nodes.ToList(), Edges.ToList(), removedNodes, removedEdges, origin, HistoryAction.Skip);
         await NotifySelectionChangedAsync();
-        await NodesChanged.InvokeAsync(Nodes);
-        await EdgesChanged.InvokeAsync(Edges);
+        await RaiseNodesChangedAsync();
+        await RaiseEdgesChangedAsync();
         StateHasChanged();
     }
 
@@ -4556,6 +6287,22 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         BlowColorMode.System => "bit-blow-system",
         _ => string.Empty,
     };
+
+    // The stylesheet follows prefers-reduced-motion on its own; these two say when the app has overruled it.
+    private string? MotionClass => ReducedMotion switch
+    {
+        BlowReducedMotion.Always => "bit-blow-reduce-motion",
+        BlowReducedMotion.Never => "bit-blow-allow-motion",
+        _ => null,
+    };
+
+    /// <summary>
+    /// The transform of the zoomed layer, plus the zoom as a custom property: what lets the stylesheet keep hit
+    /// areas, outlines and the like a constant size on screen without the canvas re-rendering every node and edge
+    /// at each step of a zoom to tell them.
+    /// </summary>
+    private string ViewportStyle => string.Create(System.Globalization.CultureInfo.InvariantCulture,
+        $"transform:{_viewport.ToTransform()};--bit-blow-zoom:{_viewport.Zoom};");
 
     private static BlowPosition ParsePosition(string? s) => s switch
     {

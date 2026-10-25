@@ -113,6 +113,8 @@ public static class ExampleCatalog
             "connection rules PreventDuplicateEdges AllowSelfConnections Connectable ConnectionRadius", typeof(ConnectionRulesExample)),
         new("handle-rules", "Handle Rules", HandlesGroup, "Validation and connect callbacks that live on the handle itself.",
             "handle rules per-handle IsValidConnection OnConnect typed ports", typeof(HandleRulesExample)),
+        new("typed-ports", "Typed Ports", HandlesGroup, "Declared ports with data types, limits and required inputs, enforced while connecting and validated.",
+            "typed ports BlowPort DataType MaxConnections MinConnections required input PreventCycles rejection reason BlowGraphValidator TopologicalSort dataflow", typeof(TypedPortsExample)),
 
         // ---- Interaction ----
         new("interaction", "Interaction", InteractionGroup, "Toggle draggable, selectable, zoom and pan options live.",
@@ -151,6 +153,14 @@ public static class ExampleCatalog
             "minimap BlowMiniMap Pannable Zoomable navigate", typeof(InteractiveMinimapExample)),
         new("custom-minimap-node", "Custom MiniMap Node", ViewportGroup, "Render minimap nodes with custom colors/shapes.",
             "minimap NodeColorFunc NodeStrokeColorFunc BorderRadius colours", typeof(CustomMiniMapNodeExample)),
+        new("edge-routing", "Edge Routing", EdgesGroup, "Edges routed round the nodes in their way, re-routed as you drag, and the graph exported as SVG.",
+            "routing route orthogonal obstacle avoid BlowEdgeType.Routed BlowEdgeRouting BlowRoutingOptions margin ToSvg export svg image", typeof(EdgeRoutingExample)),
+        new("workflow-runner", "Workflow Runner", StateGroup, "A pipeline validated, then run step by step with each node's state shown on it.",
+            "workflow run execute pipeline RunStates BlowRunState BlowRunStatus running succeeded failed skipped topological validation announce", typeof(WorkflowRunnerExample)),
+        new("state-machine", "State Machine", StateGroup, "States and transitions drawn as a graph and driven by events, with routed edges and a self-loop.",
+            "state machine transitions events current state routed self-loop RunStates", typeof(StateMachineExample)),
+        new("layouts-and-collapsing", "Layouts & Collapsing", ViewportGroup, "Tree, radial and force layouts applied to the graph or the selection, and a group that collapses into itself.",
+            "layout tree radial force LayoutAsync IBlowLayout selection collapse expand SetCollapsedAsync group hidden", typeof(LayoutsAndCollapsingExample)),
         new("layouting", "Layouting", ViewportGroup, "Layered, grid and circle auto-layouts from the built-in BlowLayout.",
             "layout auto-layout BlowLayout Layered Grid Circle dagre elk direction", typeof(LayoutingExample)),
         new("align-distribute", "Align & Distribute", ViewportGroup, "Line up and evenly space the selected nodes, the way a drawing tool does.",
@@ -193,6 +203,8 @@ public static class ExampleCatalog
             "undo redo BlowHistory Capture snapshot history", typeof(UndoRedoExample)),
         new("built-in-undo-redo", "Built-in Undo & Redo", StateGroup, "Let the canvas keep the undo stack and bind the shortcuts itself.",
             "undo redo HistoryEnabled HistoryCapacity OnHistoryChanged UndoAsync RedoAsync Ctrl+Z", typeof(BuiltInUndoRedoExample)),
+        new("grouping", "Grouping & Transactions", StateGroup, "Group and ungroup the selection, reorder it, batch edits into one undo step and log every graph change.",
+            "group ungroup GroupSelectionAsync UngroupAsync BringToFrontAsync SendToBackAsync EditAsync transaction batch OnGraphChanged BlowGraphChange origin remote UndoLabel z-order", typeof(GroupingExample)),
         new("copy-paste", "Copy & Paste", StateGroup, "Copy, cut, paste and duplicate a selection, groups and all.",
             "copy paste cut duplicate clipboard ClipboardShortcutsEnabled BlowFragment Ctrl+C Ctrl+V", typeof(CopyPasteExample)),
 

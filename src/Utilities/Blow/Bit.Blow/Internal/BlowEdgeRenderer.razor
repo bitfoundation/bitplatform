@@ -1,10 +1,17 @@
 ﻿@namespace Bit.Blow
-<g class="bit-blow-edge @(Edge.Selected ? "selected" : null) @(Edge.Animated ? "animated" : null) @Edge.Class"
+@{
+    _renderedLook = CurrentLook();
+    var state = Settings.State?.Invoke(Edge);
+    var severity = state is { Issues.Count: > 0 } st && st.Issues[0].Severity != BlowValidationSeverity.Info ? st.Issues[0].Severity : (BlowValidationSeverity?)null;
+    var stateText = TabIndex is not null && state is { } s ? AriaLabels.EdgeState(s) : null;
+}
+<g class="bit-blow-edge @(Edge.Selected ? "selected" : null) @(Edge.Animated ? "animated" : null) @(Edge.Class + BlowNodeRenderer.SeverityClass(severity))"
    data-id="@Edge.Id"
    role="group"
    aria-roledescription="@AriaLabels.EdgeRoleDescription"
    tabindex="@TabIndex"
    aria-label="@AriaLabel"
+   aria-describedby="@DescribedByWith(stateText)"
    @onkeydown="OnKeyDown"
    @onpointerdown="OnPointerDown"
    @onpointerdown:stopPropagation="true"
@@ -19,9 +26,16 @@
    @onmousemove="MouseMoveHandler"
    @onmouseleave="OnMouseLeave">
 
-    @* Invisible wide path to make the edge easy to click. *@
+    @if (!string.IsNullOrEmpty(stateText))
+    {
+        @* Never drawn; reached through aria-describedby. *@
+        <desc id="@_stateId">@stateText</desc>
+    }
+
+    @* Invisible wide path to make the edge easy to click. Its width is in screen pixels, so a zoomed-out edge is
+       as easy to hit as one at full size; the attribute is the fallback outside a canvas. *@
     <path class="bit-blow-edge-interaction" d="@Geometry.Path" fill="none" stroke="transparent"
-          stroke-width="@Inv(Edge.InteractionWidth)" />
+          stroke-width="@Inv(Edge.InteractionWidth)" style="@BlowEdgeStyles.InteractionWidth(Edge.InteractionWidth)" />
 
     @if (Template is not null)
     {
@@ -55,32 +69,67 @@
 @code {
     [Parameter, EditorRequired] public BlowEdge Edge { get; set; } = default!;
     [Parameter, EditorRequired] public BlowEdgeContext Context { get; set; } = default!;
-    [Parameter] public RenderFragment<BlowEdgeContext>? Template { get; set; }
-    [Parameter] public bool SuppressLabel { get; set; }
 
-    /// <summary>When false, suppresses the edge's tab order (set by the canvas a11y flag).</summary>
-    [Parameter] public bool Focusable { get; set; } = true;
+    /// <summary>What the canvas tells every edge alike: the template, its graph version, focus and labels.</summary>
+    [Parameter, EditorRequired] public BlowEdgeRenderSettings Settings { get; set; } = new();
 
-    /// <summary>The canvas's accessible-name strings, so a localized flow labels its edges too.</summary>
-    [Parameter] public BlowAriaLabels AriaLabels { get; set; } = BlowAriaLabels.Default;
+    /// <summary>The callbacks this edge raises into its canvas.</summary>
+    [Parameter] public BlowEdgeCallbacks Callbacks { get; set; } = BlowEdgeCallbacks.None;
 
-    /// <summary>Raised when the edge is activated from the keyboard; the flag is "additive".</summary>
-    [Parameter] public EventCallback<bool> OnActivate { get; set; }
+    private RenderFragment<BlowEdgeContext>? Template => Settings.Template;
+    private bool SuppressLabel => Settings.SuppressLabel;
+    private bool Focusable => Settings.Focusable;
+    private string? DescribedBy => Settings.DescribedBy;
+    private BlowAriaLabels AriaLabels => Settings.AriaLabels;
 
-    [Parameter] public EventCallback<PointerEventArgs> OnSelect { get; set; }
-    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
-    [Parameter] public EventCallback<MouseEventArgs> OnDoubleClick { get; set; }
-    [Parameter] public EventCallback<MouseEventArgs> OnContextMenu { get; set; }
-    [Parameter] public EventCallback<MouseEventArgs> OnMouseEnter { get; set; }
-    [Parameter] public EventCallback<MouseEventArgs> OnMouseMove { get; set; }
-    [Parameter] public EventCallback<MouseEventArgs> OnMouseLeave { get; set; }
+    private EventCallback<bool> OnActivate => Callbacks.Activate;
+    private EventCallback<PointerEventArgs> OnSelect => Callbacks.Select;
+    private EventCallback<MouseEventArgs> OnClick => Callbacks.Click;
+    private EventCallback<MouseEventArgs> OnDoubleClick => Callbacks.DoubleClick;
+    private EventCallback<MouseEventArgs> OnContextMenu => Callbacks.ContextMenu;
+    private EventCallback<MouseEventArgs> OnMouseEnter => Callbacks.MouseEnter;
+    private EventCallback<MouseEventArgs> OnMouseMove => Callbacks.MouseMove;
+    private EventCallback<MouseEventArgs> OnMouseLeave => Callbacks.MouseLeave;
 
+    private Look _renderedLook;
+
+    /// <summary>
+    /// What the edge is drawn from. <see cref="Context"/> is compared by reference: the canvas hands back the same
+    /// context for as long as the edge's geometry is unchanged, and a new one as soon as it is not.
+    /// </summary>
+    private readonly record struct Look(
+        object Context, bool Selected, bool Animated, string? Class, string? Style, string? Stroke, double StrokeWidth,
+        string? Label, string? LabelStyle, bool LabelShowBg, string? LabelBgStyle, double LabelBgPaddingX,
+        double LabelBgPaddingY, double LabelBgBorderRadius, double InteractionWidth, bool Focusable,
+        string Source, string Target, object? Data, object Settings);
+
+    private Look CurrentLook() => new(
+        Context, Edge.Selected, Edge.Animated, Edge.Class, Edge.Style, Edge.Stroke, Edge.StrokeWidth,
+        Edge.Label, Edge.LabelStyle, Edge.LabelShowBg, Edge.LabelBgStyle, Edge.LabelBgPaddingX,
+        Edge.LabelBgPaddingY, Edge.LabelBgBorderRadius, Edge.InteractionWidth, Edge.Focusable,
+        Edge.Source, Edge.Target, Edge.Data, Settings);
+
+    /// <summary>Skips the render when neither the canvas's graph version nor anything the edge is drawn from changed.</summary>
+    protected override bool ShouldRender() => CurrentLook() != _renderedLook;
+
+    private static int s_ids;
+
+    /// <summary>The id of the element describing the edge's state; unique on the page whatever the edge's id.</summary>
+    private readonly string _stateId = $"bit-blow-edge-state-{Interlocked.Increment(ref s_ids)}";
+
+    /// <summary>The state first, then the keyboard instructions.</summary>
+    private string? DescribedByWith(string? stateText)
+    {
+        if (TabIndex is null) return null;
+        if (string.IsNullOrEmpty(stateText)) return DescribedBy;
+        return DescribedBy is null ? _stateId : $"{_stateId} {DescribedBy}";
+    }
     private BlowPathResult Geometry => Context.Geometry;
 
     private static string Inv(double v) => v.ToString(CultureInfo.InvariantCulture);
 
     private string AriaLabel => string.IsNullOrEmpty(Edge.Label)
-        ? AriaLabels.EdgeLabel(Edge.Source, Edge.Target)
+        ? AriaLabels.EdgeLabel(Settings.NodeName?.Invoke(Edge.Source) ?? Edge.Source, Settings.NodeName?.Invoke(Edge.Target) ?? Edge.Target)
         : Edge.Label;
 
     private string? TabIndex => Focusable && Edge.Focusable ? "0" : null;

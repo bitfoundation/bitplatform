@@ -5,7 +5,7 @@
    Position children in flow coordinates (e.g. with absolute positioning / transforms). *@
 
 @code {
-    [CascadingParameter] private IBlowContext Flow { get; set; } = default!;
+    [CascadingParameter(Name = BlowCascadingNames.Context)] private IBlowContext Flow { get; set; } = default!;
 
     [Parameter] public RenderFragment? ChildContent { get; set; }
 

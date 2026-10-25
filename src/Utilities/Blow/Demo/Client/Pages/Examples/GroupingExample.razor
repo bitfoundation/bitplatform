@@ -1,0 +1,153 @@
+﻿@page "/examples/grouping"
+<PageTitle>Grouping &amp; Transactions · Blow</PageTitle>
+
+<ExampleScaffold Title="Grouping &amp; Transactions"
+                 Summary="Group the selected nodes into a container and dissolve it again without anything moving on screen, change the stacking order, and make several changes as one edit with EditAsync. Every edit is one labelled undo step and one OnGraphChanged event, listed on the right with its kind, origin and label.">
+    <Toolbar>
+        <button class="btn btn-secondary" disabled="@(!_state.CanUndo)" @onclick="Undo">↶ Undo @_state.UndoLabel</button>
+        <button class="btn btn-secondary" disabled="@(!_state.CanRedo)" @onclick="Redo">↷ Redo @_state.RedoLabel</button>
+
+        <span class="group-label">Selection</span>
+        <button class="btn btn-secondary" disabled="@(_selected.Count == 0)" @onclick="Group">Group</button>
+        <button class="btn btn-secondary" disabled="@(SelectedGroup is null)" @onclick="Ungroup">Ungroup</button>
+        <button class="btn btn-secondary" disabled="@(_selected.Count == 0)" @onclick="BringToFront">Bring to front</button>
+        <button class="btn btn-secondary" disabled="@(_selected.Count == 0)" @onclick="SendToBack">Send to back</button>
+
+        <span class="group-label">Edit</span>
+        <button class="btn btn-secondary" @onclick="AddChain">Add a chain (one step)</button>
+        <button class="btn btn-secondary" @onclick="SimulateRemote">Simulate a remote edit</button>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow"
+                    Nodes="_nodes"
+                    Edges="_edges"
+                    HistoryEnabled="true"
+                    OnHistoryChanged="s => _state = s"
+                    OnGraphChanged="OnGraphChanged"
+                    OnSelectionChange="s => _selected = s.Nodes"
+                    ZIndexMode="BlowZIndexMode.Basic"
+                    ClipboardShortcutsEnabled="true"
+                    FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="20" />
+            <BlowControls />
+            <BlowPanel Anchor="BlowPanelPosition.TopRight">
+                <section class="log" aria-label="Graph changes">
+                    <h2>Graph changes</h2>
+                    @if (_log.Count == 0)
+                    {
+                        <p class="empty">Drag a node, connect two, or use the toolbar.</p>
+                    }
+                    <ol aria-live="polite">
+                        @foreach (var entry in _log)
+                        {
+                            <li><span class="kind">@entry.Kind</span> <span class="origin">@entry.Origin</span> @entry.Label <span class="counts">@entry.Counts</span></li>
+                        }
+                    </ol>
+                </section>
+            </BlowPanel>
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .group-label { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--bb-text-soft); margin-left: .75rem; }
+    .log {
+        width: 260px;
+        max-height: 320px;
+        overflow: auto;
+        padding: 8px 10px;
+        font-size: 11px;
+        line-height: 1.5;
+        background: var(--bit-blow-surface);
+        color: var(--bit-blow-text);
+        border: 1px solid var(--bit-blow-border);
+        border-radius: 6px;
+    }
+    .log h2 { margin: 0 0 4px; font-size: 12px; }
+    .log ol { margin: 0; padding-left: 18px; }
+    .log .empty { margin: 0; color: var(--bb-text-soft); }
+    .log .kind { font-weight: 600; }
+    .log .origin { padding: 0 4px; border: 1px solid var(--bit-blow-border); border-radius: 3px; }
+    .log .counts { color: var(--bb-text-soft); }
+</style>
+
+@code {
+    private sealed record LogEntry(BlowChangeKind Kind, BlowChangeOrigin Origin, string? Label, string Counts);
+
+    private BlowCanvas _flow = default!;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private BlowHistoryState _state;
+    private IReadOnlyList<BlowNode> _selected = [];
+    private readonly List<LogEntry> _log = [];
+    private int _chains;
+
+    private BlowNode? SelectedGroup => _selected.Count == 1 && _nodes.Any(n => n.ParentId == _selected[0].Id) ? _selected[0] : null;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "fetch", Type = "input", Label = "Fetch", Position = new(40, 40) },
+            new BlowNode { Id = "parse", Label = "Parse", Position = new(40, 160), Selected = true },
+            new BlowNode { Id = "check", Label = "Check", Position = new(240, 160), Selected = true },
+            new BlowNode { Id = "store", Type = "output", Label = "Store", Position = new(140, 300) },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "fetch-parse", Source = "fetch", Target = "parse" },
+            new BlowEdge { Id = "parse-check", Source = "parse", Target = "check" },
+            new BlowEdge { Id = "check-store", Source = "check", Target = "store" },
+        ];
+
+        _selected = _nodes.Where(n => n.Selected).ToList();
+    }
+
+    private void OnGraphChanged(BlowGraphChange change)
+    {
+        var counts = new List<string>();
+        if (change.Kind != BlowChangeKind.Replaced && change.Nodes.Count > 0) counts.Add($"{change.Nodes.Count} node(s)");
+        if (change.Kind != BlowChangeKind.Replaced && change.Edges.Count > 0) counts.Add($"{change.Edges.Count} edge(s)");
+        if (change.RemovedNodes.Count > 0) counts.Add($"-{change.RemovedNodes.Count} node(s)");
+        if (change.RemovedEdges.Count > 0) counts.Add($"-{change.RemovedEdges.Count} edge(s)");
+
+        _log.Insert(0, new LogEntry(change.Kind, change.Origin, change.Label, string.Join(", ", counts)));
+        if (_log.Count > 30) _log.RemoveAt(_log.Count - 1);
+    }
+
+    private Task Undo() => _flow.UndoAsync();
+
+    private Task Redo() => _flow.RedoAsync();
+
+    private Task Group() => _flow.GroupSelectionAsync(padding: 24);
+
+    private Task Ungroup() => SelectedGroup is { } group ? _flow.UngroupAsync(group) : Task.CompletedTask;
+
+    private Task BringToFront() => _flow.BringToFrontAsync();
+
+    private Task SendToBack() => _flow.SendToBackAsync();
+
+    private Task AddChain()
+    {
+        // Three nodes and two edges, added in one edit: one undo step, one change event, one render.
+        var n = ++_chains;
+        return _flow.EditAsync(() =>
+        {
+            for (var i = 0; i < 3; i++)
+            {
+                _nodes.Add(new BlowNode { Id = $"chain-{n}-{i}", Label = $"Step {n}.{i + 1}", Position = new(420 + i * 170, 40 + n * 90) });
+                if (i > 0) _edges.Add(new BlowEdge { Id = $"chain-{n}-{i}-e", Source = $"chain-{n}-{i - 1}", Target = $"chain-{n}-{i}" });
+            }
+        }, label: "add chain");
+    }
+
+    private Task SimulateRemote()
+    {
+        // What a collaboration adapter does with another user's edit: applied as one change, marked Remote so the
+        // change listener would not send it back, and kept out of this user's undo history.
+        var target = _nodes.FirstOrDefault(n => n.Id == "store") ?? _nodes[^1];
+        return _flow.EditAsync(() => target.Position = new(target.Position.X + 40, target.Position.Y),
+            label: "remote move", origin: BlowChangeOrigin.Remote, recordHistory: false);
+    }
+}

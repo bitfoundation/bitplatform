@@ -1,0 +1,245 @@
+﻿@page "/examples/typed-ports"
+
+<PageTitle>Typed Ports · Blow</PageTitle>
+
+<ExampleScaffold Title="Typed Ports"
+                 Summary="A small dataflow editor built on declared ports. Each node declares its inputs and outputs in BlowNode.Ports, with a data type, a connection limit and whether it must be connected. The canvas refuses a number wired into a text input, a second wire into an input that takes one, and - with cycle prevention on - a wire that would loop back; the panel shows why. BlowGraphValidator lists what is still missing - marked on the graph through the canvas's Validation parameter and read out with each node - and the values are computed in BlowGraphAlgorithms.TopologicalSort order. Everything works from the keyboard: Tab to a node, press C to start a connection, Tab to another node and press Enter. The search box finds a node and takes focus to it.">
+    <Toolbar>
+        <button class="btn btn-secondary" @onclick="AddNumber">Add number</button>
+        <button class="btn btn-secondary" @onclick="@(() => AddOperator("add"))">Add adder</button>
+        <button class="btn btn-secondary" @onclick="@(() => AddOperator("multiply"))">Add multiplier</button>
+        <label><input type="checkbox" @bind="_preventCycles" /> Prevent cycles</label>
+        <input class="tp-search" type="search" placeholder="Find a node, Enter to go" aria-label="Find a node"
+               @bind="_query" @bind:event="oninput" @onkeydown="OnSearchKey" />
+        <span class="tp-found" aria-live="polite">@Found</span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow"
+                    Class="typed-flow"
+                    Nodes="_nodes"
+                    Edges="_edges"
+                    FitViewOnInit="true"
+                    PreventCycles="_preventCycles"
+                    Validation="_validation"
+                    DefaultEdgeType="BlowEdgeType.SmoothStep"
+                    OnConnectEnd="OnConnectEnd"
+                    NodesChanged="_ => Recompute()"
+                    EdgesChanged="_ => Recompute()">
+            <NodeTemplate Context="node">
+                <div class="tp-node">
+                    <div class="tp-title">@node.Label</div>
+                    @if (node.Data is NumberData number)
+                    {
+                        <input class="nodrag tp-input" type="number" value="@number.Value"
+                               aria-label="@($"Value of {node.Label}")"
+                               @onchange="@(e => SetNumber(number, e.Value))" />
+                    }
+                    @if (node.Type == "display")
+                    {
+                        <div class="tp-display" aria-live="polite">@Show(node.Id)</div>
+                    }
+                    @foreach (var port in node.Ports ?? [])
+                    {
+                        <div class="tp-row @(port.Type == BlowHandleType.Source ? "tp-out" : "tp-in")">
+                            <BlowHandle Type="port.Type" Id="@port.Id"
+                                        Position="@(port.Type == BlowHandleType.Source ? BlowPosition.Right : BlowPosition.Left)" />
+                            <span>@port.Label</span>
+                            @if (port.Type == BlowHandleType.Source)
+                            {
+                                <span class="tp-value">@Show(node.Id)</span>
+                            }
+                        </div>
+                    }
+                </div>
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+                <BlowPanel Anchor="BlowPanelPosition.TopRight">
+                    <div class="tp-panel">
+                        <strong>Last connection</strong>
+                        <div class="tp-last">@_lastConnection</div>
+                        <strong>Problems (@_validation.Issues.Count)</strong>
+                        @if (_validation.Issues.Count == 0)
+                        {
+                            <div class="tp-ok">The graph is complete.</div>
+                        }
+                        @foreach (var issue in _validation.Issues)
+                        {
+                            <button class="tp-issue" @onclick="@(() => GoTo(issue))">@issue.Message</button>
+                        }
+                    </div>
+                </BlowPanel>
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .typed-flow .bit-blow-node { padding: 0; min-width: 150px; text-align: left; }
+    .tp-search { margin-left: .75rem; min-width: 200px; }
+    .tp-found { font-size: 12px; color: var(--bb-text-soft); }
+    .tp-node { padding: 6px 0; }
+    .tp-title { padding: 0 10px 4px; font-weight: 600; }
+    .tp-input { margin: 0 10px 4px; width: calc(100% - 20px); box-sizing: border-box; }
+    .tp-row { position: relative; padding: 2px 12px; display: flex; gap: 6px; font-size: 11px; }
+    .tp-out { justify-content: flex-end; }
+    .tp-value { font-weight: 600; min-width: 2em; text-align: right; }
+    .tp-display { margin: 0 10px 4px; padding: 4px 6px; font: 600 14px monospace; border-radius: 4px;
+                  background: var(--bit-blow-surface-muted); }
+    /* Handles take their colour from their data type, through the handle's own colour property, so the
+       canvas's valid and invalid colours still take over while a connection is dragged. */
+    .typed-flow .bit-blow-handle[data-port-type="number"] { --bit-blow-handle-bg: #2563eb; }
+    .typed-flow .bit-blow-handle[data-port-type="text"] { --bit-blow-handle-bg: #d97706; }
+    .tp-panel { width: 260px; max-height: 320px; overflow: auto; padding: 8px 10px; font-size: 12px;
+                display: flex; flex-direction: column; gap: 4px;
+                background: var(--bit-blow-surface); color: var(--bit-blow-text);
+                border: 1px solid var(--bit-blow-border); border-radius: 6px; }
+    .tp-last { color: var(--bit-blow-text-muted); margin-bottom: 6px; }
+    .tp-ok { color: var(--bit-blow-text-muted); }
+    .tp-issue { text-align: left; border: none; background: none; padding: 2px 0; color: inherit; cursor: pointer;
+                text-decoration: underline dotted; font: inherit; }
+</style>
+
+@code {
+    private sealed class NumberData { public double Value { get; set; } }
+
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private bool _preventCycles = true;
+    private string _lastConnection = "Drag from an output (right) to an input (left).";
+    private BlowValidationResult _validation = BlowValidationResult.Empty;
+    private Dictionary<string, object?> _values = [];
+    private int _next = 1;
+    private string _query = "";
+
+    private string? Found => string.IsNullOrWhiteSpace(_query) || _flow is null
+        ? null
+        : _flow.FindNodes(_query).Count switch { 0 => "No match", 1 => "1 match", var n => $"{n} matches" };
+
+    private static readonly BlowGraphValidator Validator = BlowGraphValidator.CreateDefault();
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            Number("n1", 3, new(0, 0)),
+            Number("n2", 4, new(0, 140)),
+            Operator("op1", "add", new(240, 60)),
+            Format("fmt", new(480, 60)),
+            Display("out", new(720, 60)),
+            Number("n3", 10, new(240, 240)),
+        ];
+        _edges =
+        [
+            new() { Id = "e1", Source = "n1", SourceHandle = "value", Target = "op1", TargetHandle = "a", Type = BlowEdgeType.SmoothStep },
+            new() { Id = "e2", Source = "n2", SourceHandle = "value", Target = "op1", TargetHandle = "b", Type = BlowEdgeType.SmoothStep },
+            new() { Id = "e3", Source = "op1", SourceHandle = "result", Target = "fmt", TargetHandle = "value", Type = BlowEdgeType.SmoothStep },
+        ];
+        Recompute();
+    }
+
+    private static BlowPort Input(string id, string label, string type) => new()
+    {
+        Id = id, Type = BlowHandleType.Target, Label = label, DataType = type, MaxConnections = 1, MinConnections = 1,
+    };
+
+    private static BlowPort Output(string id, string label, string type) => new()
+    {
+        Id = id, Type = BlowHandleType.Source, Label = label, DataType = type,
+    };
+
+    private static BlowNode Number(string id, double value, BlowXYPosition at) => new()
+    {
+        Id = id, Type = "number", Label = "Number", Position = at, Data = new NumberData { Value = value },
+        Ports = [Output("value", "value", "number")],
+    };
+
+    private static BlowNode Operator(string id, string kind, BlowXYPosition at) => new()
+    {
+        Id = id, Type = kind, Label = kind == "add" ? "Add" : "Multiply", Position = at,
+        Ports = [Input("a", "a", "number"), Input("b", "b", "number"), Output("result", "result", "number")],
+    };
+
+    private static BlowNode Format(string id, BlowXYPosition at) => new()
+    {
+        Id = id, Type = "format", Label = "Number to text", Position = at,
+        Ports = [Input("value", "number", "number"), Output("text", "text", "text")],
+    };
+
+    private static BlowNode Display(string id, BlowXYPosition at) => new()
+    {
+        Id = id, Type = "display", Label = "Display", Position = at,
+        Ports = [Input("text", "text", "text")],
+    };
+
+    private void AddNumber() => _flow!.AddNodes(Number($"n-new-{_next++}", 1, new(0, 260 + _next * 20)));
+
+    private void AddOperator(string kind) => _flow!.AddNodes(Operator($"op-new-{_next++}", kind, new(240, 260 + _next * 20)));
+
+    private void SetNumber(NumberData data, object? raw)
+    {
+        if (double.TryParse(raw?.ToString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var value))
+            data.Value = value;
+        Recompute();
+    }
+
+    private void OnConnectEnd(BlowConnectEndInfo end)
+    {
+        _lastConnection = end.IsValid
+            ? $"Connected from {end.Start.NodeId}."
+            : end.Rejection == BlowConnectionRejection.None
+                ? "Dropped on empty space."
+                : BlowAriaLabels.Default.ConnectionRejected(end.Rejection);
+    }
+
+    /// <summary>
+    /// Validates the graph and evaluates it. Evaluation follows the topological order, so every node's inputs
+    /// are computed before the node itself; nodes on a cycle (possible with cycle prevention off) stay empty.
+    /// </summary>
+    private void Recompute()
+    {
+        _validation = Validator.Validate(_nodes, _edges);
+
+        var graph = new BlowGraphIndex(_nodes, _edges);
+        _values = [];
+        foreach (var node in BlowGraphAlgorithms.TopologicalSort(graph).Order)
+        {
+            object? Input(string port)
+            {
+                var edge = graph.EdgesAt(node.Id, BlowHandleType.Target, port).FirstOrDefault();
+                return edge is null ? null : _values.GetValueOrDefault(edge.Source);
+            }
+
+            _values[node.Id] = node.Type switch
+            {
+                "number" => ((NumberData)node.Data!).Value,
+                "add" when Input("a") is double a && Input("b") is double b => a + b,
+                "multiply" when Input("a") is double a && Input("b") is double b => a * b,
+                "format" when Input("value") is double v => v.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture),
+                "display" => Input("text"),
+                _ => null,
+            };
+        }
+    }
+
+    private string Show(string nodeId) => _values.GetValueOrDefault(nodeId) switch
+    {
+        null => "-",
+        double d => d.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture),
+        var other => other.ToString() ?? "-",
+    };
+
+    /// <summary>Takes the user to the node a problem is about - in view, selected and focused, so it is read out.</summary>
+    private async Task GoTo(BlowValidationIssue issue)
+    {
+        if (issue.NodeId is { } id && _flow is not null) await _flow.FocusNodeAsync(id, select: true, durationMs: 300);
+    }
+
+    private async Task OnSearchKey(KeyboardEventArgs e)
+    {
+        if (e.Key != "Enter" || _flow is null) return;
+        if (_flow.FindNodes(_query).FirstOrDefault() is { } best) await _flow.FocusNodeAsync(best.Id, select: true, durationMs: 300);
+    }
+}

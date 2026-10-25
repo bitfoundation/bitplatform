@@ -1,0 +1,80 @@
+﻿@page "/examples/edge-routing"
+<PageTitle>Edge Routing · Blow</PageTitle>
+
+<ExampleScaffold Title="Edge Routing"
+                 Summary="Edges of type BlowEdgeType.Routed go round the nodes in their way: horizontal and vertical segments that leave each handle straight, keep a margin from every node and prefer few bends. Drag the blocks about and the routes follow. The same router is a pure function, BlowEdgeRouting.Orthogonal, and the graph exports as a standalone SVG image with ToSvg.">
+    <Toolbar>
+        <label>Margin <input type="range" min="0" max="40" step="2" value="@_margin" @oninput="SetMargin" aria-label="Routing margin" /></label>
+        <span class="er-value">@_margin</span>
+        <label><input type="checkbox" @bind="_routed" @bind:after="ApplyType" /> Route round nodes</label>
+        <a class="btn btn-secondary" download="routing.svg" href="@SvgUrl()">Export SVG</a>
+    </Toolbar>
+    <ChildContent>
+        @* Handling OnInit and the change events re-renders this page once the canvas is there and after every edit,
+           so the export link always carries the graph as it is. *@
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" Routing="_routing"
+                    AriaLabel="Routing playground"
+                    OnInit="_ => { }" NodesChanged="_ => { }" EdgesChanged="_ => { }">
+            <BlowBackground Variant="BlowBackgroundVariant.Lines" Gap="20" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .er-value { font-size: 12px; min-width: 2em; }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private BlowRoutingOptions _routing = new() { Margin = 16 };
+    private int _margin = 16;
+    private bool _routed = true;
+
+    protected override void OnInitialized()
+    {
+        BlowNode Box(string id, string label, double x, double y, double w = 120, double h = 44) => new()
+        {
+            Id = id, Label = label, Position = new(x, y), Width = w, Height = h,
+            SourcePosition = BlowPosition.Right, TargetPosition = BlowPosition.Left,
+        };
+
+        _nodes =
+        [
+            Box("in-1", "Input A", 0, 0),
+            Box("in-2", "Input B", 0, 220),
+            Box("block-1", "Block", 220, -40, 80, 180),
+            Box("block-2", "Block", 220, 200, 80, 120),
+            Box("mid", "Transform", 420, 100),
+            Box("block-3", "Block", 640, 40, 60, 200),
+            Box("out-1", "Output A", 820, 0),
+            Box("out-2", "Output B", 820, 260),
+        ];
+        _edges =
+        [
+            new() { Id = "a-mid", Source = "in-1", Target = "mid", MarkerEnd = true },
+            new() { Id = "b-mid", Source = "in-2", Target = "mid", MarkerEnd = true },
+            new() { Id = "mid-a", Source = "mid", Target = "out-1", MarkerEnd = true },
+            new() { Id = "mid-b", Source = "mid", Target = "out-2", MarkerEnd = true },
+            new() { Id = "a-b", Source = "in-1", Target = "out-2", MarkerEnd = true, Label = "bypass" },
+        ];
+        ApplyType();
+    }
+
+    private void ApplyType()
+    {
+        foreach (var edge in _edges) edge.Type = _routed ? BlowEdgeType.Routed : BlowEdgeType.SmoothStep;
+    }
+
+    private void SetMargin(ChangeEventArgs e)
+    {
+        _margin = int.TryParse(e.Value?.ToString(), out var m) ? m : _margin;
+        // A new options object, so the canvas sees a new parameter and routes again.
+        _routing = new BlowRoutingOptions { Margin = _margin };
+    }
+
+    private string SvgUrl()
+        => _flow is null ? "#" : "data:image/svg+xml;base64," + Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(_flow.ToSvg()));
+}

@@ -1,0 +1,91 @@
+﻿@page "/examples/state-machine"
+<PageTitle>State Machine · Blow</PageTitle>
+
+<ExampleScaffold Title="State Machine"
+                 Summary="A state machine drawn and driven on the canvas: states are nodes, transitions are labelled edges routed round the states in their way (BlowEdgeType.Routed), and a refresh loops back to its own state. The buttons fire the events the current state accepts; the current state is marked through RunStates and announced, and the transition just taken is animated.">
+    <Toolbar>
+        <span class="sm-current">In <strong>@Current.Label</strong>:</span>
+        @foreach (var edge in _edges.Where(e => e.Source == _current))
+        {
+            <button class="btn btn-secondary" @onclick="@(() => Fire(edge))">@edge.Label</button>
+        }
+        <button class="btn btn-secondary sm-reset" @onclick="Reset">Start over</button>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    AriaLabel="Loader state machine" RunStates="_states">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .sm-current { font-size: 13px; }
+    .sm-reset { margin-left: auto; }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private readonly Dictionary<string, BlowRunState> _states = [];
+    private string _current = "idle";
+
+    private BlowNode Current => _nodes.First(n => n.Id == _current);
+
+    protected override void OnInitialized()
+    {
+        BlowNode State(string id, string label, double x, double y) => new()
+        {
+            Id = id, Label = label, Position = new(x, y), Width = 120, Height = 44,
+            SourcePosition = BlowPosition.Right, TargetPosition = BlowPosition.Left,
+        };
+        BlowEdge Transition(string from, string to, string on) => new()
+        {
+            Id = $"{from}-{on}", Source = from, Target = to, Label = on, Type = BlowEdgeType.Routed, MarkerEnd = true,
+        };
+
+        _nodes =
+        [
+            State("idle", "Idle", 0, 120),
+            State("loading", "Loading", 260, 120),
+            State("ready", "Ready", 560, 0),
+            State("error", "Error", 560, 240),
+        ];
+        _edges =
+        [
+            Transition("idle", "loading", "fetch"),
+            Transition("loading", "ready", "resolve"),
+            Transition("loading", "error", "reject"),
+            Transition("error", "loading", "retry"),
+            Transition("ready", "ready", "refresh"),
+            Transition("ready", "idle", "reset"),
+            Transition("error", "idle", "dismiss"),
+        ];
+        Mark();
+    }
+
+    private void Fire(BlowEdge transition)
+    {
+        foreach (var edge in _edges) edge.Animated = ReferenceEquals(edge, transition);
+        _current = transition.Target;
+        Mark();
+        _flow?.Announce($"{transition.Label}: now {Current.Label}.");
+    }
+
+    private void Reset()
+    {
+        foreach (var edge in _edges) edge.Animated = false;
+        _current = "idle";
+        Mark();
+        _flow?.Announce("Back to Idle.");
+    }
+
+    /// <summary>The current state is the one "running"; the others show nothing.</summary>
+    private void Mark()
+    {
+        _states.Clear();
+        _states[_current] = new BlowRunState(BlowRunStatus.Running, "Current state");
+    }
+}

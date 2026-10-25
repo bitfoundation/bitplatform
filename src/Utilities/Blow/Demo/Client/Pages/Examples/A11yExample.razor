@@ -3,16 +3,38 @@
 <PageTitle>Accessibility · Blow</PageTitle>
 
 <ExampleScaffold Title="Accessibility"
-                 Summary="Nodes are keyboard focusable with descriptive aria labels. Tab to a node, then use the arrow keys to move it (hold Shift for larger steps). Delete removes the selection.">
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" DisableKeyboardA11y="false">
-        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-        <BlowControls />
+                 Summary="Nodes are keyboard focusable with descriptive aria labels. Tab to a node, then use the arrow keys to move it (hold Shift for larger steps), C to start a connection from it, Delete to remove the selection. A selected node also gets move buttons, so it can be moved with single clicks instead of a drag (WCAG 2.5.7); the canvas's ConnectOnClick does the same for connections.">
+    <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" DisableKeyboardA11y="false">
+        <NodeTemplate Context="node">
+            <BlowNodeToolbar Position="BlowPosition.Top">
+                <span class="a11y-move" role="group" aria-label="@($"Move {node.Label}")">
+                    <button class="btn btn-secondary" aria-label="Move left" @onclick="() => Move(-20, 0)">←</button>
+                    <button class="btn btn-secondary" aria-label="Move up" @onclick="() => Move(0, -20)">↑</button>
+                    <button class="btn btn-secondary" aria-label="Move down" @onclick="() => Move(0, 20)">↓</button>
+                    <button class="btn btn-secondary" aria-label="Move right" @onclick="() => Move(20, 0)">→</button>
+                </span>
+            </BlowNodeToolbar>
+            <BlowDefaultNode Node="node" />
+        </NodeTemplate>
+        <ChildContent>
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </ChildContent>
     </BlowCanvas>
 </ExampleScaffold>
 
+<style>
+    .a11y-move { display: inline-flex; gap: 2px; }
+    .a11y-move button { min-width: 24px; min-height: 24px; padding: 0 4px; }
+</style>
+
 @code {
+    private BlowCanvas? _flow;
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
+
+    /// <summary>Moves the selection by single clicks: one undo step each, announced like an arrow key.</summary>
+    private Task Move(double dx, double dy) => _flow?.MoveSelectionAsync(dx, dy) ?? Task.CompletedTask;
 
     protected override void OnInitialized()
     {

@@ -163,10 +163,23 @@ public class MeasurementAndScrollTests : BunitContext
     public void TurningAutoPanOnNodeFocusOffAttachesNoFocusListenerAtAll()
     {
         // Not merely inert: with a listener per node, focus would round-trip into .NET for every
-        // Tab press on a graph that asked for none of it.
-        var cut = RenderWithPane(NearAndFar(), p => p.Add(c => c.AutoPanOnNodeFocus, false));
+        // Tab press on a graph that asked for none of it. Connecting from the keyboard aims by focus,
+        // so it is switched off too.
+        var cut = RenderWithPane(NearAndFar(), p => p
+            .Add(c => c.AutoPanOnNodeFocus, false)
+            .Add(c => c.ConnectionKey, null));
 
         Assert.ThrowsExactly<Bunit.MissingEventHandlerException>(() => cut.FindAll(".bit-blow-node")[1].Focus());
+        Assert.AreEqual(BlowViewport.Identity, cut.Instance.GetViewport());
+    }
+
+    [TestMethod]
+    public void WithAutoPanOffAFocusedNodeIsNotRevealedEvenWhileFocusIsListenedFor()
+    {
+        var cut = RenderWithPane(NearAndFar(), p => p.Add(c => c.AutoPanOnNodeFocus, false));
+
+        cut.FindAll(".bit-blow-node")[1].Focus();
+
         Assert.AreEqual(BlowViewport.Identity, cut.Instance.GetViewport());
     }
 

@@ -3,7 +3,7 @@
 <PageTitle>Localization · Blow</PageTitle>
 
 <ExampleScaffold Title="Localization"
-                 Summary="Every string the canvas reads out or labels itself with comes from one AriaLabels object, so a flow can be translated without reimplementing its accessibility. Switch language, then Tab to a node and press Enter - the live region below shows what a screen reader would hear. The starting pan and zoom come from DefaultViewport.">
+                 Summary="Every string the canvas reads out or labels itself with comes from one AriaLabels object - names, announcements and the keyboard instructions a screen reader reads as each element's description - and the control bar takes its button labels as parameters, so a flow can be translated without reimplementing its accessibility. Switch language, then Tab to a node and press Enter - the live region below shows what a screen reader would hear. Persian also switches the page to right-to-left. The starting pan and zoom come from DefaultViewport.">
     <Toolbar>
         @foreach (var (code, name) in _languages)
         {
@@ -19,9 +19,11 @@
                     Edges="_edges"
                     AriaLabels="Labels"
                     DefaultViewport="new BlowViewport(40, 20, 0.9)"
+                    dir="@(_language == "fa" ? "rtl" : "ltr")"
                     aria-roledescription="@RoleDescription">
             <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-            <BlowControls />
+            <BlowControls AriaLabel="@Controls.Bar" ZoomInLabel="@Controls.ZoomIn" ZoomOutLabel="@Controls.ZoomOut"
+                          FitViewLabel="@Controls.FitView" />
             <BlowPanel Anchor="BlowPanelPosition.BottomRight">
                 <div class="l10n-readout">
                     <strong>Announced</strong>
@@ -93,6 +95,10 @@
             NodeMoved = (name, p) => $"{name} verschoben nach {p}",
             NodesMoved = count => $"{count} Knoten verschoben",
             Deleted = (n, e) => $"{n} Knoten und {e} Kanten gelöscht",
+            PaneInstructions = "Mit der Tabulatortaste zwischen den Knoten und Kanten des Diagramms wechseln.",
+            NodeInstructions = "Eingabe oder Leertaste wählt den Knoten aus, Umschalt mit Eingabe fügt ihn der Auswahl "
+                               + "hinzu, die Pfeiltasten verschieben die Auswahl, Entf löscht sie, Escape hebt sie auf.",
+            EdgeInstructions = "Eingabe oder Leertaste wählt die Kante aus, Entf löscht sie, Escape hebt die Auswahl auf.",
         }),
 
         "fa" => Record(new BlowAriaLabels
@@ -108,6 +114,10 @@
             NodeMoved = (name, p) => $"{name} به {p} منتقل شد",
             NodesMoved = count => $"{count} گره منتقل شد",
             Deleted = (n, e) => $"{n} گره و {e} یال حذف شد",
+            PaneInstructions = "برای جابه‌جایی میان گره‌ها و یال‌های نمودار کلید Tab را بزنید.",
+            NodeInstructions = "Enter یا فاصله گره را انتخاب می‌کند، Shift همراه Enter آن را به انتخاب می‌افزاید، "
+                               + "کلیدهای جهت انتخاب را جابه‌جا می‌کنند، Delete آن را حذف و Escape انتخاب را لغو می‌کند.",
+            EdgeInstructions = "Enter یا فاصله یال را انتخاب می‌کند، Delete آن را حذف و Escape انتخاب را لغو می‌کند.",
         }),
 
         _ => Record(BlowAriaLabels.Default),
@@ -130,6 +140,16 @@
         NodeMoved = (name, p) => Show(labels.NodeMoved(name, p)),
         NodesMoved = count => Show(labels.NodesMoved(count)),
         Deleted = (n, e) => Show(labels.Deleted(n, e)),
+        PaneInstructions = labels.PaneInstructions,
+        NodeInstructions = labels.NodeInstructions,
+        EdgeInstructions = labels.EdgeInstructions,
+    };
+
+    private (string Bar, string ZoomIn, string ZoomOut, string FitView) Controls => _language switch
+    {
+        "de" => ("Ansichtssteuerung", "Vergrößern", "Verkleinern", "Einpassen"),
+        "fa" => ("کنترل‌های نما", "بزرگ‌نمایی", "کوچک‌نمایی", "نمایش کامل"),
+        _ => ("Flow controls", "Zoom in", "Zoom out", "Fit view"),
     };
 
     private string Show(string message)

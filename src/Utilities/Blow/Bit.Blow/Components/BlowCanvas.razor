@@ -5,13 +5,23 @@
 @* Single layout/measure pass for the whole render: every loop below reads the same geometry. *@
 @{ PrepareRender(); }
 
+@* Unnamed and not fixed, the canvas re-renders every subscriber on every render: what add-ons of an app's own
+   written against IBlowContext expect. The built-in parts take the fixed, named context instead, together with
+   the version numbers of what they draw, so a pan re-renders the background and minimap and no node or handle.
+   See BlowCascadingNames. *@
 <CascadingValue Value="(IBlowContext)this" IsFixed="false">
+<CascadingValue Name="@BlowCascadingNames.Context" Value="(IBlowContext)this" IsFixed="true">
+<CascadingValue Name="@BlowCascadingNames.ViewportVersion" Value="_viewportVersion">
+<CascadingValue Name="@BlowCascadingNames.GeometryVersion" Value="_geometryVersion">
+<CascadingValue Name="@BlowCascadingNames.GraphVersion" Value="_graphVersion">
+<CascadingValue Name="@BlowCascadingNames.ConnectionVersion" Value="_connectionVersion">
     <div @attributes="AdditionalAttributes"
-         class="bit-blow @ColorModeClass @Class"
+         class="bit-blow @ColorModeClass @MotionClass @Class"
          style="@Style"
          tabindex="0"
          role="application"
          aria-label="@AriaLabel"
+         aria-describedby="@PaneDescribedBy"
          @ref="_paneRef"
          @onpointerdown="OnPanePointerDown"
          @onpointerdown:stopPropagation="IsNested"
@@ -38,7 +48,7 @@
          @onkeyup:stopPropagation="IsNested"
          @onfocusout="PanKeyReleaseHandler">
 
-        <div class="bit-blow-viewport" @ref="_viewportRef" style="transform:@_viewport.ToTransform();">
+        <div class="bit-blow-viewport" @ref="_viewportRef" style="@ViewportStyle">
 
             <svg class="bit-blow-edges" style="overflow:visible;">
                 <defs>
@@ -60,24 +70,17 @@
                     }
                 </defs>
 
+                <BlowRenderGate Version="_layerVersion">
                 @foreach (var edge in _renderEdges)
                 {
+                    var ecb = CallbacksFor(edge);
                     <BlowEdgeRenderer @key="edge.Id"
                                   Edge="edge"
                                   Context="GetEdgeContext(edge)"
-                                  Template="EdgeTemplate"
-                                  AriaLabels="AriaLabels"
-                                  SuppressLabel="@(EdgeLabelTemplate is not null)"
-                                  Focusable="@(!DisableKeyboardA11y && EdgesFocusable)"
-                                  OnActivate="@(additive => ActivateEdge(edge, additive))"
-                                  OnSelect="@(e => SelectEdge(edge, e))"
-                                  OnClick="@(e => OnEdgeClickHandler(edge))"
-                                  OnDoubleClick="@EdgeMouse(OnEdgeDoubleClick, edge)"
-                                  OnContextMenu="@EdgeMouse(OnEdgeContextMenu, edge)"
-                                  OnMouseEnter="@EdgeMouse(OnEdgeMouseEnter, edge)"
-                                  OnMouseMove="@EdgeMouse(OnEdgeMouseMove, edge)"
-                                  OnMouseLeave="@EdgeMouse(OnEdgeMouseLeave, edge)" />
+                                  Settings="_edgeSettings"
+                                  Callbacks="ecb" />
                 }
+                </BlowRenderGate>
 
                 @if (ShowConnectionLine)
                 {
@@ -117,25 +120,16 @@
                 }
             </svg>
 
+            <BlowRenderGate Version="_layerVersion">
             @foreach (var node in _renderNodes)
             {
+                var ncb = CallbacksFor(node);
                 <BlowNodeRenderer @key="node.Id"
                               Node="node"
-                              Template="NodeTemplate"
-                              AriaLabels="AriaLabels"
-                              Focusable="@(!DisableKeyboardA11y && NodesFocusable)"
-                              Elevate="@(ZIndexMode != BlowZIndexMode.Manual && ElevateNodesOnSelect)"
-                              ElevateWhileDragging="@(ZIndexMode != BlowZIndexMode.Manual)"
-                              OnDragStart="@(e => StartNodeDrag(node, e))"
-                              OnActivate="@(additive => ActivateNode(node, additive))"
-                              OnFocus="NodeFocusHandler(node)"
-                              OnClick="@(e => OnNodeClickHandler(node))"
-                              OnDoubleClick="@NodeMouse(OnNodeDoubleClick, node)"
-                              OnContextMenu="@NodeContextMenu(node)"
-                              OnMouseEnter="@NodeMouse(OnNodeMouseEnter, node)"
-                              OnMouseMove="@NodeMouse(OnNodeMouseMove, node)"
-                              OnMouseLeave="@NodeMouse(OnNodeMouseLeave, node)" />
+                              Settings="_nodeSettings"
+                              Callbacks="ncb" />
             }
+            </BlowRenderGate>
 
             @if (_selecting)
             {
@@ -174,6 +168,21 @@
         @* Screen-reader announcements for changes that have no visual-only equivalent. *@
         <div class="bit-blow-a11y-live" role="status" aria-live="polite" aria-atomic="true">@_liveMessage</div>
 
+        @* Keyboard instructions, read as the description of the flow, a node or an edge. Hidden from the page
+           and from a screen reader's reading order: they are only ever reached through aria-describedby. *@
+        @if (!string.IsNullOrEmpty(AriaLabels.PaneInstructions))
+        {
+            <div id="@DescriptionId("pane")" hidden>@AriaLabels.PaneInstructions</div>
+        }
+        @if (!string.IsNullOrEmpty(AriaLabels.NodeInstructions))
+        {
+            <div id="@DescriptionId("node")" hidden>@NodeInstructionsText</div>
+        }
+        @if (!string.IsNullOrEmpty(AriaLabels.EdgeInstructions))
+        {
+            <div id="@DescriptionId("edge")" hidden>@AriaLabels.EdgeInstructions</div>
+        }
+
         @if (!HideAttribution)
         {
             @* Pressing the link is not a press on the pane: it must not start a pan or clear the selection. *@
@@ -183,4 +192,9 @@
                @ondblclick:stopPropagation="true">bit Blow</a>
         }
     </div>
+</CascadingValue>
+</CascadingValue>
+</CascadingValue>
+</CascadingValue>
+</CascadingValue>
 </CascadingValue>
