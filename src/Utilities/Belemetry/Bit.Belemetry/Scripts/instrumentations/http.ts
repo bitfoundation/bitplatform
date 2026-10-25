@@ -10,6 +10,12 @@ import { compilePatterns, matchesAny, type InstrumentationContext } from './cont
 
 export const DEPENDENCIES_SCOPE = 'bit.belemetry.http';
 
+/**
+ * The fetch option .NET's exporter sets in WebAssembly (`BelemetryHttpSender.ExportFetchOption`): an export, whatever
+ * its URL, even when this script was started by a server's configuration, which lists no .NET exporter URLs.
+ */
+export const DOTNET_EXPORT_OPTION = 'bitBelemetryExport';
+
 // The methods the HTTP conventions know; anything else is `_OTHER` (with the original kept), so a typo or a custom
 // verb cannot add a span name or a metric series per value.
 const KNOWN_METHODS = ['CONNECT', 'DELETE', 'GET', 'HEAD', 'OPTIONS', 'PATCH', 'POST', 'PUT', 'QUERY', 'TRACE'];

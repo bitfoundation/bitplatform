@@ -15,17 +15,21 @@ internal interface IBelemetryHttpExporter
     /// <summary>Last-minute changes to the message, e.g. a bearer token.</summary>
     ValueTask PrepareAsync(HttpRequestMessage message, CancellationToken cancellationToken);
 
-    /// <summary>The items of a partial-success response worth retrying, as a new request; null when none are.</summary>
-    BelemetryHttpRequest? GetRetryForPartialSuccess(BelemetryHttpRequest request, int statusCode, string? responseBody);
+    /// <summary>
+    /// The items of a partial-success response worth retrying, as a new request; null when none are.
+    /// <paramref name="rejected"/> is how many items the response refused for good (dropped, not retried).
+    /// </summary>
+    BelemetryHttpRequest? GetRetryForPartialSuccess(BelemetryHttpRequest request, int statusCode, string? responseBody, out int rejected);
 
     /// <summary>Whether an HTTP error status is transient for this backend (retried, then persisted) rather than final (dropped).</summary>
     bool IsRetryable(int statusCode);
 
     /// <summary>
     /// What a successful response says the backend nevertheless rejected (an OTLP <c>partial_success</c>), for the
-    /// diagnostics; null when nothing was. <paramref name="body"/> is the bare message (a gRPC frame is removed).
+    /// diagnostics, with the number of items it rejected; null (and 0) when nothing was. <paramref name="body"/> is the
+    /// bare message (a gRPC frame is removed).
     /// </summary>
-    string? DescribePartialSuccess(string? mediaType, ReadOnlySpan<byte> body);
+    string? DescribePartialSuccess(string? mediaType, ReadOnlySpan<byte> body, out long rejected);
 
     /// <summary>The maximum time one request may take.</summary>
     TimeSpan Timeout { get; }

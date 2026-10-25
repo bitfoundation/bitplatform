@@ -4,7 +4,7 @@ import { Features } from './features';
 import { ErrorLimiter, limitRecord } from './limits';
 import { debug } from './log';
 import { isSpan, type Attributes, type RecordBatch, type TelemetryRecord } from './model';
-import { applyPrivacy } from './privacy';
+import { applyPrivacy, isBlocked } from './privacy';
 import { isSessionSampled, type SessionManager } from './session';
 import { countDropped } from './stats';
 
@@ -71,7 +71,7 @@ export class Pipeline {
             applyPrivacy(record, this.config.privacy);
             // After privacy, so a cut never hides an e-mail address from the scrubber.
             limitRecord(record, this.config.maxValueLength);
-            record.attributes['session.id'] = sessionId;
+            this.setId(record, 'session.id', sessionId);
             if (this.consent.isGranted(record.feature)) this.enqueue(record);
             else this.consent.hold(record);
         } catch (e) {
@@ -84,8 +84,8 @@ export class Pipeline {
         if (this.session.userTracking) {
             const pseudo = this.session.pseudoId;
             const user = this.session.userId;
-            if (pseudo) record.attributes['enduser.pseudo.id'] = pseudo;
-            if (user) record.attributes['user.id'] = user;
+            if (pseudo) this.setId(record, 'enduser.pseudo.id', pseudo);
+            if (user) this.setId(record, 'user.id', user);
         }
         this.queue.push(record);
         const batch = this.config.batch;
@@ -104,6 +104,11 @@ export class Pipeline {
                 this.flush();
             }, batch.flushIntervalMs);
         }
+    }
+
+    /** Adds an id after privacy, which leaves the ids alone - unless the operator blocked it. */
+    private setId(record: TelemetryRecord, key: string, value: string): void {
+        if (!isBlocked(key, this.config.privacy)) record.attributes[key] = value;
     }
 
     /** Drops the queued records of revoked features (and the user ids when user tracking is revoked). */

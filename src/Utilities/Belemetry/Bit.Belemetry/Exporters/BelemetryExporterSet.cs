@@ -75,18 +75,15 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
         {
             foreach (var created in exporter.CreateRequests(WithMinimumSeverity(batch, exporter.MinimumSeverity)))
             {
-                // After a partial success only the rejected items are left to store: the accepted ones are in.
-                var (outcome, request) = await _sender.SendWithRemainderAsync(exporter, created, retry: true, cancellationToken);
-                if (ReferenceEquals(request, created) is false) _pipeline.Self.Exported(exporter.Name, "delivered", created.Count - request.Count);
+                var sent = await _sender.SendWithResultAsync(exporter, created, retry: true, cancellationToken);
+                _pipeline.Self.Exported(exporter.Name, "delivered", sent.Delivered);
+                _pipeline.Self.Exported(exporter.Name, "rejected", sent.Rejected);
+                if (sent.Outcome != BelemetrySendOutcome.Failed) continue;
 
-                var result = outcome switch
-                {
-                    BelemetrySendOutcome.Delivered => "delivered",
-                    BelemetrySendOutcome.Rejected => "rejected",
-                    _ => "failed",
-                };
-
-                if (outcome == BelemetrySendOutcome.Failed && persistenceAllowed && Store is not null)
+                // After a partial success only the items to retry are left to store: the accepted ones are in.
+                var request = sent.Remaining;
+                var result = "failed";
+                if (persistenceAllowed && Store is not null)
                 {
                     try
                     {
@@ -151,7 +148,11 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
         return kept is null ? batch : new BelemetryBatch(batch.Resource, batch.Spans, kept, batch.Metrics);
     }
 
-    /// <summary>Sends what the store holds; delivered and rejected requests leave the store, failed ones stay for the next pass.</summary>
+    /// <summary>
+    /// Sends what the store holds; delivered and rejected requests leave the store, failed ones stay for the next pass.
+    /// A request that fails holds back the rest of its URL's backlog - that backend is still unreachable, and hammering
+    /// it with every stored request would only waste the network - but not the requests to other backends.
+    /// </summary>
     public async Task RetryStoredAsync(bool persistenceAllowed, CancellationToken cancellationToken)
     {
         if (Store is null || _settings.IsBrowser) return;
@@ -163,6 +164,7 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
         }
 
         var stored = await Store.LoadAsync(50, cancellationToken);
+        HashSet<string>? unreachable = null;
         foreach (var request in stored)
         {
             var exporter = _httpExporters.FirstOrDefault(e => e.Name == request.Exporter);
@@ -173,26 +175,27 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
                 continue;
             }
 
-            using var _ = BelemetrySuppression.Begin();
-            var (outcome, remaining) = await _sender.SendWithRemainderAsync(exporter, request, retry: false, cancellationToken);
-            if (ReferenceEquals(remaining, request) is false) _pipeline.Self.Exported(exporter.Name, "delivered", request.Count - remaining.Count);
+            if (unreachable?.Contains(request.Url) is true) continue;
 
-            if (outcome != BelemetrySendOutcome.Failed)
+            using var _ = BelemetrySuppression.Begin();
+            var sent = await _sender.SendWithResultAsync(exporter, request, retry: false, cancellationToken);
+            _pipeline.Self.Exported(exporter.Name, "delivered", sent.Delivered);
+            _pipeline.Self.Exported(exporter.Name, "rejected", sent.Rejected);
+
+            if (sent.Outcome != BelemetrySendOutcome.Failed)
             {
                 await Store.DeleteAsync(request.Id, cancellationToken);
-                _pipeline.Self.Exported(exporter.Name, outcome == BelemetrySendOutcome.Delivered ? "delivered" : "rejected", remaining.Count);
+            }
+            else if (ReferenceEquals(sent.Remaining, request) is false)
+            {
+                // Partly delivered: keep only what is left, or the accepted items would be resent every pass. The
+                // backend answered, so the rest of its backlog still goes.
+                await Store.DeleteAsync(request.Id, cancellationToken);
+                await Store.SaveAsync(sent.Remaining, cancellationToken);
             }
             else
             {
-                if (ReferenceEquals(remaining, request) is false)
-                {
-                    // Partly delivered: keep only what is left, or the accepted items would be resent every pass.
-                    await Store.DeleteAsync(request.Id, cancellationToken);
-                    await Store.SaveAsync(remaining, cancellationToken);
-                }
-
-                // Still offline: stop here rather than hammering the network with the rest of the backlog.
-                break;
+                (unreachable ??= new(StringComparer.Ordinal)).Add(request.Url);
             }
         }
     }

@@ -343,6 +343,32 @@ index as the new `addresses` argument (index 0 is falsy). Fixed before it ran.
 **Verification.** Core 280/280, JS 164/164, `tsc` clean, Hosting 29/29, MCP 59/59, EF 9/9, Hangfire 4/4, solution
 build clean (MAUI sample excluded).
 
+### Round 7 - second review of the committed change set
+
+Thirteen findings from `/code-review` on commit a7f5e6f; all real, all fixed.
+
+| Finding | Fix | Test |
+| --- | --- | --- |
+| `resendPersisted` removed the whole stored queue before a sequential pass: an unload mid-pass lost every request not yet sent | each request leaves `localStorage` only while it is sent; one sent without keepalive goes back when the page is hidden (`Transport.pageHidden`) | backlog stored during a pass; put back / left alone on hide |
+| A pass stopped at the first failure whatever its URL: one dead backend held back every other backlog (an Azure 206 too) | a failure holds back only its URL's backlog; a partial success holds back nothing - on both sides (`RetryStoredAsync` too) | one per side |
+| The id exemption overrode `BlockedAttributes`: an operator could no longer keep relayed ids out | a blocked key goes, an id included, and the enrichment does not add a blocked id (both sides) | privacy, relay and enrichment tests, both sides |
+| A server-rendered config lists no .NET exporter URL, so in Auto the server-started script traced the WebAssembly pipeline's exports | the .NET sender marks WASM exports with the fetch option `bitBelemetryExport` (copied into fetch's init by the runtime, no CORS cost); the fetch instrumentation skips it | fetch test |
+| The startup Headers warning fired for OTLP exporters with neither traces nor logs, which the page never gets | skipped, as the config factory does | warning test |
+| After an Azure 206, the items refused for good counted as `delivered` | the sender returns `BelemetrySendResult` with delivered/rejected counts (OTLP `partial_success` counts too) and warns about refused items | Azure and OTLP count tests |
+| `Encoding.UTF8.GetString` kept a BOM and ignored the charset: a 206 body failed to parse and its retryable items were lost | `DecodeText` as `ReadAsStringAsync` does (charset, BOM stripped) | BOM and UTF-16 bodies |
+| `MaxResponseBytes` checked a body HttpClient had already buffered (`ResponseContentRead`) | `ResponseHeadersRead`, body read in chunks and abandoned at the limit (gRPC reads it before the trailers) | a 64 MiB chunked body is read only to the limit |
+| `privacy.ts` caches were plain objects: `constructor`, `toString`, ... were always `REDACTED` | a `Map` and prototype-less objects | Object-member keys and parameters |
+| `Task.Run` puts the loop on a worker thread with WasmEnableThreads, where JS interop (the browser store) is not allowed | started in place in the browser, flow still suppressed | - (needs multi-threaded WASM) |
+| `preConsented` doubled as "relayed" for the error limiter | the parameter is `relayed` | existing relay tests |
+| The narrowed request came back through a callback mutating a captured parameter | the sender returns its result | sender tests |
+| `limitAttributes` copied every string array per record | copied only when an item is cut | identity asserted |
+
+Also fixed while there: an Azure 206 whose `index` or `statusCode` was not a number threw past the JSON catch, failing a
+delivered request (resent, duplicated).
+
+**Verification.** Core 287/287 (net10.0; net8.0/net9.0 build, their runtimes are not installed here), JS 172/172, `tsc`
+clean, Hosting 29/29, MCP 59/59, EF 9/9, Hangfire 4/4; the new tests were checked to fail against the old behavior.
+
 ---
 
 ## 7. Research notes

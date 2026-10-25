@@ -12,14 +12,19 @@ namespace Bit.Belemetry;
 internal static class OtlpPartialSuccess
 {
     /// <summary>"N rejected: message", or null when the response reports nothing rejected and no warning.</summary>
-    public static string? Describe(ReadOnlySpan<byte> body, bool json)
+    public static string? Describe(ReadOnlySpan<byte> body, bool json) => Describe(body, json, out _);
+
+    /// <summary>"N rejected: message", or null when the response reports nothing rejected and no warning; <paramref name="rejected"/> is N.</summary>
+    public static string? Describe(ReadOnlySpan<byte> body, bool json, out long rejected)
     {
+        rejected = 0;
         try
         {
-            var (rejected, message) = json ? ReadJson(body) : ReadProtobuf(body);
-            if (rejected <= 0 && string.IsNullOrEmpty(message)) return null;
-            return rejected > 0
-                ? $"{rejected.ToString(CultureInfo.InvariantCulture)} rejected{(string.IsNullOrEmpty(message) ? string.Empty : ": " + message)}"
+            var (count, message) = json ? ReadJson(body) : ReadProtobuf(body);
+            if (count <= 0 && string.IsNullOrEmpty(message)) return null;
+            rejected = Math.Max(0, count);
+            return count > 0
+                ? $"{count.ToString(CultureInfo.InvariantCulture)} rejected{(string.IsNullOrEmpty(message) ? string.Empty : ": " + message)}"
                 : "warning: " + message;
         }
         catch (Exception)
@@ -32,6 +37,8 @@ internal static class OtlpPartialSuccess
 
     private static (long Rejected, string? Message) ReadJson(ReadOnlySpan<byte> body)
     {
+        // A byte order mark is not JSON; a server may still send one.
+        if (body.StartsWith(Encoding.UTF8.Preamble)) body = body[Encoding.UTF8.Preamble.Length..];
         using var document = JsonDocument.Parse(body.ToArray());
         if (document.RootElement.ValueKind != JsonValueKind.Object || document.RootElement.TryGetProperty("partialSuccess", out var partial) is false
             || partial.ValueKind != JsonValueKind.Object)

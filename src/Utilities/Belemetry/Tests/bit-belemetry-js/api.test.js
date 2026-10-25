@@ -128,6 +128,21 @@ describe('public API', () => {
         expect(localStorage.getItem('bit-belemetry-pseudo-id')).toBeNull();
     });
 
+    it('does not add an id the configuration blocks', async () => {
+        await load();
+        api.start(relayConfig({ consent: { default: 4095 }, privacy: { blockedAttributes: ['user.id', 'session.id'] } }));
+        const dotnet = fakeDotNet();
+        api.attachDotNet(dotnet, { relay: true });
+        api.setUser('alice');
+        api.trackEvent('e');
+        await api.flush();
+        const event = dotnet.calls.filter(c => c[0] === 'Belemetry.Relay').flatMap(c => c[1].logs).find(l => l.eventName === 'e');
+        expect(event.attributes['enduser.pseudo.id']).toMatch(/^[0-9a-f]{32}$/);
+        expect(event.attributes['user.id']).toBeUndefined();
+        expect(event.attributes['session.id']).toBeUndefined();
+        expect(api.getContext().userId).toBe('alice'); // still the context .NET is kept in step with
+    });
+
     it('purges queued records of revoked features', async () => {
         await load();
         api.start(relayConfig({ consent: { default: 0 } }));

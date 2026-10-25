@@ -170,6 +170,12 @@ function post(request: OutgoingRequest): Promise<Response> {
 /** What became of a request: accepted, refused for good, stored for later, or lost (no persistence). */
 type Outcome = 'delivered' | 'rejected' | 'kept' | 'dropped';
 
+/** How the attempts at a request ended, and what is still undelivered: after an Azure 206, only the items to retry. */
+interface Attempted {
+    outcome: 'delivered' | 'rejected' | 'failed';
+    remaining: OutgoingRequest;
+}
+
 export function loadPersisted(): PersistedRequest[] {
     const raw = readItem('local', StorageKeys.queue);
     if (!raw) return [];
@@ -181,10 +187,11 @@ export function loadPersisted(): PersistedRequest[] {
     }
 }
 
-/** Drops entries older than maxAgeHours, evicts the oldest beyond maxBytes, and writes the queue. */
+/** Drops entries older than maxAgeHours, evicts the oldest beyond maxBytes, and writes the queue, oldest first. */
 export function savePersisted(list: PersistedRequest[], config: PersistenceConfig, time = Date.now()): PersistedRequest[] {
     const minTime = time - config.maxAgeHours * 3600000;
-    const kept = list.filter(e => e.time >= minTime);
+    // A request stored again after a failed resend keeps its age: sorted back into place, so eviction drops the oldest.
+    const kept = list.filter(e => e.time >= minTime).sort((a, b) => a.time - b.time);
     let json = JSON.stringify(kept);
     while (kept.length && json.length > config.maxBytes) {
         kept.shift();
@@ -199,6 +206,18 @@ export function savePersisted(list: PersistedRequest[], config: PersistenceConfi
     return kept;
 }
 
+/** Takes a stored request out of the queue; null when it is gone (another tab sent it, or it expired or was evicted). */
+function takePersisted(id: string, config: PersistenceConfig): PersistedRequest | null {
+    const list = loadPersisted();
+    for (let i = 0; i < list.length; i++) {
+        if (list[i].id !== id) continue;
+        const entry = list.splice(i, 1)[0];
+        savePersisted(list, config);
+        return entry;
+    }
+    return null;
+}
+
 /**
  * Sends requests with fetch: keepalive for small bodies and during unload, retries with exponential backoff (and
  * Retry-After), Azure 206 partial-success handling, and persistence of what could not be sent.
@@ -206,6 +225,8 @@ export function savePersisted(list: PersistedRequest[], config: PersistenceConfi
 export class Transport {
     private inflight: Promise<void>[] = [];
     private resending = false;
+    /** The stored request a resend pass is sending: out of storage until its outcome is known. */
+    private resent: { entry: PersistedRequest; keepalive: boolean; restored: boolean } | null = null;
 
     constructor(public options: TransportOptions) { }
 
@@ -229,10 +250,19 @@ export class Transport {
         return this.options.persistence.enabled && this.options.canPersist();
     }
 
-    private async deliver(request: OutgoingRequest, unload: boolean, maxAttempts = MAX_ATTEMPTS): Promise<Outcome> {
+    private async deliver(request: OutgoingRequest, unload: boolean): Promise<Outcome> {
         // A request that cannot have keepalive while the page unloads would be cancelled with the page: stored, it is
         // sent on the next visit. Without persistence a plain request is still worth it - the page may only be hidden.
         if (unload && !fitsKeepalive(request) && this.canPersist()) return this.persist(request);
+        const result = await this.attempt(request, unload, MAX_ATTEMPTS);
+        return result.outcome === 'failed' ? this.persist(result.remaining) : result.outcome;
+    }
+
+    /**
+     * Posts a request until it is delivered, refused for good, or out of attempts: retries with exponential backoff
+     * (and Retry-After), and narrows an Azure 206 to the items worth retrying. Calls fetch before its first await.
+     */
+    private async attempt(request: OutgoingRequest, unload: boolean, maxAttempts: number): Promise<Attempted> {
         let current = request;
         for (let attempt = 1; ; attempt++) {
             let response: Response | null = null;
@@ -253,19 +283,19 @@ export class Transport {
                     } catch {
                         // An unreadable 206 body: the accepted items are in, nothing to retry.
                     }
-                    if (!next) return 'delivered';
+                    if (!next) return { outcome: 'delivered', remaining: current };
                     current = next;
                 } else if (status >= 200 && status < 300) {
-                    return 'delivered';
+                    return { outcome: 'delivered', remaining: current };
                 } else if (!isRetryableFor(current.exporter, status)) {
                     debug('dropped request, status', status, current.url);
-                    return 'rejected';
+                    return { outcome: 'rejected', remaining: current };
                 }
                 delay = parseRetryAfter(response.headers.get('Retry-After'));
             }
             const offline = !response && typeof navigator !== 'undefined' && navigator.onLine === false;
             if (unload || offline || attempt >= maxAttempts || (delay !== null && delay > MAX_RETRY_AFTER_MS)) {
-                return this.persist(current);
+                return { outcome: 'failed', remaining: current };
             }
             const wait = delay !== null ? delay : backoff(attempt);
             await (this.options.sleep ? this.options.sleep(wait) : new Promise<void>(resolve => setTimeout(resolve, wait)));
@@ -296,14 +326,14 @@ export class Transport {
 
     /**
      * Resends the persisted requests (on start, periodically, and when the browser comes back online): oldest first,
-     * one attempt each, stopping at the first that fails - the backend is still unreachable, and hammering it with the
-     * whole backlog (each request with its own retries) would only waste the user's network. The rest stay stored.
+     * one attempt each. A request that fails holds back the rest of its URL's backlog - that backend is still
+     * unreachable, and hammering it with every stored request (each with its own retries) would only waste the user's
+     * network - but not the requests to other backends. The rest stay stored.
      */
     resendPersisted(): Promise<void> {
         if (this.resending || !this.canPersist()) return Promise.resolve();
         const list = savePersisted(loadPersisted(), this.options.persistence);
         if (!list.length) return Promise.resolve();
-        removeItem('local', StorageKeys.queue);
         this.resending = true;
         const promise: Promise<void> = this.resend(list).catch(e => debug('resend failed', e)).then(() => {
             this.resending = false;
@@ -316,29 +346,60 @@ export class Transport {
 
     private async resend(list: PersistedRequest[]): Promise<void> {
         const headersFor = this.options.headersFor;
-        for (let i = 0; i < list.length; i++) {
-            const entry = list[i];
+        const config = this.options.persistence;
+        // The URLs whose request failed in this pass: those backends are still unreachable.
+        const unreachable: string[] = [];
+        for (const stored of list) {
+            // Revoked mid-pass: the stored requests are cleared, and must not come back.
+            if (!this.canPersist()) return;
+            if (unreachable.indexOf(stored.url) >= 0) continue;
+            // Taken out of storage only as it is sent: the rest of the backlog survives the page going away mid-pass,
+            // and another tab's pass cannot send it too (gone already when that tab got there first).
+            const entry = takePersisted(stored.id, config);
+            if (!entry) continue;
             let body: Uint8Array;
             try {
                 body = fromBase64(entry.body);
             } catch {
                 continue;
             }
-            const outcome = await this.deliver({
+            const request: OutgoingRequest = {
                 exporter: entry.exporter,
                 url: entry.url,
                 contentType: entry.contentType,
                 headers: headersFor ? headersFor(entry.exporter, entry.url) : null,
                 body,
                 time: entry.time,
-            }, false, 1);
-            // A stored request was counted as kept when it was stored; a failed resend just stays that way.
-            if (outcome !== 'kept') countRequest(outcome);
-            if (outcome === 'kept') {
-                // Back behind the one that just failed, in their order and with their age.
-                savePersisted(loadPersisted().concat(list.slice(i + 1)), this.options.persistence);
-                return;
+            };
+            const resent = (this.resent = { entry, keepalive: fitsKeepalive(request), restored: false });
+            let result: Attempted;
+            try {
+                result = await this.attempt(request, false, 1);
+            } finally {
+                this.resent = null;
             }
+            // Put back while the page was hidden: its outcome is known now.
+            if (resent.restored) takePersisted(entry.id, config);
+            if (result.outcome !== 'failed') {
+                countRequest(result.outcome);
+                continue;
+            }
+            // Partly accepted (an Azure 206), the backend is up: the rest of its backlog still goes. What is left is
+            // stored again either way - counted as kept when it was first stored, it is counted again only if lost.
+            if (result.remaining === request) unreachable.push(entry.url);
+            if ((await this.persist(result.remaining)) === 'dropped') countRequest('dropped');
         }
+    }
+
+    /**
+     * The page is being hidden, maybe for good: a stored request being resent without keepalive would be cancelled
+     * with it, so it goes back to storage for the next visit. Should it get through after all (the page was only
+     * hidden), its outcome takes it out again. Synchronous, as everything that runs on pagehide must be.
+     */
+    pageHidden(): void {
+        const resent = this.resent;
+        if (!resent || resent.keepalive || resent.restored || !this.canPersist()) return;
+        resent.restored = true;
+        savePersisted(loadPersisted().concat([resent.entry]), this.options.persistence);
     }
 }

@@ -150,10 +150,18 @@ describe('applyPrivacy', () => {
         expect(isVersionKey('aversion')).toBe(false);
     });
 
-    it('lets a redacted name win over the host exemption, and never touches the ids', () => {
+    it('lets a redacted name win over the host exemption, and touches the ids only to remove a blocked one', () => {
         const record = log({ attributes: { 'user_agent.original': 'Mozilla/5.0', 'server.address': '10.0.0.5', 'session.id': 's1', 'user.id': 'u1' } });
         applyPrivacy(record, privacy({ redactedAttributes: [...resolveConfig().privacy.redactedAttributes, 'user_agent.original', 'session.id'], blockedAttributes: ['user.id'] }));
-        expect(record.attributes).toEqual({ 'user_agent.original': 'REDACTED', 'server.address': '10.0.0.5', 'session.id': 's1', 'user.id': 'u1' });
+        // Consent governs the ids, not the redaction rules; blocking one is the operator's explicit choice.
+        expect(record.attributes).toEqual({ 'user_agent.original': 'REDACTED', 'server.address': '10.0.0.5', 'session.id': 's1' });
+    });
+
+    it('does not mistake a key named like an Object member for a configured name', () => {
+        const record = log({ attributes: { constructor: 'a', toString: 'b', valueOf: 'c', 'url.full': 'https://x.test/?constructor=1&__proto__=2&toString=3' } });
+        applyPrivacy(record, privacy());
+        expect(record.attributes).toEqual({ constructor: 'a', toString: 'b', valueOf: 'c', 'url.full': 'https://x.test/?constructor=1&__proto__=2&toString=3' });
+        expect(redactQuery('constructor=1&token=2', { token: true })).toBe('constructor=1&token=REDACTED');
     });
 
     it('redacts the signatures of pre-signed storage URLs by default', () => {

@@ -522,7 +522,7 @@ options.Metrics.Meters.Add("Bit.Belemetry");
 | Instrument | Attributes | Counts |
 | --- | --- | --- |
 | `belemetry.records.dropped` | `belemetry.reason`, `belemetry.signal` (`traces`/`logs`) | records dropped before export: `queue_full`, `pending_full` (the hold before a consent decision), `not_consented`, `consent_revoked`, `error_limit`, `relay_limit`, `filtered` (a processor returned false) |
-| `belemetry.records.exported` | `belemetry.exporter`, `belemetry.outcome` | records handed to an exporter: `delivered`, `rejected` (refused for good), `stored` (kept for a retry; `delivered` again when the retry succeeds), `failed` (lost) |
+| `belemetry.records.exported` | `belemetry.exporter`, `belemetry.outcome` | records handed to an exporter: `delivered`, `rejected` (refused for good - the items a partial success refused included), `stored` (kept for a retry; `delivered` again when the retry succeeds), `failed` (lost) |
 
 In the browser, `BitBelemetry.getStats()` gives the script's counterpart: `{ dropped: { <reason>: n }, requests:
 { delivered, rejected, kept, dropped }, queued, pending }` since the page loaded (with `sampled_out` among the reasons).
@@ -649,7 +649,8 @@ Applied on both sides before anything is queued (`options.Privacy.*`):
   four-part values too; the other patterns still apply to it.
 - `CollectUserAgent` (on): the user agent string in the browser resource.
 - `BlockedAttributes`: attribute keys (exact, case-sensitive) removed from every record and span event, by the
-  script and by .NET. The ids added afterwards (`session.id`, `enduser.pseudo.id`, `user.id`) are governed by consent.
+  script and by .NET. The ids (`session.id`, `enduser.pseudo.id`, `user.id`) are governed by consent and untouched
+  by every other privacy rule, but a blocked one is never added, and is removed from relayed browser records.
 - Azure Monitor's `MaskIp` (on) stops IP-based geolocation; Belemetry never adds the client IP itself.
 
 IP scrubbing leaves the **host** of a URL and `server.address` alone, even when they are IP literals: they name the
@@ -710,8 +711,11 @@ Azure Monitor also 408, 439 and 500, which its ingestion endpoint asks to retry;
 word and the request is dropped, with a warning - in `localStorage` in the
 browser (`BrowserMaxBytes`, 1 MB), in files in Hybrid and on servers (`Directory`, `MaxBytes` 20 MB) - and retried
 every `RetryInterval` (1 min, on both sides), when the page starts and when the browser comes back online, for up to
-`MaxAge` (48 h). A retry pass sends the stored requests oldest first, one attempt each, and stops at the first that
-fails: the backend is still unreachable, and the rest wait for the next pass instead of hammering the network.
+`MaxAge` (48 h). A retry pass sends the stored requests oldest first, one attempt each. A request that fails holds
+back the rest of its URL's backlog until the next pass - that backend is still unreachable, and hammering it would only
+waste the network - but not the requests to other backends. The browser takes each stored request out of
+`localStorage` only while sending it, so the backlog survives the page going away mid-pass (and a request being sent
+without `keepalive` goes back to storage when the page is hidden).
 
 When the page is hidden or unloads, the script sends what is queued with `fetch(..., { keepalive: true })`, which
 outlives the page - but a browser caps the bodies of all of a page's keepalive requests in flight at 64 KiB together.
@@ -930,8 +934,8 @@ The reasons are recorded in [`Belemetry-Improvement-Plan.md`](Belemetry-Improvem
   authorization, cookie names). Remove a name from the list in code (`options.Privacy.RedactedAttributes.Remove("token")`)
   to keep its values.
 - **Pre-signed storage URLs lose their signatures** (`X-Amz-Signature`, `X-Goog-Signature`, ...; `RedactQueryParameters`).
-- **A server lists no exporter URLs in the page's `ignoreUrls`.** A WebAssembly client adds its own when it starts the
-  script.
+- **A server lists no exporter URLs in the page's `ignoreUrls`.** A WebAssembly client's .NET exports carry a fetch
+  option the script recognizes, so they are not traced even by a script the server started (Auto).
 - **On Blazor Server, relayed batches are untrusted input**: accepted only with the Relay transport, rate-limited per
   circuit, and stamped with the server's service identity but not its host, process or cloud attributes.
 
@@ -942,7 +946,7 @@ The reasons are recorded in [`Belemetry-Improvement-Plan.md`](Belemetry-Improvem
 - **Rejected requests and OTLP partial successes are warnings** in the `Bit.Belemetry` category (they were Debug).
 - **During unload, a request that cannot get `keepalive`** (over the 64 KiB or 9-request budget) is stored for the
   next visit instead of being sent and refused.
-- **Stored requests are resent oldest first, one attempt each, stopping at the first failure.**
+- **Stored requests are resent oldest first, one attempt each**; a failure holds back only the backlog of its URL.
 - **.NET exports send `User-Agent: Bit.Belemetry/<version>`** unless an exporter header sets one.
 
 **Collected data**

@@ -1,7 +1,7 @@
 ﻿import { traceparent } from '../ids';
 import type { SpanRecord } from '../model';
 import { absoluteUrl, noop, type InstrumentationContext, type Uninstall } from './context';
-import { createHttpTracer } from './http';
+import { createHttpTracer, DOTNET_EXPORT_OPTION } from './http';
 
 /** Client spans for window.fetch. */
 export function installFetch(ctx: InstrumentationContext): Uninstall {
@@ -18,8 +18,9 @@ export function installFetch(ctx: InstrumentationContext): Uninstall {
                 const request = typeof Request !== 'undefined' && input instanceof Request ? input : null;
                 const url = absoluteUrl(request ? request.url : String(input));
                 const headers = new Headers((init && init.headers) || (request ? request.headers : undefined));
+                const exported = !!init && (init as unknown as Record<string, unknown>)[DOTNET_EXPORT_OPTION] === true;
                 // A traceparent already present means .NET's HttpClient (WASM) traced this request itself.
-                if (tracer.shouldTrace(url, headers.has('traceparent'))) {
+                if (!exported && tracer.shouldTrace(url, headers.has('traceparent'))) {
                     const method = String((init && init.method) || (request && request.method) || 'GET').toUpperCase();
                     span = tracer.start(method, url);
                     if (tracer.shouldPropagate(url)) {

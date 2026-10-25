@@ -64,11 +64,16 @@ internal sealed class BelemetryAzureMonitorExporter : IBelemetryHttpExporter
 
     public bool IsRetryable(int statusCode) => BelemetryHttpSender.IsRetryable((System.Net.HttpStatusCode)statusCode);
 
-    // A 206 is retried item by item (GetRetryForPartialSuccess); a 200 accepted everything.
-    public string? DescribePartialSuccess(string? mediaType, ReadOnlySpan<byte> body) => null;
-
-    public BelemetryHttpRequest? GetRetryForPartialSuccess(BelemetryHttpRequest request, int statusCode, string? responseBody)
+    // A 206 is settled item by item (GetRetryForPartialSuccess); a 200 accepted everything.
+    public string? DescribePartialSuccess(string? mediaType, ReadOnlySpan<byte> body, out long rejected)
     {
+        rejected = 0;
+        return null;
+    }
+
+    public BelemetryHttpRequest? GetRetryForPartialSuccess(BelemetryHttpRequest request, int statusCode, string? responseBody, out int rejected)
+    {
+        rejected = 0;
         if (statusCode != 206 || string.IsNullOrEmpty(responseBody)) return null;
 
         try
@@ -76,16 +81,16 @@ internal sealed class BelemetryAzureMonitorExporter : IBelemetryHttpExporter
             using var response = JsonDocument.Parse(responseBody);
             if (response.RootElement.TryGetProperty("errors", out var errors) is false || errors.ValueKind != JsonValueKind.Array) return null;
 
+            // The items listed with a status the endpoint asks to retry go again; the others are refused for good.
             var retryIndexes = new HashSet<int>();
+            var refused = new HashSet<int>();
             foreach (var error in errors.EnumerateArray())
             {
-                if (error.TryGetProperty("index", out var index) && error.TryGetProperty("statusCode", out var code)
-                    && BelemetryHttpSender.IsRetryable((System.Net.HttpStatusCode)code.GetInt32()))
-                {
-                    retryIndexes.Add(index.GetInt32());
-                }
+                if (error.TryGetProperty("index", out var index) is false || error.TryGetProperty("statusCode", out var code) is false) continue;
+                (BelemetryHttpSender.IsRetryable((System.Net.HttpStatusCode)code.GetInt32()) ? retryIndexes : refused).Add(index.GetInt32());
             }
 
+            rejected = refused.Count;
             if (retryIndexes.Count == 0) return null;
 
             using var original = JsonDocument.Parse(request.Body);
@@ -117,8 +122,10 @@ internal sealed class BelemetryAzureMonitorExporter : IBelemetryHttpExporter
                 Count = count,
             };
         }
-        catch (JsonException)
+        catch (Exception ex) when (ex is JsonException or InvalidOperationException or FormatException)
         {
+            // Unreadable (an index or a status that is not a number, too): the accepted items are in, nothing to retry.
+            rejected = 0;
             return null;
         }
     }

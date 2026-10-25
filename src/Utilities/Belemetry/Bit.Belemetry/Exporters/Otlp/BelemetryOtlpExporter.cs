@@ -53,13 +53,17 @@ internal sealed class BelemetryOtlpExporter(BelemetryOtlpExporterOptions options
 
     public bool IsRetryable(int statusCode) => BelemetryHttpSender.IsOtlpRetryable(statusCode);
 
-    public string? DescribePartialSuccess(string? mediaType, ReadOnlySpan<byte> body) =>
-        body.IsEmpty ? null : OtlpPartialSuccess.Describe(body, json: mediaType?.Contains("json", StringComparison.OrdinalIgnoreCase) is true);
+    public string? DescribePartialSuccess(string? mediaType, ReadOnlySpan<byte> body, out long rejected)
+    {
+        rejected = 0;
+        return body.IsEmpty ? null : OtlpPartialSuccess.Describe(body, json: mediaType?.Contains("json", StringComparison.OrdinalIgnoreCase) is true, out rejected);
+    }
 
-    public BelemetryHttpRequest? GetRetryForPartialSuccess(BelemetryHttpRequest request, int statusCode, string? responseBody)
+    public BelemetryHttpRequest? GetRetryForPartialSuccess(BelemetryHttpRequest request, int statusCode, string? responseBody, out int rejected)
     {
         // OTLP partial success means the server already decided which items it rejected and why; the spec says
-        // the client must not retry them.
+        // the client must not retry them. DescribePartialSuccess reports them.
+        rejected = 0;
         return null;
     }
 

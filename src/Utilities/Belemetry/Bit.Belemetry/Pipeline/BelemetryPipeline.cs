@@ -84,21 +84,27 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         // The loop outlives whoever started it - the first resolution of the logger factory, which can happen on a
         // MAUI/WPF/WinForms UI thread or inside a request. Started as is, every await in it would resume on that
         // thread's SynchronizationContext (serialization, gzip and file I/O on the UI thread) and carry its ambient
-        // state for good (Activity.Current, AsyncLocal values). Task.Run with the flow suppressed gives it a clean
-        // context; in single-threaded WebAssembly it still runs on the one thread, after the current work.
-        // SuppressFlow throws when the flow is suppressed already - and then Task.Run captures nothing anyway.
+        // state for good (Activity.Current, AsyncLocal values). With the flow suppressed it carries none of that state.
+        // SuppressFlow throws when the flow is suppressed already - and then nothing is captured anyway.
         if (ExecutionContext.IsFlowSuppressed())
         {
-            _loop = Task.Run(() => RunAsync(_stopping.Token));
+            _loop = StartLoop();
         }
         else
         {
             using (ExecutionContext.SuppressFlow())
             {
-                _loop = Task.Run(() => RunAsync(_stopping.Token));
+                _loop = StartLoop();
             }
         }
     }
+
+    /// <summary>
+    /// Task.Run gives the loop a thread-pool thread, off any UI thread. Not in the browser: with WasmEnableThreads that
+    /// is a worker thread, where JS interop - the request store hands undelivered requests to the script - is not
+    /// allowed. Started in place, it stays on the thread that started it, the one there is without threads.
+    /// </summary>
+    private Task StartLoop() => OperatingSystem.IsBrowser() ? RunAsync(_stopping.Token) : Task.Run(() => RunAsync(_stopping.Token));
 
     /// <summary>
     /// Whether a record of <paramref name="feature"/> may be produced now. With <paramref name="allowPending"/>, records
@@ -115,9 +121,12 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         return allowPending && _consent.IsDecided is false;
     }
 
-    public void Enqueue(BelemetrySpan span, BelemetryResource? resource = null, bool preConsented = false)
+    /// <param name="span">The span.</param>
+    /// <param name="resource">Its resource; the .NET side's when null.</param>
+    /// <param name="relayed">Relayed by the browser script, which applied the user's consent and the error limits already.</param>
+    public void Enqueue(BelemetrySpan span, BelemetryResource? resource = null, bool relayed = false)
     {
-        if (preConsented is false && CanRecord(span.Feature, allowPending: true) is false) return;
+        if (relayed is false && CanRecord(span.Feature, allowPending: true) is false) return;
 
         _privacy.Apply(span);
         BelemetryValueLimit.Apply(span, Settings.Options.MaxValueLength);
@@ -140,15 +149,17 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
             }
         }
 
-        Add(new Entry(span, resource ?? Settings.Resource, span.Feature, preConsented));
+        Add(new Entry(span, resource ?? Settings.Resource, span.Feature, PreConsented: relayed));
     }
 
-    public void Enqueue(BelemetryLogRecord log, BelemetryResource? resource = null, bool preConsented = false)
+    /// <param name="log">The log record.</param>
+    /// <param name="resource">Its resource; the .NET side's when null.</param>
+    /// <param name="relayed">Relayed by the browser script, which applied the user's consent and the error limits already.</param>
+    public void Enqueue(BelemetryLogRecord log, BelemetryResource? resource = null, bool relayed = false)
     {
-        if (preConsented is false && CanRecord(log.Feature, allowPending: true) is false) return;
+        if (relayed is false && CanRecord(log.Feature, allowPending: true) is false) return;
 
-        // A relayed record was limited by the script already.
-        if (preConsented is false && log.Feature == BelemetryFeatures.Errors && _errors?.ShouldRecord(log) is false)
+        if (relayed is false && log.Feature == BelemetryFeatures.Errors && _errors?.ShouldRecord(log) is false)
         {
             Self.Dropped("error_limit", span: false);
             return;
@@ -175,7 +186,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
             }
         }
 
-        Add(new Entry(log, resource ?? Settings.Resource, log.Feature, preConsented));
+        Add(new Entry(log, resource ?? Settings.Resource, log.Feature, PreConsented: relayed));
     }
 
     /// <summary>
@@ -210,13 +221,13 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         foreach (var log in BelemetryRelayConverter.ToLogs(batch))
         {
             if (budget-- <= 0) return;
-            if ((Settings.ConfiguredFeatures & log.Feature) != 0) Enqueue(log, resource, preConsented: true);
+            if ((Settings.ConfiguredFeatures & log.Feature) != 0) Enqueue(log, resource, relayed: true);
         }
 
         foreach (var span in BelemetryRelayConverter.ToSpans(batch))
         {
             if (budget-- <= 0) return;
-            if ((Settings.ConfiguredFeatures & span.Feature) != 0) Enqueue(span, resource, preConsented: true);
+            if ((Settings.ConfiguredFeatures & span.Feature) != 0) Enqueue(span, resource, relayed: true);
         }
     }
 
@@ -296,11 +307,23 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
 
     private void Enrich(BelemetryAttributes attributes)
     {
-        if (_consent.SessionId is { } sessionId) attributes.SetIfAbsent(BelemetrySemanticConventions.SessionId, sessionId);
+        // After the privacy rules, which leave the ids alone - except an id the operator blocked, which is not added.
+        if (_consent.SessionId is { } sessionId && _privacy.IsBlocked(BelemetrySemanticConventions.SessionId) is false)
+        {
+            attributes.SetIfAbsent(BelemetrySemanticConventions.SessionId, sessionId);
+        }
+
         if (_consent.IsGranted(BelemetryFeatures.UserTracking))
         {
-            if (_consent.PseudoId is { } pseudoId) attributes.SetIfAbsent(BelemetrySemanticConventions.EndUserPseudoId, pseudoId);
-            if (_consent.UserId is { } userId) attributes.SetIfAbsent(BelemetrySemanticConventions.UserId, userId);
+            if (_consent.PseudoId is { } pseudoId && _privacy.IsBlocked(BelemetrySemanticConventions.EndUserPseudoId) is false)
+            {
+                attributes.SetIfAbsent(BelemetrySemanticConventions.EndUserPseudoId, pseudoId);
+            }
+
+            if (_consent.UserId is { } userId && _privacy.IsBlocked(BelemetrySemanticConventions.UserId) is false)
+            {
+                attributes.SetIfAbsent(BelemetrySemanticConventions.UserId, userId);
+            }
         }
     }
 

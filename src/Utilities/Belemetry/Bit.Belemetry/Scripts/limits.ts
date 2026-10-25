@@ -87,7 +87,13 @@ function limitAttributes(attributes: Attributes, max: number): void {
         if (typeof value === 'string') {
             if (value.length > max) attributes[key] = truncate(value, max);
         } else if (Array.isArray(value) && typeof value[0] === 'string') {
-            attributes[key] = (value as string[]).map(v => truncate(v, max));
+            // Copied only when an item is cut: this runs for every record, and almost no array has a long item.
+            const items = value as string[];
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].length <= max) continue;
+                attributes[key] = items.map(v => truncate(v, max));
+                break;
+            }
         }
     }
 }

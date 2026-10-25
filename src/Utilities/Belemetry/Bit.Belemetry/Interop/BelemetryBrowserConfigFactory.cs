@@ -108,7 +108,8 @@ internal static class BelemetryBrowserConfigFactory
 
         // Only a .NET pipeline running in the page exports through fetch. A server's exporters never do - and listing
         // them would publish internal collector addresses in every page; the script recognizes its own exporters' URLs
-        // anyway. A WebAssembly client hands its list over when it starts the script (start merges ignoreUrls).
+        // anyway. A WebAssembly client's exports carry a fetch option the script skips (BelemetryHttpSender.MarkAsExport),
+        // even under a script the server started; its list is handed over too when it starts the script (start merges).
         if (settings.IsServer is false) AddExporterUrlsToIgnore(settings, config.Dependencies.IgnoreUrls);
 
         if (relay is false)

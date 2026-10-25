@@ -88,10 +88,12 @@ describe('truncate and limitRecord', () => {
     });
 
     it('cuts the attributes, the body, the status message and the span events', () => {
-        const entry = log({ body: 'x'.repeat(10), attributes: { long: 'y'.repeat(10), list: ['z'.repeat(10), 'ok'], n: 12345678901 } });
+        const short = ['ok', 'fine'];
+        const entry = log({ body: 'x'.repeat(10), attributes: { long: 'y'.repeat(10), list: ['z'.repeat(10), 'ok'], short, n: 12345678901 } });
         limitRecord(entry, 4);
         expect(entry.body).toBe('xxxx');
-        expect(entry.attributes).toEqual({ long: 'yyyy', list: ['zzzz', 'ok'], n: 12345678901 });
+        expect(entry.attributes).toEqual({ long: 'yyyy', list: ['zzzz', 'ok'], short: ['ok', 'fine'], n: 12345678901 });
+        expect(entry.attributes.short).toBe(short); // nothing to cut: not copied
 
         const record = span({ status: { code: 2, message: 'm'.repeat(10) }, events: [{ name: 'e', time: 1, attributes: { a: 'a'.repeat(10) } }] });
         limitRecord(record, 4);

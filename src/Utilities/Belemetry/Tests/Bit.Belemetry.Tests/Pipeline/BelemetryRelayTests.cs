@@ -144,4 +144,28 @@ public class BelemetryRelayTests
 
         Assert.AreEqual(BelemetryFeatures.Events, host.Memory.Logs.Single().Feature, "A page cannot consent to what the operator switched off.");
     }
+
+    [TestMethod]
+    public async Task OnAServer_TheIdsTheOperatorBlocks_AreRemovedFromRelayedRecords()
+    {
+        await using var host = TestHost.Create(o =>
+        {
+            Server(o);
+            o.Privacy.BlockedAttributes.Add("user.id");
+            o.Privacy.BlockedAttributes.Add("enduser.pseudo.id");
+        });
+        var bridge = Bridge(host);
+        var batch = JsonDocument.Parse("""
+            { "resource": {}, "logs": [ { "time": 1700000000000, "severityNumber": 9, "body": "e", "eventName": "e", "feature": 2048,
+              "attributes": { "session.id": "s1", "enduser.pseudo.id": "p1", "user.id": "jane@example.com" } } ] }
+            """).RootElement.Clone();
+
+        await bridge.RelayAsync(batch);
+        await host.FlushAsync();
+
+        var attributes = host.Memory.Logs.Single().Attributes;
+        Assert.AreEqual("s1", attributes["session.id"]);
+        Assert.IsFalse(attributes.TryGetValue("enduser.pseudo.id", out _));
+        Assert.IsFalse(attributes.TryGetValue("user.id", out _), "The page added it; the server's configuration keeps it out of the backend.");
+    }
 }

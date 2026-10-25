@@ -16,6 +16,10 @@ function transport(options = {}) {
 
 const request = (overrides = {}) => ({ exporter: 'otlp', url: 'https://collector.test/v1/logs', contentType: 'application/x-protobuf', body: new Uint8Array([1, 2, 3]), ...overrides });
 
+// An entry of the stored queue, n-th oldest (the queue is kept oldest first), with a body of the byte n.
+const storedAt = Date.now() - 60000;
+const storedRequest = (n, overrides = {}) => ({ id: 'r' + n, exporter: 'otlp', url: 'https://collector.test/v1/logs', contentType: 'c', body: toBase64(new Uint8Array([n])), time: storedAt + n, ...overrides });
+
 beforeEach(() => {
     localStorage.clear();
 });
@@ -90,7 +94,7 @@ describe('Transport', () => {
     });
 
     it('resends the stored requests in order and stops at the first failure', async () => {
-        const stored = [1, 2, 3].map(n => ({ id: 'r' + n, exporter: 'otlp', url: 'https://collector.test/v1/logs', contentType: 'c', body: toBase64(new Uint8Array([n])), time: Date.now() - n }));
+        const stored = [1, 2, 3].map(n => storedRequest(n));
         localStorage.setItem('bit-belemetry-queue', JSON.stringify(stored));
 
         const down = mockFetch(503);
@@ -107,6 +111,83 @@ describe('Transport', () => {
         await t.resendPersisted();
         expect(up.calls.map(c => Array.from(c.init.body)[0])).toEqual([1, 2, 3]);
         expect(localStorage.getItem('bit-belemetry-queue')).toBeNull();
+    });
+
+    it('keeps the backlog stored while a resend pass is in flight', async () => {
+        localStorage.setItem('bit-belemetry-queue', JSON.stringify([1, 2, 3].map(n => storedRequest(n))));
+        let release;
+        vi.stubGlobal('fetch', () => new Promise(resolve => (release = () => resolve(new Response(null, { status: 200 })))));
+        const pass = transport().resendPersisted();
+
+        // Only the request on the wire is out of storage: the page may go away now and lose nothing else.
+        expect(loadPersisted().map(e => e.id)).toEqual(['r2', 'r3']);
+        release();
+        await vi.waitFor(() => expect(loadPersisted().map(e => e.id)).toEqual(['r3']));
+        release();
+        await vi.waitFor(() => expect(loadPersisted()).toEqual([]));
+        release();
+        await pass;
+    });
+
+    it('holds back only the backlog of the backend that is down', async () => {
+        const down = 'https://down.test/v1/logs';
+        localStorage.setItem('bit-belemetry-queue', JSON.stringify([
+            storedRequest(1, { url: down }), storedRequest(2), storedRequest(3, { url: down }), storedRequest(4, { exporter: 'azuremonitor' }),
+        ]));
+        const calls = [];
+        vi.stubGlobal('fetch', url => (calls.push(url), Promise.resolve(new Response(null, { status: url === down ? 503 : 200 }))));
+        await transport().resendPersisted();
+
+        expect(calls).toEqual([down, 'https://collector.test/v1/logs', 'https://collector.test/v1/logs']);
+        expect(loadPersisted().map(e => [e.url, Array.from(fromBase64(e.body))[0]])).toEqual([[down, 1], [down, 3]]);
+    });
+
+    it('goes on after an Azure 206 during a resend, and keeps only the items to retry', async () => {
+        const items = [{ a: 0 }, { a: 1 }];
+        localStorage.setItem('bit-belemetry-queue', JSON.stringify([
+            storedRequest(1, { exporter: 'azuremonitor', url: 'https://ingest.test/v2.1/track', body: toBase64(encodeUtf8(JSON.stringify(items))) }),
+            storedRequest(2, { exporter: 'azuremonitor', url: 'https://ingest.test/v2.1/track' }),
+        ]));
+        const fetch = mockFetch({ status: 206, body: JSON.stringify({ itemsReceived: 2, itemsAccepted: 1, errors: [{ index: 1, statusCode: 503 }] }) }, 200);
+        vi.stubGlobal('fetch', fetch);
+        await transport().resendPersisted();
+
+        expect(fetch.calls).toHaveLength(2); // the backend answered: the next stored request still goes
+        const stored = loadPersisted();
+        expect(stored).toHaveLength(1);
+        expect(JSON.parse(new TextDecoder().decode(fromBase64(stored[0].body)))).toEqual([{ a: 1 }]);
+        expect(stored[0].time).toBe(storedRequest(1).time);
+    });
+
+    it('puts a request being resent without keepalive back into storage when the page is hidden', async () => {
+        const big = toBase64(new Uint8Array(70 * 1024));
+        localStorage.setItem('bit-belemetry-queue', JSON.stringify([storedRequest(1, { body: big })]));
+        let release;
+        vi.stubGlobal('fetch', () => new Promise(resolve => (release = () => resolve(new Response(null, { status: 200 })))));
+        const t = transport();
+        const pass = t.resendPersisted();
+        expect(loadPersisted()).toEqual([]);
+
+        // The page unloads: the request is cancelled with it, so the next visit must find it.
+        t.pageHidden();
+        expect(loadPersisted().map(e => e.id)).toEqual(['r1']);
+
+        // It was only hidden, and the request got through: out of storage again.
+        release();
+        await pass;
+        expect(loadPersisted()).toEqual([]);
+    });
+
+    it('leaves a request being resent with keepalive alone when the page is hidden', async () => {
+        localStorage.setItem('bit-belemetry-queue', JSON.stringify([storedRequest(1)]));
+        let release;
+        vi.stubGlobal('fetch', () => new Promise(resolve => (release = () => resolve(new Response(null, { status: 200 })))));
+        const t = transport();
+        const pass = t.resendPersisted();
+        t.pageHidden(); // keepalive outlives the page: storing it again would only send it twice
+        expect(loadPersisted()).toEqual([]);
+        release();
+        await pass;
     });
 
     it('retries retryable statuses with backoff and honors Retry-After', async () => {

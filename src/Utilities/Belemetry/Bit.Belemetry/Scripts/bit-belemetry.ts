@@ -213,6 +213,7 @@ function onPageHidden(s: State): void {
             debug('unload drain unavailable', e);
         }
     }
+    s.transport.pageHidden();
 }
 
 function init(input: BelemetryConfig | null | undefined): State {

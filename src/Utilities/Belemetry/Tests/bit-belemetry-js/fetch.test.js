@@ -68,6 +68,15 @@ describe('fetch instrumentation', () => {
         expect(fetch.calls.every(c => headerOf(c) === null)).toBe(true);
     });
 
+    it('skips the exports .NET marks in WebAssembly, whatever their URL', async () => {
+        // The script a server started lists none of a WebAssembly client's exporter URLs.
+        const ctx = setup({ dependencies: { ignoreUrls: [] } }, []);
+        await window.fetch('https://otel.internal.test/v1/metrics', { method: 'POST', bitBelemetryExport: true });
+        await window.fetch('https://otel.internal.test/v1/metrics', { method: 'POST', bitBelemetryExport: 'yes' });
+        expect(ctx.records).toHaveLength(1); // only the one marked exactly as .NET does
+        expect(headerOf(fetch.calls[0])).toBeNull();
+    });
+
     it('skips requests that already carry traceparent', async () => {
         const ctx = setup();
         const existing = '00-11111111111111111111111111111111-2222222222222222-01';

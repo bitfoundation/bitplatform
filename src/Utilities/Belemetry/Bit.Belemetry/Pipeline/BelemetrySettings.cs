@@ -70,7 +70,11 @@ internal sealed class BelemetrySettings
             {
                 var otlp = OtlpExporters[i];
                 if (otlp.IncludeInBrowser is false || otlp.Headers.Count == 0 || otlp.BrowserHeaders.Count > 0) continue;
-                if (otlp.Protocol == BelemetryOtlpProtocol.Grpc && otlp.BrowserEndpoint is null) continue; // never reaches the page
+
+                // Never reaches the page (as BelemetryBrowserConfigFactory decides): gRPC without a BrowserEndpoint, or
+                // none of the signals the browser produces.
+                if (otlp.Protocol == BelemetryOtlpProtocol.Grpc && otlp.BrowserEndpoint is null) continue;
+                if ((otlp.Signals & (BelemetrySignals.Traces | BelemetrySignals.Logs)) == 0) continue;
 
                 StartupWarnings.Add($"The OTLP exporter #{i} to {otlp.BrowserEndpoint ?? otlp.Endpoint} has Headers, which a server does not hand to the browser script " +
                                     "(the page would publish them to every visitor), so the browser exports to it without them. Put a header the page may expose in BrowserHeaders, " +

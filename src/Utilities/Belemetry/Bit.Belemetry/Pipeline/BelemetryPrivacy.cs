@@ -15,8 +15,9 @@ internal sealed partial class BelemetryPrivacy(BelemetryPrivacyOptions options)
     // Attributes that hold URLs: their query parameters and fragment are redacted before scrubbing.
     private static readonly HashSet<string> _urlAttributes = new([BelemetrySemanticConventions.UrlFull, "url.original", "page.referrer", "http.url", "http.target"], StringComparer.Ordinal);
 
-    // Untouched by every rule, as in the script: the ids the enrichment step adds (and the browser adds before relaying)
-    // are governed by consent - an app that sets an e-mail address as the user id with UserTracking consent meant to.
+    // Untouched by every rule but BlockedAttributes, as in the script: the ids the enrichment step adds (and the browser
+    // adds before relaying) are governed by consent - an app that sets an e-mail address as the user id with
+    // UserTracking consent meant to. Blocking one is the operator's explicit choice, and wins.
     private static readonly HashSet<string> _idAttributes = new(
         [BelemetrySemanticConventions.SessionId, BelemetrySemanticConventions.EndUserPseudoId, BelemetrySemanticConventions.UserId], StringComparer.Ordinal);
 
@@ -50,16 +51,19 @@ internal sealed partial class BelemetryPrivacy(BelemetryPrivacyOptions options)
         if (log.Body is not null) log.Body = Scrub(log.Body);
     }
 
+    /// <summary>Whether <paramref name="key"/> is one of <see cref="BelemetryPrivacyOptions.BlockedAttributes"/>: the enrichment step does not add a blocked id.</summary>
+    public bool IsBlocked(string key) => _blocked.Count > 0 && _blocked.Contains(key);
+
     /// <summary>
     /// Removes the blocked attributes, replaces the values of the redacted names, redacts the URL attributes and
     /// scrubs every other string value - a structured log value or an event attribute can carry the same e-mail
-    /// address the message does. In the script's order: the ids are left alone entirely, <c>server.address</c> and
-    /// <c>user_agent.original</c> are not pattern-scrubbed, and a key named like a version keeps its IPv4-looking
-    /// values (<c>{AppVersion} = "1.2.0.0"</c>).
+    /// address the message does. In the script's order: a blocked key goes, an id included; the ids are left alone by
+    /// every other rule, <c>server.address</c> and <c>user_agent.original</c> are not pattern-scrubbed, and a key
+    /// named like a version keeps its IPv4-looking values (<c>{AppVersion} = "1.2.0.0"</c>).
     /// </summary>
     public void ApplyToAttributes(BelemetryAttributes attributes)
     {
-        if (_blocked.Count > 0) attributes.RemoveWhere((key, _) => _blocked.Contains(key) && _idAttributes.Contains(key) is false);
+        if (_blocked.Count > 0) attributes.RemoveWhere((key, _) => _blocked.Contains(key));
 
         if (options.StripQueryString) attributes.Remove(BelemetrySemanticConventions.UrlQuery);
 

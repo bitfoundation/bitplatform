@@ -384,6 +384,21 @@ public class BelemetryPipelineTests
     }
 
     [TestMethod]
+    public async Task Enrichment_DoesNotAddAnIdTheOperatorBlocked()
+    {
+        await using var host = TestHost.Create(o => o.Privacy.BlockedAttributes.Add("user.id"), consentDefault: BelemetryFeatures.None);
+        host.Consent.Decide(BelemetryFeatures.Logs | BelemetryFeatures.UserTracking);
+        host.Consent.SetContext("s-1", "pseudo-1", "user-1");
+        host.Pipeline.Enqueue(Log("a", BelemetryFeatures.Logs));
+
+        await host.FlushAsync();
+        var log = host.Memory.Logs.Single();
+        Assert.AreEqual("s-1", log.Attributes["session.id"]);
+        Assert.AreEqual("pseudo-1", log.Attributes["enduser.pseudo.id"]);
+        Assert.IsFalse(log.Attributes.Contains("user.id"));
+    }
+
+    [TestMethod]
     public async Task MaxQueueSize_DropsTheOldestOfTheSameSignal()
     {
         await using var host = TestHost.Create(o => o.Batch.MaxQueueSize = 2);

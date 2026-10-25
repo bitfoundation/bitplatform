@@ -174,9 +174,10 @@ public class BelemetryPrivacyTests
     }
 
     [TestMethod]
-    public void ARedactedName_WinsOverTheHostExemption_AndTheIdsAreNeverTouched()
+    public void ARedactedName_WinsOverTheHostExemption_AndTheIdsAreOnlyEverBlocked()
     {
-        // The script's order: ids first (untouched by every rule), then redaction, then the scrubbing exemptions.
+        // The script's order: blocked keys go, then the ids are left alone by every other rule, then redaction, then
+        // the scrubbing exemptions.
         var log = Records.Log();
         log.Attributes.Set("user_agent.original", "Mozilla/5.0").Set("server.address", "10.0.0.5").Set("session.id", "s1").Set("user.id", "u1");
 
@@ -189,8 +190,8 @@ public class BelemetryPrivacyTests
 
         Assert.AreEqual("REDACTED", log.Attributes["user_agent.original"]);
         Assert.AreEqual("10.0.0.5", log.Attributes["server.address"]);
-        Assert.AreEqual("s1", log.Attributes["session.id"], "Consent governs the ids, not the privacy rules.");
-        Assert.AreEqual("u1", log.Attributes["user.id"]);
+        Assert.AreEqual("s1", log.Attributes["session.id"], "Consent governs the ids, not the redaction rules.");
+        Assert.IsFalse(log.Attributes.TryGetValue("user.id", out _), "Blocking one is the operator's explicit choice, and wins.");
     }
 
     [TestMethod]

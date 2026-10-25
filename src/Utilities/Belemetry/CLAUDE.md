@@ -63,6 +63,9 @@ core because every host may need them and they add no dependency.
 - **The exporter must not instrument itself.** Every export runs inside `BelemetrySuppression.Begin()`, so the
   `System.Net.Http` activities it creates are not sampled. The JS fetch/XHR instrumentation ignores exporter URLs
   and any request that already carries a `traceparent` header (in WASM, .NET's HttpClient has already traced it).
+  In WASM the .NET sender also sets the fetch option `bitBelemetryExport: true` (`BelemetryHttpSender.MarkAsExport`,
+  through the `WebAssemblyFetchOptions` the runtime copies into fetch's init object); the fetch instrumentation skips
+  such a request whatever its URL, so a script a server started (Auto) does not trace the WebAssembly pipeline's exports.
 
 ## Contracts shared by C# and TypeScript
 
@@ -112,7 +115,7 @@ How consent works:
 | `bit-belemetry-session` | sessionStorage | `Sessions` | `{"id":"<32 hex>","start":<ms>,"last":<ms>}` |
 | `bit-belemetry-pseudo-id` | localStorage | `UserTracking` | 32 hex chars |
 | `bit-belemetry-user-id` | sessionStorage | `UserTracking` | authenticated id from `setUser` |
-| `bit-belemetry-queue` | localStorage | `Persistence` | `[{"id","exporter","url","contentType","body"(base64),"time"}]`, capped by `persistence.maxBytes` |
+| `bit-belemetry-queue` | localStorage | `Persistence` | `[{"id","exporter","url","contentType","body"(base64),"time"}]`, oldest first, capped by `persistence.maxBytes` |
 
 Persisted requests never carry headers (API keys), in the browser queue or in the .NET file store
 (`{LocalApplicationData}/bit-belemetry/{service.name}/*.blmreq`, `BelemetryHttpRequest` JSON without `headers`). The
@@ -173,8 +176,9 @@ Notes on the fields:
   both to post and to recognize its own export requests.
 - `ignoreUrls` holds the .NET exporters' URLs only when the .NET pipeline runs in the page (WebAssembly; Hybrid too,
   harmlessly): their exports go through fetch. A server lists none - its exports never touch the page, and it must not
-  publish internal collector addresses. A repeated `start` appends its `ignoreUrls` (a WebAssembly client starting
-  the script a server rendered), and the HTTP tracer recompiles the list when it grows.
+  publish internal collector addresses; a WebAssembly client's exports are recognized by their fetch option anyway
+  (see "The exporter must not instrument itself"). A repeated `start` appends its `ignoreUrls` (a WebAssembly client
+  starting the script a server rendered), and the HTTP tracer recompiles the list when it grows.
 - `signals` is the exporter's `BelemetrySignals` restricted to what the browser produces: traces 1, logs 2 (web vitals
   are log records). Absent or null means both. An exporter with neither is left out of the config.
 - `protocol` is never `grpc`: a page cannot speak it, so an OTLP exporter with `BelemetryOtlpProtocol.Grpc` is handed
@@ -182,11 +186,12 @@ Notes on the fields:
 - `headers` of an OTLP exporter are `BrowserHeaders` alone when a server renders the config (its `Headers` are server
   configuration and must never be published in a page); in WebAssembly and Hybrid they are `Headers` with
   `BrowserHeaders` on top (`BelemetryBrowserConfigFactory.BrowserHeaders`).
-- `blockedAttributes` are exact, case-sensitive attribute keys removed from every record and span event, before the
-  ids (`session.id`, ...) are added.
+- `blockedAttributes` are exact, case-sensitive attribute keys removed from every record and span event. A blocked id
+  (`session.id`, ...) is not added by the enrichment step either, and is removed from relayed records that carry it.
 - Privacy is one rule set on both sides (`BelemetryPrivacy.cs`, `privacy.ts`), applied per attribute in this order:
-  the ids (`session.id`, `enduser.pseudo.id`, `user.id`) are left alone by every rule (consent governs them); blocked
-  keys are removed; a key in `redactedAttributes` (whole key or last dot segment, case-insensitive; `prefix*`) gets
+  blocked keys are removed, an id included (the operator's explicit choice); the ids (`session.id`,
+  `enduser.pseudo.id`, `user.id`) are left alone by every other rule (consent governs them); a key in
+  `redactedAttributes` (whole key or last dot segment, case-insensitive; `prefix*`) gets
   `REDACTED`; `server.address` and `user_agent.original` are not pattern-scrubbed; the URL attributes and `url.query`
   get parameter redaction; every other string (and string array) is pattern-scrubbed in the order bearer, JWT,
   e-mail, card, IPv4 - except IPv4 for a key named like a version (last segment `version`, or ending `_version` or
@@ -197,6 +202,11 @@ Notes on the fields:
   is Azure's when its exporter is `azureMonitor` (script) or `azuremonitor`, `azuremonitor1`, ... (.NET).
 - `retryIntervalMs` is `Persistence.RetryInterval` (non-positive falls back to 60000, floor 1000): how often the page
   resends its stored requests, besides on start and on the `online` event.
+- A resend pass is the same on both sides (`transport.ts resendPersisted`, `BelemetryExporterSet.RetryStoredAsync`):
+  oldest first, one attempt each; a request that fails holds back the rest of its URL's backlog for that pass, not
+  other URLs'; a partial success stores only what is left and does not hold anything back (the backend answered). The
+  script takes each stored request out of `localStorage` only while sending it, and puts it back when the page is
+  hidden if it is being sent without `keepalive` (`Transport.pageHidden`).
 - `service.instanceId` is null from `<BelemetryScript />`: a browser tab is its own instance, so the script
   generates a random `service.instance.id` per page load.
 

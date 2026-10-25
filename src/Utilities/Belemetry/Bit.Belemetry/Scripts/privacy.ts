@@ -4,8 +4,14 @@ import { isSpan, type Attributes, type TelemetryRecord } from './model';
 // Attributes that hold URLs: their query parameters and fragment are redacted before scrubbing.
 const URL_ATTRIBUTES = ['url.full', 'page.referrer', 'url.original', 'http.url'];
 
-// Attributes added by the enrichment step after privacy: ids, never scrubbed.
+// Attributes added by the enrichment step after privacy: ids, never scrubbed - only blocked, by the operator's choice.
 const ID_ATTRIBUTES = ['session.id', 'enduser.pseudo.id', 'user.id'];
+
+/** Whether a key is one of `blockedAttributes` (exact, case-sensitive): removed from every record, and an id is not added. */
+export function isBlocked(key: string, privacy: PrivacyConfig): boolean {
+    const blocked = privacy.blockedAttributes;
+    return !!blocked && blocked.length > 0 && blocked.indexOf(key) >= 0;
+}
 
 const BEARER = /\bBearer\s+[A-Za-z0-9\-._~+/]+=*/gi;
 const JWT = /\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*/g;
@@ -78,10 +84,11 @@ export function isVersionKey(key: string): boolean {
 
 let names: { source: string[] | undefined; map: Record<string, true> } | null = null;
 
-// Built once per configured list, not once per URL.
+// Built once per configured list, not once per URL. Without a prototype, so a parameter named like one of its members
+// ("constructor", "__proto__") is not found in every map.
 function redactionNames(privacy: PrivacyConfig): Record<string, true> {
     if (names && names.source === privacy.redactQueryParameters) return names.map;
-    const map: Record<string, true> = {};
+    const map: Record<string, true> = Object.create(null);
     for (const name of privacy.redactQueryParameters || []) map[String(name).toLowerCase()] = true;
     names = { source: privacy.redactQueryParameters, map };
     return map;
@@ -96,7 +103,7 @@ export function redactQuery(part: string, names: Record<string, true>): string {
         } catch {
             // Keep the raw name.
         }
-        return names[name.toLowerCase()] ? sep + key + '=REDACTED' : match;
+        return names[name.toLowerCase()] === true ? sep + key + '=REDACTED' : match;
     });
 }
 
@@ -158,25 +165,25 @@ interface RedactionRules {
     source: string[] | undefined;
     names: Record<string, true>;
     prefixes: string[];
-    verdicts: Record<string, boolean>;
-    count: number;
+    verdicts: Map<string, boolean>;
 }
 
 // Attribute names are few and repeat in every record: the verdict per key is cached (bounded), and rebuilt when the
-// configured list changes.
+// configured list changes. A Map and a prototype-less object: a key named like an Object member ("constructor",
+// "toString") must not find that member.
 const MAX_CACHED_KEYS = 1024;
 let rules: RedactionRules | null = null;
 
 function redactionRules(privacy: PrivacyConfig): RedactionRules {
     if (rules && rules.source === privacy.redactedAttributes) return rules;
-    const names: Record<string, true> = {};
+    const names: Record<string, true> = Object.create(null);
     const prefixes: string[] = [];
     for (const entry of privacy.redactedAttributes || []) {
         const name = String(entry).toLowerCase();
         if (name.charAt(name.length - 1) === '*') prefixes.push(name.slice(0, -1));
         else names[name] = true;
     }
-    return (rules = { source: privacy.redactedAttributes, names, prefixes, verdicts: {}, count: 0 });
+    return (rules = { source: privacy.redactedAttributes, names, prefixes, verdicts: new Map() });
 }
 
 /**
@@ -185,24 +192,24 @@ function redactionRules(privacy: PrivacyConfig): RedactionRules {
  */
 export function isRedacted(key: string, privacy: PrivacyConfig): boolean {
     const r = redactionRules(privacy);
-    const cached = r.verdicts[key];
+    const cached = r.verdicts.get(key);
     if (cached !== undefined) return cached;
     const lower = key.toLowerCase();
     const dot = lower.lastIndexOf('.');
     let redacted = r.names[lower] === true || (dot >= 0 && dot < lower.length - 1 && r.names[lower.slice(dot + 1)] === true);
     for (const prefix of r.prefixes) redacted = redacted || lower.indexOf(prefix) === 0;
-    if (r.count < MAX_CACHED_KEYS) {
-        r.verdicts[key] = redacted;
-        r.count++;
-    }
+    if (r.verdicts.size < MAX_CACHED_KEYS) r.verdicts.set(key, redacted);
     return redacted;
 }
 
 function clean(attributes: Attributes, privacy: PrivacyConfig): void {
-    const blocked = privacy.blockedAttributes || [];
     for (const key of Object.keys(attributes)) {
+        if (isBlocked(key, privacy)) {
+            delete attributes[key];
+            continue;
+        }
         if (ID_ATTRIBUTES.indexOf(key) >= 0) continue;
-        if (blocked.indexOf(key) >= 0 || (key === URL_QUERY && privacy.stripQueryString)) {
+        if (key === URL_QUERY && privacy.stripQueryString) {
             delete attributes[key];
             continue;
         }

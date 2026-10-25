@@ -494,9 +494,11 @@ public class BelemetryBrowserConfigFactoryTests
             o.AddOtlpExporter("https://a.test", e => { e.Headers["k"] = "v"; e.IncludeInBrowser = false; });
             o.AddOtlpExporter("http://localhost:4317", e => { e.Headers["k"] = "v"; e.Protocol = BelemetryOtlpProtocol.Grpc; });
             o.AddOtlpExporter("https://c.test", e => { e.Headers["k"] = "v"; e.BrowserHeaders["k"] = "public"; });
+            o.AddOtlpExporter("https://metrics.test", e => { e.Headers["k"] = "v"; e.Signals = BelemetrySignals.Metrics; });
         }, webHost: true);
 
         Assert.IsEmpty(settings.StartupWarnings, string.Join(" | ", settings.StartupWarnings));
+        Assert.IsFalse(BelemetryBrowserConfigFactory.Create(settings).Exporters.Any(e => e.Endpoint == "https://metrics.test/"), "A metrics-only exporter is not handed to the page.");
 
         var relay = TestHost.CreateSettings(o =>
         {
