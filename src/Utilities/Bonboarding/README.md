@@ -767,7 +767,9 @@ first (equal priorities in the order they were queued), and only one runs at a t
 again at that moment - a once-only tour the user finished in the meantime, one they snoozed, or one whose
 `CanStart` now says no is cancelled instead of started. Cancel a queued session yourself to withdraw it.
 A declarative tour's `AutoStart` always queues, and withdraws its queued start when its page goes away.
-Starting the tour that is already running is a restart, never a conflict to wait out.
+Starting the tour that is already running is a restart, never a conflict to wait out. Nor is a tour the user
+walked away from (see [Navigating away mid-tour](#navigating-away-mid-tour)): nothing of it is on screen and
+they may never go back, so a queued start replaces it rather than waiting for it, and it keeps its progress.
 
 To run several at once - a tour plus a persistent hint, say - opt out of all of this:
 
@@ -1138,7 +1140,8 @@ a button to start, resume or replay it, so guidance can be found again on purpos
 Each tour shows as new, in progress or completed (`BonboardingTourProgress`), with **Start**, **Resume** or
 **Replay**; a replay starts from the first step, anything else resumes. The button's accessible name includes the
 tour's title, so a screen reader moving from button to button hears "Start Welcome tour" rather than "Start" five
-times, and it is disabled while its tour runs. `CanStart` still decides. Tours declared in markup are registered
+times, and it is disabled while its tour runs (but not while the user is away from it). The list follows what it
+is given, and the tours' progress as it changes, a reset included. `CanStart` still decides. Tours declared in markup are registered
 only while their page is on screen, so register the ones a help menu should always offer at startup with
 `IBonboardingService.Register`.
 
@@ -1579,6 +1582,12 @@ stays fully usable, because using it is how the user gets there.
 
 The library deliberately does not drag the user back. Fighting someone for control of the address bar
 is never the right call, and a user who navigated away usually meant it.
+
+While the user is away from a step's page - they left it, or it is a route the engine does not navigate to - the
+tour is not one they are taking. An automatic start does not queue behind it but replaces it (cancelled, it keeps
+its place, so a tour list's **Resume** or its own `AutoStart` picks it up again), beacons stop stepping aside for
+it, and a tour list offers to resume it. A step the engine is navigating to is on its way to the screen, and still
+counts as running.
 
 To turn off automatic navigation entirely - so routes are only ever constraints - set:
 
@@ -2631,12 +2640,14 @@ await BonboardingService.IsClosedAsync("welcome");      // completed, skipped or
 await BonboardingService.GetRecordAsync("welcome");     // the whole record, or null
 
 await BonboardingService.ResetAsync("welcome");         // forget one tour
-await BonboardingService.ResetAllAsync();               // forget every tour
+await BonboardingService.ResetAllAsync();               // forget every tour, and every checklist's progress
 
 await BonboardingService.RestartAsync(tour);            // reset, then start from the beginning
 ```
 
-A "replay the tours" button in a settings page is `ResetAllAsync` followed by a reload.
+The checklists, tour lists and beacons on screen follow a reset at once. `RestartAsync` checks the definition
+first, so a tour that cannot start (see [Checking a definition](#checking-a-definition)) throws without costing the
+user their progress. A "replay the tours" button in a settings page is `ResetAllAsync` followed by a reload.
 
 ## Events and analytics
 
@@ -2947,10 +2958,12 @@ performance profiler will show the `requestAnimationFrame` callbacks; a healthy 
 
 ## Upgrading
 
-Nothing public was removed or renamed, and members added to the public interfaces (`IBonboardingService`,
-`IBonboardingTourSession`, `IBonboardingInterop`) have default implementations, so code written against an
-earlier version compiles unchanged. A few behaviours changed; each made the library do what its documentation
-already promised, but an application may have come to rely on the old behaviour:
+Nothing public was removed or renamed, and members added to `IBonboardingTourSession` and `IBonboardingInterop`
+have default implementations, so code written against an earlier version compiles unchanged. The exception is an
+implementation of `IBonboardingService` of your own, such as a decorator: it now has to forward `SignalAsync` and
+the checklist members too, because the only default they could have would do nothing, silently. A few behaviours
+changed; each made the library do what its documentation already promised, but an application may have come to
+rely on the old behaviour:
 
 | What changed | Before | Now | If you relied on the old behaviour |
 |---|---|---|---|
@@ -3169,8 +3182,13 @@ Task ResetChecklistAsync(string checklistId, CancellationToken ct = default);
 `StartAsync` throws `BonboardingException` when the tour has no steps, when its definition has errors
 (see [Checking a definition](#checking-a-definition)), when the id is not registered, when `CanStart`
 declines, or when `WhenBusy = Skip` and another tour runs. `StartOnceAsync` returns `null` instead of
-throwing for the last three. The members added since the first release have default implementations, so an
-implementation of your own keeps compiling.
+throwing for the last three. Either throws `OperationCanceledException` when its token is cancelled before the tour
+got going, and leaves nothing behind.
+
+A decorator of your own (a logging or telemetry wrapper) forwards every member to the service underneath.
+`SignalAsync` and the checklist members have no default implementation on purpose: the only possible default does
+nothing, and a wrapper that inherited it would silently drop signals and checklist progress. Checklists, tour lists
+and beacons keep working behind a wrapper that forwards.
 
 #### `BonboardingStartOptions`
 

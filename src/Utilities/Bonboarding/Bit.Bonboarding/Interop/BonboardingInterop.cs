@@ -174,11 +174,13 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
 
         _storageWatchers[onChanged] = prefix;
 
-        // One listener for the whole scope, however many watchers there are.
+        // One listener for the whole scope, however many watchers there are. Marked only once it is in place, so a call
+        // that failed (a cancelled token, a dropped circuit) leaves the next watcher to install it; two installing it at
+        // once is harmless, since the browser replaces the listener it already has.
         if (_watchingStorage) return;
-        _watchingStorage = true;
 
         await module.InvokeVoidAsync("watchStorage", cancellationToken, _self, StorageArea).ConfigureAwait(false);
+        _watchingStorage = true;
     }
 
     /// <summary>Another tab changed an entry of the watched storage; <paramref name="key"/> is null when it cleared it.</summary>

@@ -22,10 +22,13 @@ public sealed partial class BonboardingChecklist : ComponentBase, IAsyncDisposab
     private string? _description;
     private bool _dismissed;
     private bool _wasComplete;
+    private bool _refreshPending;
     private bool _disposed;
     private int _refreshVersion;
 
     [Inject] private IBonboardingService BonboardingService { get; set; } = default!;
+
+    [Inject] private BonboardingGuidanceRegistry Guidance { get; set; } = default!;
 
     [Inject] private IBonboardingLocalizer Localizer { get; set; } = default!;
 
@@ -77,17 +80,12 @@ public sealed partial class BonboardingChecklist : ComponentBase, IAsyncDisposab
     private string FillStyle
         => "width:" + BonboardingCss.Number(_items is { Count: > 0 } items ? DoneCount * 100d / items.Count : 0) + "%";
 
-    private string ThemeAttribute => Theme switch
-    {
-        BonboardingTheme.Dark => "dark",
-        BonboardingTheme.Light => "light",
-        _ => "system",
-    };
+    private string ThemeAttribute => BonboardingCss.Theme(Theme);
 
     protected override void OnInitialized()
     {
         BonboardingService.EventRaised += OnTourEvent;
-        if (BonboardingService is BonboardingService service) service.ChecklistChanged += OnChecklistChanged;
+        Guidance.ChecklistChanged += OnChecklistChanged;
     }
 
     protected override void OnParametersSet()
@@ -99,19 +97,38 @@ public sealed partial class BonboardingChecklist : ComponentBase, IAsyncDisposab
         _title = Localizer.Localize(Checklist.Title);
         _description = Localizer.Localize(Checklist.Description);
 
-        // Signals tick items off only for checklists on screen, so this one tells the service it is.
-        if (!ReferenceEquals(_registered, Checklist) && BonboardingService is BonboardingService service)
+        if (ReferenceEquals(_registered, Checklist)) return;
+
+        if (_registered is not null)
         {
-            if (_registered is not null) service.UnregisterChecklist(_registered);
-            service.RegisterChecklist(Checklist);
-            _registered = Checklist;
+            Guidance.UnregisterChecklist(_registered);
+
+            // Another checklist altogether: what is on screen is its progress, not this one's, so nothing is shown
+            // until this one's has been read.
+            if (_registered.Id != Checklist.Id)
+            {
+                _items = null;
+                _dismissed = false;
+                _wasComplete = false;
+            }
+
+            // A refresh still working from the previous definition must not land; this one's is read once rendered.
+            _refreshVersion++;
+            _refreshPending = true;
         }
+
+        // Signals tick items off only for checklists on screen, so this one tells the service it is.
+        Guidance.RegisterChecklist(Checklist);
+        _registered = Checklist;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         // Never runs while prerendering, where the store cannot be read.
-        if (firstRender) await RefreshAsync();
+        if (!firstRender && !_refreshPending) return;
+
+        _refreshPending = false;
+        await RefreshAsync();
     }
 
     /// <summary>
@@ -245,12 +262,9 @@ public sealed partial class BonboardingChecklist : ComponentBase, IAsyncDisposab
         _disposed = true;
 
         BonboardingService.EventRaised -= OnTourEvent;
+        Guidance.ChecklistChanged -= OnChecklistChanged;
 
-        if (BonboardingService is BonboardingService service)
-        {
-            service.ChecklistChanged -= OnChecklistChanged;
-            if (_registered is not null) service.UnregisterChecklist(_registered);
-        }
+        if (_registered is not null) Guidance.UnregisterChecklist(_registered);
 
         return ValueTask.CompletedTask;
     }

@@ -77,7 +77,7 @@ public interface IBonboardingService
     /// <summary>Forgets a tour, so it can run again.</summary>
     Task ResetAsync(string tourId, CancellationToken cancellationToken = default);
 
-    /// <summary>Forgets every tour.</summary>
+    /// <summary>Forgets every tour, and every checklist's ticked items and dismissal.</summary>
     Task ResetAllAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -88,7 +88,7 @@ public interface IBonboardingService
     /// compared ordinally and are not remembered: one raised while nothing waits for it does nothing. Returns true
     /// when a tour moved on or an item was ticked off.
     /// </summary>
-    Task<bool> SignalAsync(string signal, CancellationToken cancellationToken = default) => Task.FromResult(false);
+    Task<bool> SignalAsync(string signal, CancellationToken cancellationToken = default);
 
     // ---- Checklists -------------------------------------------------------------
 
@@ -96,19 +96,17 @@ public interface IBonboardingService
     /// Ticks a checklist item off (or, with <paramref name="done"/> false, back on), for good: the application's way of
     /// saying the task is done. Stored in the <see cref="IBonboardingStore"/> next to the tours' records.
     /// </summary>
-    Task SetChecklistItemAsync(string checklistId, string itemId, bool done = true, CancellationToken cancellationToken = default)
-        => Task.CompletedTask;
+    Task SetChecklistItemAsync(string checklistId, string itemId, bool done = true, CancellationToken cancellationToken = default);
 
     /// <summary>The items of a checklist ticked off with <see cref="SetChecklistItemAsync"/> (or a signal).</summary>
-    Task<IReadOnlyCollection<string>> GetCompletedChecklistItemsAsync(string checklistId, CancellationToken cancellationToken = default)
-        => Task.FromResult<IReadOnlyCollection<string>>([]);
+    Task<IReadOnlyCollection<string>> GetCompletedChecklistItemsAsync(string checklistId, CancellationToken cancellationToken = default);
 
     /// <summary>Hides a checklist for good, as its dismiss button does.</summary>
-    Task DismissChecklistAsync(string checklistId, CancellationToken cancellationToken = default) => Task.CompletedTask;
+    Task DismissChecklistAsync(string checklistId, CancellationToken cancellationToken = default);
 
     /// <summary>True once the user dismissed the checklist.</summary>
-    Task<bool> IsChecklistDismissedAsync(string checklistId, CancellationToken cancellationToken = default) => Task.FromResult(false);
+    Task<bool> IsChecklistDismissedAsync(string checklistId, CancellationToken cancellationToken = default);
 
     /// <summary>Forgets a checklist's ticked items and its dismissal.</summary>
-    Task ResetChecklistAsync(string checklistId, CancellationToken cancellationToken = default) => Task.CompletedTask;
+    Task ResetChecklistAsync(string checklistId, CancellationToken cancellationToken = default);
 }

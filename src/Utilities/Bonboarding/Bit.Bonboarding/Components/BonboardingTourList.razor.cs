@@ -19,10 +19,15 @@ public sealed partial class BonboardingTourList : ComponentBase, IDisposable
 
     private List<BonboardingTourListItem>? _items;
     private string? _title;
+    private IEnumerable<BonboardingTourDefinition>? _listedTours;
+    private bool _listedHideCompleted;
+    private bool _refreshPending;
     private bool _disposed;
     private int _refreshVersion;
 
     [Inject] private IBonboardingService BonboardingService { get; set; } = default!;
+
+    [Inject] private BonboardingGuidanceRegistry Guidance { get; set; } = default!;
 
     [Inject] private IBonboardingLocalizer Localizer { get; set; } = default!;
 
@@ -57,22 +62,14 @@ public sealed partial class BonboardingTourList : ComponentBase, IDisposable
 
     private BonboardingLabels Labels => Localizer.GetLabels(null);
 
-    private string ThemeAttribute => Theme switch
-    {
-        BonboardingTheme.Dark => "dark",
-        BonboardingTheme.Light => "light",
-        _ => "system",
-    };
+    private string ThemeAttribute => BonboardingCss.Theme(Theme);
 
     protected override void OnInitialized()
     {
         BonboardingService.SessionsChanged += OnChanged;
         BonboardingService.EventRaised += OnTourEvent;
-        if (BonboardingService is BonboardingService service)
-        {
-            service.RegistrationsChanged += OnChanged;
-            service.RecordsChanged += OnChanged;
-        }
+        Guidance.RegistrationsChanged += OnChanged;
+        Guidance.RecordsChanged += OnChanged;
     }
 
     // A session is added before it starts, so its start (and a pause) is only seen in the event stream.
@@ -87,12 +84,24 @@ public sealed partial class BonboardingTourList : ComponentBase, IDisposable
         ArgumentOutOfRangeException.ThrowIfGreaterThan(HeadingLevel, 6);
 
         _title = Localizer.Localize(Title);
+
+        // What to list changed: a refresh still listing the old must not land, and the new is listed once rendered.
+        if (!ReferenceEquals(_listedTours, Tours) || _listedHideCompleted != HideCompleted)
+        {
+            _listedTours = Tours;
+            _listedHideCompleted = HideCompleted;
+            _refreshVersion++;
+            _refreshPending = true;
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         // Never runs while prerendering, where the store cannot be read.
-        if (firstRender) await RefreshAsync();
+        if (!firstRender && !_refreshPending) return;
+
+        _refreshPending = false;
+        await RefreshAsync();
     }
 
     /// <summary>Reads every tour's progress again and re-renders.</summary>
@@ -112,8 +121,8 @@ public sealed partial class BonboardingTourList : ComponentBase, IDisposable
                 var progress = ProgressOf(BonboardingRecordMigration.Apply(tour, await BonboardingService.GetRecordAsync(tour.Id), Logger));
                 if (HideCompleted && progress == BonboardingTourProgress.Completed) continue;
 
-                var running = BonboardingService.FindSession(tour.Id) is { } session
-                    && (session.IsActive || session.Status == BonboardingTourStatus.Paused);
+                // A tour the user walked away from is not running as far as they can tell: it can be resumed from here.
+                var running = BonboardingService.FindSession(tour.Id) is { } session && BonboardingTourSession.IsUnderway(session);
 
                 items.Add(new BonboardingTourListItem(tour, progress, running) { StartAsync = () => StartAsync(tour, progress) });
             }
@@ -184,10 +193,7 @@ public sealed partial class BonboardingTourList : ComponentBase, IDisposable
 
         BonboardingService.SessionsChanged -= OnChanged;
         BonboardingService.EventRaised -= OnTourEvent;
-        if (BonboardingService is BonboardingService service)
-        {
-            service.RegistrationsChanged -= OnChanged;
-            service.RecordsChanged -= OnChanged;
-        }
+        Guidance.RegistrationsChanged -= OnChanged;
+        Guidance.RecordsChanged -= OnChanged;
     }
 }

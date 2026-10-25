@@ -276,12 +276,7 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
 
     private string SideAttribute => Placement?.SideName ?? "center";
 
-    private string ThemeAttribute => (Theme ?? _options?.Theme) switch
-    {
-        BonboardingTheme.Dark => "dark",
-        BonboardingTheme.Light => "light",
-        _ => "system",
-    };
+    private string ThemeAttribute => BonboardingCss.Theme(Theme ?? _options?.Theme);
 
     private string DirectionAttribute => _options?.Direction == BonboardingDirection.RightToLeft ? "rtl" : "ltr";
 

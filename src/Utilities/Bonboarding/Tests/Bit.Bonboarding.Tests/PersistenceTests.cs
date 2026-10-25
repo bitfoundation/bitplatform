@@ -335,4 +335,35 @@ public class PersistenceTests
         Assert.IsNull(await store.GetAsync("broken"));
         Assert.IsEmpty(harness.Interop.Storage);
     }
+
+    // ---- Checklists ---------------------------------------------------------------
+
+    [TestMethod]
+    public async Task Checklist_Items_Ticked_Off_Together_Are_All_Kept()
+    {
+        await using var harness = new BonboardingHarness(configureServices: services => services.AddBitBonboardingStore<SlowReadStore>());
+
+        // Two handlers raising their signals at once, or a page ticking two items off in one go.
+        await Task.WhenAll(
+            harness.Service.SetChecklistItemAsync("start", "invite"),
+            harness.Service.SetChecklistItemAsync("start", "profile"));
+
+        CollectionAssert.AreEquivalent(new[] { "invite", "profile" }, (await harness.Service.GetCompletedChecklistItemsAsync("start")).ToArray());
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task Resetting_Everything_Forgets_Checklists_Too(bool persist)
+    {
+        await using var harness = new BonboardingHarness(options => options.Persist = persist);
+
+        await harness.Service.SetChecklistItemAsync("start", "invite");
+        await harness.Service.DismissChecklistAsync("start");
+
+        await harness.Service.ResetAllAsync();
+
+        Assert.IsEmpty(await harness.Service.GetCompletedChecklistItemsAsync("start"));
+        Assert.IsFalse(await harness.Service.IsChecklistDismissedAsync("start"));
+    }
 }

@@ -33,6 +33,7 @@ public static class BitBonboarding
         services.TryAddSingleton(TimeProvider.System);
 
         services.TryAddScoped<BonboardingHostRegistry>();
+        services.TryAddScoped<BonboardingGuidanceRegistry>();
         services.TryAddScoped<IBonboardingInterop, BonboardingInterop>();
         services.TryAddScoped<IBonboardingStore, BonboardingBrowserStore>();
         services.TryAddScoped<IBonboardingLocalizer, BonboardingDefaultLocalizer>();

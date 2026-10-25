@@ -30,6 +30,8 @@ public sealed partial class BonboardingBeacon : ComponentBase, IAsyncDisposable
 
     [Inject] private IBonboardingService BonboardingService { get; set; } = default!;
 
+    [Inject] private BonboardingGuidanceRegistry Guidance { get; set; } = default!;
+
     [Inject] private IBonboardingInterop Interop { get; set; } = default!;
 
     [Inject] private IBonboardingLocalizer Localizer { get; set; } = default!;
@@ -121,12 +123,7 @@ public sealed partial class BonboardingBeacon : ComponentBase, IAsyncDisposable
     private string AccessibleName
         => Localizer.Localize(Label) ?? Localizer.Localize(Title) ?? Localizer.GetLabels(null).BeaconLabel;
 
-    private string ThemeAttribute => Theme switch
-    {
-        BonboardingTheme.Dark => "dark",
-        BonboardingTheme.Light => "light",
-        _ => "system",
-    };
+    private string ThemeAttribute => BonboardingCss.Theme(Theme);
 
     protected override void OnInitialized()
     {
@@ -134,6 +131,19 @@ public sealed partial class BonboardingBeacon : ComponentBase, IAsyncDisposable
 
         // A session is added before it starts (or while it is queued), so its start is only seen in the event stream.
         BonboardingService.EventRaised += OnTourEvent;
+
+        // A reset, or another tab, can bring back a beacon whose hint was read or take away one whose tour was finished.
+        Guidance.RecordsChanged += OnRecordsChanged;
+    }
+
+    private void OnRecordsChanged(object? sender, EventArgs e)
+    {
+        if (_disposed) return;
+
+        _ = InvokeAsync(async () =>
+        {
+            if (!_disposed && await RefreshClosedAsync()) StateHasChanged();
+        });
     }
 
     private void OnTourEvent(object? sender, BonboardingEvent e)
@@ -190,9 +200,9 @@ public sealed partial class BonboardingBeacon : ComponentBase, IAsyncDisposable
     /// </summary>
     private string OwnTourId => Tour?.Id ?? TourId ?? Id ?? _beaconId;
 
+    /// <summary>A tour the user walked away from does not count: nothing of it is on screen to compete with.</summary>
     private bool AnotherTourRuns()
-        => BonboardingService.Sessions.Any(session => session.Tour.Id != OwnTourId
-            && (session.IsActive || session.Status == BonboardingTourStatus.Paused));
+        => BonboardingService.Sessions.Any(session => session.Tour.Id != OwnTourId && BonboardingTourSession.IsUnderway(session));
 
     /// <summary>Reads whether the beacon's hint or tour is finished with. True when that changed what is shown.</summary>
     private async Task<bool> RefreshClosedAsync()
@@ -363,6 +373,7 @@ public sealed partial class BonboardingBeacon : ComponentBase, IAsyncDisposable
 
         BonboardingService.SessionsChanged -= OnSessionsChanged;
         BonboardingService.EventRaised -= OnTourEvent;
+        Guidance.RecordsChanged -= OnRecordsChanged;
 
         // A hint is about this beacon's element, which is going with the page.
         if (_opened is { EndReason: null } opened && Tour is null && TourId is null)

@@ -38,8 +38,7 @@
             }
         </AppWindow>
 
-        <BonboardingBeacon @key="_beaconKey"
-                           Id="import-hint"
+        <BonboardingBeacon Id="import-hint"
                            Anchor="import"
                            Title="Import is here"
                            Description="Bring projects in from a CSV file or another workspace. It used to live under Settings." />
@@ -99,7 +98,6 @@
     private string _query = string.Empty;
     private bool _notifications;
     private bool _showUsage = true;
-    private int _beaconKey;
 
     private static readonly BonboardingTourDefinition UsageTour = new()
     {
@@ -181,13 +179,8 @@
         if (!string.IsNullOrWhiteSpace(_query)) await BonboardingService.SignalAsync("searched");
     }
 
-    private async Task ResetBeaconAsync()
-    {
-        await BonboardingService.ResetAsync("import-hint");
-
-        // A new instance reads the store afresh.
-        _beaconKey++;
-    }
+    // The beacon hears of the reset and comes back by itself.
+    private Task ResetBeaconAsync() => BonboardingService.ResetAsync("import-hint");
 
     private async Task ResetChecklistAsync()
     {

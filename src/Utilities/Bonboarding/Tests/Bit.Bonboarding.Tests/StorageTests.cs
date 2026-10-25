@@ -142,7 +142,7 @@ public class StorageTests
         await using var harness = BrowserStoreHarness();
 
         var raised = new List<string>();
-        ((BonboardingService)harness.Service).ChecklistChanged += (_, id) => raised.Add(id);
+        harness.Services.GetRequiredService<BonboardingGuidanceRegistry>().ChecklistChanged += (_, id) => raised.Add(id);
 
         // Read once, so a stale copy would be cached.
         Assert.IsEmpty(await harness.Service.GetCompletedChecklistItemsAsync("start"));

@@ -23,6 +23,7 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<BonboardingService> _logger;
     private readonly IReadOnlyList<IBonboardingObserver> _observers;
+    private readonly BonboardingGuidanceRegistry _guidance;
 
     // Components register tours on the renderer while sessions end from browser callbacks and
     // applications start tours from anywhere, so both collections are only touched under _sync.
@@ -32,6 +33,9 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
 
     /// <summary>Starts waiting for the running tour to end (<see cref="BonboardingBusyBehavior.Queue"/>), under <see cref="_sync"/>.</summary>
     private readonly List<QueuedStart> _queue = [];
+
+    /// <summary>The sessions last seen <see cref="BonboardingTourSession.IsAway"/>, under <see cref="_sync"/>.</summary>
+    private readonly HashSet<BonboardingTourSession> _away = [];
 
     private readonly TimeProvider _time;
 
@@ -46,6 +50,7 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         IServiceProvider services,
         ILoggerFactory loggerFactory,
         IEnumerable<IBonboardingObserver> observers,
+        BonboardingGuidanceRegistry guidance,
         NavigationManager? navigation = null,
         TimeProvider? time = null)
     {
@@ -57,6 +62,7 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         _loggerFactory = loggerFactory;
         _logger = loggerFactory.CreateLogger<BonboardingService>();
         _observers = observers.ToArray();
+        _guidance = guidance;
         _navigation = navigation;
         _time = time ?? TimeProvider.System;
 
@@ -65,39 +71,46 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
 
     // ---- Changes made elsewhere ----------------------------------------------
 
-    /// <summary>Raised when stored records changed outside this scope, so a list of tours on screen can follow.</summary>
-    internal event EventHandler? RecordsChanged;
-
     /// <summary>
-    /// The store says a record changed somewhere else - another tab, another device. Checklists refresh, and a tour that
-    /// was finished with there stops here, before it can write over that.
+    /// The store says a record changed somewhere else - another tab, another device. Checklists and tour lists refresh,
+    /// and a tour that was finished with there stops here, before it can write over that.
     /// </summary>
     private void OnStoreChanged(object? sender, BonboardingStoreChangedEventArgs e)
     {
         if (_disposed) return;
 
         var id = e.TourId;
-        var checklistPrefix = BonboardingChecklistDefinition.StorageKeyPrefix;
 
-        if (id is null)
-        {
-            string[] checklists;
-            lock (_sync) checklists = _checklists.Select(checklist => checklist.Id).Distinct().ToArray();
-            foreach (var checklist in checklists) RaiseChecklistChanged(checklist);
-        }
-        else if (id.StartsWith(checklistPrefix, StringComparison.Ordinal))
-        {
-            RaiseChecklistChanged(id[checklistPrefix.Length..]);
-        }
-
-        if (id is null || !id.StartsWith(checklistPrefix, StringComparison.Ordinal))
+        if (id is null || !id.StartsWith(BonboardingChecklistDefinition.StorageKeyPrefix, StringComparison.Ordinal))
         {
             _ = StopToursFinishedElsewhereAsync(id);
         }
 
+        RaiseRecordChanged(id);
+    }
+
+    /// <summary>
+    /// Tells what is on screen that a stored record changed: <paramref name="key"/> as the store knows it (a tour id, or
+    /// <c>checklist:{id}</c>), or <see langword="null"/> for every record. A tour's record decides whether a checklist
+    /// item for that tour is done, so the checklists naming the tour refresh too.
+    /// </summary>
+    private void RaiseRecordChanged(string? key)
+    {
+        var checklistPrefix = BonboardingChecklistDefinition.StorageKeyPrefix;
+
+        string[] checklists = key is not null && key.StartsWith(checklistPrefix, StringComparison.Ordinal)
+            ? [key[checklistPrefix.Length..]]
+            : _guidance.Checklists
+                .Where(checklist => key is null || checklist.Items.Exists(item => (item.Tour?.Id ?? item.TourId) == key))
+                .Select(checklist => checklist.Id)
+                .Distinct()
+                .ToArray();
+
+        foreach (var checklist in checklists) RaiseChecklistChanged(checklist);
+
         try
         {
-            RecordsChanged?.Invoke(this, EventArgs.Empty);
+            _guidance.RaiseRecordsChanged();
         }
         catch (Exception ex)
         {
@@ -180,14 +193,11 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         if (removed) RaiseRegistrationsChanged();
     }
 
-    /// <summary>Raised when a tour is registered or unregistered, so a list of tours on screen can follow.</summary>
-    internal event EventHandler? RegistrationsChanged;
-
     private void RaiseRegistrationsChanged()
     {
         try
         {
-            RegistrationsChanged?.Invoke(this, EventArgs.Empty);
+            _guidance.RaiseRegistrationsChanged();
         }
         catch (Exception ex)
         {
@@ -260,9 +270,11 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         lock (_sync)
         {
             // Another tour on screen, paused, or starting. A queued start is not running anything yet, and the
-            // same tour is always replaced: that is a restart, not a conflict.
+            // same tour is always replaced: that is a restart, not a conflict. Nor is a tour the user walked away
+            // from: nothing of it is on screen and they may never go back, so it is replaced rather than waited for
+            // (cancelled, it keeps its progress).
             var busy = startOptions.StopOthers
-                && _sessions.Any(s => !s.IsFinished && !IsQueued(s) && s.Tour.Id != tour.Id);
+                && _sessions.Any(s => !s.IsFinished && !IsQueued(s) && !s.IsAway && s.Tour.Id != tour.Id);
 
             if (busy && startOptions.WhenBusy == BonboardingBusyBehavior.Skip) return null;
 
@@ -307,6 +319,15 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         }
 
         await session.StartAsync(startOptions, cancellationToken);
+
+        // Cancelled before the tour got going: the session is still Idle, and an Idle session counts as starting, so
+        // it would hold up every queued start for the rest of the scope. It is ended instead, as a start that never ran.
+        if (session.Status == BonboardingTourStatus.Idle)
+        {
+            await session.CancelAsync(CancellationToken.None);
+            cancellationToken.ThrowIfCancellationRequested();
+        }
+
         return session;
     }
 
@@ -405,17 +426,14 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         ArgumentException.ThrowIfNullOrWhiteSpace(signal);
 
         BonboardingTourSession[] running;
-        (string Checklist, string Item)[] items;
-        lock (_sync)
-        {
-            running = _sessions.Where(session => session.IsActive).ToArray();
-            items = _checklists
-                .SelectMany(checklist => checklist.Items
-                    .Where(item => string.Equals(item.CompleteOnSignal, signal, StringComparison.Ordinal))
-                    .Select(item => (checklist.Id, item.Id)))
-                .Distinct()
-                .ToArray();
-        }
+        lock (_sync) running = _sessions.Where(session => session.IsActive).ToArray();
+
+        var items = _guidance.Checklists
+            .SelectMany(checklist => checklist.Items
+                .Where(item => string.Equals(item.CompleteOnSignal, signal, StringComparison.Ordinal))
+                .Select(item => (Checklist: checklist.Id, Item: item.Id)))
+            .Distinct()
+            .ToArray();
 
         var handled = false;
         foreach (var session in running)
@@ -433,24 +451,15 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
 
     // ---- Checklists ---------------------------------------------------------
 
-    /// <summary>The checklists on screen, so a signal can tick their items off. A checklist rendered twice is here twice.</summary>
-    private readonly List<BonboardingChecklistDefinition> _checklists = [];
-
     /// <summary>Where checklist progress goes when <see cref="BonboardingOptions.Persist"/> is off: this scope only.</summary>
     private readonly BonboardingInMemoryStore _transientChecklists = new();
 
-    /// <summary>Raised with a checklist id whenever its stored progress changes, so the checklists on screen refresh.</summary>
-    internal event EventHandler<string>? ChecklistChanged;
-
-    internal void RegisterChecklist(BonboardingChecklistDefinition checklist)
-    {
-        lock (_sync) _checklists.Add(checklist);
-    }
-
-    internal void UnregisterChecklist(BonboardingChecklistDefinition checklist)
-    {
-        lock (_sync) _checklists.Remove(checklist);
-    }
+    /// <summary>
+    /// Serialises the changes to checklist records. Each one reads the record, changes it and writes it back, and two
+    /// running together (two items ticked at once, two signals) would both start from the same record: the last write
+    /// would drop the other's tick for good.
+    /// </summary>
+    private readonly SemaphoreSlim _checklistGate = new(1, 1);
 
     private IBonboardingStore ChecklistStore => _options.Persist ? _store : _transientChecklists;
 
@@ -465,16 +474,25 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         ArgumentException.ThrowIfNullOrWhiteSpace(checklistId);
         ArgumentException.ThrowIfNullOrWhiteSpace(itemId);
 
-        var record = await ReadChecklistAsync(checklistId, cancellationToken);
-        var data = new Dictionary<string, string>(record?.Data ?? new Dictionary<string, string>(), StringComparer.Ordinal);
-        var now = _time.GetUtcNow();
-
-        if (done ? !data.TryAdd(itemId, now.ToString("O", System.Globalization.CultureInfo.InvariantCulture)) : !data.Remove(itemId))
+        await _checklistGate.WaitAsync(cancellationToken);
+        try
         {
-            return false;
+            var record = await ReadChecklistAsync(checklistId, cancellationToken);
+            var data = new Dictionary<string, string>(record?.Data ?? new Dictionary<string, string>(), StringComparer.Ordinal);
+            var now = _time.GetUtcNow();
+
+            if (done ? !data.TryAdd(itemId, now.ToString("O", System.Globalization.CultureInfo.InvariantCulture)) : !data.Remove(itemId))
+            {
+                return false;
+            }
+
+            await WriteChecklistAsync((record ?? new BonboardingRecord { TourId = ChecklistKey(checklistId) }) with { Data = data, UpdatedAt = now }, cancellationToken);
+        }
+        finally
+        {
+            _checklistGate.Release();
         }
 
-        await WriteChecklistAsync((record ?? new BonboardingRecord { TourId = ChecklistKey(checklistId) }) with { Data = data, UpdatedAt = now }, cancellationToken);
         RaiseChecklistChanged(checklistId);
         return true;
     }
@@ -491,12 +509,20 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(checklistId);
 
-        var record = await ReadChecklistAsync(checklistId, cancellationToken);
-        if (record?.Dismissed == true) return;
+        await _checklistGate.WaitAsync(cancellationToken);
+        try
+        {
+            var record = await ReadChecklistAsync(checklistId, cancellationToken);
+            if (record?.Dismissed == true) return;
 
-        await WriteChecklistAsync(
-            (record ?? new BonboardingRecord { TourId = ChecklistKey(checklistId) }) with { Dismissed = true, UpdatedAt = _time.GetUtcNow() },
-            cancellationToken);
+            await WriteChecklistAsync(
+                (record ?? new BonboardingRecord { TourId = ChecklistKey(checklistId) }) with { Dismissed = true, UpdatedAt = _time.GetUtcNow() },
+                cancellationToken);
+        }
+        finally
+        {
+            _checklistGate.Release();
+        }
 
         RaiseChecklistChanged(checklistId);
     }
@@ -511,6 +537,8 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(checklistId);
 
+        // Behind the changes already under way, so a tick that read the record before the reset cannot write it back.
+        await _checklistGate.WaitAsync(cancellationToken);
         try
         {
             await ChecklistStore.RemoveAsync(ChecklistKey(checklistId), cancellationToken);
@@ -518,6 +546,10 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
         {
             _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService could not reset checklist {ChecklistId}.", checklistId);
+        }
+        finally
+        {
+            _checklistGate.Release();
         }
 
         RaiseChecklistChanged(checklistId);
@@ -552,7 +584,7 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
     {
         try
         {
-            ChecklistChanged?.Invoke(this, checklistId);
+            _guidance.RaiseChecklistChanged(checklistId);
         }
         catch (Exception ex)
         {
@@ -590,12 +622,13 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
     {
         ArgumentNullException.ThrowIfNull(tour);
 
+        // Refused before anything is forgotten: a tour that cannot start must not cost the user their progress.
+        ThrowIfUnstartable(tour);
+
         await ResetAsync(tour.Id, cancellationToken);
 
-        return await StartAsync(
-            tour,
-            new BonboardingStartOptions { Resume = false, Force = true },
-            cancellationToken);
+        // Forced, so CanStart has no say, and replacing whatever runs, so it is never skipped.
+        return (await StartCoreAsync(tour, new BonboardingStartOptions { Resume = false, Force = true }, once: false, cancellationToken))!;
     }
 
     // ---- Stopping and querying --------------------------------------------
@@ -689,18 +722,30 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         {
             _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService could not reset tour {TourId}.", tourId);
         }
+
+        RaiseRecordChanged(tourId);
     }
 
     public async Task ResetAllAsync(CancellationToken cancellationToken = default)
     {
+        // The store holds the checklists' progress next to the tours' records, so clearing it forgets them too; with
+        // Persist off their progress is kept here instead, and is forgotten the same way.
+        await _checklistGate.WaitAsync(cancellationToken);
         try
         {
+            await _transientChecklists.ClearAsync(cancellationToken);
             await _store.ClearAsync(cancellationToken);
         }
         catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
         {
             _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService could not reset stored progress.");
         }
+        finally
+        {
+            _checklistGate.Release();
+        }
+
+        RaiseRecordChanged(null);
     }
 
     // ---- Event fan-out -----------------------------------------------------
@@ -732,7 +777,11 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
 
     private void OnSessionChanged(object? sender, BonboardingTourSessionChangedEventArgs e)
     {
-        if (!e.Change.HasFlag(BonboardingTourSessionChange.Ended)) return;
+        if (!e.Change.HasFlag(BonboardingTourSessionChange.Ended))
+        {
+            if (e.Change != BonboardingTourSessionChange.Geometry && sender is BonboardingTourSession session) TrackAway(session);
+            return;
+        }
 
         // A finished session is discarded: it can never run again (a restart creates a new one),
         // and keeping it would grow the list for the lifetime of the circuit.
@@ -743,6 +792,7 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
             {
                 _sessions.Remove(ended);
                 _queue.RemoveAll(entry => ReferenceEquals(entry.Session, ended));
+                _away.Remove(ended);
             }
         }
 
@@ -755,6 +805,18 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
 
         // The tour that was in the way has gone: whatever waited for it can start.
         StartNextQueued();
+    }
+
+    /// <summary>
+    /// Notices a tour the user walked away from, or came back to. What gives way to a running tour (beacons, the
+    /// buttons of a list of tours) follows, through <see cref="SessionsChanged"/>.
+    /// </summary>
+    private void TrackAway(BonboardingTourSession session)
+    {
+        bool changed;
+        lock (_sync) changed = session.IsAway ? _away.Add(session) : _away.Remove(session);
+
+        if (changed) RaiseSessionsChanged();
     }
 
     private void RaiseSessionsChanged()
@@ -808,6 +870,7 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
             var sessions = _sessions.ToArray();
             _sessions.Clear();
             _queue.Clear();
+            _away.Clear();
             return sessions;
         }
     }

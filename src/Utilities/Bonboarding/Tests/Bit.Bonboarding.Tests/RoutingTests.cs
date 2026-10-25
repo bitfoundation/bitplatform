@@ -212,6 +212,40 @@ public class RoutingTests
     }
 
     [TestMethod]
+    public async Task A_Lost_Target_Noticed_Twice_Is_Handled_Once()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a");
+
+        var tour = new BonboardingTourDefinition
+        {
+            Id = "centred-after-loss",
+            Steps =
+            [
+                new BonboardingStepDefinition
+                {
+                    Id = "a",
+                    Target = BonboardingStepTarget.Css("#a"),
+                    MissingTarget = BonboardingMissingTargetBehavior.Center,
+                },
+            ],
+        };
+
+        var session = await harness.Service.StartAsync(tour);
+
+        // A same-page navigation re-renders the page without the target, and the refresh it triggers notices...
+        harness.Interop.ExistingSelectors.Clear();
+        harness.Navigation!.SimulateUserNavigation("?tab=two");
+
+        // ...as does the browser's next frame, which reports the same loss.
+        await harness.Interop.LoseTargetAsync(session.Id);
+
+        Assert.AreEqual(1, harness.Events.Kinds.Count(kind => kind == BonboardingEventKind.TargetMissing));
+        Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
+        Assert.IsFalse(session.HasTarget, "The step shows centred.");
+    }
+
+    [TestMethod]
     public async Task Ending_A_Tour_Unhooks_The_Navigation_Handler()
     {
         await using var harness = new BonboardingHarness();

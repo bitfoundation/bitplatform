@@ -277,6 +277,12 @@ export function measure(sessionId: string): StepGeometry {
     }
 
     const geometry = measureSession(session);
+
+    // This reply reports the loss, so the targets go as they do when a frame finds them gone: otherwise the next
+    // frame would find them missing too and report the same loss a second time. As there, a target the user just
+    // acted on is not lost while its step is about to move on.
+    if (!geometry.found && session.targets.length > 0 && !session.advanceTimer) session.targets = [];
+
     session.lastFrame = geometry;
     return geometry;
 }
@@ -1245,6 +1251,14 @@ interface Beacon {
     ty: number;
 }
 
+// Where a beacon goes, measured before any beacon is moved. Hidden when it has no target or its point is out of sight.
+interface BeaconPlacement {
+    beacon: Beacon;
+    visible: boolean;
+    tx: number;
+    ty: number;
+}
+
 const beacons = new Map<string, Beacon>();
 let beaconFrame = 0;
 let beaconResizeObserver: ResizeObserver | null = null;
@@ -1253,14 +1267,37 @@ let beaconMutationObserver: MutationObserver | null = null;
 export function attachBeacon(spec: BeaconActivation, element: HTMLElement) {
     if (!spec || !element) return;
 
+    const previous = beacons.get(spec.beaconId);
     beacons.set(spec.beaconId, { spec, element, target: null, clips: [], tx: 0, ty: 0 });
+    if (previous) releaseBeaconTarget(previous.target);
+
     startBeaconObservers();
     scheduleBeacons();
 }
 
 export function detachBeacon(beaconId: string) {
+    const beacon = beacons.get(beaconId);
     beacons.delete(beaconId);
-    if (beacons.size === 0) stopBeaconObservers();
+
+    if (beacons.size === 0) {
+        stopBeaconObservers();
+    } else if (beacon) {
+        releaseBeaconTarget(beacon.target);
+    }
+}
+
+/**
+ * Stops watching the size of an element no beacon sits on any more, so a target a re-render replaced is neither kept
+ * alive nor reported on for the rest of the page's life. Several beacons can share a target.
+ */
+function releaseBeaconTarget(target: Element | null) {
+    if (!target || !beaconResizeObserver || target === document.documentElement) return;
+
+    for (const beacon of beacons.values()) {
+        if (beacon.target === target) return;
+    }
+
+    beaconResizeObserver.unobserve(target);
 }
 
 function startBeaconObservers() {
@@ -1333,30 +1370,41 @@ function scheduleBeacons() {
 
     beaconFrame = requestAnimationFrame(() => {
         beaconFrame = 0;
-        beacons.forEach(placeBeacon);
+
+        // Every beacon is measured before any is moved. Measuring one after another was moved would make the browser
+        // lay the page out again first, once per beacon on every frame.
+        const placements: BeaconPlacement[] = [];
+        beacons.forEach((beacon) => {
+            const placement = measureBeacon(beacon);
+            if (placement) placements.push(placement);
+        });
+
+        for (const placement of placements) applyBeacon(placement);
     });
 }
 
-function placeBeacon(beacon: Beacon) {
+/** Works out where a beacon goes, reading the page and never writing to it. Null when the beacon has left the page. */
+function measureBeacon(beacon: Beacon): BeaconPlacement | null {
     const element = beacon.element;
-    if (!element.isConnected) return;
+    if (!element.isConnected) return null;
 
     // Selector targets are re-queried whenever the one held is gone or hidden: a re-render replaces the node, a
     // responsive layout swaps which copy is shown.
     if (!beacon.target || !isRendered(beacon.target)) {
         const found = resolveOne(beacon.spec.target);
         if (found !== beacon.target) {
+            const previous = beacon.target;
             beacon.target = found;
             beacon.clips = found ? clippingAncestors(found) : [];
             if (found && beaconResizeObserver) beaconResizeObserver.observe(found);
+            releaseBeaconTarget(previous);
         }
     }
 
+    const hidden = { beacon, visible: false, tx: beacon.tx, ty: beacon.ty };
+
     const target = beacon.target;
-    if (!target) {
-        setBeaconState(element, false);
-        return;
-    }
+    if (!target) return hidden;
 
     const rect = target.getBoundingClientRect();
     const rtl = directionOf(target) === 'rtl';
@@ -1364,24 +1412,32 @@ function placeBeacon(beacon: Beacon) {
     point.x += (rtl ? -1 : 1) * (beacon.spec.offsetX || 0);
     point.y += beacon.spec.offsetY || 0;
 
-    if (!isPointVisible(point.x, point.y, beacon.clips)) {
-        setBeaconState(element, false);
-        return;
-    }
+    if (!isPointVisible(point.x, point.y, beacon.clips)) return hidden;
 
     const own = element.getBoundingClientRect();
     const originX = own.left - beacon.tx;
     const originY = own.top - beacon.ty;
-    const tx = point.x - originX - (own.width / 2);
-    const ty = point.y - originY - (own.height / 2);
 
-    if (!near(tx, beacon.tx) || !near(ty, beacon.ty)) {
+    return {
+        beacon,
+        visible: true,
+        tx: point.x - originX - (own.width / 2),
+        ty: point.y - originY - (own.height / 2)
+    };
+}
+
+/** Moves and shows, or hides, a measured beacon, writing to the page and never reading its layout. */
+function applyBeacon(placement: BeaconPlacement) {
+    const { beacon, visible, tx, ty } = placement;
+    const element = beacon.element;
+
+    if (visible && (!near(tx, beacon.tx) || !near(ty, beacon.ty))) {
         beacon.tx = tx;
         beacon.ty = ty;
         element.style.transform = `translate3d(${round(tx)}px, ${round(ty)}px, 0)`;
     }
 
-    setBeaconState(element, true);
+    setBeaconState(element, visible);
 }
 
 /** Focuses a target, or the first control inside it; does nothing when there is nothing to focus. */

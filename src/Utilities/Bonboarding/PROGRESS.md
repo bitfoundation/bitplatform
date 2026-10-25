@@ -253,9 +253,12 @@ P3 specialised. "E2E" means the Playwright suite (Chromium, Firefox, WebKit).
   exhaustively over `BonboardingTourStatus`, `BonboardingTourEndReason`, `BonboardingEventKind` or
   `BonboardingStepActionEffect` gets new cases to consider; that is the price of the new states and is noted in the
   migration notes below.
-- New interface members (`IBonboardingTourSession.WaitReason`, `ValidationMessage`, `SnoozeAsync`;
-  `IBonboardingService.SignalAsync`) have default implementations, so an application's own implementation or test
-  double still compiles.
+- New `IBonboardingTourSession` members (`WaitReason`, `ValidationMessage`, `SnoozeAsync`) have default
+  implementations, so an application's own implementation or test double still compiles. `IBonboardingService`'s
+  new members (`SignalAsync` and the checklist members) do not: their only possible default does nothing, and a
+  decorator that inherited it would silently drop signals and checklist progress. The guidance components reach
+  what they need beyond the interface through the internal `BonboardingGuidanceRegistry`, never by downcasting the
+  service, so they keep working behind a decorator.
 - A queued session is `Idle`, sits in `Sessions` and is found by `FindSession`; `Active` stays on the running tour
   until the queued one's turn comes. `StopAllAsync` cancels queued starts before running ones, so none slips in.
 - Deliberately not built: a persisted global throttle ("at most one automatic tour a day"). The queue already keeps

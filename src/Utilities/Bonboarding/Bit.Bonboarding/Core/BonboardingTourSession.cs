@@ -82,6 +82,10 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     private bool _focusCaptured;
     private DateTimeOffset _stepShownAt;
     private string? _pendingRoute;
+
+    /// <summary>True from the engine navigating to <see cref="_pendingRoute"/> until the location changes.</summary>
+    private bool _navigatingToRoute;
+
     private BonboardingStepTarget _resolvedTarget = BonboardingStepTarget.None;
 
     /// <summary>Bumped on every transition so stale async work can detect it lost the race.</summary>
@@ -146,6 +150,20 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
     /// <summary>True while the tour has started and not yet ended, paused or not.</summary>
     internal bool IsLive => IsActive || Status == BonboardingTourStatus.Paused;
+
+    /// <summary>
+    /// True while the session waits for the user to come back to its step's route: they navigated away, or the route is
+    /// one the engine does not navigate to. Nothing of it is on screen and it does not take the keyboard, so it is not a
+    /// tour the user is taking: an automatic start does not wait for it, and guidance elsewhere does not give way to it.
+    /// </summary>
+    internal bool IsAway => Status == BonboardingTourStatus.Waiting && _pendingRoute is not null && !_navigatingToRoute;
+
+    /// <summary>
+    /// True while <paramref name="session"/> is a tour the user is taking: started and not ended, paused or not, and not
+    /// <see cref="IsAway"/>. Beacons and lists of tours give way to it.
+    /// </summary>
+    internal static bool IsUnderway(IBonboardingTourSession session)
+        => (session.IsActive || session.Status == BonboardingTourStatus.Paused) && session is not BonboardingTourSession { IsAway: true };
 
     /// <summary>When the session started running, by the registered clock; <see cref="DateTimeOffset.MaxValue"/> until then.</summary>
     internal DateTimeOffset StartedAt { get; private set; } = DateTimeOffset.MaxValue;
@@ -778,18 +796,24 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     private async Task<bool> EnsureRouteAsync(BonboardingStepDefinition step)
     {
         _pendingRoute = null;
+        _navigatingToRoute = false;
 
         if (step.Route is null || _navigation is null) return true;
 
         var current = _navigation.ToBaseRelativePath(_navigation.Uri);
         if (BonboardingRouteMatcher.Matches(step.Route, current)) return true;
 
+        // A wildcard route is a constraint rather than a destination, so there is nowhere to go.
+        var navigate = _globalOptions.AutoNavigateToStepRoute && !step.Route.EndsWith('*');
+
+        // Set before anyone hears of the wait: a step the engine is taking the user to is on its way to the screen, and
+        // must not look like one the user walked away from (see IsAway).
         _pendingRoute = step.Route;
+        _navigatingToRoute = navigate;
         Status = BonboardingTourStatus.Waiting;
         Notify(BonboardingTourSessionChange.Step);
 
-        // A wildcard route is a constraint rather than a destination, so there is nowhere to go.
-        if (_globalOptions.AutoNavigateToStepRoute && !step.Route.EndsWith('*'))
+        if (navigate)
         {
             // Navigating runs LocationChanged handlers, the application's and this session's own,
             // and a router may do so before NavigateTo returns. Called like a hook, so a location
@@ -1039,6 +1063,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         EndReason = reason;
         ValidationMessage = null;
         _pendingRoute = null;
+        _navigatingToRoute = false;
         CurrentStep = null;
         Placement = null;
         _geometry = null;
@@ -1137,6 +1162,10 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     {
         // Another transition got here first; the lost target belonged to a step that is gone.
         if (generation != _generation || !ReferenceEquals(CurrentStep, step) || Status != BonboardingTourStatus.Running) return;
+
+        // Lost already: the step shows without it. A refresh and the browser's own frame can both notice the same
+        // loss, and the second report would publish TargetMissing again for nothing.
+        if (_geometry is not { Found: true }) return;
 
         var options = CurrentOptions!;
         var stepToken = _stepCts?.Token ?? CancellationToken.None;
@@ -1452,9 +1481,20 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
         if (_pendingRoute is { } pending)
         {
-            if (!BonboardingRouteMatcher.Matches(pending, relative)) return;
+            if (!BonboardingRouteMatcher.Matches(pending, relative))
+            {
+                // The engine's own navigation ended somewhere else (a redirect, a guard): the step now waits for the user.
+                if (_navigatingToRoute)
+                {
+                    _navigatingToRoute = false;
+                    Notify(BonboardingTourSessionChange.Step);
+                }
+
+                return;
+            }
 
             _pendingRoute = null;
+            _navigatingToRoute = false;
 
             // Re-enter the same step now the page is right. Retarget skips the leave hooks so
             // the step is not counted as visited twice.
@@ -1468,6 +1508,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
             // fighting the user for control of the address bar is never the right call.
             _generation++;
             _pendingRoute = route;
+            _navigatingToRoute = false;
             Status = BonboardingTourStatus.Waiting;
             _geometry = null;
             Placement = null;

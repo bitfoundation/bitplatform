@@ -170,6 +170,86 @@ public class OrchestrationTests
         Assert.AreEqual(BonboardingTourStatus.Running, again.Status);
     }
 
+    private static BonboardingTourDefinition MultiPageTour() => new()
+    {
+        Id = "multi-page",
+        Steps =
+        [
+            new BonboardingStepDefinition { Id = "here", Title = "Here" },
+            new BonboardingStepDefinition { Id = "there", Title = "There", Route = "settings" },
+        ],
+    };
+
+    [TestMethod]
+    public async Task An_Automatic_Start_Replaces_A_Tour_The_User_Walked_Away_From()
+    {
+        await using var harness = new BonboardingHarness();
+
+        var left = await harness.Service.StartAsync(MultiPageTour());
+        await left.NextAsync();
+
+        // The user followed a link elsewhere: nothing of the tour is on screen, and they may never go back.
+        harness.Navigation!.SimulateUserNavigation("dashboard");
+        Assert.AreEqual(BonboardingWaitReason.Route, left.WaitReason);
+
+        var page = await harness.Service.StartAsync(Tour("page"), Queue);
+
+        Assert.AreEqual(BonboardingTourStatus.Running, page.Status, "It did not wait for a tour that may never come back.");
+        Assert.AreSame(page, harness.Service.Active);
+        Assert.AreEqual(BonboardingTourStatus.Cancelled, left.Status);
+        Assert.AreEqual("there", (await harness.Service.GetRecordAsync("multi-page"))!.CurrentStepId, "The tour left behind keeps its place.");
+    }
+
+    [TestMethod]
+    public async Task An_Automatic_Start_Still_Waits_For_A_Tour_On_Its_Way_To_Its_Page()
+    {
+        await using var harness = new BonboardingHarness();
+
+        // A router renders the new page, and the page starts its own tour, before the tour that navigated there hears
+        // of the navigation: its handler was added later.
+        Task<IBonboardingTourSession>? pageStart = null;
+        harness.Navigation!.LocationChanged += (_, _) => pageStart ??= harness.Service.StartAsync(Tour("page"), Queue);
+
+        var taking = await harness.Service.StartAsync(MultiPageTour());
+        await taking.NextAsync();
+        var page = await pageStart!;
+
+        Assert.AreEqual(BonboardingTourStatus.Running, taking.Status);
+        Assert.AreEqual("there", taking.CurrentStep!.Id);
+        Assert.AreEqual(BonboardingTourStatus.Idle, page.Status, "Queued behind the tour the user is taking.");
+    }
+
+    [TestMethod]
+    public async Task A_Start_Cancelled_Before_It_Got_Going_Holds_Up_Nothing()
+    {
+        await using var harness = new BonboardingHarness();
+
+        await Assert.ThrowsAsync<OperationCanceledException>(() => harness.Service.StartAsync(Tour("cancelled"), cancellationToken: new CancellationToken(true)));
+
+        Assert.IsEmpty(harness.Service.Sessions, "Nothing is left starting.");
+
+        var next = await harness.Service.StartAsync(Tour("next"), Queue);
+        Assert.AreEqual(BonboardingTourStatus.Running, next.Status, "Nothing is left in the way of a queued start.");
+    }
+
+    [TestMethod]
+    public async Task Restarting_A_Tour_That_Cannot_Start_Keeps_The_Users_Progress()
+    {
+        await using var harness = new BonboardingHarness();
+
+        var session = await harness.Service.StartAsync(Tour("edited"));
+        await session.NextAsync();
+        await session.CancelAsync();
+
+        // The tour was edited into one that is not valid: two steps share an id.
+        var broken = Tour("edited");
+        broken.Steps[1].Id = broken.Steps[0].Id;
+
+        await Assert.ThrowsExactlyAsync<BonboardingException>(() => harness.Service.RestartAsync(broken));
+
+        Assert.AreEqual("edited-2", (await harness.Service.GetRecordAsync("edited"))?.CurrentStepId);
+    }
+
     // ---- Snooze --------------------------------------------------------------------
 
     private static (BonboardingHarness Harness, ManualClock Clock) SnoozeHarness()
