@@ -126,14 +126,14 @@ public class ReviewRegressionTests
     }
 
     /// <summary>An ordering that can be told to refuse every comparison, so an undo can be made to fail.</summary>
-    private sealed class SwitchableComparer : IComparer<int>
+    internal sealed class SwitchableComparer : IComparer<int>
     {
         public bool Refuse { get; set; }
 
         public int Compare(int x, int y) => Refuse ? throw new InvalidOperationException("comparer refuses") : x.CompareTo(y);
     }
 
-    private static BlazeDbTableDescriptor<int, Person> Switchable(SwitchableComparer comparer) => new(
+    internal static BlazeDbTableDescriptor<int, Person> Switchable(SwitchableComparer comparer) => new(
         "switchable",
         static p => p.Id,
         PersonTable.Descriptor.RowWriter,

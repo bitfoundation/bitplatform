@@ -51,7 +51,7 @@ valuable, P3 nice to have. **New** marks work done in this pass; everything else
 | Insert/Get/Update/Upsert/Delete/Contains | verified | P1 | `BlazeDbTable` | `TableCrudTests`, `ModelBasedTests` | - |
 | Insert-if-absent, update-if-present (**new**) | verified | P1 | `TryInsert`, `TryUpdate(row)` | `BulkAndConditionalWriteTests` | - |
 | Optimistic concurrency (**new**) | verified | P1 | `TryUpdate(row, comparisonValue)`, `TryDelete(key, comparisonValue)` | `BulkAndConditionalWriteTests`, `ModelBasedTests` | Compares by `EqualityComparer<T>.Default` |
-| Atomic bulk insert/upsert/delete (**new**) | verified | P1 | `InsertMany`, `UpsertMany`, `DeleteMany`, `DeleteWhere`, `DeleteAll` | `BulkAndConditionalWriteTests`, `ModelBasedTests` | Journaled as ordinary ops (ADR-013) |
+| Atomic bulk insert/upsert/delete (**new**) | verified | P1 | `InsertMany`, `UpsertMany`, `DeleteMany`, `DeleteWhere`, `DeleteAll` | `BulkAndConditionalWriteTests`, `ModelBasedTests`, `ReviewFollowUpTests.Bulk_Writes_*` | Journaled as ordinary ops; input read in full first (ADR-013) |
 | Null row / null key handling (**new**) | verified | P1 | `KeyOf` | `CoreCorrectnessTests.A_Null_*` | - |
 | Live-object mutation safety | verified | P0 | `EnsureNotMutatedInPlace`, `UpdateInPlace`, `BlazeDbStaleRowException` | `InPlaceWriteTests` | Documented rule: replace, don't mutate |
 
@@ -66,7 +66,7 @@ valuable, P3 nice to have. **New** marks work done in this pass; everything else
 | Aggregates, grouping, distinct, joins | verified | P1 | LINQ to Objects over reads; EF provider | EF `QueryTests` | No engine-native operators (rows are objects; nothing to gain) |
 | Per-value counts / facets (**new**) | verified | P2 | `CountBy(hashIndex)` | `IndexQueryTests.CountBy_*` | Hash indexes |
 | Streaming with cancellation and cooperative yielding | verified | P1 | `ExecuteAsync` | `StreamingQueryTests` | - |
-| Stream consistency under foreign writes (**new**) | verified | P0 | `ExecuteAsync` version check | `CoreCorrectnessTests.A_Stream_*` | Throws; ADR-011 |
+| Stream consistency under foreign writes (**new**) | verified | P0 | `ExecuteAsync` version check | `CoreCorrectnessTests.A_Stream_*`, `ReviewFollowUpTests.A_Stream_*` | Throws; ADR-011 |
 | Query plan explanation (**new**) | verified | P2 | `BlazeDbQuery.Explain()` | `IndexQueryTests.Explain_*`, `ReadmeExampleTests` | Never prints values |
 | LINQ provider with index selection | verified | P1 | EF Core provider | `IndexSelectionTests`, `IndexExactnessTests` | Strict `<`/`>` still use an inclusive range plus a residual filter |
 | Query caching | verified | P2 | EF `BlazeDbDelegateCache` | EF tests | - |
@@ -91,7 +91,7 @@ valuable, P3 nice to have. **New** marks work done in this pass; everything else
 | Savepoints (**new** public) | verified | P1 | `CreateSavepoint`, `RollbackTo(BlazeDbSavepoint)` | `TransactionCompositionTests`, `ModelBasedTests` | - |
 | Composable atomic units (**new**) | verified | P1 | `RunInTransaction` | `TransactionCompositionTests` | Synchronous only (ADR-002) |
 | Nested `BeginTransaction` policy | verified | P1 | explicit rejection | `TransactionTests.Nested_Transactions_Are_Rejected` | - |
-| Rollback robust to a failing undo (**new**) | verified | P0 | `RollbackTransaction` finally, per-op truncation; database refuses writes and checkpoints after a failed undo | `ReviewRegressionTests.A_Rollback_That_Cannot_Undo_*`, `Disposing_With_A_Transaction_Whose_Undo_Fails_*` | Reopen to recover |
+| Rollback robust to a failing undo (**new**) | verified | P0 | `RollbackTransaction` finally, per-op truncation; a database with storage refuses writes, checkpoints and exports after a failed undo, one without storage carries on and `VerifyIntegrity` reports it; the failing unit's own exception propagates | `ReviewRegressionTests.A_Rollback_That_Cannot_Undo_*`, `Disposing_With_A_Transaction_Whose_Undo_Fails_*`, `ReviewFollowUpTests.A_Failed_Unit_*`, `Without_Storage_A_Failed_Undo_*` | Reopen to recover |
 | Atomic unit survives rolling back past its own start (**new**) | verified | P0 | clamped unit marks (`BeginUnit`/`RollbackUnit`) | `ReviewRegressionTests.A_Unit_That_Rolls_Back_*` | - |
 | Commit/rollback racing dispose (**new**) | verified | P0 | `VerifyActive` under the lock | `CoreCorrectnessTests.Disposing_*` | - |
 | Isolation | verified (documented weak) | P1 | single writer | README "Transactions" | Reads see the open transaction's writes; no snapshot isolation |
@@ -115,7 +115,7 @@ valuable, P3 nice to have. **New** marks work done in this pass; everything else
 | --- | --- | --- | --- | --- | --- |
 | Ephemeral mode | verified | P1 | `Storage = null` | suite | - |
 | WAL + snapshots + atomic manifest + CRC + torn-tail repair | verified | P0 | `BlazeDbWalManager` | `DurabilityTests`, `ChecksumTests` | - |
-| Backup / restore, single-file export/import (**new**) | verified | P1 | `ExportAsync`, `ImportAsync` | `BackupAndMigrationTests` (damaged files, overwrite refusal, stale log) | Import reads the whole file into memory |
+| Backup / restore, single-file export/import (**new**) | verified | P1 | `ExportAsync`, `ImportAsync` | `BackupAndMigrationTests` (damaged files, overwrite refusal, stale log), `ReviewFollowUpTests` (export after a failed undo, import from a memory stream) | Import holds the whole file in memory, once |
 | Format versioning, older snapshot formats | verified | P1 | `BlazeDbSnapshotFormat` | `DurabilityTests` | - |
 | Quota awareness, eviction risk documented | verified | P1 | `IBlazeDbQuotaAwareStorage` | `QuotaTests`; README "Persistence guarantees" | Browser eviction cannot be prevented |
 | Encryption at rest | verified | P2 | `BlazeDbEncryptedStorage` | `EncryptionTests` | No rollback protection, no key rotation (documented) |
@@ -141,11 +141,11 @@ valuable, P3 nice to have. **New** marks work done in this pass; everything else
 
 | Requirement | Status | Pri | Implementation | Evidence | Limitations |
 | --- | --- | --- | --- | --- | --- |
-| Table and database change notifications (**new**) | verified | P1 | `Changed` events, `BlazeDbChangeCollector` | `ChangeNotificationTests`, `ModelBasedTests` shadow, E2E `ChangeFeedTests` | Synchronous on the committing thread |
+| Table and database change notifications (**new**) | verified | P1 | `Changed` events, `BlazeDbChangeCollector` | `ChangeNotificationTests`, `ModelBasedTests` shadow, E2E `ChangeFeedTests`, `ReviewFollowUpTests` (per-thread delivery, whole commits only) | Synchronous on the committing thread; each thread delivers its own commits (ADR-005) |
 | Handler failure reported without misreporting the commit (**new**) | verified | P0 | `BlazeDbChangeHandlerException`; EF save completes, then rethrows from `SavedChanges` | `ReviewRegressionTests.A_Throwing_Handler_*` | - |
 | Engine metadata kept out of notifications (**new**) | verified | P1 | `IsEngineTable` | `ReviewRegressionTests.The_Engine_Table_*` | - |
 | No intermediate or rolled-back states (**new**) | verified | P0 | net change per commit | as above | - |
-| Live queries with relevance filtering (**new**) | verified | P1 | `Watch`, `BlazeDbLiveQuery<T>` | `ChangeNotificationTests`, E2E `ChangeFeedTests` | No debouncing; re-runs per relevant commit |
+| Live queries with relevance filtering (**new**) | verified | P1 | `Watch`, `BlazeDbLiveQuery<T>` | `ChangeNotificationTests`, E2E `ChangeFeedTests`, `ReviewFollowUpTests.A_Live_Query_*` | No debouncing; re-runs per relevant commit |
 | Subscription disposal | verified | P1 | `BlazeDbLiveQuery.Dispose` | `ChangeNotificationTests` | Events: unsubscribe with `-=` |
 | Replica reload notification (**new**) | verified | P2 | `IsReset` | `ChangeNotificationTests.A_Replica_*` | - |
 

@@ -34,12 +34,16 @@ public class McpInspectorTests
         var report = await InspectAsync(_modelsSource.Value);
 
         Assert.IsTrue(report.IsValid, string.Join(Environment.NewLine, report.Diagnostics.Select(d => $"{d.Id}: {d.Message}")));
-        Assert.HasCount(3, report.Tables);
+        Assert.HasCount(5, report.Tables);
 
         AssertAgrees(report.Tables.Single(table => table.TypeName == nameof(InspectedItem)), InspectedItem.Table, FullItem());
         AssertAgrees(report.Tables.Single(table => table.TypeName == nameof(NumberedItem)), NumberedItem.Table, new NumberedItem { Id = 1, Name = "n", Score = 2 });
         AssertAgrees(report.Tables.Single(table => table.TypeName == nameof(InspectedRecord)), InspectedRecord.Table,
             new InspectedRecord(1, "r", new DateOnly(2026, 1, 1)) { Level = (Half)1.5, Labels = ["a"] });
+        AssertAgrees(report.Tables.Single(table => table.TypeName == nameof(SingleParameterRecord)), SingleParameterRecord.Table,
+            new SingleParameterRecord(1) { Note = "n" });
+        AssertAgrees(report.Tables.Single(table => table.TypeName == nameof(RequiredBoundItem)), RequiredBoundItem.Table,
+            new RequiredBoundItem(1, "n") { Name = "n" });
     }
 
     [TestMethod]

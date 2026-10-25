@@ -206,7 +206,7 @@ from any backend.
 
 BlazeDb is built for Blazor WebAssembly, which has one thread, and its guarantees are those of a
 **single logical writer with no concurrent readers**. `Changed` handlers and live queries run on the
-thread that committed, so a Blazor component hands its re-render to the renderer with `InvokeAsync`. Writes are serialized by a lock so the
+thread that committed - each thread delivers its own commits - so a Blazor component hands its re-render to the renderer with `InvokeAsync`. Writes are serialized by a lock so the
 background flusher can snapshot consistently, but reads - `Get`, `Scan`, index lookups, every LINQ
 query through EF Core - take no lock at all, because on the platform the engine is designed for
 there is nothing to lock against. A read that overlaps a write on another thread is a data race on
@@ -244,9 +244,11 @@ await foreach (var todo in BlazeDbQuery<Guid, TodoItem>.From(todos)
 
 Between batches the stream hands control back, and other code - another event handler - may run. If
 that code writes to the table, the rest of the stream would describe neither the table as it was nor as
-it is, so the stream throws `InvalidOperationException` naming the table instead. The loop's own body may
-write (as a `foreach` over a scan may); run the query again, or materialize it first, when other code
-may write meanwhile.
+it is, so the stream throws `InvalidOperationException` naming the table instead. Writes made while the
+loop body runs - by the body itself, or by other code while the body awaits - are the loop's business,
+as in a `foreach` over `Execute()`: the stream carries on past those the source tolerates (replacing a
+row it has already reached, say) and reports the rest with the same exception. Run the query again, or
+materialize it first, when other code may write meanwhile.
 
 ## Writing rows
 
@@ -260,7 +262,7 @@ and the bulk forms are atomic:
 | `Upsert(row)` | Inserts or replaces. |
 | `Delete(key)` | Removes a row; false when there was none. |
 | `TryUpdate(row, comparisonValue)` / `TryDelete(key, comparisonValue)` | Writes only while the table still holds `comparisonValue` for the key - optimistic concurrency. |
-| `InsertMany`, `UpsertMany`, `DeleteMany(keys)`, `DeleteWhere(predicate)`, `DeleteAll()` | Atomic: every row or none, one log record. |
+| `InsertMany`, `UpsertMany`, `DeleteMany(keys)`, `DeleteWhere(predicate)`, `DeleteAll()` | Atomic: every row or none, one log record. The input is read in full first, so it may be a query over the same table. |
 
 A unique index is enforced by every one of them - `TryInsert` decides on the key alone, so a duplicate
 unique value still throws `BlazeDbUniqueConstraintViolationException`. Null rows and null keys are refused
@@ -325,9 +327,12 @@ What the engine guarantees, and what it does not:
   A commit the log cannot record (a row that will not serialize) is undone and throws.
 - **Consistent**: duplicate keys and unique-index violations are refused before anything changes, and
   index maintenance either completes or is unwound, even when a hand-written index definition throws.
-  If a rollback itself cannot undo a write (only such an index can make it fail), the database refuses
-  further writes and checkpoints until it is reopened, rather than let a checkpoint persist a write the
-  log never recorded.
+  If a rollback itself cannot undo a write (only such an index can make it fail), a database with storage
+  refuses further writes, checkpoints and exports until it is reopened, rather than let one of them persist
+  a write the log never recorded; the exception that made the rollback happen is still the one you see. A
+  database without storage has nothing to reopen from, so it carries on, and `VerifyIntegrity()` reports
+  the write it could not take back. Either way, a transaction that part of could not be rolled back (a
+  failed `RunInTransaction` unit or EF Core save inside it, or a savepoint) refuses to commit and rolls back.
 - **No isolation from the open transaction**: there is one writer, and its writes are visible to every
   reader as soon as they are made, before the commit. There is nothing else to isolate from.
 - **Durable when flushed**: see [Persistence](#persistence-guarantees).
@@ -403,7 +408,11 @@ db.Changed += (_, e) => outbox.Enqueue(e.Changes);   // every table, rows as obj
   back to, or a commit the log refused.
 - **After the lock**: handlers run synchronously on the thread that committed, once the commit has
   completed and the write lock is released. A handler may read and write; a write it makes is reported
-  after the current notification has reached every subscriber, so notifications arrive in commit order.
+  after the current notification has reached every subscriber, so a thread's notifications arrive in the
+  order it committed. On a multi-threaded host each thread delivers its own commits, so handlers for
+  commits made on different threads may run at the same time and in either order - one thread never waits
+  for another's handlers. A database-wide subscriber that needs one ordered stream (an outbox) has to
+  serialize itself there, as the host has to serialize access anyway (see [Threading model](#threading-model)).
 - **Isolated**: every subscriber hears of a commit even if one throws; the exceptions then surface from
   the write that committed, as a `BlazeDbChangeHandlerException` - the write did commit, so do not retry
   it. Through EF Core, `SaveChanges` completes first (the tracker accepts what was saved) and then throws it.
@@ -490,7 +499,8 @@ await BlazeDbDatabase.ImportAsync(source, restored);           // then OpenAsync
 
 An import verifies the checksum before it writes anything, refuses a file that was truncated or altered
 (`BlazeDbCorruptDatabaseException`), and refuses a destination that already holds a database. Export
-refuses while a transaction is open, since its writes are not committed. The file is not encrypted.
+refuses while a transaction is open, since its writes are not committed, and - like a checkpoint - after
+a rollback that could not undo a write. The file is not encrypted.
 
 `UserVersion` is a number stored with the data for the application to record which shape the data is in -
 0 until something sets it, like SQLite's `user_version`. Migrations registered on the options bring a
@@ -522,7 +532,9 @@ the data itself.
 `db.VerifyIntegrity()` compares every row with every index entry and returns what disagrees - an empty list
 on a healthy database. The engine keeps them in step itself; the one thing it cannot see is a row object
 changed in place after it was written (its key, or a property an index covers), which leaves lookups
-returning rows that no longer match them. Run it in tests, or from a support tool, to find such code:
+returning rows that no longer match them. It also reports a rollback that could not undo a write - which
+on a database without storage nothing else reports once the rollback has thrown. Run it in tests, or from
+a support tool, to find such code:
 
 ```csharp
 foreach (var issue in db.VerifyIntegrity())

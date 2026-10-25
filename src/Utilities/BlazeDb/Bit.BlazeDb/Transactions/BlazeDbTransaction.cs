@@ -34,8 +34,9 @@ public sealed class BlazeDbTransaction : IDisposable
     /// <summary>
     /// Opens an atomic unit inside this transaction and returns its handle: <see cref="RollbackUnit"/>
     /// undoes every write made since, <see cref="EndUnit"/> keeps them. Units nest strictly - each is ended
-    /// or rolled back before the one around it. <see cref="BlazeDbDatabase.RunInTransaction(Action)"/> and
-    /// the EF Core provider's saves use them, so a unit that fails part-way leaves none of its writes behind.
+    /// or rolled back before the one around it, which their one caller - <see cref="BlazeDbDatabase.RunInTransactionCore"/>,
+    /// behind <see cref="BlazeDbDatabase.RunInTransaction(Action)"/> and the EF Core provider's saves - ensures by
+    /// holding the write lock for a unit's whole life. A unit that fails part-way leaves none of its writes behind.
     /// </summary>
     internal int BeginUnit()
     {
@@ -55,6 +56,46 @@ public sealed class BlazeDbTransaction : IDisposable
         EndUnit(unit);
         _db.RollbackTransactionTo(this, position);
     }
+
+    // The two below roll back for a unit whose body threw, and keep that exception the one its caller sees.
+    // Should undoing a write fail as well, it is not lost: the database has recorded it - with storage it
+    // refuses writes from then on and names it as the cause - and a transaction a unit could not be taken out
+    // of refuses to commit (see UndoFailure). Reporting it in place of the body's exception would only hide
+    // what went wrong first: a validation error turned into a NullReferenceException from an index selector.
+
+    /// <summary>Undoes a failed unit's writes, keeping the body's exception the one that propagates.</summary>
+    internal void RollbackUnitAfterFailure(int unit)
+    {
+        try
+        {
+            RollbackUnit(unit);
+        }
+        catch
+        {
+            // Recorded by the database; the body's exception is the one to report.
+        }
+    }
+
+    /// <summary>Rolls the transaction back after its body threw, keeping that exception the one that propagates.</summary>
+    internal void RollbackAfterFailure()
+    {
+        try
+        {
+            Dispose();
+        }
+        catch
+        {
+            // Recorded by the database; the body's exception is the one to report.
+        }
+    }
+
+    /// <summary>
+    /// Set when undoing part of the transaction - a unit or a savepoint - failed. It then still holds writes
+    /// that were meant to be gone, so it can only be rolled back: a commit is refused and rolls it back.
+    /// </summary>
+    internal Exception? UndoFailure { get; private set; }
+
+    internal void MarkUndoFailed(Exception cause) => UndoFailure ??= cause;
 
     /// <summary>Forgets the writes from <paramref name="position"/> on, once they have been reverted.</summary>
     internal void Truncate(int position)
@@ -110,8 +151,10 @@ public sealed class BlazeDbTransaction : IDisposable
     }
 
     /// <summary>
-    /// Commits the batch. If the commit cannot be journaled, every write is undone and the exception
-    /// propagates; either way the transaction is over, so disposing it afterwards does nothing.
+    /// Commits the batch. If the commit cannot be journaled - or undoing part of the transaction earlier
+    /// (back to a savepoint, or a failed unit) could not take a write back, so the batch still holds writes
+    /// that were meant to be gone - every write is undone and the exception propagates; either way the
+    /// transaction is over, so disposing it afterwards does nothing.
     /// </summary>
     public void Commit()
     {

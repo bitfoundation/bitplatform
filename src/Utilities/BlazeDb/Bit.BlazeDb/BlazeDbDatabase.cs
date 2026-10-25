@@ -20,12 +20,13 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
     private readonly IBlazeDbTxnOp[] _singleOpScratch = new IBlazeDbTxnOp[1];
     private readonly BlazeDbTable<string, BlazeDbMetaEntry> _meta;
 
-    // Committed changes waiting to be handed to Changed subscribers once the write lock is released.
-    // The queue is guarded by SyncRoot; the count is read without it, so a write with nothing to
-    // deliver skips the delivery path with one field read.
-    private readonly Queue<BlazeDbChangeCollector> _pendingChanges = new();
-    private volatile int _pendingChangeCount;
-    private readonly object _deliveryLock = new();
+    // Committed changes waiting to be handed to Changed subscribers once the write lock is released, kept
+    // per thread: a commit is delivered on the thread that made it, and what its handlers throw surfaces
+    // from that thread's write - never from another thread's, and never by making one thread wait for
+    // another's handlers. The count spans every thread, so a write with nothing to deliver skips the
+    // delivery path with one field read.
+    private readonly ThreadLocal<PendingChanges> _pendingChanges = new(static () => new PendingChanges());
+    private int _pendingChangeCount;
     private BlazeDbTransaction? _activeTransaction;
     private BlazeDbWalManager? _wal;
     private long _nextSeq;
@@ -137,6 +138,7 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
     /// </para>
     /// </summary>
     /// <exception cref="InvalidOperationException">A transaction is open: its writes are not yet committed, so there is no consistent state to capture.</exception>
+    /// <exception cref="BlazeDbException">An earlier rollback could not undo a write, so memory may hold one the log never recorded (see <see cref="CheckpointAsync"/>, which refuses for the same reason).</exception>
     public async ValueTask ExportAsync(Stream destination, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(destination);
@@ -148,6 +150,13 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
             {
                 throw new InvalidOperationException(
                     "Cannot export while a transaction is active: its writes are not committed yet. Export once it ends.");
+            }
+            if (StorageUndoFailure is { } cause)
+            {
+                // An export is a snapshot like a checkpoint's, and an import makes it durable just the same.
+                throw new BlazeDbException(
+                    "Cannot export: an earlier rollback could not undo a write, so memory may hold one the log never " +
+                    "recorded. Reopen the database from storage and export that.", cause);
             }
             snapshot = BlazeDbWalManager.BuildSnapshot(_tableList, lsn: 0, sizeHint: 64 * 1024);
         }
@@ -166,7 +175,15 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(destination);
-        using var buffer = new MemoryStream();
+        // The file is verified in place and handed to the storage as it is, so it is held in memory once:
+        // where it already is, for a memory stream, or in one buffer sized up front when the length is known.
+        if (source is MemoryStream memory && memory.TryGetBuffer(out var segment))
+        {
+            var start = (int)Math.Min(memory.Position, segment.Count);
+            await BlazeDbWalManager.ImportAsync(destination, segment.AsMemory(start, segment.Count - start), cancellationToken).ConfigureAwait(false);
+            return;
+        }
+        using var buffer = source.CanSeek ? new MemoryStream(checked((int)Math.Max(0, source.Length - source.Position))) : new MemoryStream();
         await source.CopyToAsync(buffer, cancellationToken).ConfigureAwait(false);
         await BlazeDbWalManager.ImportAsync(destination, buffer.GetBuffer().AsMemory(0, (int)buffer.Length), cancellationToken).ConfigureAwait(false);
     }
@@ -213,8 +230,7 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
         await _wal.ReloadAsync(cancellationToken).ConfigureAwait(false);
         lock (SyncRoot)
         {
-            _pendingChanges.Enqueue(new BlazeDbChangeCollector(isReset: true));
-            _pendingChangeCount++;
+            QueueChanges(new BlazeDbChangeCollector(isReset: true, reportsDatabase: true));
         }
         DeliverChanges();
     }
@@ -317,13 +333,33 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
         return result;
     }
 
-    private TResult RunInTransactionCore<TState, TResult>(TState state, Func<TState, TResult> body)
+    /// <summary>
+    /// Runs <paramref name="body"/> as one atomic unit under the write lock - behind a unit mark in the open
+    /// transaction, or as a transaction of its own that it commits - and leaves delivering what it committed
+    /// to the caller, once the lock is released. When the body throws, its exception is the one that
+    /// propagates even if undoing its writes fails as well; the database records that failure (see
+    /// <see cref="_undoFailure"/>), so reporting it instead would only hide what went wrong first.
+    /// <para>
+    /// With a <paramref name="joiner"/>, an open transaction somebody else opened is refused rather than
+    /// joined. The EF Core provider passes its transaction manager - the owner it opens its own transactions
+    /// with (see <see cref="BeginTransaction(object?)"/>) - so a save cannot slip into another context's
+    /// transaction. The check and the join happen under one lock, as do a unit's start and end, so another
+    /// thread's unit cannot interleave with this one.
+    /// </para>
+    /// </summary>
+    internal TResult RunInTransactionCore<TState, TResult>(TState state, Func<TState, TResult> body, object? joiner = null)
     {
-        EnsureWritable();
         lock (SyncRoot)
         {
+            EnsureWritable();
             if (_activeTransaction is { } outer)
             {
+                if (joiner is not null && ActiveTransactionOwner is { } owner && !ReferenceEquals(owner, joiner))
+                {
+                    throw new InvalidOperationException(
+                        "Another DbContext on the same BlazeDb store has a transaction open. A save cannot join " +
+                        "it: the engine allows one transaction at a time, so commit or dispose that one first.");
+                }
                 var unit = outer.BeginUnit();
                 TResult unitResult;
                 try
@@ -336,7 +372,7 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
                     // nothing left of it to roll back to.
                     if (ReferenceEquals(_activeTransaction, outer))
                     {
-                        outer.RollbackUnit(unit);
+                        outer.RollbackUnitAfterFailure(unit);
                     }
                     throw;
                 }
@@ -347,8 +383,17 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
                 return unitResult;
             }
 
-            using var transaction = BeginTransaction(owner: null);
-            var result = body(state);
+            var transaction = BeginTransaction(owner: null);
+            TResult result;
+            try
+            {
+                result = body(state);
+            }
+            catch
+            {
+                transaction.RollbackAfterFailure();
+                throw;
+            }
             transaction.Commit();
             return result;
         }
@@ -358,8 +403,10 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
     /// Checks every table's rows against its indexes and returns what disagrees - nothing, on a healthy
     /// database. The engine keeps them in step itself, so an issue means a row object was changed in
     /// place after it was written (its key, or a property an index covers), which leaves lookups
-    /// returning rows that no longer match them. It reads every row and every index entry, so it is a
-    /// diagnostic for tests and support tools rather than something to run on every render.
+    /// returning rows that no longer match them. It also reports a rollback that could not undo a write
+    /// (see <see cref="_undoFailure"/>), with a null <see cref="BlazeDbIntegrityIssue.Index"/>. It reads
+    /// every row and every index entry, so it is a diagnostic for tests and support tools rather than
+    /// something to run on every render.
     /// </summary>
     public IReadOnlyList<BlazeDbIntegrityIssue> VerifyIntegrity()
     {
@@ -367,6 +414,15 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
         var issues = new List<BlazeDbIntegrityIssue>();
         lock (SyncRoot)
         {
+            if (_undoFailure is { } failure)
+            {
+                // Not a disagreement between rows and indexes, but the other way memory can be wrong after a row
+                // was changed in place - and on a database without storage, which goes on taking writes, the
+                // one place it is reported once the rollback that failed has thrown.
+                issues.Add(new BlazeDbIntegrityIssue(failure.Table, null,
+                    $"A rollback could not undo a write to this table ({failure.Cause.GetType().Name}: {failure.Cause.Message}), " +
+                    "so it may still hold a write that was rolled back."));
+            }
             foreach (var table in _tableList)
             {
                 table.VerifyIntegrity(issues);
@@ -382,12 +438,12 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
     /// </summary>
     internal BlazeDbTransaction BeginTransaction(object? owner)
     {
-        CheckDisposed();
-        CheckWritable();
         // Under the lock so a transaction cannot open around a write another thread is part-way
-        // through, which would pull that write into it - and roll it back with it.
+        // through, which would pull that write into it - and roll it back with it - nor open once
+        // DisposeAsync has closed the database.
         lock (SyncRoot)
         {
+            EnsureWritable();
             if (_activeTransaction is not null)
             {
                 throw new InvalidOperationException("A transaction is already active; nested transactions are not supported.");
@@ -451,6 +507,8 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
         Exception? revertFailure = null;
         lock (SyncRoot)
         {
+            // Every write checks this under the same lock, so none can land in the log after the final
+            // flush below has taken what is there.
             _disposed = true;
             if (_activeTransaction is { } open)
             {
@@ -463,7 +521,6 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
                     // Reported once the log is closed: whatever the undo left behind was never
                     // journaled, and stopping the flusher must not depend on it.
                     revertFailure = ex;
-                    Poison(ex);
                 }
                 finally
                 {
@@ -555,39 +612,39 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
 
     internal void ApplyWrite(IBlazeDbTxnOp op)
     {
-        EnsureWritable();
         lock (SyncRoot)
         {
+            // Checked under the lock DisposeAsync closes the database under, so a write racing it either
+            // lands before the final flush or is refused - never journaled after it and lost.
+            EnsureWritable();
             op.Apply();
             if (_activeTransaction is not null)
             {
                 _activeTransaction.Record(op);
                 return;
             }
-            if (_wal is not null)
+            BlazeDbChangeCollector? changes;
+            _singleOpScratch[0] = op;
+            try
             {
-                _singleOpScratch[0] = op;
-                try
-                {
-                    _wal.AppendCommit(_singleOpScratch);
-                }
-                catch
-                {
-                    // Memory must never run ahead of what the log will replay: an autocommit
-                    // write that could not be journaled is undone rather than left in place.
-                    RevertOrPoison(op.Revert);
-                    throw;
-                }
-                finally
-                {
-                    _singleOpScratch[0] = null!;
-                }
+                // Gathered before the write is journaled, as for a transaction (see CommitTransaction).
+                changes = CollectChanges(_singleOpScratch);
+                _wal?.AppendCommit(_singleOpScratch);
             }
-            if ((Changed is not null && !op.IsEngineTable) || op.IsObserved)
+            catch
             {
-                var collector = new BlazeDbChangeCollector();
-                op.CollectChange(collector);
-                QueueChanges(collector);
+                // Memory must never run ahead of what the log will replay: an autocommit
+                // write that could not be journaled is undone rather than left in place.
+                RevertKeepingCause(_singleOpScratch);
+                throw;
+            }
+            finally
+            {
+                _singleOpScratch[0] = null!;
+            }
+            if (changes is not null)
+            {
+                QueueChanges(changes);
             }
         }
     }
@@ -601,12 +658,28 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
         lock (SyncRoot)
         {
             VerifyActive(transaction);
+            if (transaction.UndoFailure is { } cause)
+            {
+                // Rolling part of it back failed, so it still holds writes that were meant to be gone. Committing
+                // would journal them and report them to subscribers; it is rolled back instead.
+                RevertKeepingCause(transaction.Ops);
+                _activeTransaction = null;
+                ActiveTransactionOwner = null;
+                throw new BlazeDbException(
+                    "The transaction cannot commit: rolling part of it back - a failed RunInTransaction unit, an EF Core " +
+                    "save or a savepoint - could not undo a write, so it may still hold writes that were meant to be gone. " +
+                    "It has been rolled back instead. See the inner exception for the failure.", cause);
+            }
+            BlazeDbChangeCollector? changes = null;
             try
             {
                 if (transaction.Ops.Count > 0)
                 {
+                    // The notification is built before the batch is journaled: once the log holds it, the
+                    // commit has happened and nothing - not even running out of memory building what to
+                    // tell subscribers - may undo it in memory while the next open replays it.
+                    changes = CollectChanges(transaction.Ops);
                     _wal?.AppendCommit(transaction.Ops);
-                    CollectChanges(transaction.Ops);
                 }
             }
             catch
@@ -614,13 +687,17 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
                 // Memory must never run ahead of what the log will replay, exactly as for an
                 // autocommit write: a batch that could not be journaled is undone here and now,
                 // and the transaction ends, rather than staying applied until someone disposes it.
-                RevertOrPoison(() => RevertOps(transaction.Ops));
+                RevertKeepingCause(transaction.Ops);
                 throw;
             }
             finally
             {
                 _activeTransaction = null;
                 ActiveTransactionOwner = null;
+            }
+            if (changes is not null)
+            {
+                QueueChanges(changes);
             }
         }
     }
@@ -633,11 +710,6 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
             try
             {
                 RevertOps(transaction.Ops);
-            }
-            catch (Exception ex)
-            {
-                Poison(ex);
-                throw;
             }
             finally
             {
@@ -660,17 +732,19 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
                 throw new ArgumentOutOfRangeException(nameof(savepoint));
             }
             // One write at a time, forgetting each as soon as it is undone: if undoing one throws, the
-            // transaction still lists exactly the writes memory still holds, so a later commit
-            // journals what is there and a later rollback does not undo anything twice.
+            // transaction still lists exactly the writes memory still holds, so the rollback that is now
+            // its only way out undoes what is there and nothing twice.
             for (var i = ops.Count - 1; i >= savepoint; i--)
             {
                 try
                 {
-                    ops[i].Revert();
+                    Revert(ops[i]);
                 }
                 catch (Exception ex)
                 {
-                    Poison(ex);
+                    // What is left was meant to be undone - a failed unit's writes, say, whose own exception
+                    // may be all the caller sees - so the transaction can no longer commit (see CommitTransaction).
+                    transaction.MarkUndoFailed(ex);
                     throw;
                 }
                 transaction.Truncate(i);
@@ -686,70 +760,102 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
     /// table. Rows and keys arrive as objects: this is the event for code that follows the whole
     /// database - an audit log, a sync outbox, a "saved" indicator - rather than one table.
     /// </summary>
-    public event EventHandler<BlazeDbChangedEventArgs>? Changed;
+    public event EventHandler<BlazeDbChangedEventArgs>? Changed
+    {
+        // Under the write lock, so who is listening cannot change while a commit decides what to collect.
+        add
+        {
+            lock (SyncRoot)
+            {
+                _changed += value;
+            }
+        }
+        remove
+        {
+            lock (SyncRoot)
+            {
+                _changed -= value;
+            }
+        }
+    }
 
-    internal bool HasChangedSubscribers => Changed is not null;
+    private EventHandler<BlazeDbChangedEventArgs>? _changed;
+
+    internal bool HasChangedSubscribers => _changed is not null;
 
     internal void RaiseChanged(BlazeDbChangedEventArgs args, ref List<Exception>? errors) =>
-        BlazeDbChangeCollector.Raise(Changed, this, args, ref errors);
+        BlazeDbChangeCollector.Raise(_changed, this, args, ref errors);
 
-    /// <summary>Collects a committed transaction's changes, when anything is listening. Called under <see cref="SyncRoot"/>.</summary>
-    private void CollectChanges(IReadOnlyList<IBlazeDbTxnOp> ops)
+    /// <summary>
+    /// The changes a commit makes, for whoever is listening as it commits, or null when nobody is. Called
+    /// under <see cref="SyncRoot"/>, which subscribing takes too, so the subscribers are fixed for the whole
+    /// commit: a table's rows are collected all or none, and the database-wide event is raised only for a
+    /// commit that was collected whole - never for one that gathered just the rows of the tables somebody
+    /// happened to watch, because a database subscriber arrived between the commit and its delivery.
+    /// </summary>
+    private BlazeDbChangeCollector? CollectChanges(IReadOnlyList<IBlazeDbTxnOp> ops)
     {
-        var all = Changed is not null;
+        var all = _changed is not null;
         BlazeDbChangeCollector? collector = null;
         foreach (var op in ops)
         {
             if ((all && !op.IsEngineTable) || op.IsObserved)
             {
-                op.CollectChange(collector ??= new BlazeDbChangeCollector());
+                op.CollectChange(collector ??= new BlazeDbChangeCollector(isReset: false, reportsDatabase: all));
             }
         }
-        if (collector is not null)
-        {
-            QueueChanges(collector);
-        }
+        return collector;
     }
 
+    /// <summary>Queues a commit's changes for this thread to deliver. Called under <see cref="SyncRoot"/>.</summary>
     private void QueueChanges(BlazeDbChangeCollector collector)
     {
-        _pendingChanges.Enqueue(collector);
-        _pendingChangeCount++;
+        _pendingChanges.Value!.Items.Enqueue(collector);
+        Interlocked.Increment(ref _pendingChangeCount);
     }
 
     /// <summary>
-    /// Hands queued changes to their subscribers, in commit order. Every public write calls it once its
-    /// lock is released; one that still holds the lock - a write inside <see cref="RunInTransaction"/> -
-    /// or that is itself running inside a handler leaves the queue to the outer call, so handlers never
-    /// run under the write lock and one commit's notification reaches every subscriber before the next
-    /// one starts. The exceptions handlers threw are rethrown together once everything was delivered:
-    /// the commits they concern have happened, and say so.
+    /// Hands the changes this thread committed to their subscribers, in the order it committed them. Every
+    /// public write calls it once its lock is released; one that still holds the lock - a write inside
+    /// <see cref="RunInTransaction"/> - or that is itself running inside a handler leaves the queue to the
+    /// outer call, so handlers never run under the write lock and one commit's notification reaches every
+    /// subscriber before the next one starts. Commits made on other threads are theirs to deliver: on a
+    /// multi-threaded host, handlers for commits made on different threads can run at the same time, each on
+    /// the thread that committed. The exceptions handlers threw are rethrown together once everything was
+    /// delivered: the commits they concern have happened, and say so.
     /// </summary>
     internal void DeliverChanges()
     {
-        if (_pendingChangeCount == 0 || Monitor.IsEntered(SyncRoot) || Monitor.IsEntered(_deliveryLock))
+        if (Volatile.Read(ref _pendingChangeCount) == 0 || Monitor.IsEntered(SyncRoot))
+        {
+            return;
+        }
+        var pending = _pendingChanges.Value!;
+        if (pending.Delivering)
         {
             return;
         }
         List<Exception>? errors = null;
-        lock (_deliveryLock)
+        pending.Delivering = true;
+        try
         {
-            while (true)
+            while (pending.Items.TryDequeue(out var next))
             {
-                BlazeDbChangeCollector next;
-                IBlazeDbTableInternal[] tables;
-                lock (SyncRoot)
+                Interlocked.Decrement(ref _pendingChangeCount);
+                IBlazeDbTableInternal[] tables = [];
+                if (next.IsReset)
                 {
-                    if (_pendingChanges.Count == 0)
+                    lock (SyncRoot)
                     {
-                        break;
+                        tables = _tableList.ToArray();
                     }
-                    next = _pendingChanges.Dequeue();
-                    _pendingChangeCount--;
-                    tables = next.IsReset ? _tableList.ToArray() : [];
                 }
                 next.Deliver(this, tables, ref errors);
             }
+        }
+        finally
+        {
+            pending.Delivering = false;
         }
         if (errors is not null)
         {
@@ -757,37 +863,83 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
         }
     }
 
+    /// <summary>One thread's commits whose changes are not delivered yet, and whether it is delivering them now.</summary>
+    private sealed class PendingChanges
+    {
+        public readonly Queue<BlazeDbChangeCollector> Items = new();
+        public bool Delivering;
+    }
+
     /// <summary>
-    /// Set when undoing a write failed - only an index whose selector or comparer throws can do that. Memory
-    /// then holds a write the log never recorded, and a checkpoint would make it durable, so from then on
-    /// the database refuses writes and checkpoints and says why; reads go on. Reopening rebuilds memory
-    /// from storage, which never saw the write.
+    /// Set when undoing a write failed - only an index whose selector or comparer throws can do that - with
+    /// the table it failed in: memory may then still hold a write that was rolled back. With storage, that
+    /// is a write the log never recorded, and a checkpoint or an export would make it durable, so from then
+    /// on the database refuses writes, checkpoints and exports and says why; reads go on, and reopening
+    /// rebuilds memory from storage, which never saw the write. Without storage, memory is the only copy
+    /// there is: refusing would protect nothing and leave no way back, so the database carries on and
+    /// <see cref="VerifyIntegrity"/> reports the failure.
     /// </summary>
-    private volatile Exception? _undoFailure;
+    private volatile UndoFailureRecord? _undoFailure;
 
-    /// <summary>Whether memory may hold an unjournaled write, after an undo failed. Checkpoints refuse then.</summary>
-    internal Exception? UndoFailure => _undoFailure;
+    private sealed record UndoFailureRecord(Exception Cause, string Table);
 
-    private void Poison(Exception cause) => _undoFailure ??= cause;
+    /// <summary>Why memory may hold a write storage never saw, after an undo failed; null on a database without storage. Checkpoints refuse then.</summary>
+    internal Exception? StorageUndoFailure => _wal is null ? null : _undoFailure?.Cause;
 
-    /// <summary>Runs an undo; if it fails, records that and keeps the exception being handled as the one that propagates.</summary>
-    private void RevertOrPoison(Action revert)
+    /// <summary>Undoes one write; if that fails, records it (see <see cref="_undoFailure"/>) and rethrows. Called under <see cref="SyncRoot"/>.</summary>
+    private void Revert(IBlazeDbTxnOp op)
     {
         try
         {
-            revert();
+            op.Revert();
         }
         catch (Exception ex)
         {
-            Poison(ex);
+            _undoFailure ??= new UndoFailureRecord(ex, op.TableName);
+            throw;
         }
     }
 
-    private static void RevertOps(IReadOnlyList<IBlazeDbTxnOp> ops)
+    /// <summary>
+    /// Undoes <paramref name="ops"/>, newest first. One that fails does not stop the rest: the transaction
+    /// is ending, so nothing would ever retry them, and every write undone brings memory closer to the state
+    /// before it - an earlier write to the same row may even restore that row outright. The first failure is
+    /// rethrown once all have been tried.
+    /// </summary>
+    private void RevertOps(IReadOnlyList<IBlazeDbTxnOp> ops)
     {
+        Exception? failure = null;
         for (var i = ops.Count - 1; i >= 0; i--)
         {
-            ops[i].Revert();
+            try
+            {
+                Revert(ops[i]);
+            }
+            catch (Exception ex)
+            {
+                failure ??= ex;
+            }
+        }
+        if (failure is not null)
+        {
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw(failure);
+        }
+    }
+
+    /// <summary>
+    /// Undoes <paramref name="ops"/> for a write that is failing, keeping that failure the exception that
+    /// propagates: if the undo fails too, <see cref="Revert"/> has recorded it, and reporting it instead
+    /// would hide the cause.
+    /// </summary>
+    private void RevertKeepingCause(IReadOnlyList<IBlazeDbTxnOp> ops)
+    {
+        try
+        {
+            RevertOps(ops);
+        }
+        catch
+        {
+            // Recorded; the write's own failure is the one to report.
         }
     }
 
@@ -809,7 +961,7 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
                 "This database was opened as a read-only replica. Writes belong to the tab holding " +
                 "the writer lock; call ReloadAsync to pick up its changes.");
         }
-        if (_undoFailure is { } cause)
+        if (StorageUndoFailure is { } cause)
         {
             throw new BlazeDbException(
                 "An earlier rollback could not undo a write - an index selector or comparer threw - so memory may " +

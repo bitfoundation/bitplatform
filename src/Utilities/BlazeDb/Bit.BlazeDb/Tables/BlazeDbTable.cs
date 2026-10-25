@@ -49,10 +49,31 @@ public sealed class BlazeDbTable<TKey, TRow> : IBlazeDbTableInternal
     /// the write lock is released, so a handler may read and write the database; a write it makes is
     /// delivered once the current notification has reached every subscriber. A handler that throws does
     /// not stop the others, and its exception surfaces from the write that committed - which has still
-    /// committed. On a read-only replica it is raised with <see cref="BlazeDbTableChangedEventArgs{TKey, TRow}.IsReset"/>
-    /// set after a reload.
+    /// committed. On a multi-threaded host each thread delivers its own commits, so handlers for commits
+    /// made on different threads can run at the same time. On a read-only replica it is raised with
+    /// <see cref="BlazeDbTableChangedEventArgs{TKey, TRow}.IsReset"/> set after a reload.
     /// </summary>
-    public event EventHandler<BlazeDbTableChangedEventArgs<TKey, TRow>>? Changed;
+    public event EventHandler<BlazeDbTableChangedEventArgs<TKey, TRow>>? Changed
+    {
+        // Under the write lock, so who is listening cannot change while a commit decides what to collect,
+        // and a live query can start listening and take its first result with no commit in between.
+        add
+        {
+            lock (_db.SyncRoot)
+            {
+                _changed += value;
+            }
+        }
+        remove
+        {
+            lock (_db.SyncRoot)
+            {
+                _changed -= value;
+            }
+        }
+    }
+
+    private EventHandler<BlazeDbTableChangedEventArgs<TKey, TRow>>? _changed;
 
     /// <summary>
     /// Runs <paramref name="query"/> against this table now and again after every commit that changed it,
@@ -68,16 +89,23 @@ public sealed class BlazeDbTable<TKey, TRow> : IBlazeDbTableInternal
     public BlazeDbLiveQuery<TResult> Watch<TResult>(Func<BlazeDbTable<TKey, TRow>, TResult> query, Func<TRow, bool>? relevantTo = null)
     {
         ArgumentNullException.ThrowIfNull(query);
-        var live = new BlazeDbLiveQuery<TResult>(() => query(this));
+        BlazeDbLiveQuery<TResult>? live = null;
         EventHandler<BlazeDbTableChangedEventArgs<TKey, TRow>> handler = (_, args) =>
         {
-            if (!live.IsDisposed && (relevantTo is null || args.IsReset || args.Changes.Any(change => Concerns(change, relevantTo))))
+            if (live is not null && (relevantTo is null || args.IsReset || args.Changes.Any(change => Concerns(change, relevantTo))))
             {
-                live.Refresh();
+                live.RefreshUnlessDisposed();
             }
         };
-        Changed += handler;
-        live.Attach(() => Changed -= handler);
+        // The first run and the subscription happen under the write lock, so no commit on another thread can
+        // land between them: one made before is in the first result, and one made after re-runs the query.
+        lock (_db.SyncRoot)
+        {
+            live = new BlazeDbLiveQuery<TResult>(() => query(this), () => Changed -= handler);
+            Changed += handler;
+        }
+        // A query that writes queued its commits under the lock; they are this thread's to deliver.
+        _db.DeliverChanges();
         return live;
     }
 
@@ -86,13 +114,13 @@ public sealed class BlazeDbTable<TKey, TRow> : IBlazeDbTableInternal
         (change.Kind != BlazeDbChangeKind.Deleted && relevantTo(change.NewRow!));
 
     /// <summary>Whether anything is listening for this table's changes, so a commit knows whether to collect them.</summary>
-    internal bool IsObserved => Changed is not null;
+    internal bool IsObserved => _changed is not null;
 
     /// <summary>The engine's own metadata table, whose writes are not the application's changes to report.</summary>
     internal bool IsEngineTable => ReferenceEquals(Descriptor, BlazeDbMetaTable.Descriptor);
 
     internal void RaiseChanged(BlazeDbTableChangedEventArgs<TKey, TRow> args, ref List<Exception>? errors) =>
-        BlazeDbChangeCollector.Raise(Changed, this, args, ref errors);
+        BlazeDbChangeCollector.Raise(_changed, this, args, ref errors);
 
     void IBlazeDbTableInternal.RaiseReset(ref List<Exception>? errors) =>
         RaiseChanged(new BlazeDbTableChangedEventArgs<TKey, TRow>([], isReset: true), ref errors);
@@ -465,28 +493,37 @@ public sealed class BlazeDbTable<TKey, TRow> : IBlazeDbTableInternal
     // no transaction open the batch commits as one transaction and one log record; inside an open
     // transaction it joins it behind a savepoint, so a failure takes back only the batch's own writes
     // and leaves the transaction as it was. A refused row raises the same exception its single-row
-    // counterpart would.
+    // counterpart would. The input is read in full before anything is written - under the write lock,
+    // so no other thread's write lands between reading it and writing it - and may therefore come
+    // straight from a query over the same table - todos.UpsertMany(todos.Range(...).Select(t => t with
+    // { ... })) - without the writes invalidating the enumeration that produces it.
 
-    /// <summary>Inserts every row, atomically. See <see cref="Insert"/> for what each row must satisfy.</summary>
+    /// <summary>
+    /// Inserts every row, atomically. See <see cref="Insert"/> for what each row must satisfy. The rows are
+    /// read in full first, so they may be computed from a query over this table.
+    /// </summary>
     public void InsertMany(IEnumerable<TRow> rows)
     {
         ArgumentNullException.ThrowIfNull(rows);
         _db.RunInTransaction(() =>
         {
-            foreach (var row in rows)
+            foreach (var row in Buffer(rows))
             {
                 Insert(row);
             }
         });
     }
 
-    /// <summary>Inserts or replaces every row, atomically. Later rows win when two share a key.</summary>
+    /// <summary>
+    /// Inserts or replaces every row, atomically. Later rows win when two share a key. The rows are read in
+    /// full first, so they may be computed from a query over this table.
+    /// </summary>
     public void UpsertMany(IEnumerable<TRow> rows)
     {
         ArgumentNullException.ThrowIfNull(rows);
         _db.RunInTransaction(() =>
         {
-            foreach (var row in rows)
+            foreach (var row in Buffer(rows))
             {
                 Upsert(row);
             }
@@ -502,11 +539,10 @@ public sealed class BlazeDbTable<TKey, TRow> : IBlazeDbTableInternal
     public int DeleteMany(IEnumerable<TKey> keys)
     {
         ArgumentNullException.ThrowIfNull(keys);
-        var buffered = keys.ToArray();
         return _db.RunInTransaction(() =>
         {
             var deleted = 0;
-            foreach (var key in buffered)
+            foreach (var key in Buffer(keys))
             {
                 if (Delete(key))
                 {
@@ -557,6 +593,12 @@ public sealed class BlazeDbTable<TKey, TRow> : IBlazeDbTableInternal
         return deleted;
     }
 
+    /// <summary>
+    /// A bulk write's input, read in full: an array or a list is already that, and nothing a write does can
+    /// change it; anything else - a query over this table, say - is copied before the first write.
+    /// </summary>
+    private static IEnumerable<T> Buffer<T>(IEnumerable<T> items) => items is T[] or List<T> ? items : items.ToArray();
+
     // ---- Writes against rows that were mutated in place ----
     //
     // Callers normally hand the table a new row object, so the entry it still holds describes the
@@ -576,9 +618,10 @@ public sealed class BlazeDbTable<TKey, TRow> : IBlazeDbTableInternal
     /// </summary>
     public void UpdateInPlace(TRow row, TRow previousValues)
     {
-        _db.EnsureWritable();
         lock (_db.SyncRoot)
         {
+            // Before the entry is repointed below, and under the lock DisposeAsync closes the database under.
+            _db.EnsureWritable();
             var key = KeyOf(row);
             if (!_rows.TryGetValue(key, out var old))
             {
@@ -619,9 +662,9 @@ public sealed class BlazeDbTable<TKey, TRow> : IBlazeDbTableInternal
     /// </summary>
     internal bool DeleteInPlace(TKey key, TRow previousValues, TRow instance)
     {
-        _db.EnsureWritable();
         lock (_db.SyncRoot)
         {
+            _db.EnsureWritable();
             if (!_rows.TryGetValue(key, out var old))
             {
                 return false;
@@ -893,6 +936,8 @@ public sealed class BlazeDbTable<TKey, TRow> : IBlazeDbTableInternal
 
         public void Apply() => _table.SetEntry(_key, _row, _table._db.NextSeq());
 
+        public string TableName => _table.Name;
+
         public bool IsObserved => _table.IsObserved;
 
         public bool IsEngineTable => _table.IsEngineTable;
@@ -941,6 +986,8 @@ public sealed class BlazeDbTable<TKey, TRow> : IBlazeDbTableInternal
         }
 
         public void Apply() => _table.RemoveEntry(_key);
+
+        public string TableName => _table.Name;
 
         public bool IsObserved => _table.IsObserved;
 

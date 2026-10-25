@@ -99,6 +99,7 @@ Hypotheses rejected by measurement: `SortedSet` views being O(k) (ADR-003).
 | 8 | Reactive | `Changed` events, live queries (ADR-005) | `ChangeNotificationTests`; model test shadow from notifications |
 | 9 | Developer experience | README sections for every feature, README examples run as tests, demo `/changes` page, stale demo text corrected, roadmap updated | `ReadmeExampleTests`, E2E `DemoPageTests` and `ChangeFeedTests`, MCP suite |
 | 10 | Hardening | Independent review of the engine diff (fresh reviewer); its six findings fixed: committed EF saves reported as failed when a handler threw (`BlazeDbChangeHandlerException`), an atomic unit keeping writes after rolling back past its start (clamped unit marks), the metadata table leaking into `Changed`, `required` constructor-bound members not compiling, indexed get-only auto-properties silently unstored (BLZ017, BLZ018), and a failed undo leaving unjournaled writes for a checkpoint (database refuses writes until reopened); full verification, final benchmarks, documentation audit | `ReviewRegressionTests`; section 5 |
+| 11 | Second review | A code review of the committed pass; its fifteen findings fixed: notifications delivered on another thread than the commit's and able to deadlock (per-thread queues), bulk writes fed by a query over their own table (input buffered), a pooled EF context losing a handler's error (per-save subscription), a commit undone after it was journaled (changes collected first), exports after a failed undo, the body's exception replaced by the undo's, a live query missing a commit while it started and a database subscriber handed part of a commit (subscription under the write lock), EF saves interleaving units with another thread (saves run under the lock), a write journaled after the final flush on dispose (checks under the lock), an in-memory database locked for good by a failed undo, a stream's bare enumerator error, two extra copies on import, an eager `Explain` string, and the MCP inspector's constructor matching. A fresh reviewer of those fixes then found three more, also fixed: a transaction could commit what a failed unit could not take back (it now refuses and rolls back), a rollback stopped at the first write it could not undo (it now undoes every write it can), and an EF save resolving its tables under the write lock could deadlock against the engine cache (tables resolved first) | `ReviewFollowUpTests`, MCP inspector tests; section 5 |
 
 ## 5. Final verification
 
@@ -108,7 +109,7 @@ Run after the last change, from `src` (benchmarks in [benchmarks.md](benchmarks.
 | --- | --- |
 | `dotnet build Utilities/BlazeDb/Bit.BlazeDb.slnx` (Debug) | succeeded; only the pre-existing CS8602 warning |
 | `dotnet build` of `Bit.BlazeDb` and `Bit.BlazeDb.EntityFrameworkCore` in Release (trim and AOT analyzers on) | succeeded, no warnings |
-| `dotnet test --project Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests` | 1,236 passed (412 x net8.0, net9.0, net10.0), up from 873 |
+| `dotnet test --project Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests` | 1,269 passed (423 x net8.0, net9.0, net10.0), up from 873 |
 | `dotnet test --project Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.Mcp` | 70 passed |
 | `dotnet test --project Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.E2E` (Chromium) | 14 passed, up from 13 |
 

@@ -81,6 +81,15 @@ deliberately failing comparer), and `VerifyIntegrity` after each.
   otherwise), queued, and delivered by the outermost public write once the lock is released. A write made
   inside a handler is queued and delivered after the current notification reached every subscriber, so
   notifications are in commit order.
+- The queue is per thread: each thread delivers the commits it made, so a handler runs on the thread that
+  committed and its exception surfaces from that thread's write. On a multi-threaded host, handlers for
+  commits made on different threads may run at the same time; one thread never waits for another's handlers
+  (a global delivery lock did, and deadlocked a handler waiting on another thread's write).
+- Subscribing takes the write lock, so the set of subscribers is fixed for a whole commit: a table's rows are
+  collected all or none, and the database-wide event is raised only for commits collected while it had
+  subscribers - never with the rows of the watched tables alone. `Watch` takes its first result and
+  subscribes under the same lock, so no commit falls between them.
+- The commit's changes are collected before it is journaled: once the log holds a commit, nothing may undo it.
 - Every subscriber is invoked separately; their exceptions are aggregated into one
   `BlazeDbChangeHandlerException`, a type of its own so callers - the EF Core provider first - can tell "committed,
   but a handler failed" from a failed write. The provider completes the save (EF accepts its changes) and
@@ -160,10 +169,13 @@ nested members. Shipping the serializer alone would make EF saves of in-place ne
 ## ADR-011 - A stream detects foreign writes rather than snapshotting
 
 `BlazeDbQuery.ExecuteAsync` yields between batches. If the table's `Version` moved while it was yielded,
-it throws `InvalidOperationException` naming the table. Writes made by the loop's own body (between the
-version reads) remain allowed, as for a synchronous `foreach`. Rejected: materializing the source first
-(defeats streaming) and silently continuing (Dictionary enumeration tolerates removals, so results would
-mix states without an error).
+it throws `InvalidOperationException` naming the table. Writes made while the loop body runs - by the body,
+or by other code while the body awaits - remain the loop's business, as for a synchronous `foreach`: the
+stream cannot tell them apart. The source carries on past those it tolerates; when it refuses one, the stream
+reports the same exception naming the table (the source's error as the inner exception) rather than a bare
+"Collection was modified". Rejected: materializing the source first (defeats streaming), silently continuing
+past a yield (Dictionary enumeration tolerates removals, so results would mix states without an error), and
+refusing every write between rows (would break loops that update the rows they stream).
 
 ## ADR-012 - WAL records are encoded in place; oversized commits are refused at commit
 
@@ -176,7 +188,9 @@ then silently treated as a torn record on replay, losing it and every later comm
 
 `InsertMany`, `UpsertMany`, `DeleteMany`, `DeleteWhere` and `DeleteAll` run through `RunInTransaction`, so a
 batch is atomic and one log record, but each row is an ordinary set or delete inside it. No new WAL op codes:
-a log written by this version replays on earlier engines.
+a log written by this version replays on earlier engines. The input is read in full before the first write
+(an array or a list as it is), so it may be a query over the same table - `UpsertMany(table.Range(...).Select(...))`
+- without the writes invalidating the enumeration that produces it.
 
 ## ADR-014 - Buffers grow with 64-bit arithmetic and refuse past `Array.MaxLength`
 

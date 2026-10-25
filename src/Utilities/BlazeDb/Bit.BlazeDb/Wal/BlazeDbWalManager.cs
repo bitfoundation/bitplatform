@@ -485,7 +485,7 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
                 {
                     return false;
                 }
-                if (_db.UndoFailure is { } cause)
+                if (_db.StorageUndoFailure is { } cause)
                 {
                     // A snapshot of memory now could make a write durable that the log never recorded.
                     throw new BlazeDbException(
@@ -899,9 +899,10 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
     /// </summary>
     internal static async ValueTask ImportAsync(IBlazeDbStorage storage, ReadOnlyMemory<byte> snapshot, CancellationToken ct)
     {
-        var bytes = snapshot.ToArray();
-        VerifySnapshot(bytes, "import");
-        var reader = new BlazeDbBufferReader(bytes.AsSpan(SnapshotMagic.Length + 1));
+        // Verified where it lies and written out as it is: a whole database's worth of bytes is not copied
+        // again here, which on WebAssembly can be the difference between fitting in the tab and not.
+        VerifySnapshot(snapshot.Span, "import");
+        var reader = new BlazeDbBufferReader(snapshot.Span.Slice(SnapshotMagic.Length + 1));
         var lsn = (long)reader.ReadVarUInt();
 
         if (await storage.ReadAsync(ManifestFile, ct).ConfigureAwait(false) is not null)
@@ -914,7 +915,7 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
         // A first-generation log left by a database that was only partly deleted would otherwise be
         // replayed on top of the imported rows.
         await storage.DeleteAsync(WalFile, ct).ConfigureAwait(false);
-        await storage.WriteAtomicAsync(SnapshotFile, bytes, ct).ConfigureAwait(false);
+        await storage.WriteAtomicAsync(SnapshotFile, snapshot, ct).ConfigureAwait(false);
         await storage.WriteAtomicAsync(ManifestFile, BuildManifest(1, SnapshotFile, WalFile, lsn), ct).ConfigureAwait(false);
     }
 
@@ -922,15 +923,15 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
     /// Checks a snapshot's header and checksum. Kept apart from decoding it so the tables are only
     /// cleared once the bytes that will replace their contents are known to be intact.
     /// </summary>
-    private static void VerifySnapshot(byte[] bytes, string name)
+    private static void VerifySnapshot(ReadOnlySpan<byte> bytes, string name)
     {
         if (bytes.Length < SnapshotMagic.Length + 1 + 4 ||
-            !bytes.AsSpan(0, 4).SequenceEqual(SnapshotMagic))
+            !bytes.Slice(0, 4).SequenceEqual(SnapshotMagic))
         {
             throw new BlazeDbCorruptDatabaseException($"Snapshot '{name}' has an invalid header.");
         }
-        var body = bytes.AsSpan(0, bytes.Length - 4);
-        var crcReader = new BlazeDbBufferReader(bytes.AsSpan(bytes.Length - 4));
+        var body = bytes.Slice(0, bytes.Length - 4);
+        var crcReader = new BlazeDbBufferReader(bytes.Slice(bytes.Length - 4));
         if (BlazeDbCrc32.Compute(body) != crcReader.ReadFixed32())
         {
             throw new BlazeDbCorruptDatabaseException($"Snapshot '{name}' failed checksum validation.");

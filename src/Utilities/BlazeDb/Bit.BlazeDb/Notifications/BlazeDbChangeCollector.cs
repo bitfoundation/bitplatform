@@ -10,10 +10,21 @@ internal sealed class BlazeDbChangeCollector
     private readonly List<IBlazeDbTableChanges> _tables = [];
     private readonly Dictionary<object, IBlazeDbTableChanges> _byTable = new(ReferenceEqualityComparer.Instance);
 
-    public BlazeDbChangeCollector(bool isReset = false) => IsReset = isReset;
+    public BlazeDbChangeCollector(bool isReset, bool reportsDatabase)
+    {
+        IsReset = isReset;
+        ReportsDatabase = reportsDatabase;
+    }
 
     /// <summary>The whole database was replaced: every table is reported reset rather than row by row.</summary>
     public bool IsReset { get; }
+
+    /// <summary>
+    /// Whether the database's own <c>Changed</c> had subscribers when the commit was collected, and so every
+    /// table's rows were. Only then is that event raised for it: one collected for a few watched tables
+    /// alone would hand a database subscriber that arrived since a commit missing the rest of its rows.
+    /// </summary>
+    public bool ReportsDatabase { get; }
 
     public BlazeDbTableChanges<TKey, TRow> For<TKey, TRow>(BlazeDbTable<TKey, TRow> table)
         where TKey : notnull
@@ -32,7 +43,7 @@ internal sealed class BlazeDbChangeCollector
     /// </summary>
     public void Deliver(BlazeDbDatabase database, IReadOnlyList<IBlazeDbTableInternal> resetTables, ref List<Exception>? errors)
     {
-        List<BlazeDbRowChange>? all = database.HasChangedSubscribers ? [] : null;
+        List<BlazeDbRowChange>? all = ReportsDatabase && database.HasChangedSubscribers ? [] : null;
         if (IsReset)
         {
             foreach (var table in resetTables)
