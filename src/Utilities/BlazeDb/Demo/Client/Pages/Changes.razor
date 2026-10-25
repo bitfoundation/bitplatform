@@ -22,12 +22,18 @@
                     <button type="button" class="btn btn-secondary" @onclick="Batch"><Icon Name="txn" /> Three writes, one transaction</button>
                     <button type="button" class="btn btn-secondary" @onclick="Churn"><Icon Name="history" /> Insert and delete in one transaction</button>
                     <button type="button" class="btn btn-secondary" @onclick="RolledBack"><Icon Name="refresh" /> Write, then roll back</button>
+                    <button type="button" class="btn btn-secondary" @onclick="Savepoint"><Icon Name="history" /> Roll back to a savepoint, then commit</button>
+                    <button type="button" class="btn btn-secondary" @onclick="Bulk"><Icon Name="layers" /> InsertMany - three rows</button>
+                    <button type="button" class="btn btn-secondary" @onclick="HandlerWrites"><Icon Name="code" /> A handler that writes</button>
+                    <button type="button" class="btn bd-btn-danger" @onclick="HandlerThrows"><Icon Name="alert" /> A handler that throws</button>
                 </div>
             </Panel>
 
             <Panel Title="Live query: open items" IconName="database" Flush="true">
                 <Actions>
                     <span class="bd-panel-sub">re-ran @(_live?.Version ?? 0)×</span>
+                    <span class="bb-badge bd-badge-neutral" title="todos.Version - bumped by every commit that changed the table">todos.Version = @(_todos?.Version ?? 0)</span>
+                    <button type="button" class="btn btn-secondary" @onclick="RefreshLive"><Icon Name="refresh" /> Refresh()</button>
                 </Actions>
                 <ChildContent>
                     @if (Open.Count == 0)
@@ -53,7 +59,7 @@
             <CodeBlock Title="The live query above" Code="@LiveSnippet" />
         </div>
 
-        <Panel Title="Change feed" IconName="history" Flush="true">
+        <Panel Title="Change feed - db.Changed" IconName="history" Flush="true">
             <Actions>
                 <span class="bd-panel-sub">@_feed.Count commits</span>
             </Actions>
@@ -113,6 +119,32 @@
         A commit collects changes only for tables someone subscribed to (or when the database event has a subscriber),
         so an application that never subscribes pays one field read per write.
     </Callout>
+    <div class="bb-grid">
+        <div class="bb-card">
+            <h4 class="bb-card-title">One thread, one order</h4>
+            <p class="bb-card-desc">Handlers run on the thread that committed - each thread delivers its own commits - so a component re-renders through <code>InvokeAsync(StateHasChanged)</code>. A database-wide subscriber on a multi-threaded host that needs one ordered stream, an outbox, serializes itself there. See the <a href="hosting">threading model</a>.</p>
+        </div>
+        <div class="bb-card">
+            <h4 class="bb-card-title">Through EF Core</h4>
+            <p class="bb-card-desc"><code>SaveChanges</code> completes first - the change tracker accepts what was saved - and then throws the <code>BlazeDbChangeHandlerException</code>. The save did commit: do not retry it.</p>
+        </div>
+        <div class="bb-card">
+            <h4 class="bb-card-title">Replicas report resets</h4>
+            <p class="bb-card-desc">A read-only replica raises <code>Changed</code> with <code>IsReset</code> after <code>ReloadAsync</code>: the whole table was replaced, row by row changes are not known. <a href="tabs">Watch one reload</a>.</p>
+        </div>
+    </div>
+    <div class="bb-split">
+        <Panel Title="A live query" IconName="database">
+            <ul class="bb-detail-list">
+                <li><code>table.Watch(query)</code> runs the query now and again after every commit to the table; <code>Result</code> is the current value, <code>Version</code> counts the runs and <code>Changed</code> fires after each.</li>
+                <li>Given <code>relevantTo</code>, it re-runs only after commits that changed a row the test accepts - before or after the change.</li>
+                <li>Return a materialized result (<code>ToList()</code>, a count, a row): a lazy sequence would be enumerated later, against whatever the table holds by then.</li>
+                <li><code>Refresh()</code> re-runs it on demand; <code>Dispose()</code> unsubscribes it, and <code>IsDisposed</code> says so.</li>
+                <li>Without a subscription, <code>table.Version</code> - a counter every commit that changes the table moves on - tells a cache whether a result it holds is still current; it is what a stream checks between batches too.</li>
+            </ul>
+        </Panel>
+        <CodeBlock Title="Typed changes, row by row" Code="@TypedSnippet" />
+    </div>
 </Section>
 
 @code {
@@ -136,7 +168,7 @@
 
         _db.Changed += (_, e) =>
         {
-            var summary = string.Join(", ", e.Changes.Select(c => $"{c.Kind.ToString().ToLowerInvariant()} {Short(c.Key)}"));
+            var summary = string.Join(", ", e.Changes.Select(Describe));
             _feed.Add(new FeedEntry(_feed.Count + 1, _action, summary));
         };
         _live = _todos.Watch(
@@ -153,6 +185,24 @@
     };
 
     private static string Short(object key) => key is Guid id ? id.ToString()[..8] : key.ToString() ?? "";
+
+    /// <summary>One row change as the feed shows it: the table, the kind, the key - and for an update, what moved.</summary>
+    private static string Describe(BlazeDbRowChange change)
+    {
+        var text = $"{change.Table}: {change.Kind.ToString().ToLowerInvariant()} {Short(change.Key)}";
+        if (change is { Kind: BlazeDbChangeKind.Updated, OldRow: TodoEntry before, NewRow: TodoEntry after })
+        {
+            if (before.Title != after.Title)
+            {
+                text += $" (\"{before.Title}\" → \"{after.Title}\")";
+            }
+            if (before.Done != after.Done)
+            {
+                text += $" (Done {before.Done} → {after.Done})";
+            }
+        }
+        return text;
+    }
 
     private void Run(string action, Action write, string note)
     {
@@ -217,6 +267,70 @@
         txn.Rollback();
     }, "The transaction rolled back, so subscribers heard nothing.");
 
+    private void Savepoint() => Run("Savepoint", () =>
+    {
+        using var txn = _db!.BeginTransaction();
+        _todos!.Insert(NewTodo("Kept by the savepoint", effort: 6));
+        var savepoint = txn.CreateSavepoint();
+        _todos.Insert(NewTodo("Rolled back to the savepoint", effort: 7));
+        txn.RollbackTo(savepoint);
+        txn.Commit();
+    }, "Two inserts, one of them rolled back to a savepoint: only the one that committed is reported.");
+
+    private void Bulk() => Run("InsertMany", () => _todos!.InsertMany(
+        Enumerable.Range(1, 3).Select(i => NewTodo($"Bulk {++_counter}", effort: 10 + i))),
+        "A bulk write is one commit: one Changed event carrying three inserts.");
+
+    private void HandlerWrites()
+    {
+        var settings = _db!.GetTable(Setting.Table);
+
+        void Audit(object? sender, BlazeDbTableChangedEventArgs<Guid, TodoEntry> e)
+        {
+            // A write from a handler: delivered once this notification has reached every subscriber.
+            settings.Upsert(new Setting { Name = "audit.last", Value = $"{e.Changes.Count} todo change(s)", UpdatedAt = DateTime.UtcNow });
+        }
+
+        _todos!.Changed += Audit;
+        try
+        {
+            Run("Insert, audited by a handler", () => _todos.Insert(NewTodo($"Audited {++_counter}", effort: 8)),
+                "The handler's own write is reported as the next commit, after this one reached every subscriber - commit order is kept.");
+        }
+        finally
+        {
+            _todos.Changed -= Audit;
+        }
+    }
+
+    private void HandlerThrows()
+    {
+        static void Broken(object? sender, BlazeDbTableChangedEventArgs<Guid, TodoEntry> e) =>
+            throw new InvalidOperationException("this subscriber has a bug");
+
+        _todos!.Changed += Broken;
+        var before = _todos.Count;
+        try
+        {
+            Run("Insert, with a failing subscriber", () => _todos.Insert(NewTodo($"Committed anyway {++_counter}", effort: 9)), "");
+            _note = "No exception - unexpected.";
+        }
+        catch (BlazeDbChangeHandlerException ex)
+        {
+            _note = $"The insert threw BlazeDbChangeHandlerException ({ex.InnerException?.Message}) - yet todos.Count went from {before} to {_todos.Count} and the feed still heard it: the write committed, every other subscriber was told, so do not retry it.";
+        }
+        finally
+        {
+            _todos.Changed -= Broken;
+        }
+    }
+
+    private void RefreshLive()
+    {
+        _live?.Refresh();
+        _note = $"_open.Refresh() re-ran the query on demand: Version = {_live?.Version}.";
+    }
+
     public async ValueTask DisposeAsync()
     {
         _live?.Dispose();
@@ -242,6 +356,22 @@
 
             public void Dispose() => _open.Dispose();
         }
+        """;
+
+    private const string TypedSnippet = """
+        todos.Changed += (_, e) =>
+        {
+            foreach (var change in e.Changes)        // BlazeDbRowChange<Guid, TodoEntry>
+            {
+                switch (change.Kind)
+                {
+                    case BlazeDbChangeKind.Inserted: Added(change.NewRow!); break;
+                    case BlazeDbChangeKind.Updated:  Moved(change.OldRow!, change.NewRow!); break;
+                    case BlazeDbChangeKind.Deleted:  Removed(change.Key); break;
+                }
+            }
+            if (e.IsReset) ReloadEverything();     // a replica's ReloadAsync
+        };
         """;
 
     private const string SubscribeSnippet = """

@@ -87,7 +87,7 @@ todos.Insert(<span class="k">new</span> TodoEntry
     @* ============================== Proof strip ============================== *@
 
     <section class="bb-proof">
-        <div><strong>2.6 ns point reads</strong><span>a dictionary probe, zero allocations, no statement to bind</span></div>
+        <div><strong>1.2 ns point reads</strong><span>a dictionary probe, zero allocations, no statement to bind</span></div>
         <div><strong>No SQL, no interop</strong><span>typed <code>Get</code>, <code>Lookup</code>, <code>Range</code> and <code>Scan</code> on the read path</span></div>
         <div><strong>WAL + snapshots</strong><span>atomic commits, crash recovery, persisted to OPFS</span></div>
         <div><strong>Zero runtime reflection</strong><span>a source generator emits the schema - trimming and AOT safe</span></div>
@@ -147,10 +147,26 @@ todos.Insert(<span class="k">new</span> TodoEntry
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Built for the browser</h3>
                 <p class="bb-card-desc">
-                    OPFS and IndexedDB backends, a Web Lock so one tab writes, read-only replica tabs, quota awareness
-                    and encryption at rest through WebCrypto.
+                    OPFS and IndexedDB backends, a Web Lock so one tab writes, <a href="tabs">read-only replica tabs</a>,
+                    quota awareness and <a href="encryption">encryption at rest</a> through WebCrypto.
                 </p>
                 <a href="storage" class="btn btn-outline">Storage backends →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Reactive by default</h3>
+                <p class="bb-card-desc">
+                    Every table reports the net change of each commit, and a live query re-runs only when a commit
+                    concerns it - so a component re-renders when its data changed, and only then.
+                </p>
+                <a href="changes" class="btn btn-outline">Changes &amp; live queries →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Backups and migrations</h3>
+                <p class="bb-card-desc">
+                    One checksummed export file that imports onto any backend, a <code>UserVersion</code> stored with the
+                    data, and migrations that bring a database forward when it opens.
+                </p>
+                <a href="backups" class="btn btn-outline">Backups &amp; migrations →</a>
             </section>
         </div>
     </section>
@@ -235,11 +251,11 @@ todos.Insert(<span class="k">new</span> TodoEntry
                     <tr><th>Operation</th><th>SQLite</th><th>BlazeDb</th></tr>
                 </thead>
                 <tbody>
-                    <tr><td>Point get by key</td><td>876 ns</td><td>2.6 ns, zero allocations</td></tr>
-                    <tr><td>Count by hash index</td><td>67,649 ns - a table scan</td><td>2.7 ns - a bucket size</td></tr>
-                    <tr><td>Ordered range scan (~5,100 rows)</td><td>69.3 µs</td><td>55.6 µs - both index-driven</td></tr>
-                    <tr><td>Upsert, autocommit</td><td>752 ns</td><td>462 ns with the WAL, 328 ns memory-only</td></tr>
-                    <tr><td>Upsert in a 1,000-op transaction</td><td>682 ns per op</td><td>487 ns per op, journaled</td></tr>
+                    <tr><td>Point get by key</td><td>743 ns</td><td>1.2 ns, zero allocations</td></tr>
+                    <tr><td>Count by hash index</td><td>63,020 ns - a table scan</td><td>2.1 ns - a bucket size</td></tr>
+                    <tr><td>Ordered range scan (~5,100 rows)</td><td>69.2 µs</td><td>45.4 µs - both index-driven</td></tr>
+                    <tr><td>Upsert, autocommit</td><td>706 ns</td><td>413 ns with the WAL, 311 ns memory-only</td></tr>
+                    <tr><td>Upsert in a 1,000-op transaction</td><td>620 ns per op</td><td>369 ns per op, journaled</td></tr>
                     <tr><td>Query language</td><td>SQL, parsed and planned</td><td>Typed calls into your indexes, or LINQ through EF Core</td></tr>
                 </tbody>
             </table>
@@ -306,8 +322,8 @@ todos.Insert(<span class="k">new</span> TodoEntry
                 <p>
                     One tab wins a Web Lock and writes; <code>CreateAsync</code> throws
                     <code>BlazeDbDatabaseLockedException</code> in the others, which can open the same database read-only
-                    and reload whenever the writer checkpoints. This site falls back to an in-memory database instead -
-                    open it in a second tab and the storage badge says so.
+                    and reload whenever the writer checkpoints - <a href="tabs">try it across two tabs</a>. This site's own
+                    database falls back to memory instead: open it in a second tab and the storage badge says so.
                 </p>
             </details>
             <details>
@@ -316,6 +332,23 @@ todos.Insert(<span class="k">new</span> TodoEntry
                     The engine has no browser dependency: on Blazor Server, ASP.NET Core, MAUI, WPF or a console tool it
                     persists through <code>BlazeDbFileStorage</code>. It assumes one logical writer with no concurrent
                     readers, so a multi-threaded server has to serialize access itself.
+                </p>
+            </details>
+            <details>
+                <summary>Can the data on disk be encrypted?</summary>
+                <p>
+                    Yes. <code>BlazeDbEncryptedStorage</code> wraps any backend and seals every write into an AES-GCM frame -
+                    with WebCrypto in the browser, where the managed <code>AesGcm</code> is unavailable, and a key derived
+                    from a passphrase with PBKDF2. A wrong key or a changed byte is reported as corruption, never decoded.
+                </p>
+            </details>
+            <details>
+                <summary>How do I change the shape of my data later?</summary>
+                <p>
+                    Adding or removing a property needs nothing: rows are tagged by field number, unknown fields are
+                    skipped and missing ones read as defaults - pin the numbers with <code>[BlazeDbField]</code> before you
+                    ship. For changes to the data itself, <code>AddMigration(version, …)</code> runs each step once, in a
+                    transaction of its own, when the database opens; <code>ExportAsync</code> keeps a backup first.
                 </p>
             </details>
             <details>

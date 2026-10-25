@@ -1,10 +1,11 @@
 ﻿@page "/queries"
+@implements IAsyncDisposable
 @inject DemoDbService Db
 
 <PageTitle>Query primitives · BlazeDb</PageTitle>
 
 <PageHeader Eyebrow="Query primitives" Title="Querying without a query language"
-            Lead="Query is a tiny composable pipeline: pick at most one index as the source, add residual predicates, optionally sort, then page. Build one below and watch the code, the plan and the timing update as you go.">
+            Lead="BlazeDbQuery is a tiny composable pipeline: pick at most one source - a key, a list of keys, a hash lookup or an ordered range - add residual predicates, optionally sort, then page. Build one below and watch the code, the plan Explain() reports and the timing update as you go.">
     <span class="bb-badge bd-badge-neutral">No parser, no planner cache</span>
     <span class="bb-badge bd-badge-neutral">Delegates, not expression trees</span>
 </PageHeader>
@@ -74,6 +75,14 @@ else
                             </label>
                         </div>
                     </div>
+                }
+                else if (_source is SourceKind.Key or SourceKind.Keys)
+                {
+                    <p class="bd-foot">
+                        @(_source == SourceKind.Key
+                            ? "The key of the newest row: one primary-key dictionary probe, whatever else the query does."
+                            : "The keys of the three newest rows, in that order: one probe per key, so the cost follows the list, not the table.")
+                    </p>
                 }
                 else if (_source == SourceKind.HashCategory)
                 {
@@ -158,6 +167,8 @@ else
                             <option value="@OrderKind.Title">t =&gt; t.Title</option>
                             <option value="@OrderKind.EffortDesc">t =&gt; t.Effort, descending</option>
                             <option value="@OrderKind.CreatedDesc">t =&gt; t.CreatedAt, descending</option>
+                            <option value="@OrderKind.PriorityThenTitle">t =&gt; t.Priority, descending - ThenBy t =&gt; t.Title</option>
+                            <option value="@OrderKind.TitleIgnoreCase">rows =&gt; rows.OrderBy(t =&gt; t.Title, a comparer)</option>
                         </select>
                     </div>
                     <div class="bb-field" style="flex:0 1 110px">
@@ -255,6 +266,7 @@ else
             </Panel>
 
             <Panel Title="Plan" IconName="layers">
+                <CodeBlock Title="query.Explain()" Code="@_explain" Language="text" />
                 <dl class="bb-params">
                     <dt>Source</dt>
                     <dd>@_sourceLabel</dd>
@@ -280,9 +292,9 @@ else
 
             <Panel Title="Execution order" IconName="arrow-down">
                 <ol class="bb-detail-list">
-                    <li><strong>Source</strong> - index lookup, index range, or a full <code>Scan</code>.</li>
+                    <li><strong>Source</strong> - a key, a list of keys, an index lookup, an index range or prefix, or a full <code>Scan</code>.</li>
                     <li><strong>Predicates</strong> - each <code>Where</code> in the order added.</li>
-                    <li><strong>Order</strong> - only if <code>OrderBy</code> was called.</li>
+                    <li><strong>Order</strong> - only if <code>OrderBy</code> was called; <code>ThenBy</code> breaks its ties.</li>
                     <li><strong>Skip</strong>, then <strong>Take</strong>.</li>
                 </ol>
             </Panel>
@@ -302,26 +314,84 @@ else
 
             <Panel Title="Beyond these primitives" IconName="map">
                 <p>
-                    There is no join, no grouping and no aggregate beyond counting. Compose the
-                    primitives in ordinary C#, or use LINQ over <code>Scan()</code> when a query is
-                    genuinely ad hoc - a scan over in-memory objects is already fast. The
+                    Aggregates, grouping, projections and joins are LINQ to Objects over these reads - the rows are
+                    already objects, so there is nothing to materialize. Compose the primitives in ordinary C#, or use
+                    LINQ over <code>Scan()</code> when a query is genuinely ad hoc. Indexes return their rows lazily:
+                    materialize with <code>ToList()</code> before writing to the same table in a loop. The
                     <a href="efcore">EF Core provider</a> translates LINQ onto this same plan.
                 </p>
             </Panel>
         </div>
     </div>
+
+    <Section Title="Streaming a large result"
+             Lead="WebAssembly has one thread, so a synchronous loop over a big table freezes rendering and input until it ends. ExecuteAsync hands control back every batchSize rows, so the browser paints - and other event handlers run - in between.">
+        <div class="bd-main-side">
+            <div class="bb-flex">
+                <Panel Title="Stream it" IconName="play" Sub="a private database of 50,000 rows">
+                    <div class="bb-fields">
+                        <div class="bb-field">
+                            <label for="s-batch">batchSize</label>
+                            <select id="s-batch" @bind="_batchSize" disabled="@_streaming">
+                                <option value="64">64 - smoothest</option>
+                                <option value="512">512 - the default</option>
+                                <option value="4096">4,096 - fastest</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="bd-actions">
+                        <button type="button" class="btn btn-primary" disabled="@_streaming" @onclick="StreamAsync">
+                            <Icon Name="play" /> await foreach … ExecuteAsync(batchSize)
+                        </button>
+                        <button type="button" class="btn btn-secondary" disabled="@_streaming" @onclick="MaterializeAsync">
+                            <Icon Name="list" /> await query.ToListAsync(batchSize)
+                        </button>
+                        <button type="button" class="btn btn-secondary" disabled="@_streaming" @onclick="Blocking">
+                            <Icon Name="stop" /> query.ToList() - no yielding
+                        </button>
+                        <button type="button" class="btn bd-btn-danger" disabled="@_streaming" @onclick="InterruptedAsync">
+                            <Icon Name="alert" /> Stream while another handler writes
+                        </button>
+                    </div>
+                    @if (_streaming)
+                    {
+                        <div class="bd-progress">
+                            <div class="bd-bar"><div class="bd-bar-fill" style="width:@(_streamed * 100 / Math.Max(1, _streamTotal))%"></div></div>
+                            <p class="bd-foot">@_streamed.ToString("N0") rows · @_renders renders so far</p>
+                        </div>
+                    }
+                    @if (_streamNote is not null)
+                    {
+                        <div class="bb-log bd-out">@_streamNote</div>
+                    }
+                </Panel>
+            </div>
+            <div class="bb-flex">
+                <CodeBlock Title="Streaming" Code="@StreamSnippet" />
+                <Callout Tone="warn" Title="Writes while the stream has yielded are refused.">
+                    Between batches other code may run. If it writes to the table, the rest of the stream would describe
+                    neither the table as it was nor as it is, so the stream throws <code>InvalidOperationException</code>
+                    naming the table. Writes made by the loop body itself are the loop's business, as in a
+                    <code>foreach</code> over <code>Execute()</code>. Run the query again, or materialize it first, when
+                    other code may write meanwhile.
+                </Callout>
+            </div>
+        </div>
+    </Section>
 }
 
 @code {
-    private enum SourceKind { Scan, HashDone, HashCategory, HashPriority, OrderedCreatedAt, OrderedEffort }
+    private enum SourceKind { Scan, Key, Keys, HashDone, HashCategory, HashPriority, OrderedCreatedAt, OrderedEffort }
 
-    private enum OrderKind { None, Title, EffortDesc, CreatedDesc }
+    private enum OrderKind { None, Title, EffortDesc, CreatedDesc, PriorityThenTitle, TitleIgnoreCase }
 
     private enum ExecuteKind { ToList, Projection, First, Count }
 
     private static readonly (SourceKind Kind, string Label)[] SourceOptions =
     [
         (SourceKind.Scan, "Scan() - no index"),
+        (SourceKind.Key, "UseKey(id)"),
+        (SourceKind.Keys, "UseKeys(ids)"),
         (SourceKind.HashDone, "UseIndex(Done)"),
         (SourceKind.HashCategory, "UseIndex(Category)"),
         (SourceKind.HashPriority, "UseIndex(ByPriority)"),
@@ -363,6 +433,7 @@ else
     private int _predicateCount;
     private string _code = "";
     private string _sourceLabel = "";
+    private string _explain = "";
     private string _elapsed = "-";
     private string _resultSummary = "";
     private string? _twoSourceError;
@@ -397,6 +468,20 @@ else
 
         switch (_source)
         {
+            case SourceKind.Key:
+                var newest = _todos!.OrderBy(TodoEntry.Indexes.CreatedAt, descending: true).FirstOrDefault();
+                query = query.UseKey(newest?.Id ?? Guid.Empty);
+                lines.Add($"    .UseKey(new Guid(\"{newest?.Id ?? Guid.Empty}\"))");
+                _sourceLabel = "primary key - one dictionary probe";
+                break;
+
+            case SourceKind.Keys:
+                var ids = _todos!.OrderBy(TodoEntry.Indexes.CreatedAt, descending: true).Take(3).Select(t => t.Id).ToList();
+                query = query.UseKeys(ids);
+                lines.Add($"    .UseKeys(ids)   // {ids.Count} keys, in this order");
+                _sourceLabel = "primary key - one probe per key";
+                break;
+
             case SourceKind.HashDone:
                 var done = _doneKey == "true";
                 query = query.UseIndex(TodoEntry.Indexes.Done, done);
@@ -515,6 +600,16 @@ else
                 query = query.OrderBy(t => t.CreatedAt, descending: true);
                 lines.Add("    .OrderBy(t => t.CreatedAt, descending: true)");
                 break;
+            case OrderKind.PriorityThenTitle:
+                query = query.OrderBy(t => t.Priority, descending: true).ThenBy(t => t.Title);
+                lines.Add("    .OrderBy(t => t.Priority, descending: true)");
+                lines.Add("    .ThenBy(t => t.Title)");
+                break;
+            case OrderKind.TitleIgnoreCase:
+                // The overload for sorts a key selector cannot express - here, a comparer of its own.
+                query = query.OrderBy(rows => rows.OrderBy(t => t.Title, StringComparer.OrdinalIgnoreCase));
+                lines.Add("    .OrderBy(rows => rows.OrderBy(t => t.Title, StringComparer.OrdinalIgnoreCase))");
+                break;
         }
 
         _matched = query.Count();
@@ -569,6 +664,7 @@ else
         }
 
         _code = string.Join('\n', lines);
+        _explain = query.Explain();
         _elapsed = DemoSandbox.Duration(sw.Elapsed.TotalMilliseconds);
     }
 
@@ -592,4 +688,148 @@ else
     }
 
     private static string Lower(bool value) => value.ToString().ToLowerInvariant();
+
+    // ------------------------------------------------------------ streaming
+
+    private const int StreamRows = 50_000;
+    private BlazeDbDatabase? _streamDb;
+    private BlazeDbTable<Guid, TodoEntry>? _streamTable;
+    private int _batchSize = 512;
+    private bool _streaming;
+    private int _streamed;
+    private int _streamTotal;
+    private int _renders;
+    private string? _streamNote;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (_streaming)
+        {
+            _renders++;
+        }
+    }
+
+    private async Task<BlazeDbTable<Guid, TodoEntry>> StreamTableAsync()
+    {
+        if (_streamTable is null)
+        {
+            _streamDb = await DemoSandbox.OpenAsync();
+            _streamTable = _streamDb.GetTable(TodoEntry.Table);
+            DemoData.SeedForBench(_streamDb, _streamTable, StreamRows, out _);
+        }
+        return _streamTable;
+    }
+
+    private static BlazeDbQuery<Guid, TodoEntry> OpenItems(BlazeDbTable<Guid, TodoEntry> table) =>
+        BlazeDbQuery<Guid, TodoEntry>.From(table)
+            .UseIndex(TodoEntry.Indexes.CreatedAt, BlazeDbBound<DateTime>.Unbounded, BlazeDbBound<DateTime>.Unbounded)
+            .Where(t => !t.Done);
+
+    private async Task Streaming(Func<BlazeDbTable<Guid, TodoEntry>, Task<string>> run)
+    {
+        _streaming = true;
+        _streamNote = null;
+        _streamed = 0;
+        _renders = 0;
+        StateHasChanged();
+        await Task.Yield();
+
+        try
+        {
+            var table = await StreamTableAsync();
+            _streamTotal = table.CountBy(TodoEntry.Indexes.Done, false);
+            _streamNote = await run(table);
+        }
+        catch (Exception ex)
+        {
+            _streamNote = $"{ex.GetType().Name}: {ex.Message}";
+        }
+        finally
+        {
+            _streaming = false;
+        }
+    }
+
+    private Task StreamAsync() => Streaming(async table =>
+    {
+        var sw = Stopwatch.StartNew();
+        var batches = 0;
+        await foreach (var _ in OpenItems(table).ExecuteAsync(_batchSize))
+        {
+            if (++_streamed % _batchSize == 0)
+            {
+                batches++;
+                StateHasChanged();
+            }
+        }
+        return $"await foreach (var todo in query.ExecuteAsync(batchSize: {_batchSize}))\n" +
+               $"{_streamed:N0} rows in {DemoSandbox.Duration(sw.Elapsed.TotalMilliseconds)}, {batches:N0} yields, {_renders:N0} renders while it ran";
+    });
+
+    private Task MaterializeAsync() => Streaming(async table =>
+    {
+        var sw = Stopwatch.StartNew();
+        var rows = await OpenItems(table).ToListAsync(_batchSize);
+        _streamed = rows.Count;
+        return $"await query.ToListAsync(batchSize: {_batchSize}) → {rows.Count:N0} rows in {DemoSandbox.Duration(sw.Elapsed.TotalMilliseconds)}\n" +
+               "The whole result, materialized without holding the thread for its whole duration.";
+    });
+
+    private Task Blocking() => Streaming(table =>
+    {
+        var sw = Stopwatch.StartNew();
+        var rows = OpenItems(table).ToList();
+        _streamed = rows.Count;
+        return Task.FromResult(
+            $"query.ToList() → {rows.Count:N0} rows in {DemoSandbox.Duration(sw.Elapsed.TotalMilliseconds)}, {_renders} renders while it ran\n" +
+            "Faster overall, but nothing could paint or react until it returned.");
+    });
+
+    private Task InterruptedAsync() => Streaming(async table =>
+    {
+        // Another event handler, scheduled to run the moment the stream hands the thread back.
+        _ = WriteFromAnotherHandlerAsync(table);
+
+        try
+        {
+            await foreach (var _ in OpenItems(table).ExecuteAsync(_batchSize))
+            {
+                _streamed++;
+            }
+            return "The stream finished - unexpected.";
+        }
+        catch (InvalidOperationException ex)
+        {
+            return $"After {_streamed:N0} rows the stream threw InvalidOperationException:\n{ex.Message}";
+        }
+    });
+
+    private static async Task WriteFromAnotherHandlerAsync(BlazeDbTable<Guid, TodoEntry> table)
+    {
+        await Task.Yield();
+        table.Insert(new TodoEntry { Id = Guid.NewGuid(), Title = "written while the stream had yielded", CreatedAt = DateTime.UtcNow });
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_streamDb is not null)
+        {
+            await _streamDb.DisposeAsync();
+        }
+    }
+
+    private const string StreamSnippet = """
+        var query = BlazeDbQuery<Guid, TodoEntry>.From(todos)
+            .UseIndex(TodoEntry.Indexes.CreatedAt, from, to)
+            .Where(t => !t.Done);
+
+        // Yield to the browser every 512 rows: it paints, and input is handled, in between.
+        await foreach (var todo in query.ExecuteAsync(batchSize: 512, cancellationToken))
+        {
+            Render(todo);
+        }
+
+        // Or collect it all without blocking: the same batches, into one list.
+        var all = await query.ToListAsync(batchSize: 512);
+        """;
 }

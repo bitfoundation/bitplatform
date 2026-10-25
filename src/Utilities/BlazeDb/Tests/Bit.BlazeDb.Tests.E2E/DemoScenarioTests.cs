@@ -15,7 +15,8 @@ public class DemoScenarioTests : BlazeDbTest
 {
     /// <summary>Every page with something to press. The benchmark page is left out: one run takes minutes on a build server.</summary>
     private static readonly string[] _interactivePages =
-        ["/todos", "/schema", "/indexes", "/queries", "/efcore", "/transactions", "/changes", "/durability", "/storage", "/serialization", "/errors"];
+        ["/todos", "/schema", "/writes", "/indexes", "/queries", "/efcore", "/transactions", "/changes", "/durability", "/backups", "/storage", "/tabs",
+         "/encryption", "/serialization", "/errors"];
 
     /// <summary>
     /// The buttons of a page's content: not the site's chrome, not the copy buttons on code samples, and not a

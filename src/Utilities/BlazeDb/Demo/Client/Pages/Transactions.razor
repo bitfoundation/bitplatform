@@ -196,8 +196,9 @@
         <Panel Title="Composing atomic units" IconName="txn">
             <p>
                 <code>RunInTransaction</code> runs a block as one atomic unit: alone it commits as one transaction,
-                inside an open one it joins it behind a savepoint, so a failure takes back only that block's writes.
-                Savepoints are also there to take by hand.
+                inside an open one it joins it behind a savepoint, so a failure takes back only that block's writes -
+                even after the unit rolled the transaction back past its own start. Savepoints are also there to take
+                by hand; bulk writes (<code>InsertMany</code> and friends) are units too.
             </p>
             <CodeBlock Code="@ComposeSnippet" />
         </Panel>
@@ -208,10 +209,23 @@
                 <li><strong>No asynchronous transaction body.</strong> An <code>await</code> inside a transaction lets other code run, and its writes would join the transaction.</li>
                 <li><strong>No isolation levels.</strong> There is one writer, so there is nothing to isolate from - and reads during an open transaction see its writes.</li>
                 <li><strong>No long-running readers.</strong> Reads see live objects, not a snapshot; materialise with <code>ToList()</code> before mutating.</li>
-                <li><strong>No checkpoint while open.</strong> <code>CheckpointAsync</code> throws inside a transaction.</li>
+                <li><strong>No checkpoint while open.</strong> <code>CheckpointAsync</code> throws inside a transaction, and so does <code>ExportAsync</code>.</li>
             </ul>
         </Panel>
     </div>
+
+    <Panel Title="What the engine guarantees, and what it does not" IconName="shield">
+        <dl class="bb-params bd-params-prose">
+            <dt>Atomic</dt>
+            <dd>A transaction commits whole or not at all - in memory, in the log, and after a crash. A commit the log cannot record (a row that will not serialize) is undone and throws.</dd>
+            <dt>Consistent</dt>
+            <dd>Duplicate keys and unique-index violations are refused before anything changes, and index maintenance either completes or is unwound - even when a hand-written index definition throws. If a rollback itself cannot undo a write (only such an index can make it fail), a database with storage refuses further writes, checkpoints and exports until it is reopened; one without storage carries on, and <code>VerifyIntegrity()</code> reports the write it could not take back. A transaction part of which could not be rolled back refuses to commit.</dd>
+            <dt>Not isolated</dt>
+            <dd>There is one writer, and its writes are visible to every reader as soon as they are made, before the commit. There is nothing else to isolate from.</dd>
+            <dt>Durable when flushed</dt>
+            <dd>Commits reach storage within <code>FlushInterval</code>, or at once with <code>FlushAsync</code> - see <a href="durability">durability</a>. Disposing the database rolls back a transaction left open.</dd>
+        </dl>
+    </Panel>
 </Section>
 
 @code {
@@ -304,6 +318,78 @@
             "Forgetting to commit cannot half-apply a batch.",
             "info",
             static page => page.ScenarioDispose()),
+
+        new("savepoint", "A savepoint undoes part of a batch", "history",
+            """
+            using var txn = db.BeginTransaction();
+            todos.Insert(first);
+            var savepoint = txn.CreateSavepoint();
+            todos.Insert(second);
+            todos.Insert(third);
+
+            txn.RollbackTo(savepoint);   // second and third are gone, first stays
+            txn.Commit();                // commits first alone
+            """,
+            "A savepoint marks a point inside the transaction; rolling back to it keeps everything before.",
+            "ok",
+            static page => page.ScenarioSavepoint()),
+
+        new("savepoint-past", "Rolling back past a savepoint discards it", "layers",
+            """
+            using var txn = db.BeginTransaction();
+            var outer = txn.CreateSavepoint();
+            todos.Insert(a);
+            var inner = txn.CreateSavepoint();
+            todos.Insert(b);
+
+            txn.RollbackTo(outer);   // a and b are gone - and so is inner
+            txn.RollbackTo(inner);   // InvalidOperationException
+            txn.RollbackTo(outer);   // fine: a savepoint can be rolled back to again
+            """,
+            "Savepoints nest: rolling back to one discards those taken after it, but keeps itself.",
+            "warn",
+            static page => page.ScenarioSavepointPast()),
+
+        new("unit", "RunInTransaction - a unit of work", "txn",
+            """
+            db.RunInTransaction(() =>        // commits as one transaction
+            {
+                todos.Insert(order);
+                todos.Update(lowered);
+            });
+
+            db.RunInTransaction(() =>        // throws - and leaves nothing behind
+            {
+                todos.Insert(row);
+                throw new InvalidOperationException("out of stock");
+            });
+
+            var count = db.RunInTransaction(() => todos.DeleteWhere(t => t.Done));   // with a result
+            """,
+            "The unit as a block: it commits whole, or - when it throws - is rolled back and the exception propagates.",
+            "ok",
+            static page => page.ScenarioUnit()),
+
+        new("unit-nested", "RunInTransaction inside a transaction", "layers",
+            """
+            using var txn = db.BeginTransaction();
+            todos.Insert(kept);
+
+            try
+            {
+                db.RunInTransaction(() =>    // joins txn behind a savepoint
+                {
+                    todos.Insert(lost);
+                    throw new InvalidOperationException("this unit fails");
+                });
+            }
+            catch (InvalidOperationException) { }
+
+            txn.Commit();                    // kept is committed; lost never was
+            """,
+            "Units compose: a failed one takes back only its own writes, and the outer transaction carries on.",
+            "accent",
+            static page => page.ScenarioUnitNested()),
 
         new("visible", "Reads inside the batch see uncommitted writes", "search",
             """
@@ -528,6 +614,130 @@
             $"todos.Contains(key) → {table.Contains(row.Id)}   todos.Count → {table.Count}",
             "Visibility and durability are separate concerns here.");
 
+        return Task.CompletedTask;
+    }
+
+    private Task ScenarioSavepoint()
+    {
+        var table = _table!;
+
+        using (var txn = _db!.BeginTransaction())
+        {
+            table.Insert(Row("first, before the savepoint", 101));
+            _log.Run("Insert first", "todos.Insert(first)", $"Count = {table.Count}");
+
+            var savepoint = txn.CreateSavepoint();
+            _log.Add("CreateSavepoint()", $"var savepoint = txn.CreateSavepoint();   // position {savepoint.Position}");
+
+            table.Insert(Row("second, after the savepoint", 102));
+            table.Insert(Row("third, after the savepoint", 103));
+            _log.Add("Insert second and third", "todos.Insert(second); todos.Insert(third)", $"Count = {table.Count}");
+
+            txn.RollbackTo(savepoint);
+            _log.Ok("RollbackTo(savepoint)", "txn.RollbackTo(savepoint)", $"Count = {table.Count}: the two writes after the savepoint were undone; the transaction is still open.");
+
+            txn.Commit();
+        }
+
+        _log.Ok("Commit()", $"todos.Count → {table.Count}", "Only first was committed - one log record, without the writes rolled back to.");
+        return Task.CompletedTask;
+    }
+
+    private Task ScenarioSavepointPast()
+    {
+        var table = _table!;
+
+        using var txn = _db!.BeginTransaction();
+        var outer = txn.CreateSavepoint();
+        table.Insert(Row("a", 201));
+        var inner = txn.CreateSavepoint();
+        table.Insert(Row("b", 202));
+        _log.Run("Two savepoints, a write after each", "outer · insert a · inner · insert b", $"Count = {table.Count}");
+
+        txn.RollbackTo(outer);
+        _log.Add("RollbackTo(outer)", "txn.RollbackTo(outer)", $"Count = {table.Count}: a and b are both gone.");
+
+        try
+        {
+            txn.RollbackTo(inner);
+            _log.Error("No exception", "unexpected");
+        }
+        catch (InvalidOperationException ex)
+        {
+            _log.Error("RollbackTo(inner)", "InvalidOperationException", ex.Message);
+        }
+
+        table.Insert(Row("c", 203));
+        txn.RollbackTo(outer);
+        _log.Ok("RollbackTo(outer) again", "todos.Insert(c); txn.RollbackTo(outer)", $"Count = {table.Count}: the savepoint itself survives its own rollback.");
+
+        txn.Commit();
+        return Task.CompletedTask;
+    }
+
+    private Task ScenarioUnit()
+    {
+        var table = _table!;
+        var db = _db!;
+
+        db.RunInTransaction(() =>
+        {
+            table.Insert(Row("unit row 1", 301));
+            table.Insert(Row("unit row 2", 302));
+        });
+        _log.Ok("A unit that completes", "db.RunInTransaction(() => { Insert; Insert; })", $"Count = {table.Count}: committed as one transaction.");
+
+        var before = table.Count;
+        try
+        {
+            db.RunInTransaction(() =>
+            {
+                table.Insert(Row("never kept", 303));
+                throw new InvalidOperationException("out of stock");
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            _log.Error("A unit that throws", $"InvalidOperationException: {ex.Message}",
+                $"Count = {table.Count} (was {before}): its insert was rolled back, and the exception reached the caller.");
+        }
+
+        var effortAbove = db.RunInTransaction(() => table.DeleteWhere(t => t.Effort > 300));
+        _log.Ok("A unit with a result", $"db.RunInTransaction(() => todos.DeleteWhere(t => t.Effort > 300)) → {effortAbove}",
+            $"Count = {table.Count}. The result is returned once the writes have committed.");
+        return Task.CompletedTask;
+    }
+
+    private Task ScenarioUnitNested()
+    {
+        var table = _table!;
+        var db = _db!;
+
+        using (var txn = db.BeginTransaction())
+        {
+            table.Insert(Row("kept - written by the outer transaction", 401));
+            _log.Run("The outer transaction writes", "todos.Insert(kept)", $"Count = {table.Count}");
+
+            try
+            {
+                db.RunInTransaction(() =>
+                {
+                    table.Insert(Row("lost - written by the failing unit", 402));
+                    _log.Add("Inside the unit", "todos.Insert(lost)", $"Count = {table.Count}");
+                    throw new InvalidOperationException("this unit fails");
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _log.Error("The unit threw", $"InvalidOperationException: {ex.Message}",
+                    $"Count = {table.Count}: only the unit's own write was taken back.");
+            }
+
+            txn.Commit();
+        }
+
+        _log.Ok("The outer transaction commits", $"todos.Count → {table.Count}",
+            "kept is durable; lost never reached the log. A second BeginTransaction would have thrown - composing is what units and savepoints are for.");
         return Task.CompletedTask;
     }
 

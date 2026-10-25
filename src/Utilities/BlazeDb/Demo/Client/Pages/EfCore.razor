@@ -25,6 +25,42 @@
     </Callout>
 </Section>
 
+<Section Title="Every way to point a context at a store"
+         Lead="A store is identified by its name or its storage instance across the whole process, so two contexts configured alike share one engine even when EF gives them separate internal service providers - and a persistent store never ends up with two writers.">
+    <Panel Flush="true">
+        <div class="bb-scroll">
+            <table class="bb-table">
+                <thead><tr><th>Call</th><th>What it gives the context</th></tr></thead>
+                <tbody>
+                    <tr><td class="bb-mono">UseBlazeDb()</td><td>An in-memory store named after the context type, so every <code>AppContext</code> shares one engine.</td></tr>
+                    <tr><td class="bb-mono">UseBlazeDb("name")</td><td>An in-memory store of that name - <code>UseInMemoryDatabase</code> style. The samples below run on one each.</td></tr>
+                    <tr><td class="bb-mono">UseBlazeDb(storage)</td><td>A persistent store: OPFS, IndexedDB, files, encrypted storage - the slot a connection string occupies on a relational provider.</td></tr>
+                    <tr><td class="bb-mono">UseBlazeDb(o =&gt; …)<br />UseBlazeDb(storage, o =&gt; …)</td><td>Engine settings - <code>FlushInterval</code>, quota handling, migrations. Tables still come from the model: do not call <code>AddTable</code> here.</td></tr>
+                    <tr><td class="bb-mono">UseBlazeDb(database)</td><td>An engine you already opened, as <code>UseSqlite(connection)</code> takes a connection. The application owns its lifetime. This page reaches the tab's database this way.</td></tr>
+                    <tr><td class="bb-mono">entity.UseBlazeDbTable(descriptor)</td><td>In <code>OnModelCreating</code>: binds an entity type to a hand-written descriptor. A <code>[BlazeDbTable]</code> type needs nothing - the provider finds the generated <code>Table</code>.</td></tr>
+                    <tr><td class="bb-mono">context.Database.GetBlazeDb()</td><td>The engine under a context: <code>FlushAsync</code>, <code>CheckpointAsync</code>, <code>Changed</code>, <code>ExportAsync</code>, direct table access.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </Panel>
+    <div class="bb-split">
+        <Panel Title="Opening the store" IconName="database">
+            <p>
+                When the storage is asynchronous - OPFS in the browser - call <code>await context.Database.EnsureCreatedAsync()</code>
+                once before the first synchronous query. In-memory stores open synchronously and need no extra step.
+                <code>EnsureCreated</code> returns <code>true</code> for the call that opened the store and <code>false</code>
+                after that, so <code>if (EnsureCreated()) Seed();</code> works as it does with other providers.
+            </p>
+            <p>
+                <code>EnsureDeleted</code> removes the store's files as well as closing it. For a persistent store in the
+                browser, or under a synchronization context, use <code>EnsureDeletedAsync</code> - the synchronous call
+                refuses there rather than block the only thread. The "A persistent store" scenario below runs all of it.
+            </p>
+        </Panel>
+        <CodeBlock Title="OPFS behind a DbContext" Code="@OpfsContextSnippet" />
+    </div>
+</Section>
+
 <Section Title="How EF Core concepts land on the engine">
     <Panel Flush="true">
         <div class="bb-scroll">
@@ -36,7 +72,7 @@
                     <tr>
                         <td class="bb-mono">DbContext</td>
                         <td class="bb-mono">BlazeDbDatabase</td>
-                        <td class="bb-muted">one instance, one write lock, tables from the model</td>
+                        <td class="bb-muted">contexts configured alike share one engine - one write lock, tables from the model</td>
                     </tr>
                     <tr>
                         <td class="bb-mono">DbSet&lt;T&gt;</td>
@@ -241,6 +277,31 @@ else
             </ul>
         </Panel>
     </div>
+    <div class="bb-split">
+        <Panel Title="Where the index decides the answer" IconName="sort">
+            <p>
+                An <code>OrderBy</code> on a string property that an ordered index answers comes back in <em>ordinal</em>
+                order, since that is how the index sorts - where LINQ to Objects would use the current culture.
+            </p>
+        </Panel>
+        <Panel Title="Where an index narrows but does not settle" IconName="filter">
+            <p>
+                A comparison on a <code>double</code> or <code>float</code> stays a filter after the lookup - an index files
+                NaN as equal to itself and below every number, which no C# operator does - and so does one against an
+                index declared with a comparer of its own, which is not used for ranges or ordering at all.
+            </p>
+        </Panel>
+    </div>
+    <Panel Title="Compiled queries" IconName="bolt">
+        <p>
+            The provider replaces EF's query pipeline, and with it EF's compiled-query cache: the predicates and orderings a
+            plan runs are compiled once per query <em>shape</em> and re-bound to each execution's values, so repeating a query
+            compiles nothing. Operators left to LINQ to Objects (a <code>Select</code>, a <code>GroupBy</code>) are compiled
+            per execution by <code>System.Linq</code> - keep the heavy lifting in the <code>Where</code>/<code>OrderBy</code>/<code>Skip</code>/<code>Take</code>
+            prefix the plan absorbs when a query is hot. <code>EF.CompileQuery</code> and <code>EF.CompileAsyncQuery</code>
+            work as with any provider.
+        </p>
+    </Panel>
     <Callout Tone="info" Title="In a relational provider that fallback is a disaster.">
         It means pulling rows over a wire and filtering client-side. Here the rows are already
         managed objects in the same heap, so the worst case is a delegate over an in-memory
@@ -270,9 +331,9 @@ else
 </Section>
 
 @code {
-    private enum QueryKind { All, Open, ByCategory, EffortRange, Newest, GroupBy, Find, Count }
+    private enum QueryKind { All, Open, ByCategory, NullCategory, Contains, EffortRange, Newest, GroupBy, Find, Count }
 
-    private enum TrackKind { LiveRow, MutateBeforeSave, IndexMove, Delete, AtomicTwoTables, FailedSave, NoTracking }
+    private enum TrackKind { LiveRow, MutateBeforeSave, UnsavedQuery, IndexMove, Delete, AtomicTwoTables, FailedSave, NoTracking, Concurrency, Detached, Transaction, Persistent, Compiled }
 
     private sealed record Sample(QueryKind Kind, string Label);
 
@@ -283,6 +344,8 @@ else
         new(QueryKind.All, "DbSet"),
         new(QueryKind.Open, "Where !Done"),
         new(QueryKind.ByCategory, "Where Category"),
+        new(QueryKind.NullCategory, "Where Category == null"),
+        new(QueryKind.Contains, "ids.Contains(Id)"),
         new(QueryKind.EffortRange, "Where Effort ≥ 60"),
         new(QueryKind.Newest, "OrderBy Take"),
         new(QueryKind.GroupBy, "GroupBy"),
@@ -313,6 +376,24 @@ else
         new(TrackKind.NoTracking, "AsNoTracking still returns the live row", "search", "warn",
             "No-tracking skips the change tracker, not a copy. Mutating the result still mutates memory.",
             NoTrackingSnippet),
+        new(TrackKind.UnsavedQuery, "Queries see unsaved changes", "filter", "accent",
+            "While a tracked entity has unsaved changes, queries read the rows instead of the indexes, so a query and the row agree.",
+            UnsavedQuerySnippet),
+        new(TrackKind.Concurrency, "Two contexts, one row", "lock", "err",
+            "Each context keeps its own originals; a save describing a state the row has moved past is a DbUpdateConcurrencyException.",
+            ConcurrencySnippet),
+        new(TrackKind.Detached, "A detached entity replaces the row", "refresh", "info",
+            "context.Update(dto) writes a different object by key - last writer wins, as UPDATE ... WHERE Id = @id would.",
+            DetachedSnippet),
+        new(TrackKind.Transaction, "SaveChanges inside a transaction", "txn", "ok",
+            "A save inside a transaction joins it behind a savepoint: a failure takes back that save alone and the transaction carries on.",
+            TransactionSnippet),
+        new(TrackKind.Persistent, "A persistent store: EnsureCreated, flush, EnsureDeleted", "disk", "ok",
+            "EnsureCreatedAsync reports the call that opened the store; SaveChanges is a memory commit until the engine flushes; EnsureDeletedAsync removes the files.",
+            PersistentSnippet),
+        new(TrackKind.Compiled, "EF.CompileQuery", "bolt", "info",
+            "Compiled queries run through the same translation as any other; the plan's predicates are compiled once per shape either way.",
+            CompiledSnippet),
     ];
 
     private QueryKind _sample = QueryKind.Open;
@@ -343,20 +424,13 @@ else
         }
     }
 
-    private static DemoDbContext CreateContext(BlazeDbDatabase? database = null)
-    {
-        var builder = new DbContextOptionsBuilder<DemoDbContext>();
-        if (database is not null)
-        {
-            builder.UseBlazeDb(database);
-        }
-        else
-        {
-            builder.UseBlazeDb("ef-demo-" + Guid.NewGuid().ToString("N"));
-        }
+    /// <summary>A context over an engine this page already holds - the tab's own database.</summary>
+    private static DemoDbContext CreateContext(BlazeDbDatabase database) =>
+        new(new DbContextOptionsBuilder<DemoDbContext>().UseBlazeDb(database).Options);
 
-        return new DemoDbContext(builder.Options);
-    }
+    /// <summary>A context over a named in-memory store; every context given the same name shares its engine.</summary>
+    private static DemoDbContext CreateContext(string storeName) =>
+        new(new DbContextOptionsBuilder<DemoDbContext>().UseBlazeDb(storeName).Options);
 
     private void RunSample(QueryKind kind)
     {
@@ -394,6 +468,25 @@ else
                 _queryNote = "Equality on an indexed member is a lookup, not a scan plus a filter.";
                 _queryRows = context.Todos.Where(t => t.Category == "engine").ToList();
                 _querySummary = $"{_queryRows.Count} in engine";
+                break;
+
+            case QueryKind.NullCategory:
+                _queryCode = "context.Todos.Where(t => t.Category == null).ToList()";
+                _querySource = "hash - Category = null";
+                _queryRemainder = "none";
+                _queryNote = "Null is an index key like any other, so the uncategorized rows are one bucket, not a scan.";
+                _queryRows = context.Todos.Where(t => t.Category == null).ToList();
+                _querySummary = $"{_queryRows.Count} uncategorized";
+                break;
+
+            case QueryKind.Contains:
+                var ids = Db.Todos.OrderBy(TodoEntry.Indexes.CreatedAt, descending: true).Take(3).Select(t => t.Id).ToList();
+                _queryCode = "var ids = /* the three newest keys */;\ncontext.Todos.Where(t => ids.Contains(t.Id)).ToList()";
+                _querySource = "primary key dictionary - one probe per key";
+                _queryRemainder = "none";
+                _queryNote = "A Contains over a key list stays proportional to the list, not to the table. On an indexed member it is one lookup per value.";
+                _queryRows = context.Todos.Where(t => ids.Contains(t.Id)).ToList();
+                _querySummary = $"{_queryRows.Count} of {ids.Count} keys";
                 break;
 
             case QueryKind.EffortRange:
@@ -499,7 +592,8 @@ else
         _running = true;
         _log.Clear();
 
-        await using var context = CreateContext();
+        var storeName = "ef-demo-" + Guid.NewGuid().ToString("N");
+        await using var context = CreateContext(storeName);
         try
         {
             context.Todos.Add(Row("Design the WAL record layout", category: "engine"));
@@ -542,6 +636,24 @@ else
                     break;
                 case TrackKind.NoTracking:
                     TrackNoTracking(context, todos);
+                    break;
+                case TrackKind.UnsavedQuery:
+                    TrackUnsavedQuery(context, todos);
+                    break;
+                case TrackKind.Concurrency:
+                    TrackConcurrency(context, todos, storeName);
+                    break;
+                case TrackKind.Detached:
+                    TrackDetached(context, todos);
+                    break;
+                case TrackKind.Transaction:
+                    TrackTransaction(context, todos);
+                    break;
+                case TrackKind.Persistent:
+                    await TrackPersistentAsync();
+                    break;
+                case TrackKind.Compiled:
+                    TrackCompiled(context);
                     break;
             }
         }
@@ -664,6 +776,158 @@ else
             "SaveChanges would not see this. The title has still changed for every other reader in this process.");
     }
 
+    private void TrackUnsavedQuery(DemoDbContext context, BlazeDbTable<Guid, TodoEntry> todos)
+    {
+        var entity = context.Todos.First(t => t.Category == "engine");
+        entity.Category = "docs";
+        _log.Run("Changed, not saved", "entity.Category = \"docs\"",
+            $"todos.CountBy(Category, \"docs\") → {todos.CountBy(TodoEntry.Indexes.Category, "docs")} - the index has not moved yet.");
+
+        var docs = context.Todos.Where(t => t.Category == "docs").ToList();
+        _log.Add("Query on Category", $"context.Todos.Where(t => t.Category == \"docs\") → {docs.Count} rows",
+            docs.Contains(entity)
+                ? "The unsaved row is among them: with unsaved changes on that type, the query read the rows rather than the index."
+                : "Unexpected: the query missed the unsaved row.");
+
+        context.SaveChanges();
+        _log.Ok("SaveChanges()", $"todos.CountBy(Category, \"docs\") → {todos.CountBy(TodoEntry.Indexes.Category, "docs")}",
+            "The index moved, and queries go back to using it.");
+    }
+
+    private void TrackConcurrency(DemoDbContext context, BlazeDbTable<Guid, TodoEntry> todos, string storeName)
+    {
+        using var other = CreateContext(storeName);
+        var mine = context.Todos.First(t => t.Category == "engine");
+        var theirs = other.Todos.First(t => t.Id == mine.Id);
+        _log.Run("Two contexts load the same row", $"ReferenceEquals(mine, theirs) → {ReferenceEquals(mine, theirs)}",
+            "One store, one live object - but each context keeps its own original values.");
+
+        mine.Category = "docs";
+        context.SaveChanges();
+        _log.Add("The first context saves", "mine.Category = \"docs\"; context.SaveChanges()", "The Category index moved to docs.");
+
+        theirs.Title = "edited by the second context";
+        try
+        {
+            other.SaveChanges();
+            _log.Error("The second save went through", "unexpected");
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            _log.Error("The second context saves", "theirs.Title = ...; other.SaveChanges() → DbUpdateConcurrencyException",
+                $"{ex.Message} Its originals still say Category = engine.");
+        }
+
+        other.ChangeTracker.Clear();
+        var fresh = other.Todos.First(t => t.Id == mine.Id);
+        fresh.Title = "edited by the second context, after reloading";
+        other.SaveChanges();
+        _log.Ok("Reload and apply the change again", "other.ChangeTracker.Clear(); re-query; Title = ...; other.SaveChanges()",
+            $"Category = \"{todos.Get(mine.Id)!.Category}\", Title = \"{todos.Get(mine.Id)!.Title}\" - both edits kept.");
+
+        var gone = other.Todos.First(t => t.Category == "browser");
+        context.Todos.Remove(context.Todos.First(t => t.Id == gone.Id));
+        context.SaveChanges();
+        gone.Title = "edited after another context deleted it";
+        try
+        {
+            other.SaveChanges();
+            _log.Error("Saved a deleted row", "unexpected");
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            _log.Error("Updating a row another context deleted", "DbUpdateConcurrencyException", ex.Message);
+        }
+    }
+
+    private void TrackDetached(DemoDbContext context, BlazeDbTable<Guid, TodoEntry> todos)
+    {
+        var existing = todos.Lookup(TodoEntry.Indexes.Category, "engine").First();
+        var dto = new TodoEntry { Id = existing.Id, Title = "replaced from a DTO", Category = "bench", CreatedAt = existing.CreatedAt, Effort = 5 };
+        context.Update(dto);
+        _log.Run("A detached object with an existing key", "context.Update(dto)", $"State → {context.Entry(dto).State}");
+
+        context.SaveChanges();
+        _log.Ok("Replaced by key", $"ReferenceEquals(todos.Get(id), dto) → {ReferenceEquals(todos.Get(existing.Id), dto)}",
+            $"engine → {todos.CountBy(TodoEntry.Indexes.Category, "engine")}   bench → {todos.CountBy(TodoEntry.Indexes.Category, "bench")}: the indexes followed the new object.");
+    }
+
+    private void TrackTransaction(DemoDbContext context, BlazeDbTable<Guid, TodoEntry> todos)
+    {
+        var before = todos.Count;
+        var existing = todos.Scan().First();
+
+        using var transaction = context.Database.BeginTransaction();
+        _log.Run("Open a transaction", "using var transaction = context.Database.BeginTransaction()");
+
+        context.Todos.Add(Row("saved inside the transaction", category: "docs"));
+        context.SaveChanges();
+        _log.Add("A first save joins it", "context.SaveChanges()", $"todos.Count → {todos.Count}");
+
+        var duplicate = Row("duplicate key", category: "bench", id: existing.Id);
+        context.Todos.Add(Row("would be saved with the duplicate", category: "bench"));
+        context.Todos.Add(duplicate);
+        try
+        {
+            context.SaveChanges();
+            _log.Error("No exception", "unexpected");
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is BlazeDbDuplicateKeyException)
+        {
+            _log.Error("A second save fails part-way", "DbUpdateException ← BlazeDbDuplicateKeyException",
+                $"todos.Count → {todos.Count}: that save's own first insert was taken back; the first save stands.");
+        }
+
+        context.ChangeTracker.Clear();
+        transaction.Commit();
+        _log.Ok("Commit", "transaction.Commit()", $"todos.Count → {todos.Count} (was {before}) - one row, from the save that succeeded.");
+    }
+
+    private async Task TrackPersistentAsync()
+    {
+        var storage = new BlazeDbInMemoryStorage();
+        var options = new DbContextOptionsBuilder<DemoDbContext>()
+            .UseBlazeDb(storage, engine => engine.FlushInterval = TimeSpan.FromHours(1))
+            .Options;
+
+        await using (var first = new DemoDbContext(options))
+        {
+            var created = await first.Database.EnsureCreatedAsync();
+            _log.Run("Open the store", $"await context.Database.EnsureCreatedAsync() → {Lower(created)}", "This call opened it.");
+
+            first.Todos.Add(Row("persisted through EF Core", category: "docs"));
+            first.SaveChanges();
+            _log.Add("SaveChanges()", $"files: {Files(storage)}", "Committed in memory; the log has not been written - the flush interval here is an hour.");
+
+            await first.Database.GetBlazeDb().FlushAsync();
+            _log.Ok("Flush the engine", "await context.Database.GetBlazeDb().FlushAsync()", $"files: {Files(storage)}");
+        }
+
+        await using var second = new DemoDbContext(options);
+        var again = await second.Database.EnsureCreatedAsync();
+        _log.Add("A second context, same storage", $"await context.Database.EnsureCreatedAsync() → {Lower(again)}",
+            $"The store was already open - one engine per storage instance. Todos.Count() → {second.Todos.Count()}");
+
+        var deleted = await second.Database.EnsureDeletedAsync();
+        _log.Ok("Delete it", $"await context.Database.EnsureDeletedAsync() → {Lower(deleted)}", $"files: {Files(storage)}");
+    }
+
+    private static readonly Func<DemoDbContext, string, IEnumerable<TodoEntry>> TodosInCategory =
+        EF.CompileQuery((DemoDbContext context, string category) => context.Todos.Where(t => t.Category == category));
+
+    private void TrackCompiled(DemoDbContext context)
+    {
+        var engine = TodosInCategory(context, "engine").ToList();
+        var docs = TodosInCategory(context, "docs").ToList();
+        _log.Ok("Run with two arguments", $"TodosInCategory(context, \"engine\") → {engine.Count}   TodosInCategory(context, \"docs\") → {docs.Count}",
+            "Each call binds its arguments and context into the query and translates it like any other - onto the Category index.");
+    }
+
+    private static string Files(BlazeDbInMemoryStorage storage) =>
+        storage.FileNames.Count == 0 ? "none" : string.Join(", ", storage.FileNames.OrderBy(f => f, StringComparer.Ordinal));
+
+    private static string Lower(bool value) => value.ToString().ToLowerInvariant();
+
     private static TodoEntry Row(string title, bool done = false, string? category = "engine", Guid? id = null) => new()
     {
         Id = id ?? Guid.NewGuid(),
@@ -735,6 +999,72 @@ else
         context.Todos.Add(newRow);
         context.Todos.Add(new TodoEntry { Id = existing.Id, ... });
         context.SaveChanges(); // DbUpdateException; newRow is not kept
+        """;
+
+    private const string UnsavedQuerySnippet = """
+        var entity = context.Todos.First(t => t.Category == "engine");
+        entity.Category = "docs";          // not saved - the index still says engine
+
+        context.Todos.Where(t => t.Category == "docs").ToList();   // includes entity
+        """;
+
+    private const string ConcurrencySnippet = """
+        var mine = context.Todos.First(...);
+        var theirs = other.Todos.First(t => t.Id == mine.Id);   // the same live object
+
+        mine.Category = "docs";
+        context.SaveChanges();
+
+        theirs.Title = "edited by the second context";
+        other.SaveChanges();   // DbUpdateConcurrencyException - its originals say "engine"
+        """;
+
+    private const string DetachedSnippet = """
+        var dto = new TodoEntry { Id = existingId, Title = "replaced from a DTO", ... };
+        context.Update(dto);
+        context.SaveChanges();   // the table now holds dto
+        """;
+
+    private const string TransactionSnippet = """
+        using var transaction = context.Database.BeginTransaction();
+
+        context.Todos.Add(a);
+        context.SaveChanges();           // joins the transaction
+
+        context.Todos.Add(b);
+        context.Todos.Add(duplicate);
+        context.SaveChanges();           // DbUpdateException - b is taken back, a stays
+
+        transaction.Commit();            // commits a
+        """;
+
+    private const string PersistentSnippet = """
+        var options = new DbContextOptionsBuilder<AppContext>()
+            .UseBlazeDb(storage, engine => engine.FlushInterval = TimeSpan.FromHours(1))
+            .Options;
+
+        await context.Database.EnsureCreatedAsync();       // true: this call opened it
+        context.SaveChanges();                             // a memory commit
+        await context.Database.GetBlazeDb().FlushAsync();  // now on storage
+        await context.Database.EnsureDeletedAsync();       // closed, and its files deleted
+        """;
+
+    private const string CompiledSnippet = """
+        private static readonly Func<AppContext, string, IEnumerable<TodoItem>> TodosInCategory =
+            EF.CompileQuery((AppContext context, string category) =>
+                context.Todos.Where(t => t.Category == category));
+
+        var engine = TodosInCategory(context, "engine").ToList();
+        """;
+
+    private const string OpfsContextSnippet = """
+        // Program.cs - one storage for the app, handed to every context.
+        var storage = await BlazeDbOpfsStorage.CreateAsync("app");
+        builder.Services.AddDbContext<AppContext>(options =>
+            options.UseBlazeDb(storage, engine => engine.FlushInterval = TimeSpan.FromMilliseconds(200)));
+
+        // Once, before the first synchronous query:
+        await context.Database.EnsureCreatedAsync();
         """;
 
     private const string NoTrackingSnippet = """

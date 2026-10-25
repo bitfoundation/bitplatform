@@ -10,7 +10,7 @@
 </PageHeader>
 
 <Section Title="Shipped"
-         Lead="Where an item has a page on this site, the link drives it against a real database rather than describing it. The rest are covered by the test suite.">
+         Lead="Every item links to a page of this site that drives it against a real database rather than describing it - and the test suite covers each of them again without a browser.">
     <div class="bb-grid">
         @foreach (var item in Shipped)
         {
@@ -121,7 +121,7 @@
             "todos", "See it driving a real app"),
 
         new("Source-generated schema", "Bit.BlazeDb.Generators",
-            "An incremental Roslyn generator turns [BlazeDbTable], [BlazeDbKey], [BlazeDbIndex], [BlazeDbOrderedIndex], [BlazeDbField] and [BlazeDbIgnore] into a descriptor with binary serializers, a key extractor and index definitions - for classes, records (positional ones too, through their constructor) and structs, with index-only computed properties. No runtime reflection, so trimming and AOT are safe.",
+            "An incremental Roslyn generator turns [BlazeDbTable], [BlazeDbKey], [BlazeDbIndex], [BlazeDbOrderedIndex], [BlazeDbCompoundIndex], [BlazeDbCompoundOrderedIndex], [BlazeDbField] and [BlazeDbIgnore] into a descriptor with binary serializers, a key extractor and index definitions - for classes, records (positional ones too, through their constructor) and structs, with index-only computed properties. No runtime reflection, so trimming and AOT are safe.",
             "schema", "Inspect the generated descriptor"),
 
         new("Hash and ordered indexes", "Bit.BlazeDb",
@@ -137,16 +137,16 @@
             "transactions", "Watch commit and rollback"),
         new("Conditional and bulk writes", "Bit.BlazeDb",
             "TryInsert and TryUpdate that report instead of throwing, optimistic concurrency through TryUpdate(row, comparisonValue) and TryDelete, and atomic InsertMany, UpsertMany, DeleteMany, DeleteWhere and DeleteAll.",
-            null, ""),
+            "writes", "Run every write"),
         new("Change notifications and live queries", "Bit.BlazeDb",
             "Changed events on every table and on the database, with the net change of each commit and never a rolled-back write, and Watch for queries that re-run only when a commit concerns them.",
             "changes", "Watch the change feed"),
         new("Backups and migrations", "Bit.BlazeDb",
             "ExportAsync and ImportAsync move a whole database through one checksummed file; a UserVersion stored with the data and AddMigration bring it forward on open, one transaction per step.",
-            null, ""),
+            "backups", "Export, import, migrate"),
         new("Integrity checks", "Bit.BlazeDb",
             "VerifyIntegrity compares every row with every index entry and names what disagrees - the trace a row changed in place leaves behind.",
-            null, ""),
+            "writes", "Change a row in place"),
 
         new("Write-ahead log and snapshots", "Bit.BlazeDb.Wal",
             "Group-committed WAL records with per-record CRC32, atomic manifest updates, snapshot compaction, torn-tail truncation and replay on open.",
@@ -170,31 +170,31 @@
 
         new("Unique constraints", "Bit.BlazeDb",
             "A uniqueness flag on hash and ordered indexes, checked before anything is mutated so a rejected write leaves the table and its indexes untouched. Null values are exempt, as everywhere else in the indexing layer.",
-            null, ""),
+            "writes", "Watch a duplicate refused"),
 
         new("Compound indexes", "Bit.BlazeDb",
             "[BlazeDbCompoundIndex] and [BlazeDbCompoundOrderedIndex] build an index keyed by a value tuple, so a filter on several members resolves to one lookup. Ordered ones sort lexicographically, which keeps a leading-key prefix a single contiguous scan.",
-            null, ""),
+            "indexes", "Page by keyset"),
 
         new("Streaming query results", "Bit.BlazeDb.Querying",
             "ExecuteAsync hands control back to the browser every N rows, so scanning a large table cannot freeze rendering on WebAssembly's single thread. Filters, ordering and paging apply exactly as in the synchronous path.",
-            null, ""),
+            "queries", "Stream 50,000 rows"),
 
         new("Encryption at rest", "Bit.BlazeDb.Storage",
             "An IBlazeDbStorage decorator that seals every write into an AES-GCM frame, keeping appends genuine appends. The file name is bound in as associated data, and a torn trailing frame is ignored while a tampered one is reported as corruption.",
-            null, ""),
+            "encryption", "Encrypt a database"),
 
         new("Quota-aware persistence", "Bit.BlazeDb",
             "The engine consults navigator.storage estimates before flushing, compacts when space runs short, and refuses deliberately rather than discovering the limit as a failed append. Data stays intact in memory and the flush can be retried.",
-            null, ""),
+            "storage", "Run into the quota"),
 
         new("IndexedDB fallback", "Bit.BlazeDb.Browser",
             "A second browser backend for contexts without OPFS, such as Firefox private windows. Same four-method contract, same single-writer lock, so nothing above it changes.",
-            null, ""),
+            "tabs", "See which one this browser gets"),
 
         new("Cross-tab read replicas", "Bit.BlazeDb.Browser",
             "Read-only tabs recover from storage and reload when the writer announces a checkpoint over a BroadcastChannel. Only the signal crosses tabs - the data always travels through storage, so a replica cannot observe an uncommitted state.",
-            null, ""),
+            "tabs", "Follow a writer tab"),
 
         new("EF Core provider", "Bit.BlazeDb.EntityFrameworkCore",
             "AddDbContext / UseBlazeDb over the generated descriptors, SaveChanges as one transaction, and LINQ translated onto the query plan with index selection. Queries hand back the live row, so tracking needs no materialization step.",
@@ -230,7 +230,7 @@
         new("Bit.BlazeDb.Demo", "This site: the WebAssembly client and the host that serves it, together with the MCP server at /mcp.", "shipped"),
         new("Bit.BlazeDb.Tests", "Engine and EF Core provider tests, including crash recovery, torn writes, tracking and query plans.", "shipped"),
         new("Bit.BlazeDb.Tests.Mcp", "The MCP server, spoken to over the wire the way a client does.", "shipped"),
-        new("Bit.BlazeDb.Tests.E2E", "This site in Chromium: OPFS and IndexedDB persistence across reloads, and every page.", "shipped"),
+        new("Bit.BlazeDb.Tests.E2E", "This site in Chromium, Firefox or WebKit: OPFS and IndexedDB persistence across reloads, the browser modules, and every page and button.", "shipped"),
         new("Bit.BlazeDb.Benchmarks", "BenchmarkDotNet suite, including comparisons against SQLite.", "shipped"),
     ];
 

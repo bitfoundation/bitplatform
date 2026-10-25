@@ -103,6 +103,79 @@ public partial class Setting
 }
 
 /// <summary>
+/// The index shapes <see cref="TodoEntry"/> does not use, for the pages that open a private database
+/// over it: a unique index, a compound hash index, a compound ordered index that pages by keyset, an
+/// ordinal string index for prefix scans and an index-only computed property.
+/// </summary>
+[BlazeDbTable("people")]
+[BlazeDbCompoundIndex("CityRole", nameof(City), nameof(Role))]
+[BlazeDbCompoundOrderedIndex("JoinedId", nameof(Joined), nameof(Id))]
+public partial class Person
+{
+    [BlazeDbKey]
+    public int Id { get; set; }
+
+    /// <summary>No two people share an address; any number may have none.</summary>
+    [BlazeDbIndex(Unique = true)]
+    public string? Email { get; set; }
+
+    /// <summary>An ordinal string index, which is what <c>StartsWith</c> scans.</summary>
+    [BlazeDbOrderedIndex]
+    public string Name { get; set; } = "";
+
+    public string City { get; set; } = "";
+
+    public string Role { get; set; } = "";
+
+    public DateOnly Joined { get; set; }
+
+    /// <summary>Computed from <see cref="Email"/>: indexed, but never written to the row bytes.</summary>
+    [BlazeDbIndex]
+    public string Domain => Email is { } email ? email[(email.IndexOf('@') + 1)..] : "";
+
+    public Person With(Action<Person> change)
+    {
+        var copy = new Person { Id = Id, Email = Email, Name = Name, City = City, Role = Role, Joined = Joined };
+        change(copy);
+        return copy;
+    }
+}
+
+/// <summary>
+/// Unique indexes beyond the single-property hash case: a compound unique index, whose value is the
+/// whole tuple - so, unlike a single-property one, null members are not exempt - and a unique
+/// ordered index.
+/// </summary>
+[BlazeDbTable("seats")]
+[BlazeDbCompoundIndex("RowNumber", nameof(Row), nameof(Number), Unique = true)]
+public partial class Seat
+{
+    [BlazeDbKey]
+    public int Id { get; set; }
+
+    public string? Row { get; set; }
+
+    public int Number { get; set; }
+
+    [BlazeDbOrderedIndex(Unique = true)]
+    public string? Code { get; set; }
+}
+
+/// <summary>
+/// A positional record: no parameterless constructor, so rows are built through the primary
+/// constructor and the init-only <see cref="Nickname"/> is set afterwards. <see cref="Initial"/> is an
+/// index-only computed property.
+/// </summary>
+[BlazeDbTable("contacts")]
+public partial record Contact([property: BlazeDbKey] int Id, string Name, [property: BlazeDbOrderedIndex] DateOnly Birthday)
+{
+    public string? Nickname { get; init; }
+
+    [BlazeDbIndex]
+    public string Initial => Name.Length == 0 ? "" : Name[..1];
+}
+
+/// <summary>
 /// Proves the source generator is optional: this table's descriptor is written by
 /// hand, serializer and all, for a positional record.
 /// </summary>

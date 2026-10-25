@@ -188,6 +188,36 @@
     </div>
 </Section>
 
+<Section Title="What survives"
+         Lead="Durability is a property of the configuration, not of a call. These are the guarantees, in full.">
+    <Panel Flush="true">
+        <div class="bb-scroll">
+            <table class="bb-table">
+                <thead><tr><th>Configuration</th><th>What survives</th></tr></thead>
+                <tbody>
+                    <tr>
+                        <td class="bb-mono">Storage = null</td>
+                        <td>Nothing: the database is memory only, gone with the instance. Nothing is serialized, so it is also the fastest configuration.</td>
+                    </tr>
+                    <tr>
+                        <td class="bb-mono">a storage backend</td>
+                        <td>Every commit flushed to it. Commits reach storage on the background flusher within <code>FlushInterval</code> (100 ms by default), or at once with <code>await db.FlushAsync()</code>; a crash loses what was committed since the last flush - never part of a commit.</td>
+                    </tr>
+                    <tr>
+                        <td class="bb-mono">after a flush fails</td>
+                        <td>Committed data stays in memory and the flusher retries on its next tick; <code>db.LastBackgroundError</code> reports the standing failure - so a UI can say durability is lagging - and clears again once a flush succeeds. An explicit <code>FlushAsync</code> throws the storage's error itself.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </Panel>
+    <Callout Tone="warn" Title="Browser storage is the origin's to keep or evict.">
+        It can be cleared by the user, evicted under storage pressure, or unavailable in a private window. Ask for
+        persistence with <code>BlazeDbOpfsStorage.RequestPersistenceAsync()</code> (<a href="storage">storage quota</a>), and keep
+        exports of what must not be lost (<a href="backups">backups</a>).
+    </Callout>
+</Section>
+
 <Section Title="What recovery actually does">
     <div class="bb-flex">
         <CodeBlock Title="Recovery, in order" Code="@RecoverySnippet" Language="text" />

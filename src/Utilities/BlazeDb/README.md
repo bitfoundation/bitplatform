@@ -99,19 +99,24 @@ fonts. Every page drives the real engine in your browser rather than describing 
 | --- | --- |
 | `/` | The landing page: what the engine is, a live insert into the tab's database, and how it compares with SQLite. |
 | `/getting-started` | Install, declare a table, open a database once per tab, and how a read and a write travel. |
-| `/todos` | A working CRUD app: index-backed filters, sorting, paging and persisted preferences. |
-| `/schema` | Attributes, the generated descriptor inspected at runtime, supported types, diagnostics. |
-| `/indexes` | Hash lookups, ordered ranges, `BlazeDbBound<T>`, and indexed versus scanned counting. |
-| `/queries` | A query composer that shows the generated C#, the plan and the results. |
-| `/efcore` | The EF Core provider: `UseBlazeDb`, live LINQ, SaveChanges, and what the translator absorbs. |
+| `/hosting` | Every hosting model - WebAssembly, a Blazor Web App and prerendering, Blazor Server, MAUI, the desktop - and the threading model. |
+| `/todos` | A working CRUD app: index-backed filters and facets, sorting, paging, optimistic edits, bulk deletes and persisted preferences. |
+| `/schema` | Attributes, the generated descriptor inspected at runtime, supported types, records and index-only properties, every diagnostic with its fix. |
+| `/writes` | Every write: the `Try` forms, optimistic concurrency, atomic bulk writes, unique indexes, rows changed in place and `VerifyIntegrity`. |
+| `/indexes` | Hash lookups, facets, ordered ranges with inclusive and exclusive bounds, compound and unique indexes, prefix scans and keyset paging. |
+| `/queries` | A query composer that shows the generated C#, `Explain()` and the results, and a large result streamed with `ExecuteAsync`. |
+| `/efcore` | The EF Core provider: every `UseBlazeDb`, live LINQ, SaveChanges, concurrency, transactions, a persistent store, and what the translator absorbs. |
 | `/transactions` | Commit, rollback, dispose-without-commit, savepoints, `RunInTransaction` and crash-recovery proof. |
-| `/changes` | `Changed` events and a live query over a private database: what each kind of commit reports, and what is never reported. |
-| `/durability` | WAL, snapshots, checkpoints, and simulated crashes including torn tails and corruption. |
-| `/storage` | The `IBlazeDbStorage` contract, a live trace of engine I/O, OPFS and Web Locks notes. |
+| `/changes` | `Changed` events and a live query over a private database: what each kind of commit reports, what is never reported, and handlers that write or throw. |
+| `/durability` | WAL, snapshots, checkpoints, what survives, and simulated crashes including torn tails and corruption. |
+| `/backups` | `ExportAsync` and `ImportAsync` - a download of the tab's own database included - `UserVersion`, migrations, and tables the model does not register. |
+| `/storage` | The `IBlazeDbStorage` contract and the backends that ship, a live trace of engine I/O, OPFS and Web Locks, and the storage quota run into live. |
+| `/tabs` | A writer tab and read-only replicas following its checkpoints through `BlazeDbTabSync`, and the OPFS-or-IndexedDB choice. |
+| `/encryption` | `BlazeDbEncryptedStorage` with WebCrypto: the ciphertext next to the plaintext, a wrong key, tampering, a torn frame and key rotation. |
 | `/serialization` | Build a row and inspect the exact bytes, field by field, with a hex dump. |
 | `/errors` | Every exception the engine raises, triggered live against throwaway databases. |
-| `/bench` | Read, write and encoding benchmarks measured in your own browser. |
-| `/roadmap` | What ships, what never will, and how the repository is laid out. |
+| `/bench` | Read, write and encoding benchmarks measured in your own browser, next to the desktop BenchmarkDotNet figures. |
+| `/roadmap` | What ships - each item linked to the page that drives it - what never will, and how the repository is laid out. |
 | `/mcp-server` | The MCP server this site hosts for AI agents. |
 
 ## MCP server
@@ -193,7 +198,8 @@ leaving the row indexed twice.
 
 Null values are indexed like any other: `todos.Lookup(TodoItem.Indexes.Category, null)` returns
 the uncategorized rows, ordering by an index puts them first (as `OrderBy` does), and a bounded
-`Range` excludes them. A unique index still allows any number of nulls.
+`Range` excludes them. A single-property unique index still allows any number of nulls; a compound one
+compares the whole tuple, so null members are not exempt there.
 
 ### Files on the desktop
 
@@ -650,9 +656,9 @@ file name as associated data, so contents cannot be read or altered without the 
 cannot be moved between files. It does not prevent *rollback* - someone with access to the files
 can put back an older, internally consistent manifest, snapshot and log - and there is no key
 rotation: to change the key, open the database, checkpoint, and write it out through a storage
-wrapped with the new cipher. Random nonces are safe for about 2^32 frames per key; at the default
-flush interval that is decades of continuous writing, but a long-lived database should rotate
-before then.
+wrapped with the new cipher. Random nonces are safe for about 2^32 frames per key; every flush
+writes one and every checkpoint two, so at the default flush interval that is about a decade of
+continuous writing, and a long-lived database should rotate before then.
 
 ## Storage quota
 
@@ -856,8 +862,10 @@ generated code fail to compile or the index throw on its first insert.
 
 The source generator in `Bit.BlazeDb` reports every table shape it cannot generate as a build diagnostic on the type
 or property at fault, rather than emitting code that fails to compile or a descriptor that throws at
-runtime. A type with an error gets no generated partial at all, so its own diagnostic arrives together
-with "does not contain a definition for 'Table'" errors wherever the type is used - fix the `BLZ` one first.
+runtime. An error on the type itself - BLZ001, 002, 004, 006, 007, 010, 011, 012 or 018, or a BLZ003 on a
+property its constructor takes - leaves it with no generated partial at all, so its own diagnostic arrives
+together with "does not contain a definition for 'Table'" errors wherever the type is used - fix the `BLZ`
+one first. The other errors leave out only the property or index at fault.
 
 | Id | Severity | Title |
 | --- | --- | --- |

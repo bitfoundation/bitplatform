@@ -1,4 +1,5 @@
 ﻿@page "/errors"
+@using Bit.BlazeDb.Browser
 
 <PageTitle>Errors &amp; limits · BlazeDb</PageTitle>
 
@@ -72,8 +73,8 @@
             <CodeBlock Code="@NullIndexSnippet" />
             <p>
                 A null is an index key like any other: a lookup with a null key returns the rows
-                whose value is null, never an error, and unique indexes still allow any number of
-                them. Only a bounded range excludes them, since null lies inside no interval.
+                whose value is null, never an error, and a single-property unique index still allows
+                any number of them. Only a bounded range excludes them, since null lies inside no interval.
             </p>
         </Panel>
         <Panel Title="Empty results" IconName="query">
@@ -117,9 +118,10 @@
 
     <Callout Tone="warn" Title="One caveat worth internalising.">
         Rows are live objects, not copies. Mutating a row you fetched changes the table immediately,
-        before and regardless of any <code>Update</code> call, and a rollback cannot undo it. Clone
-        before editing if you need transactional semantics - the <a href="todos">CRUD page</a> does
-        exactly that.
+        before and regardless of any <code>Update</code> call, and a rollback cannot undo it - and
+        <code>Update</code> then refuses that instance if an indexed value moved. Build a new row and
+        write it (the <a href="todos">CRUD page</a> does exactly that), or tell the table what the
+        indexes hold with <code>UpdateInPlace</code>. <a href="writes">Every write, and what it promises</a>.
     </Callout>
 </Section>
 
@@ -151,6 +153,36 @@
             "table.Update(row)", nameof(KeyNotFoundException),
             "Update is strict on purpose: silently inserting would hide a bug in the calling code. Use Upsert when either outcome is fine.",
             static p => p.UpdateMissingAsync()),
+
+        new("unique", "Writes", "Duplicating a unique index value",
+            "table.TryInsert(row)", nameof(BlazeDbUniqueConstraintViolationException),
+            "A different key, but a value a unique index already holds. TryInsert decides on the key alone, so even it throws - and the check runs before anything changes. Nulls are never duplicates.",
+            static p => p.UniqueAsync()),
+
+        new("mutated", "Writes", "Writing back a row changed in place",
+            "row.Category = \"x\"; table.Update(row)", nameof(InvalidOperationException),
+            "The live row's indexed value was changed on the instance the table holds, so the entry to retract is gone. Update takes a new instance; UpdateInPlace takes the values the indexes hold.",
+            static p => p.MutatedInPlaceAsync()),
+
+        new("stale", "Writes", "UpdateInPlace with stale previous values",
+            "table.UpdateInPlace(row, previousValues)", nameof(BlazeDbStaleRowException),
+            "The previous values no longer describe the indexes - the row was written since they were taken - so the write is refused rather than indexing the row twice. EF Core reports this as DbUpdateConcurrencyException.",
+            static p => p.StaleRowAsync()),
+
+        new("null-row", "Writes", "Storing a null row",
+            "table.Insert(null)", nameof(ArgumentNullException),
+            "Refused at the door with the table named, rather than as a bare null-argument error from deep inside a dictionary.",
+            static p => p.NullRowAsync()),
+
+        new("replica-write", "Writes", "Writing to a read-only replica",
+            "replica.GetTable(...).Insert(row)", nameof(InvalidOperationException),
+            "Writes belong to the tab holding the writer lock. A replica reloads from storage instead.",
+            static p => p.ReplicaWriteAsync()),
+
+        new("handler", "Writes", "A Changed handler that throws",
+            "table.Insert(row)", nameof(BlazeDbChangeHandlerException),
+            "Every subscriber still hears of the commit; the handler's exception surfaces from the write - which did commit, so it must not be retried.",
+            static p => p.ChangeHandlerAsync()),
 
         new("delete-missing", "Writes", "Deleting a key that is not there",
             "table.Delete(key)", "returns false",
@@ -202,6 +234,11 @@
             "A query reads from exactly one source. Combining indexes is a deliberate non-feature - filter residually instead.",
             static p => p.TwoSourcesAsync()),
 
+        new("stream", "Queries", "Writing while a stream has yielded",
+            "await foreach (var r in query.ExecuteAsync())", nameof(InvalidOperationException),
+            "Another handler wrote to the table between two batches, so the rest of the stream would describe neither the table as it was nor as it is. Run the query again, or materialize it first.",
+            static p => p.StreamInterruptedAsync()),
+
         new("mutate-scan", "Queries", "Inserting while enumerating a scan",
             "foreach (var r in table.Scan()) table.Insert(...)", nameof(InvalidOperationException),
             "Scan is a lazy view over live storage, with the same rules as any dictionary enumeration. Materialise with ToList() first.",
@@ -226,6 +263,26 @@
             "BlazeDbDatabase.OpenAsync(options)", "opens, keeps the rows",
             "Replay names tables as strings. A table the options no longer register still opens - its rows carried as raw bytes through every checkpoint and named by db.UnregisteredTables - so dropping a type from the model loses nothing, and registering it again brings the rows back.",
             static p => p.UnknownWalTableAsync()),
+
+        new("locked", "Persistence", "A second writer for the same browser database",
+            "await BlazeDbIndexedDbStorage.CreateAsync(name)", nameof(BlazeDbDatabaseLockedException),
+            "The first storage holds the database's Web Lock for as long as it lives. A second tab gets this - and opens a read-only replica, or falls back to memory.",
+            static p => p.LockedAsync()),
+
+        new("quota", "Persistence", "A flush that would not fit in the quota",
+            "await db.FlushAsync()", nameof(BlazeDbStorageQuotaExceededException),
+            "The engine checks the allowance before it writes, tries a checkpoint to compact, and only then refuses - deliberately, with the data still committed in memory.",
+            static p => p.QuotaAsync()),
+
+        new("wrong-key", "Persistence", "Opening an encrypted database with the wrong key",
+            "BlazeDbDatabase.OpenAsync(options)", nameof(BlazeDbCorruptDatabaseException),
+            "AES-GCM authenticates every frame, so a wrong key cannot decode anything - it is reported, never read as garbage.",
+            static p => p.WrongKeyAsync()),
+
+        new("bad-import", "Persistence", "Importing an altered backup",
+            "BlazeDbDatabase.ImportAsync(file, storage)", nameof(BlazeDbCorruptDatabaseException),
+            "An export carries a checksum, verified before anything is written to the destination.",
+            static p => p.BadImportAsync()),
 
         new("truncated-row", "Persistence", "A row buffer that ends mid-field",
             "descriptor.RowReader(ref reader)", nameof(InvalidDataException),
@@ -308,6 +365,155 @@
         table.Insert(new TodoEntry { Id = id, Title = "second" });
 
         return $"Table holds {table.Count} rows.";
+    }
+
+    private async Task<string> UniqueAsync()
+    {
+        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(Person.Table));
+        var people = db.GetTable(Person.Table);
+        people.Insert(new Person { Id = 1, Name = "Ada", Email = "ada@analytical.org" });
+
+        people.TryInsert(new Person { Id = 2, Name = "Impostor", Email = "ada@analytical.org" });
+        return "TryInsert accepted a duplicate email.";
+    }
+
+    private async Task<string> MutatedInPlaceAsync()
+    {
+        await using var db = await DemoSandbox.OpenAsync();
+        var table = db.GetTable(TodoEntry.Table);
+        var id = Guid.NewGuid();
+        table.Insert(new TodoEntry { Id = id, Title = "live", Category = "engine" });
+
+        var row = table.Get(id)!;
+        row.Category = "docs";
+        table.Update(row);
+        return "Update accepted the mutated instance.";
+    }
+
+    private async Task<string> StaleRowAsync()
+    {
+        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(Person.Table));
+        var people = db.GetTable(Person.Table);
+        people.Insert(new Person { Id = 1, Name = "Ada", City = "London", Role = "engineer" });
+
+        var row = people.Get(1)!;
+        var first = row.With(_ => { });
+        var second = row.With(_ => { });
+        row.City = "Paris";
+        people.UpdateInPlace(row, first);
+        row.Role = "researcher";
+        people.UpdateInPlace(row, second);
+        return "UpdateInPlace accepted values the indexes no longer hold.";
+    }
+
+    private async Task<string> NullRowAsync()
+    {
+        await using var db = await DemoSandbox.OpenAsync();
+        db.GetTable(TodoEntry.Table).Insert(null!);
+        return "A null row was stored.";
+    }
+
+    private async Task<string> ReplicaWriteAsync()
+    {
+        var storage = new BlazeDbInMemoryStorage();
+        await using (var writer = await DemoSandbox.OpenAsync(storage))
+        {
+            await writer.CheckpointAsync();
+        }
+
+        var options = DemoSandbox.BuildOptions(storage);
+        options.ReadOnly = true;
+        await using var replica = await BlazeDbDatabase.OpenAsync(options);
+        replica.GetTable(TodoEntry.Table).Insert(new TodoEntry { Id = Guid.NewGuid(), Title = "from a replica" });
+        return "The replica accepted a write.";
+    }
+
+    private async Task<string> ChangeHandlerAsync()
+    {
+        await using var db = await DemoSandbox.OpenAsync();
+        var table = db.GetTable(TodoEntry.Table);
+        table.Changed += (_, _) => throw new InvalidOperationException("a subscriber with a bug");
+
+        table.Insert(new TodoEntry { Id = Guid.NewGuid(), Title = "committed anyway" });
+        return "The write reported no handler failure.";
+    }
+
+    private async Task<string> StreamInterruptedAsync()
+    {
+        await using var db = await DemoSandbox.OpenAsync();
+        var table = db.GetTable(TodoEntry.Table);
+        DemoData.SeedForBench(db, table, 2_000, out _);
+
+        _ = WriteSoonAsync(table);
+        var seen = 0;
+        await foreach (var _ in BlazeDbQuery<Guid, TodoEntry>.From(table).ExecuteAsync(batchSize: 100))
+        {
+            seen++;
+        }
+        return $"Streamed all {seen} rows.";
+
+        static async Task WriteSoonAsync(BlazeDbTable<Guid, TodoEntry> target)
+        {
+            await Task.Yield();
+            target.Insert(new TodoEntry { Id = Guid.NewGuid(), Title = "written between two batches" });
+        }
+    }
+
+    private async Task<string> LockedAsync()
+    {
+        const string name = "blazedb-errors-lock";
+        using var first = await BlazeDbIndexedDbStorage.CreateAsync(name);
+        using var second = await BlazeDbIndexedDbStorage.CreateAsync(name);
+        return "Two storages hold the same writer lock.";
+    }
+
+    private async Task<string> QuotaAsync()
+    {
+        var storage = new QuotaLimitedStorage(quotaBytes: 16 * 1024);
+        var options = DemoSandbox.BuildOptions(storage, flushInterval: TimeSpan.FromHours(1));
+        options.QuotaReserveBytes = 1024;
+        var db = await BlazeDbDatabase.OpenAsync(options);
+        try
+        {
+            DemoData.Seed(db, db.GetTable(TodoEntry.Table), count: 300);
+            await db.FlushAsync();
+            return "The flush fit.";
+        }
+        finally
+        {
+            storage.QuotaBytes = long.MaxValue / 4;   // let the closing flush through
+            await db.DisposeAsync();
+        }
+    }
+
+    private async Task<string> WrongKeyAsync()
+    {
+        var inner = new BlazeDbInMemoryStorage();
+        var salt = new byte[16];
+        using (var storage = new BlazeDbEncryptedStorage(inner, await BlazeDbWebCryptoCipher.CreateAsync(BlazeDbEncryptedStorage.DeriveKey("right", salt, iterations: 1_000)), ownsCipher: true))
+        await using (var db = await DemoSandbox.OpenAsync(storage))
+        {
+            DemoData.Seed(db, db.GetTable(TodoEntry.Table), count: 3);
+        }
+
+        using var wrong = new BlazeDbEncryptedStorage(inner, await BlazeDbWebCryptoCipher.CreateAsync(BlazeDbEncryptedStorage.DeriveKey("wrong", salt, iterations: 1_000)), ownsCipher: true);
+        await using var reopened = await DemoSandbox.OpenAsync(wrong);
+        return $"Opened with the wrong key: {reopened.GetTable(TodoEntry.Table).Count} rows.";
+    }
+
+    private async Task<string> BadImportAsync()
+    {
+        using var file = new MemoryStream();
+        await using (var db = await DemoSandbox.OpenAsync())
+        {
+            DemoData.Seed(db, db.GetTable(TodoEntry.Table), count: 5);
+            await db.ExportAsync(file);
+        }
+
+        var bytes = file.ToArray();
+        bytes[bytes.Length / 2] ^= 0xFF;
+        await BlazeDbDatabase.ImportAsync(new MemoryStream(bytes), new BlazeDbInMemoryStorage());
+        return "The altered file was imported.";
     }
 
     private async Task<string> UpdateMissingAsync()
@@ -574,7 +780,7 @@
         var uncategorised = table.Lookup(TodoEntry.Indexes.Category, null);
         var howMany = table.CountBy(TodoEntry.Indexes.Category, null);
 
-        // A unique index allows any number of nulls; a bounded Range excludes them.
+        // A single-property unique index allows any number of nulls; a bounded Range excludes them.
         """;
 
     private const string EmptySnippet = """
