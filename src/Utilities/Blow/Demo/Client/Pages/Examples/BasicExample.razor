@@ -3,12 +3,29 @@
 <PageTitle>Basic · Blow</PageTitle>
 
 <ExampleScaffold Title="Basic"
-                 Summary="The minimal flow: a handful of nodes and edges with panning, zooming, selection and connecting.">
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
-        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-        <BlowControls />
-        <BlowMiniMap />
-    </BlowCanvas>
+                 Summary="The smallest useful flow: a BlowCanvas over a list of nodes and a list of edges, with the background, the control bar and the minimap. Everything here works without a line of event handling - the canvas edits the two lists in place as you drag, connect, select and delete.">
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowMiniMap />
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Drag a node</strong> to move it; its edges follow.</li>
+        <li><strong>Drag from a handle</strong> (the dot on a node's edge) to another node's handle to connect them.</li>
+        <li><strong>Click</strong> a node or an edge to select it, <strong>Shift+click</strong> to add to the selection, and <strong>Shift+drag</strong> the background to box-select.</li>
+        <li>Press <strong>Backspace</strong> or <strong>Delete</strong> to remove what is selected; a deleted node takes its edges with it.</li>
+        <li><strong>Drag the background</strong> to pan, <strong>scroll</strong> to zoom and <strong>double-click</strong> it to zoom in; the control bar's buttons zoom in, zoom out and fit the whole graph in view.</li>
+        <li><strong>Click or drag in the minimap</strong> (bottom right) to move the view to that part of the graph.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>Nodes</code> and <code>Edges</code> are plain <code>List&lt;BlowNode&gt;</code> and <code>List&lt;BlowEdge&gt;</code>; the canvas adds, moves and removes items in them directly.</li>
+        <li>A node's <code>Type</code> picks the built-in look: <code>input</code> has only a source handle, <code>output</code> only a target handle, and the default has both.</li>
+        <li>An edge joins <code>Source</code> to <code>Target</code> by node id; <code>Label</code> draws text on it, <code>Animated</code> runs dashes along it, and <code>MarkerEnd</code> (on by default) gives it its arrowhead.</li>
+        <li><code>FitViewOnInit</code> zooms the graph to fit once the nodes are measured.</li>
+        <li><code>BlowBackground</code>, <code>BlowControls</code> and <code>BlowMiniMap</code> are add-ons placed inside the canvas. The control bar's lock button is off by default (<code>ShowInteractive</code>), and the minimap is <code>Pannable</code> by default.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 @code {

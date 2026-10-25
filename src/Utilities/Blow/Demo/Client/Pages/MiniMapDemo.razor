@@ -5,10 +5,9 @@
 <div class="bb-intro">
     <h1>MiniMap Customization</h1>
     <p class="bb-subtitle">
-        The BlowMiniMap gained per-node styling and interactivity: <code>NodeColorFunc</code>,
-        <code>NodeStrokeColorFunc</code>, <code>BorderRadius</code>, an SVG <code>NodeTemplate</code>, plus
-        <code>Pannable</code> and <code>Zoomable</code>. Drag inside the minimap to pan and scroll over it to
-        zoom. Toggle the options below.
+        <code>BlowMiniMap</code> draws an overview of the graph with the visible area cut out of a mask. Every part of
+        it can be restyled - the nodes by colour, outline, class or an SVG template of your own, and the mask and the
+        background behind it - and it can steer the main view: <code>Pannable</code> and <code>Zoomable</code>.
     </p>
 </div>
 
@@ -16,39 +15,84 @@
 
 <div class="bb-demo blow-demo bb-page-wide">
     <div class="bb-demo-bar example-toolbar">
-        <label><input type="checkbox" checked="@_pannable" @onchange="e => _pannable = (bool)e.Value!" /> pannable</label>
-        <label><input type="checkbox" checked="@_zoomable" @onchange="e => _zoomable = (bool)e.Value!" /> zoomable</label>
-        <label><input type="checkbox" checked="@_useTemplate" @onchange="e => _useTemplate = (bool)e.Value!" /> custom SVG node template</label>
+        <label><input type="checkbox" @bind="_pannable" /> Pannable</label>
+        <label><input type="checkbox" @bind="_zoomable" /> Zoomable</label>
+        <label>
+            Nodes
+            <select @bind="_nodeStyle">
+                <option value="type">Coloured by type</option>
+                <option value="single">One colour</option>
+                <option value="template">SVG template</option>
+            </select>
+        </label>
+        <label><input type="checkbox" @bind="_tinted" /> Tinted mask and background</label>
     </div>
     <div class="demo-canvas">
         <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
             <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
             <BlowControls />
-            @if (_useTemplate)
+            @* The map shrinks the graph several times over, and stroke widths and corner radii are in flow units, so
+               they are set several times larger than they should look on the map. *@
+            @if (_nodeStyle == "template")
             {
-                <BlowMiniMap Class="demo-minimap-keep" Width="240" Height="180" Pannable="_pannable" Zoomable="_zoomable">
+                <BlowMiniMap Class="demo-minimap-keep" Width="240" Height="180" Pannable="_pannable" Zoomable="_zoomable"
+                             MaskColor="@MaskFill" MaskStrokeColor="@MaskStroke" MaskStrokeWidth="MaskOutlineWidth" BgColor="@MapBackground">
                     <NodeTemplate Context="node">
                         <circle cx="@Inv(node.GetRect().Width / 2)" cy="@Inv(node.GetRect().Height / 2)"
                                 r="@Inv(Math.Min(node.GetRect().Width, node.GetRect().Height) / 2)"
-                                fill="@NodeColor(node)" stroke="@(node.Selected ? "var(--bit-blow-text)" : "transparent")" stroke-width="3" />
+                                fill="@TypeColor(node)" stroke="@(node.Selected ? "var(--bit-blow-text)" : "transparent")" stroke-width="10" />
                     </NodeTemplate>
                 </BlowMiniMap>
+            }
+            else if (_nodeStyle == "single")
+            {
+                <BlowMiniMap Class="demo-minimap-keep" Width="240" Height="180" Pannable="_pannable" Zoomable="_zoomable"
+                             NodeColor="#0ea5e9" NodeStrokeColor="#0369a1" NodeStrokeWidth="10" BorderRadius="12"
+                             MaskColor="@MaskFill" MaskStrokeColor="@MaskStroke" MaskStrokeWidth="MaskOutlineWidth" BgColor="@MapBackground" />
             }
             else
             {
                 <BlowMiniMap Class="demo-minimap-keep" Width="240" Height="180" Pannable="_pannable" Zoomable="_zoomable"
-                         NodeColorFunc="NodeColor"
-                         NodeStrokeColorFunc="@(n => n.Selected ? "var(--bit-blow-text)" : "transparent")"
-                         NodeStrokeWidth="3" BorderRadius="6" />
+                             NodeColorFunc="TypeColor"
+                             NodeStrokeColorFunc="@(n => n.Selected ? "var(--bit-blow-text)" : "transparent")"
+                             NodeClassFunc="FadeUnselected"
+                             NodeStrokeWidth="10" BorderRadius="12"
+                             MaskColor="@MaskFill" MaskStrokeColor="@MaskStroke" MaskStrokeWidth="MaskOutlineWidth" BgColor="@MapBackground" />
             }
         </BlowCanvas>
     </div>
 </div>
 
+<DemoNotes>
+    <TryIt>
+        <li><strong>Drag inside the minimap</strong> to move the main view there, and <strong>scroll over it</strong> to zoom the main view. Untick <strong>Pannable</strong> or <strong>Zoomable</strong> and the map stops doing that.</li>
+        <li>With <strong>Nodes</strong> on <em>Coloured by type</em>, the input node is green, the output node indigo and the rest amber. <strong>Click</strong> a node on the canvas: its rectangle on the map gets an outline and every other one fades.</li>
+        <li>Switch <strong>Nodes</strong> to <em>One colour</em>: every rectangle is sky blue with a darker outline, except a selected node, which takes the theme's selection colour.</li>
+        <li>Switch to <em>SVG template</em>: each node is drawn as a circle in its type's colour, outlined while it is selected.</li>
+        <li>Tick <strong>Tinted mask and background</strong>: the area outside the view turns indigo with an outline round the visible part, and the map's background takes a tint.</li>
+        <li><strong>Drag the background</strong> or <strong>scroll</strong> on the canvas itself: the window cut out of the mask follows the view.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>Pannable</code> (on by default) lets a click or drag on the map move the main view; <code>Zoomable</code> (off by default, on here) lets the wheel over it zoom, by <code>ZoomStep</code> percent (10) a notch. Either one also puts the map in the tab order, to be steered from the keyboard - see <a href="examples/interactive-minimap">Interactive MiniMap</a>.</li>
+        <li><code>Width</code> and <code>Height</code> are its size in screen pixels: 240 &times; 180 here, 200 &times; 150 by default.</li>
+        <li><code>NodeColorFunc</code>, <code>NodeStrokeColorFunc</code> and <code>NodeClassFunc</code> decide each node's fill, outline and extra CSS class. Without <code>NodeColorFunc</code>, a selected node is filled with the selection colour.</li>
+        <li><code>NodeColor</code> (the theme's <code>--bit-blow-minimap-node</code> by default) and <code>NodeStrokeColor</code> (transparent) paint every node alike. <code>NodeStrokeWidth</code> (2) and <code>BorderRadius</code> (2) shape the rectangles, in flow units.</li>
+        <li>Fills and outlines are SVG attributes, which any CSS rule outranks: a class from <code>NodeClassFunc</code> can recolour a node, or do what an attribute cannot - here <code>opacity</code> with a transition.</li>
+        <li><code>NodeTemplate</code> replaces each rectangle with SVG of your own, translated to the node's top-left corner; size it from <code>node.GetRect()</code>.</li>
+        <li><code>MaskColor</code> (the theme's <code>--bit-blow-minimap-mask</code>), <code>MaskStrokeColor</code> (transparent) and <code>MaskStrokeWidth</code> (1, in flow units) paint the mask outside the visible area, and <code>BgColor</code> (null: the stylesheet's translucent surface) the map's background.</li>
+    </HowItWorks>
+</DemoNotes>
+
+<style>
+    /* What a class can do that the minimap's fill and stroke attributes cannot. */
+    .mm-faded { opacity:0.3; transition:opacity .2s; }
+</style>
+
 @code {
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
-    private bool _pannable = true, _zoomable = true, _useTemplate;
+    private bool _pannable = true, _zoomable = true, _tinted;
+    private string _nodeStyle = "type";
 
     protected override void OnInitialized()
     {
@@ -62,12 +106,24 @@
         }
     }
 
-    private string NodeColor(BlowNode n) => n.Type switch
+    private string TypeColor(BlowNode n) => n.Type switch
     {
         "input" => "#16a34a",
         "output" => "#6366f1",
         _ => "#fbbf24",
     };
+
+    // While something is selected, everything else steps back.
+    private string? FadeUnselected(BlowNode n) => !n.Selected && _nodes.Exists(x => x.Selected) ? "mm-faded" : null;
+
+    // Unticked, these are the minimap's own defaults: the theme's mask colour, no outline, the stylesheet's background.
+    private string MaskFill => _tinted ? "rgba(99, 102, 241, 0.22)" : "var(--bit-blow-minimap-mask)";
+
+    private string MaskStroke => _tinted ? "#6366f1" : "transparent";
+
+    private double MaskOutlineWidth => _tinted ? 10 : 1;
+
+    private string? MapBackground => _tinted ? "color-mix(in srgb, #6366f1 8%, var(--bit-blow-surface))" : null;
 
     private static string Inv(double v) => v.ToString(System.Globalization.CultureInfo.InvariantCulture);
 }

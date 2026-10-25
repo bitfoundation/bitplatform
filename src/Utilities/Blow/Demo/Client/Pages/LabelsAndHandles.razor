@@ -5,9 +5,9 @@
 <div class="bb-intro">
     <h1>HTML Edge Labels &amp; Drag Handles</h1>
     <p class="bb-subtitle">
-        Edges use <strong>HTML labels</strong> (interactive buttons rendered in a non-transformed overlay,
-        so they stay a constant size). The purple nodes can only be dragged by their <strong>⠿ handle</strong>
-        - clicking the body just selects.
+        An <code>EdgeLabelTemplate</code> turns every edge label into HTML - here with a delete button in it - drawn
+        in an overlay that keeps a constant size at any zoom. The purple nodes set <code>UseCustomDragHandle</code>,
+        so only the <code>BlowDragHandle</code> grip in their template moves them.
     </p>
 </div>
 
@@ -49,6 +49,24 @@
         </BlowCanvas>
     </div>
 </div>
+
+<DemoNotes>
+    <TryIt>
+        <li><strong>Drag a purple node by its ⠿ grip</strong> to move it. Dragging its body does not move it - a press there only selects it.</li>
+        <li><strong>Drag the plain node</strong> from anywhere on it, as any node without a custom drag handle.</li>
+        <li><strong>Click ×</strong> on an edge's label to delete that edge.</li>
+        <li><strong>Scroll to zoom</strong> in and out: the nodes grow and shrink, while the labels and their buttons keep the same size on screen.</li>
+        <li><strong>Connect two nodes</strong>: the new edge has no <code>Label</code>, so its HTML label shows the edge's id instead.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>EdgeLabelTemplate</code> is a <code>RenderFragment&lt;BlowEdgeContext&gt;</code> rendered as HTML at each edge's label point, in a layer above the graph that is not zoomed. Once it is set it replaces the built-in SVG labels.</li>
+        <li>The delete button carries <code>nodrag nopan</code>: without them a press on it would start a pan, the pane would capture the pointer, and the click would never reach the button. It removes the edge from <code>_edges</code>, and the canvas drops it on the next render.</li>
+        <li><code>UseCustomDragHandle = true</code> on a node stops its body from starting drags; only a <code>BlowDragHandle</code> inside its template does, and its <code>Class</code> styles the grip.</li>
+        <li>The plain node is handed back to <code>BlowDefaultNode</code>, the built-in look, from the same <code>NodeTemplate</code>.</li>
+        <li>Every node element carries <code>bit-blow-node-{Type}</code>, so the page tints the <code>panel</code> nodes with a <code>.bit-blow-node-panel</code> rule alone, mixed into <code>--bit-blow-node-bg</code> so it suits both colour modes.</li>
+        <li>The edges are a <code>SmoothStep</code> path and a bezier with a closed arrowhead (<code>MarkerType = ArrowClosed</code>).</li>
+    </HowItWorks>
+</DemoNotes>
 
 <style>
     .panel-node { display:flex; align-items:center; gap:8px; padding:2px 4px; }

@@ -1,11 +1,14 @@
 ﻿@page "/examples/edge-routing"
 <PageTitle>Edge Routing · Blow</PageTitle>
 
+@{
+    // Once per render, for the download link and the preview alike.
+    var svgUrl = SvgUrl();
+}
+
 <ExampleScaffold Title="Edge Routing"
-                 Summary="Edges of type BlowEdgeType.Routed go round the nodes in their way: horizontal and vertical segments that leave each handle straight, keep a margin from every node and prefer few bends. Drag the blocks about and the routes follow. The same router is a pure function, BlowEdgeRouting.Orthogonal, and the router itself can be replaced: the custom one here bends each route round wide curves, as wide as its margin from the nodes allows. The graph exports as a standalone SVG image with ToSvg.">
+                 Summary="Edges of type Routed go round the nodes in their way, in horizontal and vertical segments that keep a margin from every node and prefer few bends, and follow as the nodes move. A BlowRoutingOptions tunes the built-in router, a router of your own can replace it, and ToSvg exports the graph, routes included, as an image.">
     <Toolbar>
-        <label>Margin <input type="range" min="0" max="40" step="2" value="@_margin" @oninput="SetMargin" aria-label="Routing margin" /></label>
-        <span class="er-value">@_margin</span>
         <label>
             Router
             <select @bind="_router" @bind:after="ApplyRouter">
@@ -14,11 +17,36 @@
             </select>
         </label>
         <label><input type="checkbox" @bind="_routed" @bind:after="ApplyType" /> Route round nodes</label>
-        <a class="btn btn-secondary" download="routing.svg" href="@SvgUrl()">Export SVG</a>
+        <label>Margin <input type="range" min="0" max="40" step="2" value="@Inv(_options.Margin)" @oninput="@(e => Tune(e, v => _options.Margin = v))" aria-label="Routing margin" /></label>
+        <span class="er-value">@_options.Margin</span>
+        <label>Stub <input type="range" min="0" max="60" step="4" value="@Inv(_options.StubLength)" @oninput="@(e => Tune(e, v => _options.StubLength = v))" /></label>
+        <span class="er-value">@_options.StubLength</span>
+        <label>Bend cost <input type="range" min="0" max="200" step="10" value="@Inv(_options.BendPenalty)" @oninput="@(e => Tune(e, v => _options.BendPenalty = v))" /></label>
+        <span class="er-value">@_options.BendPenalty</span>
+        <label>Corners <input type="range" min="0" max="20" step="1" value="@Inv(_options.BorderRadius)" @oninput="@(e => Tune(e, v => _options.BorderRadius = v))" /></label>
+        <span class="er-value">@_options.BorderRadius</span>
+        <label>
+            Max obstacles
+            <select @bind="_options.MaxObstacles" @bind:after="ApplyRouter">
+                <option value="100">100 (default)</option>
+                <option value="4">4</option>
+                <option value="2">2</option>
+            </select>
+        </label>
+        <label>
+            Image
+            <select @bind="_imageStyle">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+                <option value="blueprint">Blueprint</option>
+                <option value="transparent">Transparent</option>
+            </select>
+        </label>
+        <a class="btn btn-secondary" download="routing.svg" href="@(svgUrl ?? "#")">Export SVG</a>
     </Toolbar>
     <ChildContent>
         @* Handling OnInit and the change events re-renders this page once the canvas is there and after every edit,
-           so the export link always carries the graph as it is. *@
+           so the export link and the preview always carry the graph as it is. *@
         <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" Routing="_routing"
                     AriaLabel="Routing playground"
                     OnInit="_ => { }" NodesChanged="_ => { }" EdgesChanged="_ => { }">
@@ -26,26 +54,64 @@
             <BlowControls />
         </BlowCanvas>
     </ChildContent>
+    <Footer>
+        @* Under the canvas: the image Export SVG saves, redrawn after every edit, so the export options show at once. *@
+        <div class="er-export">
+            <div>
+                <strong>Exported image</strong>
+                <div class="er-export-note">What <em>Export SVG</em> saves, in the style picked under <em>Image</em>.</div>
+            </div>
+            @if (svgUrl is not null)
+            {
+                <img class="er-preview" src="@svgUrl" alt="The flow exported as an SVG image" />
+            }
+        </div>
+    </Footer>
+    <TryIt>
+        <li><strong>Drag</strong> the blocks about: the edges re-route round them as they move, and the edges into Output A and B run inside the <em>Outputs</em> group instead of round it.</li>
+        <li>Untick <strong>Route round nodes</strong>: the same edges become plain smooth steps and run straight through the blocks.</li>
+        <li>Move <strong>Margin</strong>: the routes keep further from the nodes, or hug them at 0.</li>
+        <li>Move <strong>Stub</strong>: each route runs further straight out of its handle before its first turn.</li>
+        <li>Move <strong>Bend cost</strong>: at 0 a route takes the shortest way however many turns it makes; raise it and routes trade length for fewer bends.</li>
+        <li>Move <strong>Corners</strong>: the built-in router's corners turn square at 0 or round off.</li>
+        <li>Set <strong>Max obstacles</strong> to 4 or 2: an edge with more nodes near it than that is given up on and falls back to a smooth step, straight through the blocks.</li>
+        <li>Switch <strong>Router</strong> to <strong>Custom</strong>: the page's own router bends each route round wide curves, still clear of the blocks; Margin, Stub, Bend cost and Max obstacles still apply, Corners does not.</li>
+        <li>Pick an <strong>Image</strong> style and watch the preview under the canvas redraw; <strong>Export SVG</strong> downloads that image.</li>
+    </TryIt>
+    <HowItWorks>
+        <li>An edge whose <code>Type</code> is <code>BlowEdgeType.Routed</code> leaves each handle straight, keeps a margin from every node near it - its own two included - and takes the route with the fewest bends that is not much longer. With no route at all it falls back to a smooth step.</li>
+        <li>The canvas's <code>Routing</code> parameter takes the router. A <code>BlowRoutingOptions</code> tunes the built-in one: <code>Margin</code> (16), <code>StubLength</code> (24), <code>BendPenalty</code> (60, what a bend costs in length), <code>BorderRadius</code> (6, the corner radius) and <code>MaxObstacles</code> (100). The sliders change this page's options in place: the canvas compares the settings, so it routes again at the next render.</li>
+        <li>A route runs inside the groups its ends are in rather than round them, which is how the edges reach Output A and B inside <em>Outputs</em>.</li>
+        <li>Any <code>IBlowEdgeRouter</code> can replace the built-in one: it gets a <code>BlowRouteRequest</code> (the edge, its two anchors and sides, and the boxes of the nodes near it) and returns a <code>BlowPathResult</code>, or null for a smooth step. The custom one here takes its corners from <code>BlowEdgeRouting.Orthogonal</code> - the built-in router as a pure function - and draws a curve through each. A router of your own is replaced with a new instance whenever its settings change.</li>
+        <li><code>ToSvg(options)</code> draws the graph as it is on screen into a standalone SVG document, routes included. <code>BlowSvgExportOptions</code> sets the <code>Title</code>, <code>Background</code> (null for transparent), <code>Padding</code>, <code>NodeFill</code>, <code>NodeStroke</code>, <code>TextColor</code>, <code>GroupFill</code>, <code>GroupStroke</code>, <code>EdgeStroke</code>, <code>FontFamily</code> and <code>FontSize</code>, and <code>Routing</code>, the router to draw routed edges with - here the one the canvas is about to get, so the image never lags a change behind.</li>
+        <li>The image is safe to embed: labels are written as escaped text, and a colour is only written when it is a plain colour value.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
     .er-value { font-size: 12px; min-width: 2em; }
+    .er-export { display: flex; align-items: center; justify-content: space-between; gap: 1rem; height: 100%; }
+    .er-export-note { color: var(--bb-text-soft); }
+    .er-preview { height: 100%; max-width: 60%; object-fit: contain; border: 1px solid var(--bb-border); border-radius: 4px; }
 </style>
 
 @code {
     private BlowCanvas? _flow;
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
-    private IBlowEdgeRouter _routing = new BlowRoutingOptions { Margin = 16 };
-    private int _margin = 16;
+
+    // The built-in router's settings, which the sliders change in place.
+    private readonly BlowRoutingOptions _options = new();
+    private IBlowEdgeRouter _routing = null!;
     private string _router = "built-in";
     private bool _routed = true;
+    private string _imageStyle = "light";
 
     protected override void OnInitialized()
     {
-        BlowNode Box(string id, string label, double x, double y, double w = 120, double h = 44) => new()
+        BlowNode Box(string id, string label, double x, double y, double w = 120, double h = 44, string? parent = null) => new()
         {
-            Id = id, Label = label, Position = new(x, y), Width = w, Height = h,
+            Id = id, Label = label, Position = new(x, y), Width = w, Height = h, ParentId = parent,
             SourcePosition = BlowPosition.Right, TargetPosition = BlowPosition.Left,
         };
 
@@ -57,18 +123,21 @@
             Box("block-2", "Block", 220, 200, 80, 120),
             Box("mid", "Transform", 420, 100),
             Box("block-3", "Block", 640, 40, 60, 200),
-            Box("out-1", "Output A", 820, 0),
-            Box("out-2", "Output B", 820, 260),
+            // A group the outputs sit in, positioned relative to it: the edges into them have to enter it.
+            new BlowNode { Id = "outputs", Type = "group", Label = "Outputs", Position = new(800, -40), Width = 160, Height = 364 },
+            Box("out-1", "Output A", 20, 40, parent: "outputs"),
+            Box("out-2", "Output B", 20, 300, parent: "outputs"),
         ];
         _edges =
         [
-            new() { Id = "a-mid", Source = "in-1", Target = "mid", MarkerEnd = true },
-            new() { Id = "b-mid", Source = "in-2", Target = "mid", MarkerEnd = true },
-            new() { Id = "mid-a", Source = "mid", Target = "out-1", MarkerEnd = true },
-            new() { Id = "mid-b", Source = "mid", Target = "out-2", MarkerEnd = true },
-            new() { Id = "a-b", Source = "in-1", Target = "out-2", MarkerEnd = true, Label = "bypass" },
+            new() { Id = "a-mid", Source = "in-1", Target = "mid" },
+            new() { Id = "b-mid", Source = "in-2", Target = "mid" },
+            new() { Id = "mid-a", Source = "mid", Target = "out-1" },
+            new() { Id = "mid-b", Source = "mid", Target = "out-2" },
+            new() { Id = "a-b", Source = "in-1", Target = "out-2", Label = "bypass" },
         ];
         ApplyType();
+        ApplyRouter();
     }
 
     private void ApplyType()
@@ -76,29 +145,40 @@
         foreach (var edge in _edges) edge.Type = _routed ? BlowEdgeType.Routed : BlowEdgeType.SmoothStep;
     }
 
-    private void SetMargin(ChangeEventArgs e)
+    private void Tune(ChangeEventArgs e, Action<double> set)
     {
-        _margin = int.TryParse(e.Value?.ToString(), out var m) ? m : _margin;
+        if (!double.TryParse(e.Value?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out var value)) return;
+
+        set(value);
         ApplyRouter();
     }
 
-    // A new router, so the canvas sees a new parameter and routes again.
+    // The built-in router is the options object itself, retuned in place. The custom one is handed a copy of them and
+    // made anew on every change: the canvas asks a router again only when it is a different instance.
     private void ApplyRouter()
-        => _routing = _router == "curved" ? new CurvedRouter(_margin) : new BlowRoutingOptions { Margin = _margin };
+        => _routing = _router == "curved"
+            ? new CurvedRouter(new BlowRoutingOptions
+            {
+                Margin = _options.Margin,
+                StubLength = _options.StubLength,
+                BendPenalty = _options.BendPenalty,
+                MaxObstacles = _options.MaxObstacles,
+            })
+            : _options;
 
     /// <summary>
     /// A router of the page's own: the built-in router's corner points, each corner bent round a quadratic curve as
     /// wide as the route's margin allows. A corner sits at least the margin from the node it turns round, and a curve
     /// with legs shorter than four margins never reaches the node, so three margins keeps it clear.
     /// </summary>
-    private sealed class CurvedRouter(double margin) : IBlowEdgeRouter
+    private sealed class CurvedRouter(BlowRoutingOptions options) : IBlowEdgeRouter
     {
         public BlowPathResult? Route(BlowRouteRequest r)
         {
-            var points = BlowEdgeRouting.Orthogonal(r.Source, r.SourceSide, r.Target, r.TargetSide, r.Obstacles,
-                new BlowRoutingOptions { Margin = margin });
+            var points = BlowEdgeRouting.Orthogonal(r.Source, r.SourceSide, r.Target, r.TargetSide, r.Obstacles, options);
             if (points is not { Count: >= 2 }) return null;
 
+            var margin = options.Margin;
             static string F(double v) => v.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
             static double Length(BlowXYPosition a, BlowXYPosition b) => Math.Abs(b.X - a.X) + Math.Abs(b.Y - a.Y);
             static BlowXYPosition Toward(BlowXYPosition from, BlowXYPosition to, double by)
@@ -122,6 +202,34 @@
         }
     }
 
-    private string SvgUrl()
-        => _flow is null ? "#" : "data:image/svg+xml;base64," + Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(_flow.ToSvg()));
+    // A fresh options object per export, so each one starts from the preset's values.
+    private BlowSvgExportOptions ExportOptions()
+    {
+        var options = _imageStyle switch
+        {
+            "dark" => new BlowSvgExportOptions
+            {
+                Background = "#111827", NodeFill = "#1f2937", NodeStroke = "#9ca3af", TextColor = "#f9fafb",
+                EdgeStroke = "#6b7280", GroupFill = "#1e293b", GroupStroke = "#475569",
+            },
+            "blueprint" => new BlowSvgExportOptions
+            {
+                Background = "#1e3a8a", NodeFill = "#1e40af", NodeStroke = "#bfdbfe", TextColor = "#eff6ff",
+                EdgeStroke = "#93c5fd", GroupFill = "#1e3a8a", GroupStroke = "#93c5fd",
+                FontFamily = "monospace", FontSize = 11, Padding = 40,
+            },
+            "transparent" => new BlowSvgExportOptions { Background = null },
+            _ => new BlowSvgExportOptions(),
+        };
+
+        options.Title = "Routing playground";
+        // The router this render hands the canvas, which the canvas itself only takes once it renders in turn.
+        options.Routing = _routing;
+        return options;
+    }
+
+    private string? SvgUrl()
+        => _flow is null ? null : "data:image/svg+xml;base64," + Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(_flow.ToSvg(ExportOptions())));
+
+    private static string Inv(double value) => value.ToString(System.Globalization.CultureInfo.InvariantCulture);
 }

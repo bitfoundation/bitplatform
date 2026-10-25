@@ -3,35 +3,62 @@
 <PageTitle>Use Node Connections · Blow</PageTitle>
 
 <ExampleScaffold Title="Use Node Connections"
-                 Summary="Click a node to list the edges connected to it, along with its incoming and outgoing neighbours, computed with BlowGraphUtils.">
-    @* The change events re-render the page, so the panel follows edges added and nodes deleted, not only clicks. *@
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" OnNodeClick="Select"
-                NodesChanged="@(_ => { })" EdgesChanged="@(_ => { })">
-        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-        <BlowControls />
-        <BlowPanel Position="top-right">
-            <div class="conn-panel">
-                @if (Selected is null)
-                {
-                    <span class="bb-muted">click a node</span>
-                }
-                else
-                {
-                    <div><strong>Node @Selected.Id</strong></div>
-                    <div>connected edges: @BlowGraphUtils.GetConnectedEdges([Selected], _edges).Count</div>
-                    <div>incomers: @string.Join(", ", BlowGraphUtils.GetIncomers(Selected, _nodes, _edges).Select(n => n.Id))</div>
-                    <div>outgoers: @string.Join(", ", BlowGraphUtils.GetOutgoers(Selected, _nodes, _edges).Select(n => n.Id))</div>
-                }
+                 Summary="Click a node to see what it is wired to: the canvas's GetNodeConnections lists its incoming and outgoing connections, GetHandleConnections narrows them to one handle, and BlowGraphUtils names its neighbours. The panel follows the graph as you connect and delete.">
+    <ChildContent>
+        @* The change events re-render the page, so the panel follows edges added and nodes deleted, not only clicks. *@
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" OnNodeClick="Select"
+                    NodesChanged="@(_ => { })" EdgesChanged="@(_ => { })">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+    <Footer>
+        @* Under the canvas: as a panel in its corner, a node's connections grew over the nodes on the right. *@
+        @if (Selected is not { } node || _flow is null)
+        {
+            <div class="unc-muted">Click a node to list its connections.</div>
+        }
+        else
+        {
+            <div class="unc-title">Node @node.Id (@node.Label)</div>
+            <div><span class="unc-api">Incoming, GetNodeConnections(id, Target):</span> @Describe(_flow.GetNodeConnections(node.Id, BlowHandleType.Target))</div>
+            <div><span class="unc-api">Outgoing, GetNodeConnections(id, Source):</span> @Describe(_flow.GetNodeConnections(node.Id, BlowHandleType.Source))</div>
+            <div>
+                <span class="unc-api">Per handle, GetHandleConnections:</span>
+                @string.Join(" · ", HandlesOf(node).Select(h => $"{h.Name} {_flow.GetHandleConnections(node.Id, h.Type, h.Id).Count}"))
             </div>
-        </BlowPanel>
-    </BlowCanvas>
+            <div>
+                <span class="unc-api">Neighbours, BlowGraphUtils:</span>
+                incomers @Ids(BlowGraphUtils.GetIncomers(node, _nodes, _edges)) ·
+                outgoers @Ids(BlowGraphUtils.GetOutgoers(node, _nodes, _edges)) ·
+                @BlowGraphUtils.GetConnectedEdges([node], _edges).Count edge(s)
+            </div>
+        }
+    </Footer>
+    <TryIt>
+        <li><strong>Click</strong> a node: the panel under the canvas lists its incoming and outgoing connections, how many edges each of its handles has, and its neighbours.</li>
+        <li>Click <strong>Split</strong> or <strong>Merge</strong>: they have two named handles each, so the per-handle counts tell <em>left</em> from <em>right</em> and <em>a</em> from <em>b</em>, and each connection names its handle after a dot.</li>
+        <li><strong>Drag</strong> from a handle to another node to add a connection, or select an edge and press <strong>Delete</strong>: the panel updates at once.</li>
+        <li>Delete the node you clicked (select it, then <strong>Delete</strong> or <strong>Backspace</strong>) and the panel empties rather than describing a node that is gone.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>GetNodeConnections(nodeId, type, handleId)</code> on the canvas returns the <code>BlowConnection</code>s attached to a node - all of them, or only those where it is the <code>Target</code> or the <code>Source</code>, or only those at one handle id. It is React Flow's <code>getNodeConnections</code>.</li>
+        <li><code>GetHandleConnections(nodeId, type, handleId)</code> is the same for one handle, React Flow's <code>getHandleConnections</code>. A null <code>handleId</code> does not filter by handle, which for a node with one unnamed handle of each type - 2 and 3 here - is the same thing.</li>
+        <li>Both are also static on <code>BlowGraphUtils</code>, taking the edge list, for code with no canvas at hand; the canvas versions read its current <code>Edges</code>.</li>
+        <li><code>BlowGraphUtils.GetIncomers</code> and <code>GetOutgoers</code> return the neighbouring nodes, and <code>GetConnectedEdges</code> the edges touching any of the given nodes.</li>
+        <li>Split and Merge are built-in <code>input</code> and <code>output</code> nodes that declare <code>Ports</code>; a built-in node draws one handle per declared port, spread along its side, so they get named handles without a template.</li>
+        <li><code>OnNodeClick</code> picks the node; no-op <code>NodesChanged</code> and <code>EdgesChanged</code> handlers re-render the page after every edit, so the panel stays current.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
-    .conn-panel { background:var(--bit-blow-surface); color:var(--bit-blow-text); border:1px solid var(--bit-blow-border); border-radius:8px; padding:8px 10px; font-size:12px; min-width:180px; box-shadow:0 2px 6px var(--bit-blow-shadow); }
+    .unc-title { font-weight: 600; margin-bottom: 2px; }
+    .unc-muted { color: var(--bb-text-soft); }
+    .unc-api { color: var(--bb-text-soft); }
 </style>
 
 @code {
+    private BlowCanvas? _flow;
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
     private BlowNode? _selected;
@@ -43,17 +70,33 @@
     {
         _nodes =
         [
-            new BlowNode { Id = "1", Type = "input", Label = "1", Position = new(250, 20) },
+            new BlowNode
+            {
+                Id = "1", Type = "input", Label = "Split", Position = new(250, 20),
+                Ports =
+                [
+                    new BlowPort { Id = "left", Type = BlowHandleType.Source, Label = "left" },
+                    new BlowPort { Id = "right", Type = BlowHandleType.Source, Label = "right" },
+                ],
+            },
             new BlowNode { Id = "2", Label = "2", Position = new(120, 140) },
             new BlowNode { Id = "3", Label = "3", Position = new(380, 140) },
-            new BlowNode { Id = "4", Type = "output", Label = "4", Position = new(250, 280) },
+            new BlowNode
+            {
+                Id = "4", Type = "output", Label = "Merge", Position = new(250, 280),
+                Ports =
+                [
+                    new BlowPort { Id = "a", Type = BlowHandleType.Target, Label = "a" },
+                    new BlowPort { Id = "b", Type = BlowHandleType.Target, Label = "b" },
+                ],
+            },
         ];
         _edges =
         [
-            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
-            new BlowEdge { Id = "e1-3", Source = "1", Target = "3" },
-            new BlowEdge { Id = "e2-4", Source = "2", Target = "4" },
-            new BlowEdge { Id = "e3-4", Source = "3", Target = "4" },
+            new BlowEdge { Id = "e1-2", Source = "1", SourceHandle = "left", Target = "2" },
+            new BlowEdge { Id = "e1-3", Source = "1", SourceHandle = "right", Target = "3" },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4", TargetHandle = "a" },
+            new BlowEdge { Id = "e3-4", Source = "3", Target = "4", TargetHandle = "b" },
         ];
     }
 
@@ -61,4 +104,21 @@
     {
         _selected = node;
     }
+
+    // A node's handles: its declared ports, or else the one unnamed target and source of a default node.
+    private static IEnumerable<(string Name, BlowHandleType Type, string? Id)> HandlesOf(BlowNode node)
+    {
+        if (node.Ports is { Count: > 0 } ports)
+            return ports.Select(p => (p.Label ?? p.Id ?? "(unnamed)", p.Type, p.Id));
+
+        return new (string, BlowHandleType, string?)[] { ("target", BlowHandleType.Target, null), ("source", BlowHandleType.Source, null) };
+    }
+
+    private static string Describe(IReadOnlyList<BlowConnection> connections) => connections.Count == 0
+        ? "none"
+        : string.Join(", ", connections.Select(c => $"{End(c.Source, c.SourceHandle)} → {End(c.Target, c.TargetHandle)}"));
+
+    private static string End(string? nodeId, string? handleId) => handleId is null ? nodeId ?? "?" : $"{nodeId}.{handleId}";
+
+    private static string Ids(List<BlowNode> nodes) => nodes.Count == 0 ? "none" : string.Join(", ", nodes.Select(n => n.Id));
 }

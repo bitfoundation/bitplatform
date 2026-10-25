@@ -22,9 +22,9 @@
             <p class="bb-hero-sub">
                 Workflow editors, pipelines, state machines and diagrams: a pannable, zoomable <code>BlowCanvas</code>
                 over your own <code>List&lt;BlowNode&gt;</code> and <code>List&lt;BlowEdge&gt;</code>, with custom
-                nodes, handles, five edge paths, sub-flows, a minimap, auto-layout and undo. Dragging, connecting,
-                keyboard handling, layout and edge geometry are written in C# - there is no JavaScript diagram library
-                underneath.
+                nodes, handles and typed ports, six edge paths, sub-flows, a minimap, auto-layout and undo. Dragging,
+                connecting, keyboard handling, layout and edge geometry are written in C# - there is no JavaScript
+                diagram library underneath.
             </p>
             <pre class="bb-code bb-hero-install">dotnet add package Bit.Blow</pre>
             <div class="bb-hero-actions">
@@ -52,6 +52,12 @@
     <span class="k">new</span>() { Id = <span class="s">"1"</span>, Type = <span class="s">"input"</span>, Label = <span class="s">"Request"</span>, Position = <span class="k">new</span>(0, 0) },
     <span class="k">new</span>() { Id = <span class="s">"2"</span>, Label = <span class="s">"Review"</span>, Position = <span class="k">new</span>(-90, 110) },
     <span class="k">new</span>() { Id = <span class="s">"3"</span>, Type = <span class="s">"output"</span>, Label = <span class="s">"Approve"</span>, Position = <span class="k">new</span>(0, 220) },
+];
+
+<span class="k">private</span> List&lt;BlowEdge&gt; _edges =
+[
+    <span class="k">new</span>() { Id = <span class="s">"e1-2"</span>, Source = <span class="s">"1"</span>, Target = <span class="s">"2"</span>, Animated = <span class="k">true</span> },
+    <span class="k">new</span>() { Id = <span class="s">"e2-3"</span>, Source = <span class="s">"2"</span>, Target = <span class="s">"3"</span>, Label = <span class="s">"ok"</span> },
 ];</pre>
                 <div class="home-hero-flow">
                     <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" AriaLabel="A live approval workflow">
@@ -93,34 +99,38 @@
                 <a href="custom-nodes" class="btn btn-outline">Custom nodes →</a>
             </section>
             <section class="bb-card">
-                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Five edge paths</h3>
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Six edge paths</h3>
                 <p class="bb-card-desc">
-                    Bezier, simple bezier, straight, step and smooth step, each tunable per edge, with labels,
-                    arrowheads in any colour and size, animation, and self-connections that loop clear of their node.
+                    Bezier, simple bezier, straight, step, smooth step and routed paths that go round the nodes in their
+                    way, each tunable per edge, with labels, arrowheads in any colour and size, animation, and
+                    self-connections that loop clear of their node.
                 </p>
                 <a href="edge-types" class="btn btn-outline">Edge types →</a>
             </section>
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Connections with rules</h3>
                 <p class="bb-card-desc">
-                    Drag or click from handle to handle, with proximity snapping, duplicate and self-connection rules,
-                    <code>IsValidConnection</code> on the canvas or on each handle, and reconnection of existing edges.
+                    Drag or click from handle to handle, with proximity snapping, duplicate, self-connection and cycle
+                    rules, typed ports with connection limits, <code>IsValidConnection</code> on the canvas or on each
+                    handle, and reconnection of existing edges.
                 </p>
                 <a href="examples/validation" class="btn btn-outline">Validation →</a>
             </section>
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Sub-flows and resizing</h3>
                 <p class="bb-card-desc">
-                    Children move with their parent and can be pinned inside it or grow it; <code>BlowNodeResizer</code>,
-                    node and edge toolbars and a portal into the zoomed layer sit right next to them.
+                    Children move with their parent and can be pinned inside it or grow it, selections group and
+                    ungroup in place, and a group collapses into itself; <code>BlowNodeResizer</code>, node and edge
+                    toolbars and a portal into the zoomed layer sit right next to them.
                 </p>
                 <a href="advanced" class="btn btn-outline">Groups &amp; resizing →</a>
             </section>
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Layout without JavaScript</h3>
                 <p class="bb-card-desc">
-                    <code>BlowLayout</code>'s layered (with crossing reduction), grid and circle layouts, the align and
-                    distribute commands of a drawing tool, and alignment guides while you drag - all in C#.
+                    <code>BlowLayout</code>'s layered (with crossing reduction), tree, radial, force-directed, grid and
+                    circle layouts, the align and distribute commands of a drawing tool, and alignment guides while you
+                    drag - all in C#.
                 </p>
                 <a href="examples/layouting" class="btn btn-outline">Layouting →</a>
             </section>
@@ -128,9 +138,37 @@
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Undo, clipboard and saving</h3>
                 <p class="bb-card-desc">
                     <code>HistoryEnabled</code> keeps the undo stack and binds Ctrl/Cmd+Z; copy and paste rewire edges
-                    and keep groups intact; <code>ToObject()</code> and <code>RestoreAsync</code> save and reload a flow.
+                    and keep groups intact; <code>ToObject()</code> and <code>RestoreAsync</code> save and reload a flow,
+                    <code>ToJson</code> writes it as a versioned document and <code>ToSvg</code> as a picture.
                 </p>
                 <a href="examples/built-in-undo-redo" class="btn btn-outline">Built-in undo →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Validation and run states</h3>
+                <p class="bb-card-desc">
+                    <code>BlowGraphValidator</code> ties every problem to a node, edge or port, the canvas's
+                    <code>Validation</code> marks them on the graph and <code>RunStates</code> shows a workflow running
+                    step by step; <code>BlowGraphAlgorithms</code> adds topological order, cycles and shortest paths.
+                </p>
+                <a href="examples/workflow-runner" class="btn btn-outline">Workflow runner →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Keyboard and screen readers</h3>
+                <p class="bb-card-desc">
+                    Every node and edge is in the tab order: the arrow keys move, Enter selects, Delete removes and
+                    <kbd>C</kbd> starts a connection, so a graph can be built without a pointer. Edits are announced,
+                    and every string can be translated.
+                </p>
+                <a href="examples/keyboard-a11y" class="btn btn-outline">Keyboard access →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Themes and colour modes</h3>
+                <p class="bb-card-desc">
+                    Every colour is a <code>--bit-blow-*</code> custom property with a dark twin; <code>ColorMode</code>
+                    switches between light, dark and the system's choice, and Windows high contrast and reduced motion
+                    are respected.
+                </p>
+                <a href="extras" class="btn btn-outline">Theming →</a>
             </section>
         </div>
     </section>
@@ -247,7 +285,7 @@ BlowSnapshot snapshot = _flow.ToObject();   <span class="c">// nodes, edges and 
             </section>
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Coming from React Flow?</h3>
-                <p class="bb-card-desc">Its examples are ported one for one, so the one you know is a click away - with its Blazor source.</p>
+                <p class="bb-card-desc">Most of its examples are ported here under the same names, so the one you know is a click away - with its Blazor source.</p>
                 <a href="examples" class="btn btn-outline">Browse the examples →</a>
             </section>
             <section class="bb-card">

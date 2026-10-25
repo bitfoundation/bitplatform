@@ -3,26 +3,57 @@
 <PageTitle>Accessibility · Blow</PageTitle>
 
 <ExampleScaffold Title="Accessibility"
-                 Summary="Nodes are keyboard focusable with descriptive aria labels. Tab to a node and press Enter to select it, then use the arrow keys to move it (hold Shift for larger steps), C to start a connection from it, Delete to remove the selection. Tab on to an edge and C picks up its end to move it to another node. A selected node also gets move buttons, so it can be moved with single clicks instead of a drag (WCAG 2.5.7); the canvas's ConnectOnClick does the same for connections.">
-    @* A wide margin, so the toolbar over the top node is inside the pane rather than cut off by its edge. *@
-    <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" DisableKeyboardA11y="false"
-                FitViewOptions="new BlowFitViewOptions { Padding = 0.3 }">
-        <NodeTemplate Context="node">
-            <BlowNodeToolbar Position="BlowPosition.Top">
-                <span class="a11y-move" role="group" aria-label="@($"Move {node.Label}")">
-                    <button class="btn btn-secondary" aria-label="Move left" @onclick="() => Move(-20, 0)">←</button>
-                    <button class="btn btn-secondary" aria-label="Move up" @onclick="() => Move(0, -20)">↑</button>
-                    <button class="btn btn-secondary" aria-label="Move down" @onclick="() => Move(0, 20)">↓</button>
-                    <button class="btn btn-secondary" aria-label="Move right" @onclick="() => Move(20, 0)">→</button>
-                </span>
-            </BlowNodeToolbar>
-            <BlowDefaultNode Node="node" />
-        </NodeTemplate>
-        <ChildContent>
-            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-            <BlowControls />
-        </ChildContent>
-    </BlowCanvas>
+                 Summary="Everything a pointer does here can be done without one: nodes and edges are reached with Tab and read out by name, the arrow keys move nodes, a key starts a connection or moves an edge's end, and move buttons on the selected node replace dragging with single clicks (WCAG 2.5.7).">
+    <Toolbar>
+        <label>Connection key
+            <select @onchange="@(e => _connectionKey = e.Value?.ToString() is { Length: > 0 } key ? key : null)">
+                <option value="c" selected="@(_connectionKey == "c")">C (default)</option>
+                <option value="k" selected="@(_connectionKey == "k")">K</option>
+                <option value="" selected="@(_connectionKey is null)">Off</option>
+            </select>
+        </label>
+        <label><input type="checkbox" checked="@_connectOnClick" @onchange="@(e => _connectOnClick = (bool)e.Value!)" /> Connect on click</label>
+    </Toolbar>
+    <ChildContent>
+        @* A wide margin, so the toolbar over the top node is inside the pane rather than cut off by its edge. *@
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    FitViewOptions="new BlowFitViewOptions { Padding = 0.3 }"
+                    ConnectionKey="_connectionKey"
+                    ConnectOnClick="_connectOnClick">
+            <NodeTemplate Context="node">
+                <BlowNodeToolbar Position="BlowPosition.Top">
+                    <span class="a11y-move" role="group" aria-label="@($"Move {node.Label}")">
+                        <button class="btn btn-secondary" aria-label="Move left" @onclick="() => Move(-20, 0)">←</button>
+                        <button class="btn btn-secondary" aria-label="Move up" @onclick="() => Move(0, -20)">↑</button>
+                        <button class="btn btn-secondary" aria-label="Move down" @onclick="() => Move(0, 20)">↓</button>
+                        <button class="btn btn-secondary" aria-label="Move right" @onclick="() => Move(20, 0)">→</button>
+                    </span>
+                </BlowNodeToolbar>
+                <BlowDefaultNode Node="node" />
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Click the background</strong> to give the canvas focus, then press <strong>Tab</strong>: focus moves through the edges, then the nodes, each with a visible ring. A screen reader reads each one's name - "Default node two" - its state and the keys it answers to.</li>
+        <li>Press <strong>Enter</strong> or <strong>Space</strong> to select the focused node (<strong>Shift+Enter</strong> adds it to the selection), the <strong>arrow keys</strong> to move the selection 5 units (<strong>Shift</strong> + arrows: 25), <strong>Delete</strong> to remove it and <strong>Escape</strong> to clear it.</li>
+        <li>On a focused node, press <strong>C</strong> to start a connection from it; <strong>Tab</strong> to another node and press <strong>Enter</strong> to connect, or <strong>Escape</strong> to cancel. A screen reader hears whether Enter would connect, or why not.</li>
+        <li><strong>Tab</strong> to an edge and press <strong>C</strong>: its target end is picked up (<strong>C</strong> again takes the source end instead). <strong>Tab</strong> to another node and press <strong>Enter</strong> to attach it there.</li>
+        <li>Switch <strong>Connection key</strong> to <em>K</em> to use that key instead, or <em>Off</em> to turn connecting from the keyboard off.</li>
+        <li><strong>Select a node</strong>: the arrow buttons above it move it 20 units per click, with no drag needed.</li>
+        <li>Tick <strong>Connect on click</strong>, then <strong>click a handle</strong> and <strong>click another node's handle</strong> to connect them without dragging.</li>
+    </TryIt>
+    <HowItWorks>
+        <li>Nodes and edges are in the tab order by default (<code>NodesFocusable</code>, <code>EdgesFocusable</code>), edges first since they are drawn beneath the nodes. <code>DisableKeyboardA11y</code> would take them out and turn the arrow keys off; the <a href="examples/keyboard-a11y">Keyboard Accessibility</a> example switches each of these.</li>
+        <li>A node is announced by its <code>AriaLabel</code>, else its <code>Label</code>; this page gives each node an <code>AriaLabel</code> that says more than its label. Its state and keyboard instructions are read after the name, as its description.</li>
+        <li>The arrow keys move the selected nodes 5 flow units, 25 with Shift, and every move, selection and deletion is announced through the canvas's polite live region.</li>
+        <li><code>ConnectionKey</code> (<code>"c"</code>) starts a keyboard connection from the focused node, or picks up an end of the focused edge to reconnect it; null turns both off. The same rules and events apply as for a drag, and the key is ignored with <strong>Ctrl</strong>, <strong>Cmd</strong> or <strong>Alt</strong> held, so <strong>Ctrl+C</strong> still copies.</li>
+        <li>The move buttons sit in a <code>BlowNodeToolbar</code>, shown while the node is selected, and call <code>MoveSelectionAsync(dx, dy)</code>: it moves the selection as an arrow key does - snapping, extents, one undo step, announced.</li>
+        <li><code>ConnectOnClick</code> (off) adds click-a-handle, click-another to dragging - the single-pointer way to connect.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
@@ -34,6 +65,8 @@
     private BlowCanvas? _flow;
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
+    private string? _connectionKey = "c";
+    private bool _connectOnClick;
 
     /// <summary>Moves the selection by single clicks: one undo step each, announced like an arrow key.</summary>
     private Task Move(double dx, double dy) => _flow?.MoveSelectionAsync(dx, dy) ?? Task.CompletedTask;

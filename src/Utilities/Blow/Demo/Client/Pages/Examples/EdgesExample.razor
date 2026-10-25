@@ -3,38 +3,108 @@
 <PageTitle>Edges · Blow</PageTitle>
 
 <ExampleScaffold Title="Edges"
-                 Summary="The built-in edge path types - bezier, straight, step and smooth-step - shown side by side, including animated, labelled and arrow-headed variants.">
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
-        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-        <BlowControls />
-    </BlowCanvas>
+                 Summary="All six built-in path types side by side - bezier, simple bezier, straight, step, smooth step and routed - each pair also showing one way to dress an edge: a label, a colour, a dash, animation, two arrowheads. An edge's Type picks its path; everything else is a property of the same BlowEdge.">
+    <Toolbar>
+        <label>
+            Hit area
+            <input type="range" min="2" max="40" step="2" value="@_hitWidth"
+                   @oninput="@(e => SetHitWidth(e.Value))" />
+            <span class="edg-value">@_hitWidth px</span>
+        </label>
+        <label><input type="checkbox" @bind="_showHitArea" /> Show hit area</label>
+        <label><input type="checkbox" @bind="_focusable" @bind:after="ApplyEdgeSettings" /> Edges focusable</label>
+    </Toolbar>
+    <ChildContent>
+        @* New edges take the toolbar's settings as they are drawn, as the existing ones did when they were set. *@
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" Class="@(_showHitArea ? "edg-show-hit" : null)"
+                    OnConnect="@(_ => ApplyEdgeSettings())">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li>Compare the six pairs: each top node names the path type, and the node under it names what else its edge shows.</li>
+        <li><strong>Drag</strong> an end node above its start node: bezier swings out in a wide S, simple bezier stays flat, and step and smooth step turn back on themselves with square and rounded corners. While the end is below, the two beziers are the same curve.</li>
+        <li><strong>Drag</strong> the <em>in the way</em> block about: the routed edge keeps going round it, where a smooth step would run straight through.</li>
+        <li>Tick <strong>Show hit area</strong> to paint the invisible band that takes the pointer, then move <strong>Hit area</strong>: the band widens and narrows, and with it how far from the line a <strong>click</strong> still selects the edge. Zoom out and the band keeps its width on screen.</li>
+        <li><strong>Click</strong> an empty spot of the canvas and press <strong>Tab</strong>: focus steps through the edges - the focused one drawn dashed in the selection colour - before it reaches the nodes, and <strong>Enter</strong> selects it. Untick <strong>Edges focusable</strong> and <strong>Tab</strong> goes straight to the nodes.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>BlowEdge.Type</code> (a <code>BlowEdgeType</code>, <code>Bezier</code> by default) picks the path algorithm: <code>Bezier</code>, <code>SimpleBezier</code>, <code>Straight</code>, <code>Step</code>, <code>SmoothStep</code> or <code>Routed</code>.</li>
+        <li><code>Bezier</code> reaches further out when the edge has to double back, so it still leaves the node cleanly; <code>SimpleBezier</code> keeps its control points halfway along the handle axis, so it stays flat. While the end is ahead of the handle the two agree.</li>
+        <li><code>Routed</code> runs orthogonal segments round the nodes in its way and is routed again whenever a node moves; the Edge Routing example tunes it.</li>
+        <li><code>Label</code> draws text on a plate at the path's midpoint; <code>Stroke</code> and <code>StrokeWidth</code> (1.5 by default) colour and thicken the line; <code>Style</code> is an inline style for the path, here a <code>stroke-dasharray</code>; <code>Animated</code> runs a marching dash along it.</li>
+        <li><code>MarkerEnd</code> (on by default) and <code>MarkerStart</code> draw arrowheads; <code>MarkerType = ArrowClosed</code> fills them.</li>
+        <li><code>InteractionWidth</code> (14 by default) is the width of an invisible path laid over the edge to make it easy to hit, in screen pixels at any zoom. The slider sets it on every edge; the checkbox paints the <code>bit-blow-edge-interaction</code> path that draws it.</li>
+        <li><code>Focusable</code> (on by default) puts an edge in the tab order; the checkbox sets it on every edge. <code>EdgesFocusable</code> on the canvas takes them all out at once.</li>
+    </HowItWorks>
 </ExampleScaffold>
+
+<style>
+    .edg-value { display: inline-block; min-width: 3.5rem; text-align: right; }
+    /* The hit path is drawn transparent; painting it shows the band a click lands on. */
+    .edg-show-hit .bit-blow-edge-interaction { stroke: color-mix(in srgb, var(--bit-blow-edge-selected) 22%, transparent); }
+</style>
 
 @code {
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
+    private double _hitWidth = 14;
+    private bool _showHitArea;
+    private bool _focusable = true;
 
     protected override void OnInitialized()
     {
         // Each end a little to the right of its start: straight below it, every path type is the same vertical line.
         _nodes =
         [
-            new BlowNode { Id = "b1", Label = "bezier", Position = new(20, 20) },
-            new BlowNode { Id = "b2", Label = "end", Position = new(110, 180) },
-            new BlowNode { Id = "s1", Label = "straight", Position = new(240, 20) },
-            new BlowNode { Id = "s2", Label = "end", Position = new(330, 180) },
-            new BlowNode { Id = "t1", Label = "step", Position = new(460, 20) },
-            new BlowNode { Id = "t2", Label = "end", Position = new(550, 180) },
-            new BlowNode { Id = "ss1", Label = "smoothstep", Position = new(680, 20) },
-            new BlowNode { Id = "ss2", Label = "end", Position = new(770, 180) },
+            new BlowNode { Id = "b1", Label = "bezier", Position = new(0, 0) },
+            new BlowNode { Id = "b2", Label = "labelled", Position = new(90, 180) },
+            new BlowNode { Id = "sb1", Label = "simple bezier", Position = new(260, 0) },
+            new BlowNode { Id = "sb2", Label = "coloured", Position = new(350, 180) },
+            new BlowNode { Id = "s1", Label = "straight", Position = new(520, 0) },
+            new BlowNode { Id = "s2", Label = "dashed", Position = new(610, 180) },
+            new BlowNode { Id = "t1", Label = "step", Position = new(0, 300) },
+            new BlowNode { Id = "t2", Label = "animated", Position = new(90, 480) },
+            new BlowNode { Id = "ss1", Label = "smooth step", Position = new(260, 300) },
+            new BlowNode { Id = "ss2", Label = "two arrowheads", Position = new(350, 480) },
+            new BlowNode { Id = "r1", Label = "routed", Position = new(520, 300) },
+            new BlowNode { Id = "r2", Label = "round the block", Position = new(610, 480) },
+            // Across the middle of the last pair, where a smooth step would turn: the routed edge has to go round it.
+            new BlowNode { Id = "block", Label = "in the way", Position = new(540, 390), Width = 150, Height = 40 },
         ];
 
         _edges =
         [
-            new BlowEdge { Id = "e-b", Source = "b1", Target = "b2", Type = BlowEdgeType.Bezier, Label = "bezier" },
-            new BlowEdge { Id = "e-s", Source = "s1", Target = "s2", Type = BlowEdgeType.Straight, Label = "straight" },
-            new BlowEdge { Id = "e-t", Source = "t1", Target = "t2", Type = BlowEdgeType.Step, Label = "step", Animated = true },
-            new BlowEdge { Id = "e-ss", Source = "ss1", Target = "ss2", Type = BlowEdgeType.SmoothStep, Label = "smoothstep", MarkerType = BlowMarkerType.ArrowClosed },
+            new BlowEdge { Id = "e-b", Source = "b1", Target = "b2", Type = BlowEdgeType.Bezier, Label = "a label" },
+            new BlowEdge { Id = "e-sb", Source = "sb1", Target = "sb2", Type = BlowEdgeType.SimpleBezier, Stroke = "#6366f1", StrokeWidth = 3 },
+            new BlowEdge { Id = "e-s", Source = "s1", Target = "s2", Type = BlowEdgeType.Straight, Style = "stroke-dasharray:6 4" },
+            new BlowEdge { Id = "e-t", Source = "t1", Target = "t2", Type = BlowEdgeType.Step, Animated = true },
+            new BlowEdge
+            {
+                Id = "e-ss", Source = "ss1", Target = "ss2", Type = BlowEdgeType.SmoothStep,
+                MarkerStart = true, MarkerType = BlowMarkerType.ArrowClosed,
+            },
+            new BlowEdge { Id = "e-r", Source = "r1", Target = "r2", Type = BlowEdgeType.Routed },
         ];
+    }
+
+    private void SetHitWidth(object? raw)
+    {
+        if (!double.TryParse(raw?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out var value)) return;
+
+        _hitWidth = value;
+        ApplyEdgeSettings();
+    }
+
+    // Retunes the edges in place - the ones the user draws included - rather than rebuilding the list, which would
+    // throw away every edit made since the page loaded.
+    private void ApplyEdgeSettings()
+    {
+        foreach (var edge in _edges)
+        {
+            edge.InteractionWidth = _hitWidth;
+            edge.Focusable = _focusable;
+        }
     }
 }

@@ -2,7 +2,7 @@
 <PageTitle>Grouping &amp; Transactions · Blow</PageTitle>
 
 <ExampleScaffold Title="Grouping &amp; Transactions"
-                 Summary="Group the selected nodes into a container and dissolve it again without anything moving on screen, change the stacking order, and make several changes as one edit with EditAsync. Every edit is one labelled undo step and one OnGraphChanged event, listed on the right with its kind, origin and label.">
+                 Summary="Group the selected nodes into a container and dissolve it again without anything moving on screen, change the stacking order, and make several changes as one edit with EditAsync. Every edit is one labelled undo step and one OnGraphChanged event, logged under the canvas with its kind, origin and label.">
     <Toolbar>
         <button class="btn btn-secondary" disabled="@(!_state.CanUndo)" @onclick="Undo">↶ Undo @_state.UndoLabel</button>
         <button class="btn btn-secondary" disabled="@(!_state.CanRedo)" @onclick="Redo">↷ Redo @_state.RedoLabel</button>
@@ -48,6 +48,23 @@
             </ol>
         </section>
     </Footer>
+    <TryIt>
+        <li>Parse and Check start selected: press <strong>Group</strong> and they are wrapped in a group that is selected in their place - nothing moves. <strong>Drag</strong> the group and they go with it.</li>
+        <li>With the group selected, press <strong>Ungroup</strong>: the group goes and its nodes stay exactly where they are.</li>
+        <li>Click the background to clear the selection, <strong>drag</strong> Parse on top of Check and press <strong>Send to back</strong>. Parse stays on top while it is selected; click the background again and it is drawn beneath Check. Select it and press <strong>Bring to front</strong> to put it back above.</li>
+        <li><strong>Add a chain (one step)</strong> adds three nodes and two edges in one edit: one line in the log, and one <strong>Undo</strong> takes all of it back.</li>
+        <li><strong>Simulate a remote edit</strong> moves Store as another user's change would: it is logged with the origin <em>Remote</em>, and undo never takes it back - with nothing else done, Undo stays disabled.</li>
+        <li>The Undo and Redo buttons name the step they would take back or bring back - <em>group</em>, <em>order</em>, <em>add chain</em>, <em>move</em>. <strong>Ctrl/Cmd+Z</strong> and <strong>Ctrl/Cmd+Shift+Z</strong> do the same, and <strong>Ctrl/Cmd+C</strong>, <strong>V</strong>, <strong>X</strong> and <strong>D</strong> copy, paste, cut and duplicate - groups and all.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>GroupSelectionAsync(padding: 24)</code> creates a node of type <code>group</code> sized to enclose the selected nodes with 24 units to spare, makes it their parent - turning each position into one relative to the group - and selects it. It returns null and does nothing when nothing is selected or the selected nodes have different parents.</li>
+        <li><code>UngroupAsync(group)</code> hands the children to the group's own parent, again without moving them on screen, and removes the group as a deletion: <code>Deletable</code> and <code>OnBeforeDelete</code> apply to it.</li>
+        <li><code>BringToFrontAsync()</code> and <code>SendToBackAsync()</code> move the selection, with everything nested in it, to the end or the start of <code>Nodes</code> - within its parent, so a child never goes behind its own group. <code>ZIndexMode="BlowZIndexMode.Basic"</code> draws nodes in list order, so that order is the stacking order - except that a selected or dragged node is lifted above the rest while it is, which is why the change shows once Parse is deselected. An explicit <code>ZIndex</code> still wins.</li>
+        <li><code>EditAsync(action, label: "add chain")</code> makes everything inside the action one edit, however many nodes and edges it adds: one undo step under that label, one <code>OnGraphChanged</code>, one <code>NodesChanged</code> and <code>EdgesChanged</code>, and one render.</li>
+        <li>The remote edit passes <code>origin: BlowChangeOrigin.Remote</code> and <code>recordHistory: false</code>: a change listener can tell not to send it back to the server, and instead of becoming a step it is written into every step the history holds (<code>BlowHistory.Rebase</code>).</li>
+        <li><code>OnGraphChanged</code> receives a <code>BlowGraphChange</code> per completed edit - its <code>Kind</code> (<code>Moved</code>, <code>Connected</code>, <code>Edited</code>, <code>Replaced</code>, ...), <code>Origin</code> (<code>User</code>, <code>Api</code>, <code>History</code>, <code>Remote</code>), <code>Label</code>, and the <code>Nodes</code>, <code>Edges</code>, <code>RemovedNodes</code> and <code>RemovedEdges</code> it touched - which the log prints. Undo and redo arrive as <code>Replaced</code> changes from <code>History</code>.</li>
+        <li><code>HistoryEnabled</code> keeps the undo stack and <code>OnHistoryChanged</code> reports its state to the toolbar; <code>OnSelectionChange</code> keeps the page's copy of the selection, which enables the selection buttons.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>

@@ -3,21 +3,88 @@
 <PageTitle>Custom MiniMap Node · Blow</PageTitle>
 
 <ExampleScaffold Title="Custom MiniMap Node"
-                 Summary="Color the minimap nodes by type and outline the selected node, using the BlowMiniMap's NodeColorFunc and NodeStrokeColorFunc. Select a node to see its minimap outline.">
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
-        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-        <BlowControls />
-        <BlowMiniMap Class="demo-minimap-keep" Width="240" Height="180"
-                 NodeColorFunc="NodeColor"
-                 NodeStrokeColorFunc="NodeStroke"
-                 NodeStrokeWidth="3"
-                 BorderRadius="6" />
-    </BlowCanvas>
+                 Summary="Make the minimap say something about the graph: colour its nodes by type and outline the selected ones with NodeColorFunc and NodeStrokeColorFunc, or draw each one as your own SVG shape with NodeTemplate.">
+    <Toolbar>
+        <label>Map nodes
+            <select @onchange="@(e => _shapes = e.Value?.ToString() == "shapes")">
+                <option value="colours" selected="@(!_shapes)">Coloured by type</option>
+                <option value="shapes" selected="@_shapes">Own SVG shapes</option>
+            </select>
+        </label>
+        <span class="cmm-legend" aria-hidden="true">
+            <span><i class="cmm-swatch cmm-input"></i> input</span>
+            <span><i class="cmm-swatch cmm-default"></i> default</span>
+            <span><i class="cmm-swatch cmm-output"></i> output</span>
+        </span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            @* demo-minimap-keep keeps the map on a phone too, where the site hides the other samples' minimaps. *@
+            @if (_shapes)
+            {
+                <BlowMiniMap Class="demo-minimap-keep" Width="240" Height="180">
+                    <NodeTemplate Context="node">
+                        @* Drawn from the node's top-left corner, in flow units: the map translates each template to its
+                           node's position and scales the whole map, so a shape only needs the node's size. *@
+                        @{ var rect = node.GetRect(); var w = rect.Width; var h = rect.Height; }
+                        @switch (node.Type)
+                        {
+                            case "input":
+                                <circle cx="@Inv(w / 2)" cy="@Inv(h / 2)" r="@Inv(Math.Min(w, h) / 2)"
+                                        fill="@NodeColor(node)" stroke="@NodeStroke(node)" stroke-width="4" />
+                                break;
+                            case "output":
+                                <polygon points="@(Points((w / 2, 0), (w, h / 2), (w / 2, h), (0, h / 2)))"
+                                         fill="@NodeColor(node)" stroke="@NodeStroke(node)" stroke-width="4" />
+                                break;
+                            default:
+                                <rect width="@Inv(w)" height="@Inv(h)" rx="@Inv(h / 2)"
+                                      fill="@NodeColor(node)" stroke="@NodeStroke(node)" stroke-width="4" />
+                                break;
+                        }
+                    </NodeTemplate>
+                </BlowMiniMap>
+            }
+            else
+            {
+                <BlowMiniMap Class="demo-minimap-keep" Width="240" Height="180"
+                             NodeColorFunc="NodeColor"
+                             NodeStrokeColorFunc="NodeStroke"
+                             NodeStrokeWidth="3"
+                             BorderRadius="6" />
+            }
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li>Look at the minimap in the bottom-right corner: each node is filled with its type's colour from the legend.</li>
+        <li><strong>Click</strong> a node to select it, or <strong>Shift+click</strong> several: each selected node gets an outline on the map. Click the background to clear it.</li>
+        <li>Switch <strong>Map nodes</strong> to <strong>Own SVG shapes</strong>: the input becomes a circle, the outputs diamonds and the rest pills, still coloured by type and outlined while selected.</li>
+        <li><strong>Drag a node</strong> on the canvas and its shape follows on the map; <strong>drag on the map</strong> to move the view.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>NodeColorFunc</code> returns each node's fill. Without it nodes take <code>NodeColor</code> (the theme's <code>--bit-blow-minimap-node</code>), and a selected node the selection colour; with it, the function decides every fill, selected or not.</li>
+        <li><code>NodeStrokeColorFunc</code> returns each node's outline - a theme colour for selected nodes and <code>transparent</code> for the rest - drawn <code>NodeStrokeWidth</code> wide (default 2, in flow units, here 3). <code>BorderRadius</code> (2) rounds the rectangles' corners, here 6.</li>
+        <li><code>NodeTemplate</code> replaces the rectangle with any SVG you write, translated to the node's position; <code>node.GetRect()</code> gives its size. The rectangle's own options - the colour and stroke functions, the radius - no longer apply, so the template draws its own fill and outline.</li>
+        <li><code>NodeClassFunc</code> is the stylesheet route: it adds a CSS class to each rectangle instead of a colour.</li>
+        <li>The outline uses <code>--bit-blow-text</code> rather than a fixed colour, so it stays visible in the dark colour mode.</li>
+    </HowItWorks>
 </ExampleScaffold>
+
+<style>
+    .cmm-legend { display: inline-flex; gap: .75rem; margin-left: auto; color: var(--bb-text-soft); }
+    .cmm-legend > span { display: inline-flex; align-items: center; gap: .3rem; }
+    .cmm-swatch { display: inline-block; width: .75rem; height: .75rem; border-radius: 3px; }
+    .cmm-input { background: #16a34a; }
+    .cmm-default { background: #fbbf24; }
+    .cmm-output { background: #6366f1; }
+</style>
 
 @code {
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
+    private bool _shapes;
 
     protected override void OnInitialized()
     {
@@ -26,17 +93,20 @@
             new BlowNode { Id = "1", Type = "input", Label = "Input", Position = new(250, 20) },
             new BlowNode { Id = "2", Label = "Default A", Position = new(120, 140) },
             new BlowNode { Id = "3", Label = "Default B", Position = new(380, 140) },
-            new BlowNode { Id = "4", Type = "output", Label = "Output", Position = new(250, 260) },
+            new BlowNode { Id = "4", Type = "output", Label = "Output A", Position = new(120, 260) },
+            new BlowNode { Id = "5", Type = "output", Label = "Output B", Position = new(380, 260) },
         ];
         _edges =
         [
             new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
             new BlowEdge { Id = "e1-3", Source = "1", Target = "3" },
             new BlowEdge { Id = "e2-4", Source = "2", Target = "4" },
-            new BlowEdge { Id = "e3-4", Source = "3", Target = "4" },
+            new BlowEdge { Id = "e3-5", Source = "3", Target = "5" },
         ];
     }
 
+    // The same colours as the legend in the toolbar. Fixed rather than theme colours: they mean a type, not a
+    // surface, and read on both the light and the dark map.
     private string NodeColor(BlowNode n) => n.Type switch
     {
         "input" => "#16a34a",
@@ -46,4 +116,9 @@
 
     // A theme property rather than a fixed colour, so the outline stays visible in the dark colour mode.
     private string NodeStroke(BlowNode n) => n.Selected ? "var(--bit-blow-text)" : "transparent";
+
+    private static string Points(params (double X, double Y)[] points)
+        => string.Join(' ', points.Select(p => $"{Inv(p.X)},{Inv(p.Y)}"));
+
+    private static string Inv(double v) => v.ToString(System.Globalization.CultureInfo.InvariantCulture);
 }

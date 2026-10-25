@@ -334,6 +334,8 @@ BlowXYPosition point = _flow.ScreenToFlowPosition(e.ClientX, e.ClientY);
 _flow.AddNodes(node);
 await _flow.DeleteElementsAsync(nodes: [node]);
 BlowNode? found = _flow.GetNode("2");
+BlowEdge? edge = _flow.GetEdge("e1-2");
+BlowViewport view = _flow.GetViewport();   // and GetZoom()
 
 BlowSnapshot snapshot = _flow.ToObject();
 await _flow.RestoreAsync(snapshot);
@@ -341,7 +343,7 @@ await _flow.RestoreAsync(snapshot);
 
 `OnInit` hands the same reference to you once the canvas has rendered and measured for the first time. To drive a
 flow from a sidebar or a toolbar elsewhere on the page, pass the reference to them; nothing like React Flow's
-provider is needed (see `/examples/provider`).
+provider is needed (see `/examples/provider`). Demo: `/examples/use-reactflow`.
 
 ### Where to go next
 
@@ -385,7 +387,7 @@ provider is needed (see `/examples/provider`).
 The canvas maintains a few more for itself: `Dragging`, `Resizing`, `Measured` (the measured size, empty until the
 first measurement), `AbsolutePosition` (flow position after walking the parent chain), `Handles` (the measured
 handle anchors) and `EffectiveSize`. `GetRect()` returns the node's absolute bounds and `Clone(newId)` copies it;
-`Data` is copied by reference.
+`Data` is copied by reference. Demo: `/examples/update-node` (the per-node flags and `Clone`).
 
 ### Built-in node types
 
@@ -398,7 +400,8 @@ handle anchors) and `EffectiveSize`. `GetRect()` returns the node's absolute bou
 
 Without a `NodeTemplate`, any other `Type` value is drawn like `"default"`. The built-in nodes show `Label`, or the
 id when there is no label, and place their handles on `TargetPosition` and `SourcePosition`. Every node element
-carries the classes `bit-blow-node` and `bit-blow-node-{Type}`, so a type can be restyled with CSS alone.
+carries the classes `bit-blow-node` and `bit-blow-node-{Type}`, so a type can be restyled with CSS alone. Demo:
+`/examples/default-nodes`.
 
 ### Custom nodes
 
@@ -484,14 +487,14 @@ The browser reads every node in one pass, which is cheap, and sends across only 
 
 `OnNodesInitialized` is raised once every visible node has been measured, and again whenever that becomes true
 after nodes were added; `NodesInitialized` reports the same thing as a property. It is the cue to run a layout that
-needs real sizes.
+needs real sizes. Demo: `/examples/empty`.
 
 ### Node origin
 
 By default a node's `Position` is its top-left corner. `NodeOrigin` on the canvas changes which point it names -
 `new BlowXYPosition(0.5, 0.5)` positions nodes by their centre, `(1, 1)` by their bottom-right - and a node's own
 `Origin` overrides it. The layout, align and clipboard helpers take the same origin, so they keep working on such a
-canvas.
+canvas. Demo: `/extras`.
 
 ### Sub-flows and grouping
 
@@ -581,8 +584,10 @@ The side strips run along the whole edge rather than sitting as squares at the m
 exactly where connection handles are: a square there would turn every attempt to connect into a resize.
 
 `BlowNodeResizeControl` is a single control instead of the full set - `Position` takes a `BlowResizeDirection`
-(`BottomRight` by default), and its `ChildContent` replaces the default square. Give the template's content
-`height: 100%` if it should fill the resized node. Demo: `/examples/node-resizer`.
+(`BottomRight` by default), and its `ChildContent` replaces the default square. It takes the same `Visible`,
+`MinWidth`, `MinHeight`, `MaxWidth`, `MaxHeight`, `KeepAspectRatio` and `Color` as `BlowNodeResizer`. Give the template's content
+`height: 100%` if it should fill the resized node. Demo: `/examples/node-resizer` (`BlowNodeResizer`), `/extras`
+(`BlowNodeResizeControl`).
 
 ### Node toolbars
 
@@ -785,8 +790,10 @@ if (!check.IsValid) Console.WriteLine(check.Rejection);
 ```
 
 `BlowConnectionRules.Begin(graph, nodeId, handleId, type, policy)` binds them to one starting handle for checking
-many candidates cheaply - what the canvas does once per drag. Demo: `/examples/connection-rules`,
-`/examples/connection-mode`, `/examples/typed-ports`.
+many candidates cheaply - what the canvas does once per drag. On a canvas, `CanStartConnection` says whether a
+connection may start at a handle, `CountConnections` and `IsHandleAtLimit` how many edges a handle has and whether it
+is full, and `DescribeConnection` the connection a handle would complete. Demo: `/examples/connection-rules`,
+`/examples/connection-mode`, `/examples/handle-rules`, `/examples/typed-ports`.
 
 ### Confirming a connection asynchronously
 
@@ -796,7 +803,8 @@ edge is added (or the reconnected edge rewired) only if it returns true. The gra
 connection is checked against every rule again when it returns and dropped if it is no longer allowed; either way
 `OnConnectEnd` reports the outcome, with `Rejection` set to `RejectedByRule` for a refusal. An exception it throws
 reaches the renderer like one from an event handler. Rules a connection must pass *while it is dragged* belong in
-`IsValidConnection`, which is synchronous because it runs for every handle on every frame.
+`IsValidConnection`, which is synchronous because it runs for every handle on every frame. Demo:
+`/examples/confirm-connection`.
 
 ### Validation
 
@@ -880,12 +888,19 @@ Select an edge and a small dot appears at each end; drag one onto another handle
 The edge is rewired in place and keeps its `Id`. `OnReconnectStart` (`BlowEdgeReconnectStart`: `Edge`, `MovingEnd`)
 opens the gesture, `OnReconnect` (`BlowEdgeReconnect`: `Edge`, `Connection`) reports the new wiring, and
 `OnReconnectEnd` (`BlowEdgeReconnectEnd`: `Edge`, `MovingEnd`, `Rewired`) closes it either way. `Rewired` false means
-the end was dropped somewhere invalid, which is the usual cue to delete the edge:
+the end did not attach - dropped somewhere invalid, or abandoned with Escape. `OnConnectEnd` follows for the same
+gesture with `IsReconnect` set, and its `IsDropped` tells a drop from a cancel, so deleting an edge dropped on
+nothing - and keeping one the user only gave up on - takes both:
 
 ```csharp
-private void OnReconnectEnd(BlowEdgeReconnectEnd end)
+private BlowEdge? _notRewired;
+
+private void OnReconnectEnd(BlowEdgeReconnectEnd end) => _notRewired = end.Rewired ? null : end.Edge;
+
+private void OnConnectEnd(BlowConnectEndInfo info)
 {
-    if (!end.Rewired) _edges.Remove(end.Edge);
+    if (info.IsReconnect && info.IsDropped && _notRewired is { } edge) _edges.Remove(edge);
+    _notRewired = null;
 }
 ```
 
@@ -898,7 +913,8 @@ Demo: `/examples/reconnect-edge`.
 The line drawn while connecting follows `ConnectionLineType` (`Bezier` by default) and can be restyled with
 `ConnectionLineStyle` (an inline style such as `"stroke:#f6ab6c;stroke-width:3"`) and `ConnectionLineClass`. For
 full control, `ConnectionLineTemplate` draws it yourself as SVG from a `BlowConnectionLineContext`: `FromNode`,
-`FromHandle`, `FromHandleType`, `FromPosition`, `From`, `To`, `ToPosition` and `IsValid`.
+`FromHandle`, `FromHandleType`, `FromPosition`, `From`, `To`, `ToPosition`, `IsValid` and `Rejection` (why the handle the
+line ends at would refuse it).
 
 ```razor
 <ConnectionLineTemplate Context="line">
@@ -1000,7 +1016,7 @@ BlowPathResult? path = BlowEdgeRouting.Route(source, BlowPosition.Right, target,
 
 It is an A* search over the sparse grid formed by the obstacles' margin lines, with every turn charged a penalty;
 it uses no randomness, so the same layout always routes the same way. Demo: `/examples/edge-routing` (with the curved
-router above to switch to), `/examples/state-machine`.
+router above to switch to), `/examples/state-machine`, `/edge-types`.
 
 ### Path options
 
@@ -1076,6 +1092,7 @@ so a custom edge usually only decides its colours:
         <BlowBaseEdge Path="@ctx.Path"
                       Stroke="@(ctx.Edge.Data as string ?? "var(--bit-blow-edge-stroke)")"
                       StrokeWidth="@(ctx.Edge.Selected ? 3 : 1.5)"
+                      MarkerStart="@ctx.MarkerStartUrl"
                       MarkerEnd="@ctx.MarkerEndUrl"
                       Label="@ctx.Edge.Label"
                       LabelX="@ctx.LabelX"
@@ -1096,7 +1113,8 @@ edge has no arrowheads.
 `BlowBaseEdge` takes `Path` (required), `Stroke`, `StrokeWidth` (1.5), `MarkerStart`, `MarkerEnd`,
 `InteractionWidth` (14), `Label`, `LabelX`, `LabelY` and `Class`. `BlowEdgeText` draws a label on its own plate at
 any point (`X`, `Y`, `Label`, `ShowBg`, `Style`, `BgStyle`, `PaddingX`, `PaddingY`, `BorderRadius`). Around your
-markup the canvas still draws the wide invisible click path and the focusable, selectable edge group. Demo:
+markup the canvas still draws the wide invisible click path - `BlowEdge.InteractionWidth` wide - and the focusable,
+selectable edge group, so `BlowBaseEdge.InteractionWidth` can widen an edge's hit area but not narrow it. Demo:
 `/examples/custom-edges`, `/custom-edges`.
 
 ### HTML labels and edge toolbars
@@ -1146,7 +1164,8 @@ into a path:
 }
 ```
 
-The geometry meets each node's bounding box, so it suits rectangular nodes. Demo: `/examples/floating-edges`.
+The geometry meets each node's bounding box, so it suits rectangular nodes. Demo: `/examples/floating-edges`,
+`/floating-edges`.
 
 ### Defaults for new edges
 
@@ -1233,6 +1252,14 @@ same gap:
 
 When [alignment guides](#alignment-guides) are on too, a guide wins on whichever axis it found an alignment and the
 grid keeps the other.
+
+### Intersections
+
+`GetIntersectingNodes(node)` lists the nodes a node overlaps - asked from `OnNodeDrag`, the nodes the dragged one is
+over - and `GetIntersectingNodes(rect)` the nodes in a flow-space rectangle. `IsNodeIntersecting(node, rect)` asks
+about one node. Each takes `partially` (true): false counts only a node lying entirely inside the area. Hidden nodes
+are skipped, and positions are brought up to date first, so an answer given mid-drag is not one move behind. Demo:
+`/examples/intersection`.
 
 ### Panning and zooming input
 
@@ -1376,6 +1403,8 @@ Demo: `/examples/overlay-layout`.
 A handled `OnNodeContextMenu`, `OnSelectionContextMenu` or `OnEdgeContextMenu` suppresses the browser's own menu;
 `OnPaneContextMenu` does not, so the browser's menu still opens over the empty pane.
 
+Demo: `/examples/event-reference` logs every one of them.
+
 The mouse-move, enter, leave, double-click and context-menu listeners on nodes and edges are only attached when you
 handle the event, and the pane's pointer-move listener only while a gesture runs. Every DOM event round-trips into
 .NET and re-renders, so an idle canvas that listened for everything would cost a great deal for nothing - most of
@@ -1424,7 +1453,8 @@ with a 10% margin, `FitView(padding)` with another, and `FitView(options)` with 
 | `Nodes` | all | Fit only these nodes. |
 | `Duration` | 0 | Milliseconds to ease there, for `FitViewAsync`. |
 
-`FitBounds(rect, padding)` fits an arbitrary flow-space rectangle instead.
+`FitBounds(rect, padding)` fits an arbitrary flow-space rectangle instead. Demo: `/examples/hidden`
+(`IncludeHiddenNodes`), `/examples/viewport-transitions` (`FitBoundsAsync`).
 
 ### Moving the viewport from code
 
@@ -1639,8 +1669,10 @@ size of the graph. None of them recurses, so a graph of any depth cannot overflo
 | `GetRoots`, `GetLeaves`, `GetIsolatedNodes`, `GetUnreachable` | Where flows start and end, what is disconnected, what can never run. |
 | `GetStatistics` | Counts: nodes, edges, roots, leaves, components, self-loops, degrees, acyclicity, dangling edges. |
 
-Each takes either the node and edge lists or a `BlowGraphIndex` - the lookups (by id, incoming and outgoing edges,
-edges per handle) built once, for asking several questions of the same graph:
+Each takes a `BlowGraphIndex` - the lookups (by id, incoming and outgoing edges, edges per handle) built once, for
+asking several questions of the same graph - and most also take the node and edge lists directly. `GetRoots`,
+`GetLeaves`, `GetIsolatedNodes`, `GetUnreachable` and `Traverse` take only the index, as do the `direction` options of
+`IsReachable` and `ShortestPath`; `IsAcyclic` is a property of the topological order and of the statistics:
 
 ```csharp
 var graph = new BlowGraphIndex(_nodes, _edges);
@@ -1650,7 +1682,24 @@ foreach (var node in BlowGraphAlgorithms.TopologicalSort(graph).Order)
 
 The index is a snapshot: build a new one after the graph changes. Edges naming a missing node are left out of the
 adjacency and listed in `DanglingEdges`; hidden elements count like any other, so pass only what you want
-considered. Demo: `/examples/typed-ports` computes its values in topological order.
+considered. Demo: `/examples/graph-analysis` runs every one of them over a graph you edit; `/examples/typed-ports`
+computes its values in topological order.
+
+### Graph utilities
+
+`BlowGraphUtils` holds the small helpers React Flow exports, as pure functions over the lists:
+
+| Method | Does |
+| --- | --- |
+| `GetIncomers`, `GetOutgoers`, `GetConnectedEdges` | The nodes one edge upstream or downstream of a node, and the edges touching a set of nodes. |
+| `GetNodeConnections`, `GetHandleConnections` | A node's connections, optionally only those of one handle type or handle id. |
+| `AddEdge`, `ReconnectEdge` | Adds a connection as an edge unless an equivalent one exists, or rewires an edge in place. Both edit the list and return it. |
+| `BuildEdgeId` | The deterministic id the canvas gives an edge it creates: `bit-blow-{source}[.{sourceHandle}]--{target}[.{targetHandle}]`. |
+| `GetNodesBounds`, `GetViewportForBounds` | The box around some nodes, and the viewport that fits a box into a pane of a given size. |
+| `GetNodeIntersection`, `GetEdgePosition`, `GetFloatingEdgeParams` | The geometry of [floating edges](#floating-edges). |
+
+On a canvas, `GetNodeConnections`, `GetHandleConnections` and `FitBounds` answer the same questions about the graph it
+shows. Demo: `/extras`, `/floating-edges`.
 
 ### Validation
 
@@ -1681,7 +1730,9 @@ var severity = result.SeverityOf(node);   // for a marker on that node
 `CreateDefault()` holds `Structure` and `Ports`; `new BlowGraphValidator(rules...)` holds exactly the rules given,
 and `Add` takes an `IBlowValidationRule` or a function over the `BlowValidationContext` (the lists as given, and a
 `BlowGraphIndex` over them). `MaxIssues` (1,000) bounds the report of a hopelessly broken - or hostile - graph, and
-the cancellation token stops a long validation. Messages are English; localize by `Code`.
+the cancellation token stops a long validation. Messages are English; localize by `Code`. Demo:
+`/examples/graph-analysis` (built-in rules, a custom rule and `MaxIssues`), `/examples/typed-ports`,
+`/examples/workflow-runner`.
 
 ### Showing a run
 
@@ -1799,10 +1850,10 @@ The zoom buttons disable themselves at the zoom limits. `BlowControlButton` is a
 | `Width`, `Height` | 200, 150 | Size in screen pixels. |
 | `Pannable` | `true` | Clicking or dragging on it moves the main view there. |
 | `Zoomable` | `false` | The wheel over it zooms the main view, by `ZoomStep` percent (10) per notch. |
-| `NodeColor`, `NodeStrokeColor`, `NodeStrokeWidth`, `BorderRadius` | theme, transparent, 2, 2 | How nodes are drawn. |
+| `NodeColor`, `NodeStrokeColor`, `NodeStrokeWidth`, `BorderRadius` | theme, transparent, 2, 2 | How nodes are drawn. The width and radius are in flow units, so on a large graph they need to be larger to show. |
 | `NodeColorFunc`, `NodeStrokeColorFunc`, `NodeClassFunc` | `null` | Per-node colour, outline and class. Without `NodeColorFunc` a selected node takes the selection colour. |
 | `NodeTemplate` | `null` | Your own SVG per node, translated to the node's position. |
-| `MaskColor`, `MaskStrokeColor`, `MaskStrokeWidth` | theme, transparent, 1 | The area outside the visible viewport. |
+| `MaskColor`, `MaskStrokeColor`, `MaskStrokeWidth` | theme, transparent, 1 | The area outside the visible viewport. The stroke width is in flow units too. |
 | `BgColor` | stylesheet | Background of the map. |
 | `OnNodeClick` | - | A node on the map was clicked. |
 | `AriaLabel` | `"Mini map"` | Accessible name. |
@@ -1862,8 +1913,9 @@ built-in look - a rectangle with the label, groups beneath their children - and 
 arrowheads as on screen, attached at the measured handles and routed the same way. Hidden nodes and their edges are
 left out, and an edge into a collapsed group is drawn to the group, as on screen; the image is sized to everything
 drawn, loops and detours included. Characters XML does not allow in a label are left out rather than breaking the
-document. `BlowSvgExportOptions` sets the padding, title (the image's accessible name, by default the canvas's
-`AriaLabel`), background and colours.
+document. `BlowSvgExportOptions` sets the padding, title (the image's accessible name: the canvas's `AriaLabel` when `ToSvg()` is
+called without options, "Flow diagram" otherwise), background, colours and font. Pass `Routing` in the options when
+the canvas's router has just changed in the same render, since the canvas has not seen the new one yet.
 
 The output is safe to embed: labels are written as escaped text, never as markup, and an element's colour is only
 written when it is a plain colour value (a hex code, a name, `rgb()`, `hsl()`), so nothing in a graph - an
@@ -2243,8 +2295,13 @@ To theme one canvas rather than all of them, give it a class and scope the overr
 ```
 
 ```css
-.bit-blow.ocean { --bit-blow-bg: #f0f9ff; --bit-blow-node-border: #0369a1; }
+.bit-blow:where(.ocean) { --bit-blow-bg: #f0f9ff; --bit-blow-node-border: #0369a1; }
+.bit-blow:where(.ocean) { --bit-blow-dark-bg: #082f49; --bit-blow-dark-node-border: #38bdf8; }
 ```
+
+`:where()` keeps the scoped rule at the weight of `.bit-blow` alone, so the dark rule still outranks it; written as
+`.bit-blow.ocean` it would weigh as much as the dark rule and, coming later, switch dark mode off for those properties.
+Demo: `/examples/color-mode`.
 
 ### Colour modes
 
@@ -2371,6 +2428,8 @@ expensive:
     }
 }
 ```
+
+Demo: `/examples/graph-analysis` (nodes and edges), `/examples/typed-ports`.
 
 ### Focus and the tab order
 
@@ -2606,7 +2665,8 @@ more when zoomed in - wraps that part in `BlowViewportView`, which follows the v
 
 `Select` keeps it cheap too: the content re-renders only when the value it returns changes - here, when the zoom
 crosses 0.6 - rather than on every frame. `BlowViewportView` renders no element of its own, so it works inside an
-SVG edge template as well. To redraw everything after a change the canvas cannot see, call `Refresh()`.
+SVG edge template as well. To redraw everything after a change the canvas cannot see, call `Refresh(remeasure: false)`
+(or `Refresh(remeasure: true)` to measure every node again as well). Demo: `/examples/stress`.
 
 ### Habits that keep it fast
 

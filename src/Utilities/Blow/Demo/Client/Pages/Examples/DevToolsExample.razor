@@ -3,54 +3,91 @@
 <PageTitle>DevTools · Blow</PageTitle>
 
 <ExampleScaffold Title="DevTools"
-                 Summary="Inspector panels in the spirit of React Flow's DevTools: a live viewport logger, a node inspector and a change log. Drag and select nodes to see updates.">
-    @* Fitted at no more than full size: three nodes zoomed in to fill the pane would sit under the panels in its
-       corners. *@
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" FitViewOptions="new BlowFitViewOptions { MaxZoom = 1 }"
-                OnViewportChanged="v => { _vp = v; StateHasChanged(); }"
-                OnNodeDragStop="OnNodeDragStop"
-                OnSelectionChange="OnSelectionChange">
-        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-        @* Top-left, so the change log can have the bottom-left corner to itself. *@
-        <BlowControls Position="BlowPanelPosition.TopLeft" />
-        <BlowPanel Position="top-right">
-            <div class="dev-panel">
-                <div class="dev-panel__title">Viewport</div>
-                <div>x: @_vp.X.ToString("0"), y: @_vp.Y.ToString("0"), zoom: @_vp.Zoom.ToString("0.00")</div>
-            </div>
-        </BlowPanel>
-        <BlowPanel Position="bottom-right">
-            <div class="dev-panel">
-                <div class="dev-panel__title">Node Inspector</div>
-                @foreach (var n in _nodes)
-                {
-                    <div>@n.Id: (@n.Position.X.ToString("0"), @n.Position.Y.ToString("0")) @(n.Selected ? "★" : "")</div>
-                }
-            </div>
-        </BlowPanel>
-        <BlowPanel Position="bottom-left">
-            <div class="dev-panel dev-panel--log">
-                <div class="dev-panel__title">Change Log</div>
-                @foreach (var line in _log)
-                {
-                    <div>@line</div>
-                }
-            </div>
-        </BlowPanel>
-    </BlowCanvas>
+                 Summary="Inspector panels in the spirit of React Flow's DevTools, built from the canvas's own events: a live viewport readout from OnMove, a node inspector that follows every drag, and a change log fed by OnGraphChanged - one entry per completed edit, saying what kind it was, what made it and what it touched.">
+    <Toolbar>
+        <button class="btn btn-secondary" @onclick="AddNode">Add node</button>
+        <button class="btn btn-secondary" disabled="@(_log.Count == 0)" @onclick="() => _log.Clear()">Clear log</button>
+    </Toolbar>
+    <ChildContent>
+        @* Fitted at no more than full size: three nodes zoomed in to fill the pane would sit under the panels in its
+           corners. *@
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" FitViewOptions="_fit"
+                    HistoryEnabled="true"
+                    OnMove="v => _vp = v"
+                    OnNodeDrag="FollowDrag"
+                    OnNodesInitialized="ShowMeasured"
+                    OnGraphChanged="LogChange"
+                    OnSelectionChange="LogSelection">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            @* Top-left, so the two panels can have the right-hand corners. *@
+            <BlowControls Position="BlowPanelPosition.TopLeft" />
+            <BlowPanel Anchor="BlowPanelPosition.TopRight">
+                <div class="dev-panel">
+                    <div class="dev-panel__title">Viewport</div>
+                    <div>x: @_vp.X.ToString("0"), y: @_vp.Y.ToString("0"), zoom: @_vp.Zoom.ToString("0.00")</div>
+                </div>
+            </BlowPanel>
+            <BlowPanel Anchor="BlowPanelPosition.BottomRight">
+                <div class="dev-panel dev-panel--scroll">
+                    <div class="dev-panel__title">Node Inspector</div>
+                    @foreach (var n in _nodes)
+                    {
+                        <div>
+                            @n.Id @n.Type (@n.Position.X.ToString("0"), @n.Position.Y.ToString("0"))
+                            @(n.Measured.IsEmpty ? "" : $"{n.Measured.Width:0}×{n.Measured.Height:0}")
+                            @(n.Selected ? "★" : "")
+                        </div>
+                    }
+                </div>
+            </BlowPanel>
+        </BlowCanvas>
+    </ChildContent>
+    <Footer>
+        @if (_log.Count == 0)
+        {
+            <div class="dev-log__empty">Drag, connect, delete or add a node to see its change here.</div>
+        }
+        @foreach (var line in _log)
+        {
+            <div class="dev-log__line">@line</div>
+        }
+    </Footer>
+    <TryIt>
+        <li><strong>Drag the background</strong> to pan and <strong>scroll</strong> to zoom: the Viewport panel follows every step.</li>
+        <li><strong>Drag a node</strong>: its position in the Node Inspector follows the pointer, and when you let go the log gets one <code>Moved</code> entry, not one per step.</li>
+        <li><strong>Click</strong> a node (or <strong>Shift+click</strong> several): the inspector stars the selected ones and the log notes the new selection.</li>
+        <li><strong>Drag from a handle</strong> to another node to connect them, then select something and press <strong>Delete</strong>: the log shows a <code>Connected</code> and a <code>Removed</code> entry, by the user.</li>
+        <li>Press <strong>Add node</strong>: the log shows an <code>Added</code> entry made through the API, and the node joins the inspector.</li>
+        <li>Press <strong>Ctrl+Z</strong> and <strong>Ctrl+Y</strong> on the canvas: undo and redo appear as <code>Replaced</code> entries from the history. <strong>Clear log</strong> empties the log.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>OnMove</code> reports the viewport on every step of a pan or zoom, so the Viewport panel is live; <code>OnViewportChanged</code> would report a drag-pan only once it ends.</li>
+        <li><code>OnNodeDrag</code> is raised on every pointer move of a drag. The page does nothing in it but re-render, which is all the inspector needs to read the moving <code>Position</code>.</li>
+        <li><code>Measured</code> is the size the canvas measured in the browser - empty until a node has been laid out, so the inspector shows a size only from then on - and <code>Selected</code> the node's selection state; both are kept up to date on the live node. <code>OnNodesInitialized</code>, raised once every node has been measured, re-renders the inspector with the first sizes.</li>
+        <li><code>OnGraphChanged</code> is raised once per completed edit with a <code>BlowGraphChange</code>: <code>Kind</code> (<code>Added</code>, <code>Removed</code>, <code>Moved</code>, <code>Resized</code>, <code>Connected</code>, <code>Reconnected</code>, <code>Replaced</code> or <code>Edited</code>), <code>Origin</code> (<code>User</code>, <code>Api</code>, <code>History</code> or <code>Remote</code>), <code>Label</code>, and the <code>Nodes</code>, <code>Edges</code>, <code>RemovedNodes</code> and <code>RemovedEdges</code> it touched. It is the place to save, validate or sync.</li>
+        <li><code>OnSelectionChange</code> reports the selected nodes and edges; selecting is not an edit, so it never reaches <code>OnGraphChanged</code>.</li>
+        <li><code>AddNodes(node)</code> appends a node through the API, and <code>HistoryEnabled</code> turns on undo and redo, whose steps come back as <code>Replaced</code> changes.</li>
+        <li><code>BlowPanel</code> pins the two panels to the pane's corners with <code>Anchor</code>; the log sits under the canvas, where it can grow without covering nodes.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
-    .dev-panel { background:#111827; color:#e5e7eb; border-radius:8px; padding:8px 10px; font-size:11px; font-family:monospace; min-width:180px; max-width:240px; box-shadow:0 2px 6px var(--bit-blow-shadow); }
-    .dev-panel__title { font-weight:700; color:#a5b4fc; margin-bottom:4px; }
-    .dev-panel--log { max-height:140px; overflow:auto; }
+    .dev-panel { background: var(--bit-blow-surface); color: var(--bit-blow-text); border: 1px solid var(--bit-blow-border); border-radius: 8px; padding: 8px 10px; font-size: 11px; font-family: monospace; min-width: 180px; max-width: 260px; box-shadow: 0 2px 6px var(--bit-blow-shadow); }
+    .dev-panel--scroll { max-height: 160px; overflow: auto; }
+    .dev-panel__title { font-weight: 700; color: var(--bit-blow-node-selected); margin-bottom: 4px; }
+    .dev-log__line { font-family: monospace; }
+    .dev-log__empty { color: var(--bb-text-soft); }
 </style>
 
 @code {
+    private BlowCanvas? _flow;
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
     private BlowViewport _vp = BlowViewport.Identity;
     private readonly List<string> _log = [];
+    private int _next = 4;
+
+    private readonly BlowFitViewOptions _fit = new() { MaxZoom = 1 };
 
     protected override void OnInitialized()
     {
@@ -73,8 +110,30 @@
         if (_log.Count > 30) _log.RemoveAt(_log.Count - 1);
     }
 
-    private void OnNodeDragStop(BlowNode n) => Log($"drag {n.Id} → ({n.Position.X:0},{n.Position.Y:0})");
+    // Nothing to do but re-render, which raising the callback already does: the inspector reads the live positions.
+    private void FollowDrag(BlowNode _) { }
 
-    private void OnSelectionChange(BlowSelectionChange c) =>
-        Log($"select [{string.Join(",", c.Nodes.Select(n => n.Id))}]");
+    // The same for the sizes: raised once the nodes have been measured.
+    private void ShowMeasured() { }
+
+    private void LogChange(BlowGraphChange change)
+    {
+        var touched = new List<string>();
+        if (change.Nodes.Count > 0) touched.Add($"nodes [{string.Join(",", change.Nodes.Select(n => n.Id))}]");
+        if (change.Edges.Count > 0) touched.Add($"edges [{string.Join(",", change.Edges.Select(e => e.Id))}]");
+        if (change.RemovedNodes.Count > 0) touched.Add($"removed nodes [{string.Join(",", change.RemovedNodes.Select(n => n.Id))}]");
+        if (change.RemovedEdges.Count > 0) touched.Add($"removed edges [{string.Join(",", change.RemovedEdges.Select(e => e.Id))}]");
+
+        Log($"{change.Kind} '{change.Label}' by {change.Origin}: {string.Join(", ", touched)}");
+    }
+
+    private void LogSelection(BlowSelectionChange change) =>
+        Log($"selection [{string.Join(",", change.Nodes.Select(n => n.Id).Concat(change.Edges.Select(e => e.Id)))}]");
+
+    private void AddNode()
+    {
+        var id = (_next++).ToString();
+        // Below the others, a little further right each time, so new nodes do not land on each other.
+        _flow?.AddNodes(new BlowNode { Id = id, Label = $"Node {id}", Position = new(60 + (_next % 5) * 60, 280) });
+    }
 }

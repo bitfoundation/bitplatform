@@ -4,7 +4,7 @@
    and a live sample frame - an optional toolbar over a canvas area that hosts the BlowCanvas, and an optional footer
    under it for what grows as the reader works (an event log): in a panel over the canvas it would cover the nodes. The
    frame is marked bb-page-wide, so the docs shell gives the canvas the "on this page" rail's column
-   as well. *@
+   as well. Under the frame, DemoNotes lists what to try and the API behind it. *@
 
 <div class="bb-intro">
     <h1>@Title</h1>
@@ -32,10 +32,18 @@
     }
 </div>
 
+<DemoNotes TryIt="TryIt" HowItWorks="HowItWorks" />
+
 @code {
     [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
     [Parameter] public string? Summary { get; set; }
     [Parameter] public RenderFragment? Toolbar { get; set; }
     [Parameter] public RenderFragment? Footer { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>What to do on the sample, as <c>&lt;li&gt;</c> items; see <see cref="DemoNotes"/>.</summary>
+    [Parameter] public RenderFragment? TryIt { get; set; }
+
+    /// <summary>The API behind the sample, as <c>&lt;li&gt;</c> items; see <see cref="DemoNotes"/>.</summary>
+    [Parameter] public RenderFragment? HowItWorks { get; set; }
 }

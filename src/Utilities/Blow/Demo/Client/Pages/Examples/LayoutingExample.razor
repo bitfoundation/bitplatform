@@ -2,18 +2,81 @@
 <PageTitle>Layouting · Blow</PageTitle>
 
 <ExampleScaffold Title="Layouting"
-                 Summary="Arrange the graph automatically with the layouts that ship in the box - no JavaScript layout engine needed. The layered layout orders each layer to keep edges from crossing, packs layers by their own thickness so tall nodes never overlap the next row, and points the handles along the flow. Grid and circle are there for tidying up and for showing a set of peers.">
+                 Summary="Arrange the graph automatically with the layouts that ship in the box - BlowLayout.Layered, Grid and Circle, plain C# with no JavaScript layout engine. The layered layout orders each layer to keep edges from crossing, packs layers by their own thickness and points the handles along the flow; grid and circle are there for tidying up and for showing a set of peers.">
     <Toolbar>
         @foreach (var (key, label) in _layouts)
         {
             <button class="btn @(key == _current ? "btn-primary" : "btn-secondary")"
-                    @onclick="@(() => Relayout(key))">
+                    @onclick="@(() => Choose(key))">
                 @label
             </button>
         }
         <span class="lay-sep"></span>
         <button class="btn btn-secondary" @onclick="AddBranch">Add branch</button>
         <button class="btn btn-secondary" @onclick="Reset">Reset</button>
+        @* The chosen layout's options, on a row of their own. Each one re-runs the layout as it moves: the layouts are
+           plain functions over the node list, quick enough to run on every step of a slider. The values are written
+           invariantly: a range input reads "0,5" as no value at all. *@
+        <div class="lay-options">
+            @switch (_current)
+            {
+                case "grid":
+                    <label>Columns @(_grid.Columns is { } columns ? columns.ToString() : "auto")
+                        <input type="range" min="0" max="8" step="1" value="@(_grid.Columns ?? 0)"
+                               @oninput="@(e => SetColumns(e.Value))" />
+                    </label>
+                    <label>Column gap @_grid.ColumnGap.ToString("0")
+                        <input type="range" min="0" max="120" step="10" value="@Inv(_grid.ColumnGap)"
+                               @oninput="@(e => Set(() => _grid.ColumnGap = ToDouble(e.Value, 40)))" />
+                    </label>
+                    <label>Row gap @_grid.RowGap.ToString("0")
+                        <input type="range" min="0" max="120" step="10" value="@Inv(_grid.RowGap)"
+                               @oninput="@(e => Set(() => _grid.RowGap = ToDouble(e.Value, 40)))" />
+                    </label>
+                    break;
+
+                case "circle":
+                    <label>Start angle @_circle.StartAngle.ToString("0")°
+                        <input type="range" min="0" max="345" step="15" value="@Inv(_circle.StartAngle)"
+                               @oninput="@(e => Set(() => _circle.StartAngle = ToDouble(e.Value, 0)))" />
+                    </label>
+                    <label>Radius @(_circle.Radius is { } radius ? radius.ToString("0") : "auto")
+                        <input type="range" min="0" max="500" step="25" value="@Inv(_circle.Radius ?? 0)"
+                               @oninput="@(e => SetRadius(e.Value))" />
+                    </label>
+                    @* The gap only feeds the radius the layout works out itself, so it is off while a radius is given. *@
+                    <label>Node gap @_circle.NodeGap.ToString("0")
+                        <input type="range" min="0" max="120" step="10" value="@Inv(_circle.NodeGap)" disabled="@(_circle.Radius is not null)"
+                               @oninput="@(e => Set(() => _circle.NodeGap = ToDouble(e.Value, 30)))" />
+                    </label>
+                    break;
+
+                default:
+                    <label>Direction
+                        <select @onchange="SetDirection">
+                            @foreach (var (direction, label) in _directions)
+                            {
+                                <option value="@direction" selected="@(direction == _layered.Direction)">@label</option>
+                            }
+                        </select>
+                    </label>
+                    <label>Layer gap @_layered.LayerGap.ToString("0")
+                        <input type="range" min="20" max="200" step="10" value="@Inv(_layered.LayerGap)"
+                               @oninput="@(e => Set(() => _layered.LayerGap = ToDouble(e.Value, 80)))" />
+                    </label>
+                    <label>Node gap @_layered.NodeGap.ToString("0")
+                        <input type="range" min="0" max="120" step="10" value="@Inv(_layered.NodeGap)"
+                               @oninput="@(e => Set(() => _layered.NodeGap = ToDouble(e.Value, 40)))" />
+                    </label>
+                    <label>Crossing passes @_layered.CrossingReductionPasses
+                        <input type="range" min="0" max="8" step="1" value="@_layered.CrossingReductionPasses"
+                               @oninput="@(e => Set(() => _layered.CrossingReductionPasses = (int)ToDouble(e.Value, 4)))" />
+                    </label>
+                    <label><input type="checkbox" checked="@_layered.AlignHandlesToDirection"
+                                  @onchange="@(e => Set(() => _layered.AlignHandlesToDirection = (bool)e.Value!))" /> Point handles along the flow</label>
+                    break;
+            }
+        </div>
     </Toolbar>
     <ChildContent>
         @* No minimap: every layout is fitted to the view, and whichever corner it took, some layout would put a
@@ -23,37 +86,72 @@
             <BlowControls />
         </BlowCanvas>
     </ChildContent>
+    <TryIt>
+        <li>Press <strong>Layered</strong>, <strong>Grid</strong> or <strong>Circle</strong> to rearrange the graph; the second row of the toolbar then shows that layout's options, and every change re-runs it.</li>
+        <li>Layered: pick a <strong>Direction</strong>, and drag <strong>Layer gap</strong> and <strong>Node gap</strong> to space the layers and the nodes within them.</li>
+        <li>Drag <strong>Crossing passes</strong> to 0: Node 5, which has two parents, drops to the end of its row, and the edge from Node 2 to it crosses the edges to Nodes 6 and 7. One pass or more sorts the row so nothing crosses.</li>
+        <li>Untick <strong>Point handles along the flow</strong> with the direction left to right: the edges go back to leaving the bottom of each node and entering the top.</li>
+        <li>Grid: drag <strong>Columns</strong> (leftmost is automatic, roughly square), <strong>Column gap</strong> and <strong>Row gap</strong>. Circle: drag <strong>Start angle</strong> to turn the ring, and <strong>Radius</strong> to set its size yourself; at <strong>auto</strong> it is worked out from the node sizes and <strong>Node gap</strong>.</li>
+        <li><strong>Add branch</strong> hangs a new node off a random one and lays the graph out again; <strong>Reset</strong> goes back to the first seven nodes, keeping the options.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>BlowLayout.Layered(nodes, edges, options)</code>, <code>BlowLayout.Grid(nodes, options)</code> and <code>BlowLayout.Circle(nodes, options)</code> write each node's <code>Position</code> in place; nothing else changes, so the page follows with <code>FitView()</code>.</li>
+        <li><code>BlowLayeredLayoutOptions</code>: <code>Direction</code> (<code>TopToBottom</code>, also <code>LeftToRight</code>, <code>BottomToTop</code>, <code>RightToLeft</code>), <code>LayerGap</code> (80) and <code>NodeGap</code> (40). Each node sits one layer beyond the furthest node pointing at it, and cycles are handled.</li>
+        <li><code>CrossingReductionPasses</code> (4) is how many sweeps reorder each layer by the average position of its neighbours; 0 skips them and keeps the order the nodes were reached in.</li>
+        <li><code>AlignHandlesToDirection</code> (on) points every node's <code>SourcePosition</code> and <code>TargetPosition</code> along the flow; <code>UpdateNodeInternals()</code> then re-measures the handles where they moved to. Only the built-in nodes read the two properties - a custom template places its own handles.</li>
+        <li><code>BlowGridLayoutOptions</code>: <code>Columns</code> (<code>null</code> for a roughly square grid), <code>ColumnGap</code> and <code>RowGap</code> (40 each). Cells are uniform, sized to the largest node, and filled row by row in list order.</li>
+        <li><code>BlowCircleLayoutOptions</code>: <code>StartAngle</code> (0, degrees clockwise from twelve o'clock), <code>Radius</code> (<code>null</code> derives one at which neighbours clear each other) and <code>NodeGap</code> (30), the least gap that derivation leaves.</li>
+        <li>Every layout also takes <code>Origin</code> (the top-left of the result), <code>NodeOrigin</code> (match the canvas's) and <code>FallbackSize</code> (150 by 40, for a node with no size yet). These nodes have an explicit <code>Width</code> and <code>Height</code>, so they are laid out at their real size before they are measured.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
     .lay-sep { display: inline-block; width: 1rem; }
+    .lay-options { display: flex; flex-wrap: wrap; flex-basis: 100%; align-items: center; gap: .5rem 1rem; }
 </style>
 
 @code {
     private BlowCanvas? _flow;
-    private List<BlowNode> _nodes = [];
-    private List<BlowEdge> _edges = [];
-    private string _current = "tb";
+    private readonly List<BlowNode> _nodes = [];
+    private readonly List<BlowEdge> _edges = [];
+    private string _current = "layered";
     private int _next = 8;
+
+    // One options object per layout, retuned in place by the controls, so switching away and back keeps the tuning.
+    private readonly BlowLayeredLayoutOptions _layered = new() { LayerGap = 90 };
+    private readonly BlowGridLayoutOptions _grid = new() { ColumnGap = 50, RowGap = 50 };
+    private readonly BlowCircleLayoutOptions _circle = new() { NodeGap = 40 };
 
     private readonly (string Key, string Label)[] _layouts =
     [
-        ("tb", "Top to bottom"),
-        ("lr", "Left to right"),
-        ("bt", "Bottom to top"),
+        ("layered", "Layered"),
         ("grid", "Grid"),
         ("circle", "Circle"),
+    ];
+
+    private readonly (BlowLayoutDirection Direction, string Label)[] _directions =
+    [
+        (BlowLayoutDirection.TopToBottom, "Top to bottom"),
+        (BlowLayoutDirection.LeftToRight, "Left to right"),
+        (BlowLayoutDirection.BottomToTop, "Bottom to top"),
+        (BlowLayoutDirection.RightToLeft, "Right to left"),
     ];
 
     protected override void OnInitialized() => Reset();
 
     private void Reset()
     {
+        // Refilled in place rather than replaced: the canvas edits these very lists, and FitView, straight after the
+        // layout, reads the list the canvas already holds.
         _next = 8;
-        _nodes = Enumerable.Range(1, 7)
-            .Select(i => new BlowNode { Id = i.ToString(), Label = $"Node {i}", Width = 120, Height = 44 })
-            .ToList();
-        _edges =
+        _nodes.Clear();
+        _nodes.AddRange(Enumerable.Range(1, 7)
+            .Select(i => new BlowNode { Id = i.ToString(), Label = $"Node {i}", Width = 120, Height = 44 }));
+        // A tree, plus one edge that gives Node 5 a second parent. Listed last, it makes Node 5 the last node of its
+        // layer to be reached, so without the crossing-reduction sweeps it lands at the end of the layer, beyond the
+        // children of Node 3, and its edge from Node 2 crosses theirs.
+        _edges.Clear();
+        _edges.AddRange(
         [
             new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Type = BlowEdgeType.SmoothStep },
             new BlowEdge { Id = "e1-3", Source = "1", Target = "3", Type = BlowEdgeType.SmoothStep },
@@ -61,47 +159,80 @@
             new BlowEdge { Id = "e2-5", Source = "2", Target = "5", Type = BlowEdgeType.SmoothStep },
             new BlowEdge { Id = "e3-6", Source = "3", Target = "6", Type = BlowEdgeType.SmoothStep },
             new BlowEdge { Id = "e3-7", Source = "3", Target = "7", Type = BlowEdgeType.SmoothStep },
-        ];
-        Relayout(_current);
+            new BlowEdge { Id = "e3-5", Source = "3", Target = "5", Type = BlowEdgeType.SmoothStep },
+        ]);
+        Relayout();
     }
 
     private void AddBranch()
     {
-        var parent = _nodes[Random.Shared.Next(_nodes.Count)];
+        // Every node may have been deleted (select them and press Delete); then the new node starts a graph of its own.
+        var parent = _nodes.Count > 0 ? _nodes[Random.Shared.Next(_nodes.Count)] : null;
         var id = (_next++).ToString();
 
         _nodes.Add(new BlowNode { Id = id, Label = $"Node {id}", Width = 120, Height = 44 });
-        _edges.Add(new BlowEdge { Id = $"e{parent.Id}-{id}", Source = parent.Id, Target = id, Type = BlowEdgeType.SmoothStep });
+        if (parent is not null)
+            _edges.Add(new BlowEdge { Id = $"e{parent.Id}-{id}", Source = parent.Id, Target = id, Type = BlowEdgeType.SmoothStep });
 
-        Relayout(_current);
+        Relayout();
     }
 
-    private void Relayout(string key)
+    private void Choose(string key)
     {
         _current = key;
+        Relayout();
+    }
 
-        switch (key)
+    private void SetDirection(ChangeEventArgs e)
+    {
+        if (Enum.TryParse<BlowLayoutDirection>(e.Value?.ToString(), out var direction)) Set(() => _layered.Direction = direction);
+    }
+
+    // The leftmost step of the slider is "let the layout choose": no column count, so a roughly square grid.
+    private void SetColumns(object? raw)
+    {
+        var columns = (int)ToDouble(raw, 0);
+        Set(() => _grid.Columns = columns > 0 ? columns : (int?)null);
+    }
+
+    // The same for the ring: no radius, so one is worked out from the node sizes and the gap.
+    private void SetRadius(object? raw)
+    {
+        var radius = ToDouble(raw, 0);
+        Set(() => _circle.Radius = radius > 0 ? radius : (double?)null);
+    }
+
+    // Retunes an option and lays the graph out again with it.
+    private void Set(Action change)
+    {
+        change();
+        Relayout();
+    }
+
+    private void Relayout()
+    {
+        switch (_current)
         {
             case "grid":
-                BlowLayout.Grid(_nodes, new BlowGridLayoutOptions { ColumnGap = 50, RowGap = 50 });
+                BlowLayout.Grid(_nodes, _grid);
                 break;
 
             case "circle":
-                BlowLayout.Circle(_nodes, new BlowCircleLayoutOptions { NodeGap = 40 });
+                BlowLayout.Circle(_nodes, _circle);
                 break;
 
             default:
-                BlowLayout.Layered(_nodes, _edges, new BlowLayeredLayoutOptions
+                // With the handles left alone they would stay on whichever sides the last aligned layout put them, so
+                // put them back on the built-in sides to show what an unaligned layout looks like.
+                if (!_layered.AlignHandlesToDirection)
                 {
-                    Direction = key switch
+                    foreach (var node in _nodes)
                     {
-                        "lr" => BlowLayoutDirection.LeftToRight,
-                        "bt" => BlowLayoutDirection.BottomToTop,
-                        _ => BlowLayoutDirection.TopToBottom,
-                    },
-                    LayerGap = 90,
-                    NodeGap = 40,
-                });
+                        node.SourcePosition = BlowPosition.Bottom;
+                        node.TargetPosition = BlowPosition.Top;
+                    }
+                }
+                BlowLayout.Layered(_nodes, _edges, _layered);
                 break;
         }
 
@@ -109,4 +240,9 @@
         _flow?.UpdateNodeInternals();
         _flow?.FitView();
     }
+
+    private static double ToDouble(object? raw, double fallback)
+        => double.TryParse(raw?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out var parsed) ? parsed : fallback;
+
+    private static string Inv(double v) => v.ToString(System.Globalization.CultureInfo.InvariantCulture);
 }

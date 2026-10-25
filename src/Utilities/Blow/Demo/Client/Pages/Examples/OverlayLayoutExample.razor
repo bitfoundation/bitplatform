@@ -3,67 +3,156 @@
 <PageTitle>Overlay Layout · Blow</PageTitle>
 
 <ExampleScaffold Title="Overlay Layout"
-                 Summary="Controls, the minimap, panels and the attribution badge can all be anchored to any corner, and the control bar can hide individual buttons or show a lock toggle that stops nodes being dragged, connected and selected (the view still pans and zooms, as in React Flow).">
+                 Summary="The control bar, the minimap, your own panels and the attribution badge can each be anchored to any of six places on the pane. BlowControls can also hide its built-in buttons, ease its fit, report each press, carry buttons of your own and show a lock that makes the flow read-only.">
     <Toolbar>
         <label>Controls
-            <select @onchange="@(e => _controlsPosition = Parse(e.Value))">
-                <option value="BottomLeft" selected>bottom-left</option>
-                <option value="TopLeft">top-left</option>
-                <option value="TopRight">top-right</option>
-                <option value="BottomCenter">bottom-center</option>
+            <select @onchange="@(e => _controlsPosition = Parse(e.Value, _controlsPosition))">
+                @foreach (var position in Positions)
+                {
+                    <option value="@position" selected="@(position == _controlsPosition)">@position</option>
+                }
             </select>
         </label>
-        <label>BlowMiniMap
-            <select @onchange="@(e => _miniMapPosition = Parse(e.Value))">
-                <option value="BottomRight" selected>bottom-right</option>
-                <option value="TopRight">top-right</option>
-                <option value="TopLeft">top-left</option>
-                <option value="BottomLeft">bottom-left</option>
+        <label>Minimap
+            <select @onchange="@(e => _miniMapPosition = Parse(e.Value, _miniMapPosition))">
+                @foreach (var position in Positions)
+                {
+                    <option value="@position" selected="@(position == _miniMapPosition)">@position</option>
+                }
             </select>
         </label>
+        <label>Panel
+            <select @onchange="@(e => _panelPosition = Parse(e.Value, _panelPosition))">
+                @foreach (var position in Positions)
+                {
+                    <option value="@position" selected="@(position == _panelPosition)">@position</option>
+                }
+            </select>
+        </label>
+        <label>Attribution
+            <select @onchange="@(e => _attributionPosition = Parse(e.Value, _attributionPosition))" disabled="@_hideAttribution">
+                @foreach (var position in Positions)
+                {
+                    <option value="@position" selected="@(position == _attributionPosition)">@position</option>
+                }
+            </select>
+        </label>
+        <label><input type="checkbox" checked="@_hideAttribution" @onchange="@(e => _hideAttribution = (bool)e.Value!)" /> Hide attribution</label>
         <label><input type="checkbox" checked="@_horizontal" @onchange="@(e => _horizontal = (bool)e.Value!)" /> Horizontal controls</label>
-        @* The hint is up here rather than in a panel over the canvas: every corner and the bottom edge can be given to
-           the controls or the minimap above, and a panel there would sit on whichever chose it. *@
-        <span class="bb-muted">Interactive: @(_interactive ? "on" : "locked") · lock it with the padlock button</span>
+        <label><input type="checkbox" checked="@_showZoom" @onchange="@(e => _showZoom = (bool)e.Value!)" /> Zoom buttons</label>
+        <label><input type="checkbox" checked="@_showFitView" @onchange="@(e => _showFitView = (bool)e.Value!)" /> Fit button</label>
+        @* The status is up here rather than in a panel over the canvas: every corner and both centres can be given to
+           an overlay above, and a panel there would sit on whichever chose it. *@
+        <span class="ol-status">@(_interactive ? "Editable" : "Read-only") · last control: @_lastControl</span>
     </Toolbar>
     <ChildContent>
-        <BlowCanvas Nodes="_nodes"
+        <BlowCanvas @ref="_flow"
+                    Nodes="_nodes"
                     Edges="_edges"
                     FitViewOnInit="true"
                     FitViewOptions="_fit"
                     NodesDraggable="_interactive"
                     NodesConnectable="_interactive"
                     ElementsSelectable="_interactive"
-                    AttributionPosition="BlowPanelPosition.TopCenter">
+                    AttributionPosition="_attributionPosition"
+                    HideAttribution="_hideAttribution">
             <BlowBackground Variant="BlowBackgroundVariant.Cross" Gap="30" BgColor="var(--bit-blow-surface)" Color="#94a3b8" />
+            @* Interactive and InteractiveChanged written out rather than @bind-Interactive, so the page can note the
+               press as well as keep the field. *@
             <BlowControls Position="_controlsPosition"
-                      Orientation="@(_horizontal ? BlowControlsOrientation.Horizontal : BlowControlsOrientation.Vertical)"
-                      ShowInteractive="true"
-                      @bind-Interactive="_interactive" />
+                          Orientation="@(_horizontal ? BlowControlsOrientation.Horizontal : BlowControlsOrientation.Vertical)"
+                          ShowZoom="_showZoom"
+                          ShowFitView="_showFitView"
+                          FitViewOptions="_controlsFit"
+                          OnZoomIn="@(() => _lastControl = "zoom in")"
+                          OnZoomOut="@(() => _lastControl = "zoom out")"
+                          OnFitView="@(() => _lastControl = "fit view")"
+                          ShowInteractive="true"
+                          Interactive="_interactive"
+                          InteractiveChanged="SetInteractive"
+                          LockLabel="Make read-only"
+                          UnlockLabel="Make editable">
+                <BlowControlButton Title="Put the nodes back" Disabled="@(!_interactive)" OnClick="PutBack">
+                    <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.6M4 4v4h4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                </BlowControlButton>
+            </BlowControls>
             <BlowMiniMap Class="demo-minimap-keep" Position="_miniMapPosition" Zoomable="true" Pannable="true" />
+            <BlowPanel Anchor="_panelPosition">
+                <div class="ol-panel">A BlowPanel: anything of yours, pinned to the pane.</div>
+            </BlowPanel>
         </BlowCanvas>
     </ChildContent>
+    <TryIt>
+        <li>Pick a place for the <strong>Controls</strong>, the <strong>Minimap</strong>, the <strong>Panel</strong> and the <strong>Attribution</strong>: top or bottom, left, centre or right. Overlays given the same place sit on each other, so give each its own.</li>
+        <li>Tick <strong>Hide attribution</strong> to remove the badge, and <strong>Horizontal controls</strong> to lay the control bar's buttons out in a row.</li>
+        <li>Untick <strong>Zoom buttons</strong> or <strong>Fit button</strong> to take those buttons off the control bar.</li>
+        <li>Press the control bar's <strong>zoom in</strong>, <strong>zoom out</strong> and <strong>fit view</strong> buttons: the fit eases into place rather than jumping, and the toolbar names the last one pressed. The zoom buttons grey out at the zoom limits.</li>
+        <li>Hover the <strong>padlock</strong> to read "Make read-only", then press it: nodes can no longer be dragged, connected or selected - the view still pans and zooms - and its tooltip turns to "Make editable".</li>
+        <li><strong>Drag some nodes</strong>, then press the last button on the bar, a button of this page's own: it puts the nodes back. It is disabled while the flow is read-only.</li>
+    </TryIt>
+    <HowItWorks>
+        <li>Every overlay takes a <code>BlowPanelPosition</code> - <code>TopLeft</code>, <code>TopCenter</code>, <code>TopRight</code>, <code>BottomLeft</code>, <code>BottomCenter</code> or <code>BottomRight</code>: <code>Position</code> on <code>BlowControls</code> (default <code>BottomLeft</code>) and <code>BlowMiniMap</code> (<code>BottomRight</code>), <code>Anchor</code> on <code>BlowPanel</code>, and the canvas's <code>AttributionPosition</code> (<code>BottomRight</code>); <code>HideAttribution</code> removes the badge.</li>
+        <li><code>BlowPanel</code> pins any content to the pane; presses, clicks and wheels on it do not reach the canvas beneath.</li>
+        <li><code>BlowControls</code>: <code>Orientation</code> (<code>Vertical</code> or <code>Horizontal</code>), <code>ShowZoom</code> and <code>ShowFitView</code> (both <code>true</code>), and <code>FitViewOptions</code> for how its fit button fits - here a 30% margin eased over 400 ms with <code>Duration</code>.</li>
+        <li><code>OnZoomIn</code>, <code>OnZoomOut</code> and <code>OnFitView</code> are raised after the built-in behaviour, for logging or follow-up work.</li>
+        <li><code>ShowInteractive</code> (default <code>false</code>) adds the padlock. It only reports the toggle through <code>InteractiveChanged</code>; the page passes the flag on to <code>NodesDraggable</code>, <code>NodesConnectable</code> and <code>ElementsSelectable</code>. <code>LockLabel</code> and <code>UnlockLabel</code> replace its tooltip in each state; the accessible name stays <code>LockLabel</code>, with pressed or not announced.</li>
+        <li><code>ChildContent</code> adds buttons after the built-ins: <code>BlowControlButton</code> matches their look and takes <code>Title</code> (the tooltip, and the accessible name of an icon-only button), <code>Disabled</code> and <code>OnClick</code>. Here it moves the nodes back inside <code>EditAsync</code>, so the change is reported like any other edit.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
+<style>
+    .ol-status { margin-left: auto; color: var(--bb-text-soft); }
+    .ol-panel {
+        max-width: 200px;
+        padding: 6px 10px;
+        font-size: 11px;
+        line-height: 1.45;
+        background: var(--bit-blow-surface);
+        color: var(--bit-blow-text);
+        border: 1px solid var(--bit-blow-border);
+        border-radius: 6px;
+    }
+</style>
+
 @code {
+    private static readonly BlowPanelPosition[] Positions = Enum.GetValues<BlowPanelPosition>();
+
+    private BlowCanvas? _flow;
     private BlowPanelPosition _controlsPosition = BlowPanelPosition.BottomLeft;
     private BlowPanelPosition _miniMapPosition = BlowPanelPosition.BottomRight;
+    private BlowPanelPosition _panelPosition = BlowPanelPosition.TopLeft;
+    private BlowPanelPosition _attributionPosition = BlowPanelPosition.TopCenter;
+    private bool _hideAttribution;
     private bool _horizontal;
+    private bool _showZoom = true;
+    private bool _showFitView = true;
     private bool _interactive = true;
+    private string _lastControl = "none yet";
 
-    // A wide margin: the overlays can be put in any corner and on the bottom edge, and the flow belongs in the middle.
+    // A wide margin: the overlays can be put in any corner and on either edge, and the flow belongs in the middle.
     private readonly BlowFitViewOptions _fit = new() { Padding = 0.3 };
+
+    // The same margin for the fit button, eased rather than cut so the press reads as the view travelling.
+    private readonly BlowFitViewOptions _controlsFit = new() { Padding = 0.3, Duration = 400 };
 
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
+
+    // Where each node started, for the bar's own button to put it back.
+    private readonly Dictionary<string, BlowXYPosition> _start = new()
+    {
+        ["1"] = new(120, 20),
+        ["2"] = new(60, 140),
+        ["3"] = new(220, 260),
+    };
 
     protected override void OnInitialized()
     {
         _nodes =
         [
-            new BlowNode { Id = "1", Type = "input",  Label = "Start", Position = new(120, 20) },
-            new BlowNode { Id = "2",                  Label = "Step",  Position = new(60, 140) },
-            new BlowNode { Id = "3", Type = "output", Label = "End",   Position = new(220, 260) },
+            new BlowNode { Id = "1", Type = "input",  Label = "Start", Position = _start["1"] },
+            new BlowNode { Id = "2",                  Label = "Step",  Position = _start["2"] },
+            new BlowNode { Id = "3", Type = "output", Label = "End",   Position = _start["3"] },
         ];
 
         _edges =
@@ -73,6 +162,24 @@
         ];
     }
 
-    private static BlowPanelPosition Parse(object? value) =>
-        Enum.TryParse<BlowPanelPosition>(value?.ToString(), out var parsed) ? parsed : BlowPanelPosition.TopLeft;
+    private void SetInteractive(bool interactive)
+    {
+        _interactive = interactive;
+        _lastControl = interactive ? "unlock" : "lock";
+    }
+
+    private Task PutBack()
+    {
+        _lastControl = "put back";
+        return _flow?.EditAsync(() =>
+        {
+            foreach (var node in _nodes)
+            {
+                if (_start.TryGetValue(node.Id, out var start)) node.Position = start;
+            }
+        }, "put back") ?? Task.CompletedTask;
+    }
+
+    private static BlowPanelPosition Parse(object? value, BlowPanelPosition fallback) =>
+        Enum.TryParse<BlowPanelPosition>(value?.ToString(), out var parsed) ? parsed : fallback;
 }

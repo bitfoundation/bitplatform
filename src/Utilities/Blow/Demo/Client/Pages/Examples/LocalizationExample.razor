@@ -3,12 +3,13 @@
 <PageTitle>Localization · Blow</PageTitle>
 
 <ExampleScaffold Title="Localization"
-                 Summary="Every string the canvas reads out or labels itself with comes from one AriaLabels object - names, announcements and the keyboard instructions a screen reader reads as each element's description - and the control bar takes its button labels as parameters, so a flow can be translated without reimplementing its accessibility. Switch language, then Tab to a node and press Enter - the live region below shows what a screen reader would hear. Persian also switches the page to right-to-left. The starting pan and zoom come from DefaultViewport.">
+                 Summary="Every string the canvas reads out or labels itself with comes from one BlowAriaLabels object, and the control bar and the minimap take theirs as parameters, so a flow can be translated without reimplementing its accessibility. Switch language and use the flow from the keyboard: the panel shows what a screen reader hears.">
     <Toolbar>
         @foreach (var (code, name) in _languages)
         {
             <button class="btn @(code == _language ? "btn-primary" : "btn-secondary")"
-                    @onclick="@(() => _language = code)">
+                    aria-pressed="@((code == _language).ToString().ToLowerInvariant())"
+                    @onclick="@(() => SetLanguage(code))">
                 @name
             </button>
         }
@@ -17,15 +18,20 @@
         <BlowCanvas @ref="_flow"
                     Nodes="_nodes"
                     Edges="_edges"
-                    AriaLabels="Labels"
+                    AriaLabels="_labels"
                     AriaLabel="@PaneName"
                     DefaultViewport="new BlowViewport(40, 20, 0.9)"
+                    NodesDraggable="_interactive"
+                    NodesConnectable="_interactive"
+                    ElementsSelectable="_interactive"
                     dir="@(_language == "fa" ? "rtl" : "ltr")"
                     aria-roledescription="@RoleDescription">
             <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-            <BlowControls AriaLabel="@Controls.Bar" ZoomInLabel="@Controls.ZoomIn" ZoomOutLabel="@Controls.ZoomOut"
-                          FitViewLabel="@Controls.FitView" />
-            <BlowPanel Anchor="BlowPanelPosition.BottomRight">
+            <BlowControls ShowInteractive="true" @bind-Interactive="_interactive"
+                          AriaLabel="@Controls.Bar" ZoomInLabel="@Controls.ZoomIn" ZoomOutLabel="@Controls.ZoomOut"
+                          FitViewLabel="@Controls.FitView" LockLabel="@Controls.Lock" UnlockLabel="@Controls.Unlock" />
+            <BlowMiniMap AriaLabel="@MiniMap.Name" RoleDescription="@MiniMap.Role" KeyboardInstructions="@MiniMap.Keys" />
+            <BlowPanel Anchor="BlowPanelPosition.TopRight">
                 <div class="l10n-readout">
                     <strong>Announced</strong>
                     <div>@(_announced ?? "-")</div>
@@ -33,6 +39,24 @@
             </BlowPanel>
         </BlowCanvas>
     </ChildContent>
+    <TryIt>
+        <li>Pick <strong>English</strong>, <strong>Deutsch</strong> or <strong>فارسی</strong>. Persian also lays the text in the flow out right to left.</li>
+        <li><strong>Click the background</strong>, <strong>Tab</strong> to a node and press <strong>Enter</strong>: the panel shows the selection announced in that language. Move the node with the <strong>arrow keys</strong> and the move is announced too.</li>
+        <li>On Start, press <strong>C</strong> to start a connection, then <strong>Tab</strong> on: on Review you hear why it cannot connect - the two are already joined - and on Publish that <strong>Enter</strong> would connect. Press <strong>Enter</strong> there.</li>
+        <li><strong>Tab</strong> to the edge and press <strong>C</strong> to pick up its end, <strong>Tab</strong> to another node and press <strong>Enter</strong> to move it there.</li>
+        <li>Select something and press <strong>Delete</strong>: the deletion is announced with its counts.</li>
+        <li><strong>Hover</strong> the control bar's buttons for their translated tooltips, and press the <strong>lock</strong> button: dragging, connecting and selecting stop, and its tooltip offers to unlock.</li>
+        <li>With a screen reader on, each node is also read with its translated role ("Knoten"), its state ("Nicht verbunden.") and the keys it answers to; the minimap and the control bar are read by their translated names.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>AriaLabels</code> takes a <code>BlowAriaLabels</code>: role descriptions, names, states, every announcement and the keyboard instructions. A member left out keeps its English default (<code>BlowAriaLabels.Default</code>). The page builds a new set when the language changes rather than on every render, since the canvas redraws every node and edge whenever it is handed a different set.</li>
+        <li>The members are functions rather than format strings - <code>NodeSelected = name => $"{name} ausgewählt"</code> - so a translation can reorder or drop the values it is handed.</li>
+        <li>The panel sees what the live region gets because <code>Record</code> wraps each announcement function to copy its result there. <code>SelectionCleared</code> and the two "cancelled" messages are plain strings, so they reach the live region without passing through the panel.</li>
+        <li>The canvas's own <code>AriaLabel</code> is the app's to translate, and attributes it does not set itself - <code>aria-roledescription</code>, <code>dir</code> - pass straight through to its element.</li>
+        <li><code>BlowControls</code> takes <code>AriaLabel</code>, <code>ZoomInLabel</code>, <code>ZoomOutLabel</code>, <code>FitViewLabel</code>, <code>LockLabel</code> and <code>UnlockLabel</code>. The lock button shows with <code>ShowInteractive</code>, and <code>@@bind-Interactive</code> drives <code>NodesDraggable</code>, <code>NodesConnectable</code> and <code>ElementsSelectable</code>.</li>
+        <li><code>BlowMiniMap</code> takes <code>AriaLabel</code>, <code>RoleDescription</code> and <code>KeyboardInstructions</code>; left null, the instructions describe its keys in English.</li>
+        <li><code>DefaultViewport</code> sets the pan and zoom the flow opens at, where other examples fit the graph instead.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
@@ -52,7 +76,9 @@
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
     private string _language = "en";
+    private BlowAriaLabels _labels = BlowAriaLabels.Default;
     private string? _announced;
+    private bool _interactive = true;
 
     private readonly (string Code, string Name)[] _languages =
     [
@@ -67,8 +93,20 @@
         [
             new BlowNode { Id = "start", Label = "Start", Position = new(60, 60) },
             new BlowNode { Id = "review", Label = "Review", Position = new(60, 200) },
+            // Not connected yet, so there is a connection to make from the keyboard and a state of "not connected" to hear.
+            new BlowNode { Id = "publish", Label = "Publish", Position = new(300, 200) },
         ];
         _edges = [new BlowEdge { Id = "e", Source = "start", Target = "review", Label = "next" }];
+        _labels = LabelsFor(_language);
+    }
+
+    // Built when the language changes rather than read from a property on every render: the canvas compares the set
+    // by reference, and a new one each time would redraw every node and edge for nothing.
+    private void SetLanguage(string code)
+    {
+        if (code == _language) return;
+        _language = code;
+        _labels = LabelsFor(code);
     }
 
     // The canvas element's own attribute is passed straight through, so it is translated here.
@@ -82,7 +120,7 @@
     // The Func members are called rather than string-formatted, so a translation is free to
     // reorder or drop the values it is handed - which positional format strings cannot do.
     // This flow has no validation or run states, so a state is its selection and connections.
-    private BlowAriaLabels Labels => _language switch
+    private BlowAriaLabels LabelsFor(string language) => language switch
     {
         "de" => Record(new BlowAriaLabels
         {
@@ -236,11 +274,19 @@
         _ => "Flow diagram",
     };
 
-    private (string Bar, string ZoomIn, string ZoomOut, string FitView) Controls => _language switch
+    private (string Bar, string ZoomIn, string ZoomOut, string FitView, string Lock, string Unlock) Controls => _language switch
     {
-        "de" => ("Ansichtssteuerung", "Vergrößern", "Verkleinern", "Einpassen"),
-        "fa" => ("کنترل‌های نما", "بزرگ‌نمایی", "کوچک‌نمایی", "نمایش کامل"),
-        _ => ("Flow controls", "Zoom in", "Zoom out", "Fit view"),
+        "de" => ("Ansichtssteuerung", "Vergrößern", "Verkleinern", "Einpassen", "Bearbeitung sperren", "Bearbeitung entsperren"),
+        "fa" => ("کنترل‌های نما", "بزرگ‌نمایی", "کوچک‌نمایی", "نمایش کامل", "قفل کردن ویرایش", "باز کردن قفل ویرایش"),
+        _ => ("Flow controls", "Zoom in", "Zoom out", "Fit view", "Lock interaction", "Unlock interaction"),
+    };
+
+    // Null instructions keep the minimap's own English description of the keys it answers to.
+    private (string Name, string Role, string? Keys) MiniMap => _language switch
+    {
+        "de" => ("Übersichtskarte", "Übersichtskarte", "Pfeiltasten verschieben die Ansicht, Pos1 zeigt das ganze Diagramm."),
+        "fa" => ("نقشه‌ی کوچک", "نقشه‌ی کوچک", "کلیدهای جهت نما را جابه‌جا می‌کنند و Home کل نمودار را نشان می‌دهد."),
+        _ => ("Mini map", "mini map", null),
     };
 
     private string Show(string message)

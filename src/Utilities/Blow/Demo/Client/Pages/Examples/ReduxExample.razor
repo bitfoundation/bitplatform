@@ -4,22 +4,53 @@
 <PageTitle>External Store · Blow</PageTitle>
 
 <ExampleScaffold Title="External Store"
-                 Summary="Both the canvas and an external toolbar read and mutate a single shared store object (the Redux/Zustand pattern). Dispatching an action updates the store and re-renders the flow.">
+                 Summary="The graph lives in a store object outside any component, the Redux or Zustand pattern: the toolbar dispatches actions to it, the canvas draws its lists, and every change - from an action or from an edit on the canvas - goes through the store, which tells its subscribers to re-render.">
     <Toolbar>
         <button class="btn btn-primary" @onclick="AddNode">Add node</button>
         <button class="btn btn-secondary" @onclick="@(() => _store.Dispatch(StoreAction.ConnectRandom))">Connect random</button>
         <button class="btn btn-secondary" @onclick="@(() => _store.Dispatch(StoreAction.Reset))">Reset</button>
-        <span class="bb-muted">store: @_store.Nodes.Count nodes, @_store.Edges.Count edges</span>
+        <span class="rx-readout">store: @_store.Nodes.Count nodes, @_store.Edges.Count edges</span>
     </Toolbar>
     <ChildContent>
+        @* The canvas edits the store's lists in place, as it edits any lists; OnGraphChanged then reports the edit to
+           the store as an action, so its subscribers hear of it like any other change. *@
         <BlowCanvas @ref="_flow" Nodes="_store.Nodes" Edges="_store.Edges" FitViewOnInit="true"
-                    NodesChanged="@(_ => _store.Notify())"
-                    EdgesChanged="@(_ => _store.Notify())">
+                    OnGraphChanged="@(change => _store.Dispatch(StoreAction.CanvasEdited, change.Label))">
             <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
             <BlowControls />
         </BlowCanvas>
     </ChildContent>
+    <Footer>
+        <section class="rx-log" aria-label="Dispatched actions">
+            <h2>Actions</h2>
+            <ol>
+                @foreach (var entry in _store.Log)
+                {
+                    <li>@entry</li>
+                }
+            </ol>
+        </section>
+    </Footer>
+    <TryIt>
+        <li><strong>Add node</strong> dispatches <code>AddNode</code>: the store appends a node, the canvas draws it and the view glides out to include it.</li>
+        <li><strong>Connect random</strong> dispatches <code>ConnectRandom</code>, which joins two nodes that are not yet joined - or logs that every pair already is.</li>
+        <li><strong>Reset</strong> replaces the store's state with a single root node.</li>
+        <li>Edit on the canvas - <strong>drag</strong> a node, <strong>drag from a handle</strong> to connect two, select something and press <strong>Delete</strong> - and each edit arrives in the log as a <code>CanvasEdited</code> action with what kind of edit it was, while the readout follows.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>FlowStore</code> is a plain class holding the <code>Nodes</code> and <code>Edges</code> lists, a <code>Dispatch(action)</code> method that changes them, and a <code>Changed</code> event raised after every action. The page subscribes in <code>OnInitialized</code> and unsubscribes in <code>Dispose</code>; any number of components could do the same.</li>
+        <li>The canvas is handed the store's lists as <code>Nodes</code> and <code>Edges</code>. Reset hands it new list instances; the canvas reads whatever lists it is given on its next render, so a store that replaces its state rather than mutating it works as well.</li>
+        <li>A user edit changes the lists directly - the canvas always edits the lists it was given in place. <code>OnGraphChanged</code> is raised once per completed edit with a <code>BlowGraphChange</code>, and the page turns it into a <code>CanvasEdited</code> action carrying the change's <code>Label</code> (<code>move</code>, <code>connect</code>, <code>delete</code>, ...), so the store and its subscribers hear of every edit in one place.</li>
+        <li>Add node calls <code>FitViewAsync(300)</code> on the canvas after dispatching, since a new node may land outside the view the graph was fitted to.</li>
+    </HowItWorks>
 </ExampleScaffold>
+
+<style>
+    .rx-readout { color: var(--bb-text-soft); }
+    .rx-log { font-size: 12px; line-height: 1.5; }
+    .rx-log h2 { margin: 0 0 4px; font-size: 12px; }
+    .rx-log ol { margin: 0; padding-left: 18px; }
+</style>
 
 @code {
     private readonly FlowStore _store = new();
@@ -34,24 +65,32 @@
 
     protected override void OnInitialized()
     {
-        _store.Changed += StateHasChanged;
+        _store.Changed += OnStoreChanged;
         _store.Dispatch(StoreAction.Reset);
     }
 
-    public void Dispose() => _store.Changed -= StateHasChanged;
+    // The store can be changed from outside a render of this page, so the re-render is marshalled onto the
+    // renderer's context rather than called straight from the event.
+    private void OnStoreChanged() => _ = InvokeAsync(StateHasChanged);
 
-    public enum StoreAction { Reset, AddNode, ConnectRandom }
+    public void Dispose() => _store.Changed -= OnStoreChanged;
+
+    public enum StoreAction { Reset, AddNode, ConnectRandom, CanvasEdited }
 
     public sealed class FlowStore
     {
-        public List<BlowNode> Nodes { get; private set; } = [];
-        public List<BlowEdge> Edges { get; private set; } = [];
-        public event Action? Changed;
+        private readonly List<string> _log = [];
         private int _id;
 
-        public void Notify() => Changed?.Invoke();
+        public List<BlowNode> Nodes { get; private set; } = [];
+        public List<BlowEdge> Edges { get; private set; } = [];
 
-        public void Dispatch(StoreAction action)
+        /// <summary>The actions dispatched so far, newest first, with the state each left behind.</summary>
+        public IReadOnlyList<string> Log => _log;
+
+        public event Action? Changed;
+
+        public void Dispatch(StoreAction action, string? detail = null)
         {
             switch (action)
             {
@@ -64,13 +103,29 @@
                     _id++;
                     Nodes.Add(new BlowNode { Id = _id.ToString(), Label = $"Node {_id}", Position = new(Random.Shared.Next(40, 400), Random.Shared.Next(60, 300)) });
                     break;
-                case StoreAction.ConnectRandom when Nodes.Count >= 2:
-                    var a = Nodes[Random.Shared.Next(Nodes.Count)];
-                    var b = Nodes[Random.Shared.Next(Nodes.Count)];
-                    if (a.Id != b.Id)
-                        Edges.Add(new BlowEdge { Id = $"e{a.Id}-{b.Id}-{Guid.NewGuid():N}", Source = a.Id, Target = b.Id });
+                case StoreAction.ConnectRandom:
+                    // Every ordered pair of different nodes not joined yet; one of them at random, if there is one.
+                    var open = Nodes.SelectMany(a => Nodes, (a, b) => (a, b))
+                        .Where(p => p.a.Id != p.b.Id && !Edges.Any(e => e.Source == p.a.Id && e.Target == p.b.Id))
+                        .ToList();
+                    if (open.Count == 0)
+                    {
+                        detail = "nothing left to connect";
+                        break;
+                    }
+                    var (source, target) = open[Random.Shared.Next(open.Count)];
+                    // An edge reconnected on the canvas keeps its id, so the obvious one may already be taken.
+                    var id = $"e{source.Id}-{target.Id}";
+                    while (Edges.Any(e => e.Id == id)) id += "+";
+                    Edges.Add(new BlowEdge { Id = id, Source = source.Id, Target = target.Id });
+                    detail = $"{source.Label} to {target.Label}";
+                    break;
+                case StoreAction.CanvasEdited:
                     break;
             }
+
+            _log.Insert(0, $"{action}{(detail is null ? "" : $" ({detail})")}: {Nodes.Count} nodes, {Edges.Count} edges");
+            if (_log.Count > 30) _log.RemoveAt(_log.Count - 1);
             Changed?.Invoke();
         }
     }

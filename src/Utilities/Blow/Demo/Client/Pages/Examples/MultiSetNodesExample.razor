@@ -3,10 +3,12 @@
 <PageTitle>Multi setNodes · Blow</PageTitle>
 
 <ExampleScaffold Title="Multi setNodes"
-                 Summary="Apply several independent updates to the node list within a single handler. All mutations are coalesced into one render, mirroring multiple setNodes calls in React.">
+                 Summary="Change the nodes as many times as you like in one event handler - move them, recolour them, relabel them - and the canvas draws the result once, after the handler, the way several setNodes calls in one React tick apply together. A change made outside a render of the page, such as on a timer, is drawn when the page calls Refresh.">
     <Toolbar>
-        <button class="btn btn-primary" @onclick="ShuffleAndRecolor">Shuffle + recolor (one tick)</button>
-        <button class="btn btn-secondary" @onclick="Reset">Reset</button>
+        <button class="btn btn-primary" @onclick="ShuffleAndRecolor">Shuffle, recolour and relabel</button>
+        <button class="btn btn-secondary" disabled="@_drifting" @onclick="Drift">Drift for 2 seconds</button>
+        <label><input type="checkbox" @bind="_refresh" /> Call Refresh while drifting</label>
+        <button class="btn btn-secondary" disabled="@_drifting" @onclick="Reset">Reset</button>
     </Toolbar>
     <ChildContent>
         <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
@@ -14,40 +16,80 @@
             <BlowControls />
         </BlowCanvas>
     </ChildContent>
+    <TryIt>
+        <li><strong>Shuffle, recolour and relabel</strong> makes three passes over the nodes - new positions, new colours, new labels - and you see them land together, with the edges following, in one redraw.</li>
+        <li><strong>Drift for 2 seconds</strong> nudges every node ten times a second from a timer. With <strong>Call Refresh while drifting</strong> ticked the nodes glide; untick it and run it again: nothing moves until the timer stops, then every node jumps to where it ended up.</li>
+        <li><strong>Reset</strong> puts the row back and fits it in view.</li>
+    </TryIt>
+    <HowItWorks>
+        <li>The canvas edits and draws the page's own <code>List&lt;BlowNode&gt;</code>, so the handler simply assigns <code>Position</code>, <code>Style</code> and <code>Label</code> on the nodes, pass after pass. Nothing is drawn in between: Blazor renders the page once the handler returns, the page hands the canvas its parameters again, and the canvas re-reads the lists and re-measures the nodes, whose labels may have changed their size.</li>
+        <li>So a change made inside an event handler of the page needs no call at all. <code>FitView()</code> after the shuffle only brings the scattered nodes back into view.</li>
+        <li>The drift runs on a <code>PeriodicTimer</code> inside the handler. Blazor renders an async handler when it first waits and when it finishes, not after each tick, so the changes in between are invisible until something renders the canvas.</li>
+        <li><code>Refresh(remeasure: false)</code> renders the canvas on its own, re-reading the lists, without rendering the page. Pass <code>remeasure: true</code> when the change can alter a node's size or handles, so they are measured again first. A change from a real timer callback or a message from a server, outside the renderer's context, goes through <code>InvokeAsync</code> first.</li>
+        <li>Reset rebuilds the lists in place - <code>Clear</code> and <code>AddRange</code> - rather than assigning new ones, and fits the view to the row.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 @code {
     private BlowCanvas? _flow;
-    private List<BlowNode> _nodes = [];
-    private List<BlowEdge> _edges = [];
+    private readonly List<BlowNode> _nodes = [];
+    private readonly List<BlowEdge> _edges = [];
+    private bool _refresh = true;
+    private bool _drifting;
     private static readonly string[] Colors = ["#3b82f6", "#22c55e", "#ef4444", "#eab308", "#a855f7"];
 
     // A tint of the colour mixed into the node's own fill rather than a fixed pastel, so the node reads
     // in the light and the dark colour mode alike.
     private static string Tint(string color) => $"background:color-mix(in srgb, {color} 20%, var(--bit-blow-node-bg));";
 
-    protected override void OnInitialized() => Reset();
+    protected override void OnInitialized() => Build();
 
-    private void Reset()
+    private void Build()
     {
-        _nodes = Enumerable.Range(1, 5)
-            .Select(i => new BlowNode { Id = i.ToString(), Label = $"Node {i}", Position = new(i * 90, 120), Style = "background:var(--bit-blow-node-bg);" })
-            .ToList();
-        _edges = [];
-        _flow?.Refresh(remeasure: true);
+        _nodes.Clear();
+        _nodes.AddRange(Enumerable.Range(1, 5)
+            .Select(i => new BlowNode { Id = i.ToString(), Label = $"Node {i}", Position = new(i * 170, 120) }));
+
+        _edges.Clear();
+        _edges.AddRange(Enumerable.Range(1, 4)
+            .Select(i => new BlowEdge { Id = $"e{i}-{i + 1}", Source = i.ToString(), Target = (i + 1).ToString() }));
     }
 
     private void ShuffleAndRecolor()
     {
-        // Multiple successive "set" operations applied before a single re-render.
+        // Three separate passes over the same nodes, as three setNodes calls would be: drawn once, after the handler.
         foreach (var n in _nodes)
-            n.Position = new(Random.Shared.Next(20, 460), Random.Shared.Next(20, 260));
+            n.Position = new(Random.Shared.Next(0, 700), Random.Shared.Next(0, 400));
         foreach (var n in _nodes)
             n.Style = Tint(Colors[Random.Shared.Next(Colors.Length)]);
         foreach (var n in _nodes)
-            n.Label = $"{n.Id}·{Random.Shared.Next(100)}";
-        _flow?.Refresh(remeasure: true);
+            n.Label = $"{n.Id} · {Random.Shared.Next(100)}";
+
         // The row was fitted to the view; scattered, it no longer fits it.
+        _flow?.FitView();
+    }
+
+    private async Task Drift()
+    {
+        if (_flow is null) return;
+        _drifting = true;
+
+        using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(100));
+        for (var tick = 0; tick < 20 && await timer.WaitForNextTickAsync(); tick++)
+        {
+            foreach (var n in _nodes)
+                n.Position = new(n.Position.X + Random.Shared.Next(-12, 13), n.Position.Y + Random.Shared.Next(-12, 13));
+
+            // The page does not render between ticks, so nothing else will draw the canvas until the handler ends.
+            if (_refresh) _flow.Refresh(remeasure: false);
+        }
+
+        _drifting = false;
+    }
+
+    private void Reset()
+    {
+        Build();
         _flow?.FitView();
     }
 }

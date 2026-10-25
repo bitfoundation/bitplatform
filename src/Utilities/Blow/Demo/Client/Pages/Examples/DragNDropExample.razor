@@ -3,23 +3,48 @@
 <PageTitle>Drag and Drop · Blow</PageTitle>
 
 <ExampleScaffold Title="Drag and Drop"
-                 Summary="Drag a node type from the sidebar and drop it onto the canvas. The drop position is converted from screen to flow coordinates so the node lands under the cursor.">
-    <div class="dnd">
-        <aside class="dnd__sidebar">
-            <p class="bb-muted">Drag these onto the canvas →</p>
-            <div class="dnd__item dnd__item--input" draggable="true" @ondragstart="@(() => _dragType = "input")">Input Node</div>
-            <div class="dnd__item" draggable="true" @ondragstart="@(() => _dragType = "default")">Default Node</div>
-            <div class="dnd__item dnd__item--output" draggable="true" @ondragstart="@(() => _dragType = "output")">Output Node</div>
-        </aside>
-        <div class="dnd__canvas" @ondragover:preventDefault="true" @ondrop="OnDrop">
-            @* Fitted at no more than full size: the one node there is to begin with, zoomed to fill the pane, leaves
-               no room to drop the others. *@
-            <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" FitViewOptions="new BlowFitViewOptions { MaxZoom = 1 }">
-                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-                <BlowControls />
-            </BlowCanvas>
+                 Summary="A palette beside the canvas: drag a node type onto the flow and it lands under the cursor, because the drop's screen position is turned into flow coordinates with ScreenToFlowPosition. FlowToScreenPosition goes the other way, and clicking an item adds it without dragging at all.">
+    <Toolbar>
+        <span class="bb-muted">@_readout</span>
+    </Toolbar>
+    <ChildContent>
+        <div class="dnd">
+            <aside class="dnd__sidebar">
+                <p class="bb-muted">Drag onto the canvas, or click to add in the middle</p>
+                @foreach (var (type, label, modifier) in Palette)
+                {
+                    @* The browser's own drag and drop carries the type from here to the drop; a click, or Enter, is the
+                       way in for anyone who cannot drag. *@
+                    <div class="dnd__item @modifier" role="button" tabindex="0" draggable="true"
+                         @ondragstart="@(() => _dragType = type)"
+                         @onclick="@(() => AddAtCentre(type))"
+                         @onkeydown="@(e => OnItemKey(e, type))">@label</div>
+                }
+            </aside>
+            <div class="dnd__canvas" @ondragover:preventDefault="true" @ondrop="OnDrop">
+                @* Fitted at no more than full size: the one node there is to begin with, zoomed to fill the pane, leaves
+                   no room to drop the others. *@
+                <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" FitViewOptions="new BlowFitViewOptions { MaxZoom = 1 }">
+                    <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                    <BlowControls />
+                </BlowCanvas>
+            </div>
         </div>
-    </div>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Drag</strong> Input Node, Default Node or Output Node from the palette and <strong>drop</strong> it on the canvas: the new node is centred on the pointer.</li>
+        <li><strong>Pan</strong> and <strong>zoom</strong> first, then drop again: it still lands under the pointer, since the conversion uses the current viewport. The toolbar shows the drop point on screen, the same point in the flow, and the new node's corner converted back to the screen.</li>
+        <li><strong>Click</strong> a palette item, or <strong>Tab</strong> to it and press <strong>Enter</strong>, to add it in the middle of the view instead; each further one is set a little lower and to the right so they do not stack.</li>
+        <li>Connect the new nodes by dragging from their handles, as with any other node.</li>
+    </TryIt>
+    <HowItWorks>
+        <li>The palette items are plain HTML with <code>draggable="true"</code>; <code>@@ondragstart</code> remembers which type is on its way.</li>
+        <li>The element round the canvas has <code>@@ondragover:preventDefault</code> - without it the browser refuses the drop - and <code>@@ondrop</code> receives a <code>DragEventArgs</code> with the pointer's <code>ClientX</code> and <code>ClientY</code>.</li>
+        <li><code>ScreenToFlowPosition(clientX, clientY)</code> turns that client point into flow coordinates through the current pan and zoom. Half the node's size is taken off, so its centre rather than its corner lands on the pointer.</li>
+        <li><code>FlowToScreenPosition(point)</code> is the reverse, from flow back to client coordinates - what you would use to place page-level HTML, a popup or a tooltip, beside a node.</li>
+        <li>A click adds at the middle of the view: <code>PaneSize</code> is the pane's size in pixels and <code>GetViewport().ScreenToFlow(x, y)</code> converts a point measured from the pane's top-left corner.</li>
+        <li><code>AddNodes(node)</code> appends to the <code>Nodes</code> list, measures the new node, raises <code>NodesChanged</code> and records an undo step when history is on.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
@@ -46,10 +71,18 @@
 </style>
 
 @code {
+    private static readonly (string Type, string Label, string Modifier)[] Palette =
+    [
+        ("input", "Input Node", "dnd__item--input"),
+        ("default", "Default Node", ""),
+        ("output", "Output Node", "dnd__item--output"),
+    ];
+
     private BlowCanvas? _flow;
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
     private string _dragType = "default";
+    private string _readout = "Drop a node to see where it lands.";
     private int _id;
 
     protected override void OnInitialized()
@@ -61,18 +94,45 @@
     private void OnDrop(DragEventArgs e)
     {
         if (_flow is null) return;
-        var pos = _flow.ScreenToFlowPosition(e.ClientX, e.ClientY);
+        var pointer = _flow.ScreenToFlowPosition(e.ClientX, e.ClientY);
+        var node = Add(_dragType, pointer);
+
+        // Back to the screen: the corner sits half a node up and to the left of the pointer, at the current zoom.
+        var corner = _flow.FlowToScreenPosition(node.Position);
+        _readout = $"Dropped at screen ({e.ClientX:0}, {e.ClientY:0}) = flow ({pointer.X:0}, {pointer.Y:0}); "
+                   + $"its top-left corner is at screen ({corner.X:0}, {corner.Y:0})";
+    }
+
+    private void AddAtCentre(string type)
+    {
+        if (_flow is null) return;
+        var pane = _flow.PaneSize;
+        // A step down and to the right for each one added, wrapping after five, so repeated clicks do not stack.
+        var step = (_id % 5) * 16;
+        var centre = _flow.GetViewport().ScreenToFlow(pane.Width / 2 + step, pane.Height / 2 + step);
+        var node = Add(type, centre);
+        _readout = $"Added {node.Label} in the middle of the view, at flow ({centre.X:0}, {centre.Y:0})";
+    }
+
+    private void OnItemKey(KeyboardEventArgs e, string type)
+    {
+        if (e.Key == "Enter") AddAtCentre(type);
+    }
+
+    private BlowNode Add(string type, BlowXYPosition centre)
+    {
         _id++;
-        _nodes.Add(new BlowNode
+        var node = new BlowNode
         {
             Id = $"dnd-{_id}",
-            Type = _dragType,
-            Label = $"{char.ToUpper(_dragType[0])}{_dragType[1..]} {_id}",
-            // Centred on the pointer: sized explicitly, since a default node is only as wide as its label needs.
+            Type = type,
+            Label = $"{char.ToUpper(type[0])}{type[1..]} {_id}",
+            // Centred on the point: sized explicitly, since a default node is only as wide as its label needs.
             Width = BlowNode.DefaultWidth,
             Height = BlowNode.DefaultHeight,
-            Position = new(pos.X - BlowNode.DefaultWidth / 2, pos.Y - BlowNode.DefaultHeight / 2),
-        });
-        _flow.Refresh(remeasure: true);
+            Position = new(centre.X - BlowNode.DefaultWidth / 2, centre.Y - BlowNode.DefaultHeight / 2),
+        };
+        _flow?.AddNodes(node);
+        return node;
     }
 }

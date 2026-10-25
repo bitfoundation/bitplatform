@@ -2,15 +2,16 @@
 <PageTitle>Built-in Undo &amp; Redo · Blow</PageTitle>
 
 <ExampleScaffold Title="Built-in Undo &amp; Redo"
-                 Summary="Set HistoryEnabled and the canvas keeps its own undo stack, recording a step at each point a user would recognise as one - a drag finished, an edge connected, something deleted, pasted, resized, aligned or nudged - and binding Ctrl/Cmd+Z and Ctrl/Cmd+Shift+Z. Selecting and panning are not edits, so they are not steps.">
+                 Summary="Set HistoryEnabled and the canvas keeps the undo stack itself: it records a labelled step wherever a user would see one - a drag finished, an edge connected, something deleted, pasted, aligned or nudged - and binds Ctrl/Cmd+Z and Ctrl/Cmd+Shift+Z. Edits your own code makes behind its back are recorded with CaptureHistory.">
     <Toolbar>
-        <button class="btn btn-secondary" disabled="@(!_state.CanUndo)" @onclick="Undo">↶ Undo</button>
-        <button class="btn btn-secondary" disabled="@(!_state.CanRedo)" @onclick="Redo">↷ Redo</button>
+        <button class="btn btn-secondary" disabled="@(!_state.CanUndo)" @onclick="Undo">↶ Undo @_state.UndoLabel</button>
+        <button class="btn btn-secondary" disabled="@(!_state.CanRedo)" @onclick="Redo">↷ Redo @_state.RedoLabel</button>
 
         <span class="group-label">Make an edit</span>
         <button class="btn btn-secondary" @onclick="AddNode">Add node</button>
-        <button class="btn btn-secondary" @onclick="DeleteSelection">Delete selection</button>
+        <button class="btn btn-secondary" @onclick="RenameSelection">Rename selected</button>
         <button class="btn btn-secondary" @onclick="AlignLeft">Align left</button>
+        <button class="btn btn-secondary" @onclick="DeleteSelection">Delete selected</button>
 
         <span class="depth">@_state.UndoDepth back · @_state.RedoDepth forward</span>
     </Toolbar>
@@ -26,31 +27,39 @@
             <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="20" />
             <BlowControls />
             <BlowPanel Anchor="BlowPanelPosition.TopRight">
-                <div class="hint">
-                    <div><kbd>Ctrl</kbd>+<kbd>Z</kbd> back, <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd> forward.</div>
-                    <div>Undo keeps the viewport where you left it - coming back from an edit
-                         should not also throw away where you had scrolled to.</div>
-                    <div>Editing after undoing ends the redo branch, as in every editor.</div>
-                </div>
+                <div class="hint"><kbd>Ctrl</kbd>+<kbd>Z</kbd> undo · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd> or <kbd>Ctrl</kbd>+<kbd>Y</kbd> redo</div>
             </BlowPanel>
         </BlowCanvas>
     </ChildContent>
+    <TryIt>
+        <li><strong>Drag</strong> a node, <strong>drag from a handle</strong> to connect two, or select a node and nudge it with the <strong>arrow keys</strong>: each is a step, and the Undo button names it - <em>move</em>, <em>connect</em>.</li>
+        <li>Click the canvas and press <strong>Ctrl/Cmd+Z</strong> to undo, <strong>Ctrl/Cmd+Shift+Z</strong> or <strong>Ctrl/Cmd+Y</strong> to redo - or use the buttons. Pan or zoom first: undo restores the graph but leaves the view where you put it.</li>
+        <li><strong>Ctrl/Cmd+C</strong> then <strong>V</strong>, <strong>X</strong> or <strong>D</strong> copy, paste, cut and duplicate the selection; each is a step too.</li>
+        <li><strong>Add node</strong>, <strong>Align left</strong> (select two or more nodes first) and <strong>Delete selected</strong> call the canvas, which records them as <em>add</em>, <em>align</em> and <em>delete</em>.</li>
+        <li><strong>Rename selected</strong> changes the selected nodes' labels in the page's own code; it is a step called <em>rename</em> because the page records it.</li>
+        <li>Click a node or pan: selecting and panning are not edits, so the step count does not move. Undo, then make an edit: the redo steps are gone, as in every editor.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>HistoryEnabled</code> (off by default, so a flow does not take Ctrl+Z from the page around it) makes the canvas keep a <code>BlowHistory</code>, starting from the graph on screen. <code>HistoryCapacity</code> (100 by default, 50 here) bounds how many steps back it goes; changing it starts a fresh history.</li>
+        <li>A step is recorded when a drag that moved something ends, a resize ends, an edge is connected or reconnected, something is deleted, pasted, cut or duplicated, the arrow keys nudge nodes, a selection is aligned or distributed, and when <code>AddNodes</code>, <code>AddEdges</code> or <code>DeleteElementsAsync</code> are called.</li>
+        <li><code>OnHistoryChanged</code> carries a <code>BlowHistoryState</code> - <code>CanUndo</code>, <code>CanRedo</code>, <code>UndoDepth</code>, <code>RedoDepth</code>, and <code>UndoLabel</code> and <code>RedoLabel</code>, the codes of the steps either side - which is all the toolbar reads.</li>
+        <li><code>UndoAsync()</code> and <code>RedoAsync()</code> do what the keys do and return false when there was nothing to do. Undo puts the graph back but not the viewport.</li>
+        <li>For an edit the canvas cannot see - a label, a node's data, a list changed by your own code - call <code>CaptureHistory(label)</code> afterwards, as Rename does with <code>rename</code>. A capture identical to the last step is ignored, so it is safe to call wherever an edit might have happened.</li>
+        <li><code>ClipboardShortcutsEnabled</code> binds the clipboard keys; <code>AlignSelectionAsync(BlowAlignEdge.Left)</code> lines up the selected nodes' left edges and does nothing for fewer than two.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
     .group-label { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--bb-text-soft); margin-left: .75rem; }
     .depth { margin-left: auto; font-size: 12px; color: var(--bb-text-soft); }
     .hint {
-        max-width: 250px;
-        padding: 8px 10px;
+        padding: 6px 10px;
         font-size: 11px;
-        line-height: 1.5;
         background: var(--bit-blow-surface);
         color: var(--bit-blow-text);
         border: 1px solid var(--bit-blow-border);
         border-radius: 6px;
     }
-    .hint div + div { margin-top: 6px; }
     .hint kbd {
         padding: 0 3px;
         border: 1px solid var(--bit-blow-border);
@@ -60,11 +69,12 @@
 </style>
 
 @code {
-    private BlowCanvas _flow = default!;
+    private BlowCanvas? _flow;
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
     private BlowHistoryState _state;
     private int _added;
+    private int _renames;
 
     protected override void OnInitialized()
     {
@@ -86,28 +96,42 @@
 
     private void OnHistoryChanged(BlowHistoryState state) => _state = state;
 
-    private Task Undo() => _flow.UndoAsync();
+    private Task Undo() => _flow?.UndoAsync() ?? Task.CompletedTask;
 
-    private Task Redo() => _flow.RedoAsync();
+    private Task Redo() => _flow?.RedoAsync() ?? Task.CompletedTask;
 
     private void AddNode()
     {
         // Adding through the API is an undo step of its own, as deleting through it is: AddNodes
-        // records it, so there is nothing to capture here. CaptureHistory is for edits the canvas
-        // cannot see - a node changed by hand in your own code, say.
-        _flow.AddNodes(new BlowNode
+        // records it, so there is nothing to capture here.
+        _added++;
+        _flow?.AddNodes(new BlowNode
         {
-            Id = $"added-{++_added}",
+            Id = $"added-{_added}",
             Label = $"Added {_added}",
             Position = new(340 + _added * 20, 40 + _added * 20),
         });
     }
 
-    private Task DeleteSelection()
+    private void RenameSelection()
     {
         var selected = _nodes.Where(n => n.Selected).ToList();
-        return selected.Count == 0 ? Task.CompletedTask : _flow.DeleteElementsAsync(selected);
+        if (_flow is null || selected.Count == 0) return;
+
+        // A label set in the page's own code is invisible to the canvas until it renders, and is no step of its own:
+        // capturing afterwards records it, under a label the Undo button can show.
+        _renames++;
+        foreach (var node in selected)
+            node.Label = $"{node.Id} (v{_renames})";
+        _flow.CaptureHistory("rename");
     }
 
-    private Task AlignLeft() => _flow.AlignSelectionAsync(BlowAlignEdge.Left);
+    private Task AlignLeft() => _flow?.AlignSelectionAsync(BlowAlignEdge.Left) ?? Task.CompletedTask;
+
+    private Task DeleteSelection()
+    {
+        var nodes = _nodes.Where(n => n.Selected).ToList();
+        var edges = _edges.Where(e => e.Selected).ToList();
+        return _flow is null || (nodes.Count == 0 && edges.Count == 0) ? Task.CompletedTask : _flow.DeleteElementsAsync(nodes, edges);
+    }
 }

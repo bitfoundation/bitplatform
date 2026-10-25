@@ -3,42 +3,80 @@
 <PageTitle>Diagnostics · Blow</PageTitle>
 
 <ExampleScaffold Title="Diagnostics"
-                 Summary="A graph assembled from real data is not always well formed. Rather than throwing, the canvas reports what it found through OnError and carries on drawing what it can - each distinct problem once, not on every render. Break the graph with the buttons and watch the log.">
+                 Summary="A graph assembled from real data is not always well formed. Rather than throw, the canvas reports each problem it finds through OnError - a BlowError with a stable code and a message naming the ids - and carries on drawing what it can. Each button breaks the graph in one of the six ways it reports.">
     <Toolbar>
-        <button class="btn btn-secondary" @onclick="AddDanglingEdge">Add dangling edge</button>
-        <button class="btn btn-secondary" @onclick="AddDuplicateId">Add duplicate id</button>
-        <button class="btn btn-secondary" @onclick="AddOrphan">Add orphan child</button>
+        <button class="btn btn-secondary" @onclick="AddDuplicateNodeId">Duplicate node id</button>
+        <button class="btn btn-secondary" @onclick="AddDuplicateEdgeId">Duplicate edge id</button>
+        <button class="btn btn-secondary" @onclick="AddDanglingEdge">Dangling edge</button>
+        <button class="btn btn-secondary" @onclick="AddOrphan">Orphan child</button>
+        <button class="btn btn-secondary" @onclick="AddParentCycle">Parent cycle</button>
+        <button class="btn btn-secondary" @onclick="AddDuplicateHandles">Duplicate handles</button>
+        <label><input type="checkbox" checked="@BHidden" @onchange="ToggleHidden" /> Hide B</label>
         <button class="btn btn-secondary" @onclick="Reset">Reset</button>
     </Toolbar>
     <ChildContent>
         @* The canvas reports each distinct problem once for its lifetime, so Reset mounts a new
            one: otherwise breaking the graph the same way again would go unreported. *@
         @* Fitted at no more than full size, so the nodes the buttons add beside the two are in view too. *@
-        <BlowCanvas @key="_generation" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" OnError="OnError"
-                    FitViewOptions="new BlowFitViewOptions { MaxZoom = 1 }">
-            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-            <BlowControls />
-            <BlowPanel Anchor="BlowPanelPosition.TopRight">
-                <div class="diag-log">
-                    <strong>OnError</strong>
-                    @if (_errors.Count == 0)
-                    {
-                        <div class="diag-empty">Nothing reported.</div>
-                    }
-                    else
-                    {
-                        @foreach (var error in _errors)
+        <BlowCanvas @key="_generation" @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" OnError="OnError"
+                    FitViewOptions="Fit">
+            <NodeTemplate Context="node">
+                @if (node.Type == "two-handles")
+                {
+                    @* Two source handles, neither with an id: an edge naming "the" source handle cannot say which. *@
+                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                    <div class="diag-node">@node.Label</div>
+                    <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" Style="left:30%" />
+                    <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" Style="left:70%" />
+                }
+                else
+                {
+                    <BlowDefaultNode Node="node" />
+                }
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+                <BlowPanel Anchor="BlowPanelPosition.TopRight">
+                    <div class="diag-log">
+                        <strong>OnError</strong>
+                        @if (_errors.Count == 0)
                         {
-                            <div class="diag-row">
-                                <code>@error.Code</code>
-                                <div>@error.Message</div>
-                            </div>
+                            <div class="diag-empty">Nothing reported.</div>
                         }
-                    }
-                </div>
-            </BlowPanel>
+                        else
+                        {
+                            @foreach (var error in _errors)
+                            {
+                                <div class="diag-row">
+                                    <code>@error.Code</code>
+                                    <div>@error.Message</div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </BlowPanel>
+            </ChildContent>
         </BlowCanvas>
     </ChildContent>
+    <TryIt>
+        <li><strong>Duplicate node id</strong> adds a second node called <code>a</code>: it is not drawn, and <code>duplicate-node-id</code> is reported. Press it again: another node with the same id is added, but it is the same problem, so nothing new is reported.</li>
+        <li><strong>Duplicate edge id</strong> adds an edge from B back to A under the id <code>a-b</code>, which is taken: the new edge is not drawn (<code>duplicate-edge-id</code>).</li>
+        <li><strong>Dangling edge</strong> adds an edge from A to a node that does not exist: it is not drawn (<code>missing-edge-endpoint</code>). Each press names a new missing node, so each is reported.</li>
+        <li><strong>Orphan child</strong> adds a node whose parent does not exist: it is drawn as a root instead (<code>missing-parent-node</code>).</li>
+        <li><strong>Parent cycle</strong> adds two nodes that name each other as parent: the loop is cut and they are drawn (<code>parent-cycle</code>).</li>
+        <li><strong>Duplicate handles</strong> adds a node with two source handles and no ids: <code>duplicate-handle-id</code> is reported once the node has been measured. <strong>Drag from</strong> either handle and the new edge starts at the second.</li>
+        <li>Tick <strong>Hide B</strong>: the edge into B disappears with it, and nothing is reported - an edge to a hidden node is collapsed, not broken.</li>
+        <li><strong>Reset</strong> puts back the two nodes and mounts a fresh canvas, so the same mistakes are reported again.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>OnError</code> receives a <code>BlowError</code>: a <code>Code</code> from <code>BlowErrorCode</code> and an English <code>Message</code> naming the elements. It is raised after the render that found the problem, never during it, and the canvas keeps working whether or not anyone listens.</li>
+        <li>The six codes and what the canvas does about each: <code>DuplicateNodeId</code> and <code>DuplicateEdgeId</code> - only the first element with the id is drawn and reachable; <code>MissingEdgeEndpoint</code> - the edge is not drawn; <code>MissingParentNode</code> - the node is laid out as a root; <code>ParentCycle</code> - the cycle is cut where it was found and that node is laid out as a root; <code>DuplicateHandleId</code> - the second handle takes the first one's edges.</li>
+        <li>Each distinct problem is reported once for the lifetime of the canvas, keyed by its code and the ids involved - otherwise a graph that stays broken would raise the same error on every frame of every drag. Giving the canvas a new <code>@@key</code>, as Reset does, mounts a fresh one that reports everything again.</li>
+        <li>A hidden node is not an error: <code>Hidden</code> takes it out of the drawing, and its edges with it, because something has been collapsed rather than lost.</li>
+        <li>The duplicate handles are two <code>BlowHandle</code>s of the same <code>Type</code> without an <code>Id</code> in a <code>NodeTemplate</code>; give each handle an <code>Id</code> and name it in the edge's <code>SourceHandle</code> or <code>TargetHandle</code>.</li>
+        <li>To find such problems before the graph reaches a canvas - on a server, or before saving - run <code>BlowGraphValidator</code> over it; <code>/examples/graph-analysis</code> does.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
@@ -55,7 +93,8 @@
     }
     .diag-empty { color: var(--bit-blow-text-muted); }
     .diag-row { margin-top: 6px; }
-    .diag-row code { color: #ef4444; }
+    .diag-row code { color: var(--bit-blow-error); }
+    .diag-node { padding: 10px 16px; }
 
     @@media (max-width: 640px) {
         .diag-log { width: 200px; max-height: 140px; }
@@ -63,6 +102,9 @@
 </style>
 
 @code {
+    private static readonly BlowFitViewOptions Fit = new() { MaxZoom = 1, Padding = 0.2 };
+
+    private BlowCanvas? _flow;
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
     private readonly List<BlowError> _errors = [];
@@ -70,6 +112,11 @@
 
     // Never reset, so every element added in this session gets an id of its own.
     private int _counter;
+
+    // How many nodes the buttons have placed since the last reset, to give each a free spot beside A and B.
+    private int _placed;
+
+    private bool BHidden => _nodes.FirstOrDefault(n => n.Id == "b")?.Hidden ?? false;
 
     protected override void OnInitialized() => Reset();
 
@@ -82,10 +129,34 @@
         ];
         _edges = [new BlowEdge { Id = "a-b", Source = "a", Target = "b" }];
         _errors.Clear();
+        _placed = 0;
         _generation++;
     }
 
     private void OnError(BlowError error) => _errors.Add(error);
+
+    // The next free spot on a grid to the right of A and B.
+    private BlowXYPosition NextSpot()
+    {
+        var spot = new BlowXYPosition(300 + (_placed % 3) * 180, 60 + (_placed / 3) * 110);
+        _placed++;
+        return spot;
+    }
+
+    private void Add(params BlowNode[] nodes)
+    {
+        _nodes.AddRange(nodes);
+        // The new nodes are beside the two the canvas was fitted to, possibly past the edge of the view.
+        _flow?.FitView(Fit);
+    }
+
+    // Two nodes claiming the same id: only the first is drawn, so the diff stays valid.
+    private void AddDuplicateNodeId() =>
+        Add(new BlowNode { Id = "a", Label = "A (duplicate)", Position = NextSpot() });
+
+    // An id the first edge already has: only the first is drawn.
+    private void AddDuplicateEdgeId() =>
+        _edges.Add(new BlowEdge { Id = "a-b", Source = "b", Target = "a", Label = "duplicate id" });
 
     // Points at a node that was never added: the edge is skipped, the graph keeps working.
     private void AddDanglingEdge()
@@ -94,17 +165,23 @@
         _edges.Add(new BlowEdge { Id = $"dangling-{n}", Source = "a", Target = $"ghost-{n}" });
     }
 
-    // Two nodes claiming the same id: only the first is drawn, so the diff stays valid.
-    private void AddDuplicateId() =>
-        _nodes.Add(new BlowNode { Id = "a", Label = "A (duplicate)", Position = new(320, 60) });
-
     // Names a parent that does not exist, so it is laid out as a root instead.
     private void AddOrphan() =>
-        _nodes.Add(new BlowNode
-        {
-            Id = $"orphan-{_counter++}",
-            Label = "Orphan",
-            Position = new(320, 200),
-            ParentId = "missing-group",
-        });
+        Add(new BlowNode { Id = $"orphan-{_counter++}", Label = "Orphan", Position = NextSpot(), ParentId = "missing-group" });
+
+    // Each names the other as its parent: following parents never ends, so the canvas cuts the loop.
+    private void AddParentCycle()
+    {
+        var n = _counter++;
+        Add(new BlowNode { Id = $"loop-{n}-1", Label = "Loop 1", Position = NextSpot(), ParentId = $"loop-{n}-2" },
+            new BlowNode { Id = $"loop-{n}-2", Label = "Loop 2", Position = NextSpot(), ParentId = $"loop-{n}-1" });
+    }
+
+    private void AddDuplicateHandles() =>
+        Add(new BlowNode { Id = $"handles-{_counter++}", Type = "two-handles", Label = "Two unnamed outputs", Position = NextSpot() });
+
+    private void ToggleHidden(ChangeEventArgs e)
+    {
+        if (_nodes.FirstOrDefault(n => n.Id == "b") is { } b) b.Hidden = (bool)e.Value!;
+    }
 }

@@ -3,34 +3,56 @@
 <PageTitle>Edge Toolbar · Blow</PageTitle>
 
 <ExampleScaffold Title="Edge Toolbar"
-                 Summary="Selecting an edge reveals an BlowEdgeToolbar anchored at its midpoint (constant screen size). Use it to relabel, recolor or delete the edge.">
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" DefaultEdgeType="BlowEdgeType.SmoothStep" Class="recolor-edges">
-        <EdgeTemplate Context="ctx">
-            <g style="--edge-colour:@(EdgeColour(ctx.Edge))">
-                <BlowBaseEdge Path="@ctx.Geometry.Path"
-                          Stroke="@(EdgeColour(ctx.Edge))"
-                          StrokeWidth="@(ctx.Edge.Selected ? 3 : 1.5)"
-                          Label="@ctx.Edge.Label"
-                          LabelX="@ctx.Geometry.LabelX"
-                          LabelY="@ctx.Geometry.LabelY" />
-            </g>
-        </EdgeTemplate>
-        <EdgeLabelTemplate Context="ctx">
-            @if (ctx.Edge.Selected)
-            {
-                @* Lifted above the label point, so the label the pencil changes is not hidden under it. *@
-                <BlowEdgeToolbar Style="translate:0 -26px">
-                    <button class="btn-mini" @onclick="() => Relabel(ctx.Edge)">✎</button>
-                    <button class="btn-mini" @onclick="() => Recolor(ctx.Edge)">🎨</button>
-                    <button class="btn-mini danger" @onclick="() => Remove(ctx.Edge)">×</button>
-                </BlowEdgeToolbar>
-            }
-        </EdgeLabelTemplate>
-        <ChildContent>
-            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-            <BlowControls />
-        </ChildContent>
-    </BlowCanvas>
+                 Summary="Selecting an edge opens a BlowEdgeToolbar at its midpoint, drawn through EdgeLabelTemplate so it keeps the same size at any zoom: a text box renames the edge, one button recolours it and another deletes it.">
+    <Toolbar>
+        <button class="btn btn-secondary" @onclick="Reset">Reset edges</button>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" DefaultEdgeType="BlowEdgeType.SmoothStep" Class="recolor-edges">
+            <EdgeTemplate Context="ctx">
+                <g style="--edge-colour:@(EdgeColour(ctx.Edge))">
+                    <BlowBaseEdge Path="@ctx.Path"
+                                  Stroke="@(EdgeColour(ctx.Edge))"
+                                  StrokeWidth="@(ctx.Edge.Selected ? 3 : 1.5)"
+                                  MarkerEnd="@ctx.MarkerEndUrl"
+                                  Label="@ctx.Edge.Label"
+                                  LabelX="@ctx.LabelX"
+                                  LabelY="@ctx.LabelY" />
+                </g>
+            </EdgeTemplate>
+            <EdgeLabelTemplate Context="ctx">
+                @if (ctx.Edge.Selected)
+                {
+                    @* Lifted above the label point, so the label the text box changes is not hidden under it. *@
+                    <BlowEdgeToolbar Style="translate:0 -30px">
+                        <input class="et-name" value="@ctx.Edge.Label" aria-label="Edge label" placeholder="label"
+                               @oninput="@(e => ctx.Edge.Label = e.Value?.ToString())" />
+                        <button class="btn-mini" title="Recolour" aria-label="Recolour the edge" @onclick="() => Recolor(ctx.Edge)">🎨</button>
+                        <button class="btn-mini danger" title="Delete" aria-label="Delete the edge" @onclick="() => Remove(ctx.Edge)">×</button>
+                    </BlowEdgeToolbar>
+                }
+            </EdgeLabelTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Click</strong> an edge: a toolbar opens just above its label, and closes again when you click the empty pane.</li>
+        <li>Type in the toolbar's box: the edge's label changes as you type. <strong>Backspace</strong> in the box edits the text; it does not delete the edge.</li>
+        <li><strong>🎨</strong> gives the edge the next colour in a short palette; the line and its arrowhead change, and the selection shows as a thicker line rather than the selection colour, so the new colour stays visible.</li>
+        <li><strong>×</strong> deletes the edge.</li>
+        <li><strong>Scroll</strong> to zoom with an edge selected: the edge grows and shrinks, the toolbar keeps its size.</li>
+        <li><strong>Drag</strong> from a node's bottom dot to another node's top dot to add an edge, then select it: it has the same toolbar. <strong>Reset edges</strong> puts the starting edges back.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>EdgeLabelTemplate</code> renders HTML at each edge's label point in an overlay that is not zoomed; this one renders nothing unless <code>ctx.Edge.Selected</code>.</li>
+        <li><code>BlowEdgeToolbar</code> is a styled container (<code>Class</code>, <code>Style</code>) that keeps its presses, clicks and right-clicks from reaching the pane, so its buttons and text box work without the <code>nopan</code> class and pressing them leaves the edge selected.</li>
+        <li>While focus is in a text box the canvas ignores its graph keys, so typing never deletes or moves anything.</li>
+        <li>The <code>EdgeTemplate</code> draws each edge with <code>BlowBaseEdge</code> in the colour kept in the edge's <code>Data</code>, passes <code>ctx.MarkerEndUrl</code> on for the arrowhead, and sets a <code>--edge-colour</code> custom property that a page style uses for the selected edge.</li>
+        <li>The buttons change the <code>BlowEdge</code> in place - <code>Label</code>, <code>Data</code> - or remove it from the <code>Edges</code> list; the canvas draws the change on the next render.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
@@ -38,6 +60,7 @@
        taking the selection colour that would hide what the recolour button just did. */
     .recolor-edges .bit-blow-edge.selected .bit-blow-edge-path { stroke: var(--edge-colour) !important; }
     /* Painted with the canvas's own --bit-blow-* colours, so the toolbar follows its colour mode. */
+    .et-name { width: 7rem; border:1px solid var(--bit-blow-border); background:var(--bit-blow-surface); color:var(--bit-blow-text); border-radius:4px; padding:1px 6px; font-size:12px; }
     .btn-mini { border:1px solid var(--bit-blow-border); background:var(--bit-blow-surface); color:var(--bit-blow-text); border-radius:4px; cursor:pointer; padding:1px 6px; font-size:13px; }
     .btn-mini:hover { background:var(--bit-blow-surface-hover); }
     .btn-mini.danger { color:#ef4444; border-color:color-mix(in srgb, #ef4444 45%, transparent); }
@@ -47,7 +70,6 @@
 @code {
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
-    private int _n;
 
     protected override void OnInitialized()
     {
@@ -57,14 +79,15 @@
             new BlowNode { Id = "2", Label = "Middle", Position = new(240, 150) },
             new BlowNode { Id = "3", Type = "output", Label = "End", Position = new(240, 290) },
         ];
+        Reset();
+    }
+
+    private void Reset() =>
         _edges =
         [
             new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Label = "step 1", Data = "#2563eb" },
             new BlowEdge { Id = "e2-3", Source = "2", Target = "3", Label = "step 2", Data = "#16a34a" },
         ];
-    }
-
-    private void Relabel(BlowEdge edge) => edge.Label = $"label {++_n}";
 
     private void Recolor(BlowEdge edge)
     {

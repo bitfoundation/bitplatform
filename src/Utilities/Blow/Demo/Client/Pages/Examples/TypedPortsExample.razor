@@ -3,12 +3,13 @@
 <PageTitle>Typed Ports · Blow</PageTitle>
 
 <ExampleScaffold Title="Typed Ports"
-                 Summary="A small dataflow editor built on declared ports. Each node declares its inputs and outputs in BlowNode.Ports, with a data type, a connection limit and whether it must be connected. The canvas refuses a number wired into a text input, a second wire into an input that takes one, and - with cycle prevention on - a wire that would loop back; the panel shows why. BlowGraphValidator lists what is still missing - marked on the graph through the canvas's Validation parameter and read out with each node - and the values are computed in BlowGraphAlgorithms.TopologicalSort order. Everything works from the keyboard: Tab to a node, press C to start a connection, Tab to another node and press Enter. The search box finds a node and takes focus to it.">
+                 Summary="A small dataflow editor on declared ports: each node lists its inputs and outputs in BlowNode.Ports, with a data type, a connection limit and whether it must be connected, and the canvas enforces them while you connect - saying why when it refuses. BlowGraphValidator reports what is still missing, on the graph and in the list under it, and the values flow through in topological order.">
     <Toolbar>
         <button class="btn btn-secondary" @onclick="AddNumber">Add number</button>
         <button class="btn btn-secondary" @onclick="@(() => AddOperator("add"))">Add adder</button>
         <button class="btn btn-secondary" @onclick="@(() => AddOperator("multiply"))">Add multiplier</button>
         <label><input type="checkbox" @bind="_preventCycles" /> Prevent cycles</label>
+        <label><input type="checkbox" @bind="_numbersAsText" @bind:after="Recompute" /> Numbers into text inputs</label>
         <input class="tp-search" type="search" placeholder="Find a node, Enter to go" aria-label="Find a node"
                @bind="_query" @bind:event="oninput" @onkeydown="OnSearchKey" />
         <span class="tp-found" aria-live="polite">@Found</span>
@@ -20,6 +21,7 @@
                     Edges="_edges"
                     FitViewOnInit="true"
                     PreventCycles="_preventCycles"
+                    ConnectionTypeCompatibility="Compatibility"
                     Validation="_validation"
                     DefaultEdgeType="BlowEdgeType.SmoothStep"
                     OnConnectEnd="OnConnectEnd"
@@ -44,6 +46,10 @@
                             <BlowHandle Type="port.Type" Id="@port.Id"
                                         Position="@(port.Type == BlowHandleType.Source ? BlowPosition.Right : BlowPosition.Left)" />
                             <span>@port.Label</span>
+                            @if (port.Data is double fallback)
+                            {
+                                <span class="tp-default">default @fallback</span>
+                            }
                             @if (port.Type == BlowHandleType.Source)
                             {
                                 <span class="tp-value">@Show(node.Id)</span>
@@ -74,6 +80,24 @@
             }
         </div>
     </Footer>
+    <TryIt>
+        <li><strong>Drag</strong> from an output (right) to an input (left). Number ports are blue and text ports amber; while you drag, the inputs that would take the wire turn green.</li>
+        <li>Drag the lone <strong>Number</strong> (10) to the <strong>Display</strong>'s text input: refused, and <em>Last connection</em> under the canvas says the types are incompatible. Drag it to the <strong>Add</strong> node's <em>a</em>: refused too - that input takes one wire and has it.</li>
+        <li>Drag <strong>Add</strong>'s result into its own <em>b</em>: refused, since a node cannot feed itself. Add two adders and wire each one's result into the other: refused as a cycle while <strong>Prevent cycles</strong> is ticked; untick it and the loop is allowed, but the nodes on it show no value.</li>
+        <li>Wire <em>Number to text</em> into the Display: the problem list empties and the Display shows 7. Change a number's value and everything downstream follows. Click a problem in the list to go to its node.</li>
+        <li><strong>Add number</strong>, <strong>Add adder</strong> and <strong>Add multiplier</strong> add a node under the graph and take you to it. A multiplier's <em>b</em> is optional: unwired, it multiplies by its default, 1.</li>
+        <li>Tick <strong>Numbers into text inputs</strong> and a number can feed the Display directly. Untick it with such a wire in place: the wire stays, and the list reports its incompatible types.</li>
+        <li>From the keyboard: <strong>Tab</strong> to a node, press <strong>C</strong> to start a connection (again for its next port), <strong>Tab</strong> to another node and press <strong>Enter</strong>, or <strong>Escape</strong> to give up. Type in <strong>Find a node</strong> and press <strong>Enter</strong> to go to the best match.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>BlowNode.Ports</code> lists <code>BlowPort</code>s: <code>Id</code>, <code>Type</code>, <code>Label</code>, <code>DataType</code>, <code>MaxConnections</code>, <code>MinConnections</code> and <code>Data</code>. The <code>NodeTemplate</code> draws a <code>BlowHandle</code> with each port's <code>Type</code> and <code>Id</code>, and the handle picks the definition up; it renders the type as <code>data-port-type</code>, which the colours come from.</li>
+        <li>Types match by <code>BlowConnectionRules.AreTypesCompatible</code>: a port without a type, or <code>"*"</code>, takes anything; otherwise the comma-separated lists must share a type, ignoring case. A mismatch is refused as <code>IncompatibleTypes</code>.</li>
+        <li><code>ConnectionTypeCompatibility</code> on the canvas replaces that rule - here with one that also lets <code>"number"</code> flow into <code>"text"</code>. The validator gets the same function through <code>BlowValidationRules.Ports(typeCompatibility)</code>, so the two always agree.</li>
+        <li><code>MaxConnections = 1</code> on every input makes a second wire <code>TargetFull</code>. <code>PreventCycles</code> refuses a wire that closes a loop (<code>Cycle</code>); a wire into its own node is a <code>SelfConnection</code> either way.</li>
+        <li><code>MinConnections = 1</code> makes an input required. It is not enforced while you edit - a graph is built one wire at a time - but <code>BlowGraphValidator</code> reports it; the result goes to the canvas's <code>Validation</code> parameter, which marks the node and the port and has a screen reader read the problem with the node. The multiplier's <em>b</em> has <code>MinConnections = 0</code> and its default in <code>Data</code>, a payload the canvas never reads.</li>
+        <li><code>OnConnectEnd</code>'s <code>Rejection</code> fills <em>Last connection</em>, worded by <code>BlowAriaLabels.Default.ConnectionRejected</code> - the sentence the canvas announces. The values come from <code>BlowGraphAlgorithms.TopologicalSort</code>, so each node's inputs are worked out before it; <code>BlowGraphIndex.EdgesAt</code> finds the wire into a port.</li>
+        <li>The keyboard connection uses the canvas's <code>ConnectionKey</code> (<code>"c"</code> by default). <code>FindNodes(query)</code> ranks nodes by their label, id, type and ports, and <code>FocusNodeAsync(id, select, durationMs)</code> brings a node into view and gives it focus - as each <strong>Add</strong> button does after <code>AddNodes</code>.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
@@ -86,6 +110,7 @@
     .tp-row { position: relative; padding: 2px 12px; display: flex; gap: 6px; font-size: 11px; }
     .tp-out { justify-content: flex-end; }
     .tp-value { font-weight: 600; min-width: 2em; text-align: right; }
+    .tp-default { color: var(--bit-blow-text-muted); }
     .tp-display { margin: 0 10px 4px; padding: 4px 6px; font: 600 14px monospace; border-radius: 4px;
                   background: var(--bit-blow-surface-muted); }
     /* Handles take their colour from their data type, through the handle's own colour property, so the
@@ -106,6 +131,7 @@
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
     private bool _preventCycles = true;
+    private bool _numbersAsText;
     private string _lastConnection = "Drag from an output (right) to an input (left).";
     private BlowValidationResult _validation = BlowValidationResult.Empty;
     private Dictionary<string, object?> _values = [];
@@ -117,6 +143,17 @@
         : _flow.FindNodes(_query).Count switch { 0 => "No match", 1 => "1 match", var n => $"{n} matches" };
 
     private static readonly BlowGraphValidator Validator = BlowGraphValidator.CreateDefault();
+
+    // The validator for the lenient rule: the same checks, judging data types the way the canvas then does.
+    private static readonly BlowGraphValidator LenientValidator =
+        new(BlowValidationRules.Structure(), BlowValidationRules.Ports(typeCompatibility: NumbersAsText));
+
+    // Null keeps the built-in rule; otherwise a number may also flow into a text input.
+    private Func<string?, string?, bool>? Compatibility => _numbersAsText ? NumbersAsText : null;
+
+    private static bool NumbersAsText(string? source, string? target) =>
+        BlowConnectionRules.AreTypesCompatible(source, target)
+        || (string.Equals(source, "number", StringComparison.OrdinalIgnoreCase) && string.Equals(target, "text", StringComparison.OrdinalIgnoreCase));
 
     protected override void OnInitialized()
     {
@@ -154,11 +191,24 @@
         Ports = [Output("value", "value", "number")],
     };
 
+    // A multiplier's "b" is optional: unwired, it multiplies by the default its port carries in Data.
     private static BlowNode Operator(string id, string kind, BlowXYPosition at) => new()
     {
         Id = id, Type = kind, Label = kind == "add" ? "Add" : "Multiply", Position = at,
-        Ports = [Input("a", "a", "number"), Input("b", "b", "number"), Output("result", "result", "number")],
+        Ports =
+        [
+            Input("a", "a", "number"),
+            kind == "multiply" ? Optional(Input("b", "b", "number"), 1.0) : Input("b", "b", "number"),
+            Output("result", "result", "number"),
+        ],
     };
+
+    private static BlowPort Optional(BlowPort port, object fallback)
+    {
+        port.MinConnections = 0;
+        port.Data = fallback;
+        return port;
+    }
 
     private static BlowNode Format(string id, BlowXYPosition at) => new()
     {
@@ -210,16 +260,17 @@
     /// </summary>
     private void Recompute()
     {
-        _validation = Validator.Validate(_nodes, _edges);
+        _validation = (_numbersAsText ? LenientValidator : Validator).Validate(_nodes, _edges);
 
         var graph = new BlowGraphIndex(_nodes, _edges);
         _values = [];
         foreach (var node in BlowGraphAlgorithms.TopologicalSort(graph).Order)
         {
+            // The value on the wire into a port, or the port's default when nothing is wired to it.
             object? Input(string port)
             {
                 var edge = graph.EdgesAt(node.Id, BlowHandleType.Target, port).FirstOrDefault();
-                return edge is null ? null : _values.GetValueOrDefault(edge.Source);
+                return edge is null ? node.FindPort(BlowHandleType.Target, port)?.Data : _values.GetValueOrDefault(edge.Source);
             }
 
             _values[node.Id] = node.Type switch

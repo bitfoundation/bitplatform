@@ -3,7 +3,7 @@
 <PageTitle>Editable Node · Blow</PageTitle>
 
 <ExampleScaffold Title="Editable Node"
-                 Summary="Nodes can host real form controls. Type in a field and use Backspace freely - the flow detects that focus is inside an editable element and leaves the graph alone. To delete a node, click its grip - that selects it and takes focus out of the fields - then press Delete, and it is removed as usual.">
+                 Summary="Nodes can host real form controls. Typing in a field - Backspace and Delete included - edits the text and leaves the graph alone, because the canvas ignores its keys while focus is in an editable element; a drag handle keeps the fields usable by leaving the rest of the node undraggable.">
     <ChildContent>
         <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
             <NodeTemplate Context="node">
@@ -15,6 +15,7 @@
                            value="@node.Label"
                            @oninput="@(e => node.Label = e.Value?.ToString())" />
                     <textarea class="edit-notes"
+                              aria-label="@($"Notes on {node.Id}")"
                               placeholder="notes…"
                               @oninput="@(e => SetNotes(node, e.Value?.ToString()))">@Notes(node)</textarea>
                 </div>
@@ -26,6 +27,19 @@
             </ChildContent>
         </BlowCanvas>
     </ChildContent>
+    <TryIt>
+        <li><strong>Click into a label field</strong> and type, using <strong>Backspace</strong> and <strong>Delete</strong> freely: the text changes and the node stays.</li>
+        <li><strong>Write in a notes box</strong>: a textarea is just as safe.</li>
+        <li><strong>Drag a node by its grip</strong> (⠿ and its id) to move it. Pressing or dragging in the fields never moves it.</li>
+        <li>To delete a node, <strong>click its grip</strong> - that selects the node and takes focus out of the fields - then press <strong>Delete</strong> or <strong>Backspace</strong>.</li>
+    </TryIt>
+    <HowItWorks>
+        <li>Graph keys - Delete, Backspace, the arrows, Ctrl+A - are ignored while focus is in a text input, textarea, select or contenteditable element, so a field inside a node is safe to type in. Escape still abandons a gesture in progress.</li>
+        <li>Pressing a field still selects its node; it is the focus in the field that keeps Delete from removing it.</li>
+        <li><code>UseCustomDragHandle = true</code> stops the node's body from starting a drag, and the <code>BlowDragHandle</code> grip starts one instead - so placing the caret or selecting text never moves the node.</li>
+        <li>The label field writes to <code>node.Label</code> on every keystroke, and <code>Label</code> is also the node's accessible name. The notes live in a dictionary on the page, keyed by node id.</li>
+        <li>The other way to hand a field its presses back is the <code>nodrag</code> class (the canvas's <code>NoDragClass</code>) on the field itself, which leaves the rest of the body draggable; the Custom Node example does that.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>

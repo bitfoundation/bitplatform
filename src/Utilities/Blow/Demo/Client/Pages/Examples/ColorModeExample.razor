@@ -1,12 +1,12 @@
 ﻿@page "/examples/color-mode"
-@inject IJSRuntime JS
 
 <PageTitle>Color Mode · Blow</PageTitle>
 
 <ExampleScaffold Title="Color Mode"
-                 Summary="Switch between light, dark and system colour themes - or leave the flow to this site's own light/dark toggle. Every part of the component follows - not only the canvas and its nodes, but the control bar, the minimap, node toolbars, edge labels and the attribution badge, all of which take their colours from the same set of CSS custom properties.">
+                 Summary="ColorMode switches a flow between light, dark and the operating system's preference, and every part of it follows - nodes, edges, the control bar, the minimap, node toolbars and the attribution - because every colour is a --bit-blow-* CSS custom property. Overriding a few of those properties is a theme of your own, and ReducedMotion stills the animation for readers who ask for less.">
     <Toolbar>
-        <label>theme:
+        @* One select only: the colour-mode tests pick their option from the toolbar's select. *@
+        <label>Theme
             <select @bind="_choice">
                 <option value="Site">Site theme</option>
                 <option value="Light">Light</option>
@@ -14,18 +14,18 @@
                 <option value="System">System</option>
             </select>
         </label>
-        <label>
-            <input type="checkbox" @bind="_teal" /> Override the accent
-        </label>
-        <span class="note">Select a node to see its toolbar; the whole surface is themed.</span>
+        <label><input type="checkbox" @bind="_teal" /> Override the accent</label>
+        <label><input type="checkbox" @bind="_warm" /> Warm palette</label>
+        <label><input type="checkbox" @bind="_reduceMotion" /> Reduce motion</label>
     </Toolbar>
     <ChildContent>
         <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" ColorMode="Mode"
+                    ReducedMotion="@(_reduceMotion ? BlowReducedMotion.Always : BlowReducedMotion.System)"
                     Class="@CanvasClass"
                     NodesDraggable="_interactive" NodesConnectable="_interactive" ElementsSelectable="_interactive">
             <NodeTemplate Context="node">
                 <BlowNodeToolbar Position="BlowPosition.Top">
-                    <button @onclick="@(() => Rename(node))">Rename</button>
+                    <button @onclick="Duplicate">Duplicate</button>
                     <button @onclick="@(() => Delete(node))">Delete</button>
                 </BlowNodeToolbar>
                 @if (node.Type != "input")
@@ -44,19 +44,36 @@
                 <BlowControls ShowInteractive="true" @bind-Interactive="_interactive" />
                 <BlowMiniMap />
                 <BlowPanel Anchor="BlowPanelPosition.TopRight">
-                    <div class="hint">
-                        Every colour is a <code>--bit-blow-*</code> custom property, so a theme is a
-                        handful of overrides rather than a fork of the stylesheet.
-                    </div>
+                    <div class="cm-hint">Every colour here is a <code>--bit-blow-*</code> custom property.</div>
                 </BlowPanel>
             </ChildContent>
         </BlowCanvas>
     </ChildContent>
+    <TryIt>
+        <li>Pick a <strong>Theme</strong>: <strong>Light</strong> and <strong>Dark</strong> fix the flow's colours, <strong>System</strong> follows your operating system's light or dark setting, and <strong>Site theme</strong> follows this site's own toggle in the header.</li>
+        <li><strong>Click a node</strong> to select it and open its toolbar - <strong>Duplicate</strong> copies the selection, <strong>Delete</strong> removes the node - and see that the toolbar, the selection ring, the control bar and the minimap all change with the theme.</li>
+        <li>Tick <strong>Override the accent</strong>: the selection ring, selected edges, the line drawn while connecting and the focus rings all turn teal, in either mode.</li>
+        <li>Tick <strong>Warm palette</strong>: the pane, the nodes, the edges, the pattern and the minimap take warmer colours - a lighter set in light mode and a darker set in dark mode.</li>
+        <li>Tick <strong>Reduce motion</strong>: the animated edge from Node 1 keeps its dashes but stops marching.</li>
+        <li>Press the <strong>lock</strong> button at the bottom of the control bar: nodes can no longer be dragged, connected or selected until you press it again.</li>
+        <li>Turn on a high-contrast theme in your operating system, or emulate <code>forced-colors: active</code> in the browser's developer tools: edges, handles and the selection switch to the system's colours, and selection is drawn as an outline.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>ColorMode</code> is <code>BlowColorMode.Light</code> (the default), <code>Dark</code> or <code>System</code>. Dark puts <code>bit-blow-dark</code> on the canvas, which copies every <code>--bit-blow-dark-*</code> property over its light twin; system puts <code>bit-blow-system</code>, which does the same while <code>prefers-color-scheme</code> is dark.</li>
+        <li>Every colour in the stylesheet - pane, nodes, edges, handles, the control bar, the minimap, toolbars, labels - reads a <code>--bit-blow-*</code> property on the <code>.bit-blow</code> element, which is why the whole component changes together.</li>
+        <li>The accent override sets <code>--bit-blow-node-selected</code>, <code>--bit-blow-edge-selected</code> and <code>--bit-blow-connection-stroke</code>, and <code>--bit-blow-dark-accent</code> for dark mode, on a class passed through the canvas's <code>Class</code>.</li>
+        <li>The warm palette overrides <code>--bit-blow-bg</code>, <code>-node-bg</code>, <code>-node-border</code>, <code>-edge-stroke</code>, <code>-background-pattern</code> and <code>-minimap-node</code>, and their <code>--bit-blow-dark-*</code> twins, so it has a dark version too. The rule is wrapped in <code>:where()</code>, keeping it below the colour modes' two-class rules - otherwise a light override would win in dark mode as well.</li>
+        <li><code>ReducedMotion</code> (default <code>BlowReducedMotion.System</code>) follows the operating system's reduce-motion setting; the box sets <code>Always</code>, and <code>Never</code> animates regardless. It also makes viewport transitions jump instead of easing.</li>
+        <li>Under forced colours the stylesheet maps edge, handle and selection colours onto the system palette (<code>CanvasText</code>, <code>Highlight</code>, <code>GrayText</code>), since the browser does not recolour SVG strokes or box shadows itself.</li>
+        <li><code>BlowControls</code> shows the lock only with <code>ShowInteractive</code>, and the lock only reports its state: <code>@@bind-Interactive</code> feeds a field the page passes to <code>NodesDraggable</code>, <code>NodesConnectable</code> and <code>ElementsSelectable</code>.</li>
+        <li><code>BlowNodeToolbar</code> shows over a node while it is selected; its buttons call <code>DuplicateSelectionAsync()</code> and <code>DeleteElementsAsync()</code>.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
     /* Overriding one property retints the selection, the edges, the connection line and the
-       focus rings together, because they all read the same value. */
+       focus rings together, because they all read the same value. Two classes, to outrank this site's own accent
+       on ":root .bit-blow". */
     .bit-blow.teal-accent {
         --bit-blow-node-selected: #0d9488;
         --bit-blow-edge-selected: #0d9488;
@@ -80,8 +97,25 @@
         }
     }
 
-    .note { margin-left: auto; font-size: 11px; color: var(--bb-text-soft); }
-    .hint {
+    /* A palette of your own: the light colours and their --bit-blow-dark-* twins, which the dark mode copies over
+       them. :where() keeps the rule exactly as specific as the library's own .bit-blow, so the colour modes - two
+       classes - still outrank the light colours here, and none of them needs saying twice. */
+    .bit-blow:where(.cm-warm) {
+        --bit-blow-bg: #fdf8f1;
+        --bit-blow-node-bg: #fffaf3;
+        --bit-blow-node-border: #9a3412;
+        --bit-blow-edge-stroke: #d4a373;
+        --bit-blow-background-pattern: #e6c9a8;
+        --bit-blow-minimap-node: #f1dcc3;
+        --bit-blow-dark-bg: #1d1813;
+        --bit-blow-dark-node-bg: #2b231b;
+        --bit-blow-dark-node-border: #c2773b;
+        --bit-blow-dark-edge-stroke: #8c6b4a;
+        --bit-blow-dark-background-pattern: #4d3d2c;
+        --bit-blow-dark-minimap-node: #4d3d2c;
+    }
+
+    .cm-hint {
         max-width: 220px;
         padding: 6px 10px;
         font-size: 11px;
@@ -109,9 +143,16 @@
     // This site paints every flow in its own light/dark theme (its stylesheet copies the dark palette over the
     // light one while the site is dark). "Site theme" leaves the canvas to that; any other choice is the
     // canvas's own ColorMode, and own-color-mode tells the site's stylesheet to keep out of it.
-    private string CanvasClass => $"{(_choice == "Site" ? "" : "own-color-mode")} {(_teal ? "teal-accent" : "")}".Trim();
+    private string CanvasClass => string.Join(' ', new[]
+    {
+        _choice == "Site" ? null : "own-color-mode",
+        _teal ? "teal-accent" : null,
+        _warm ? "cm-warm" : null,
+    }.OfType<string>());
 
     private bool _teal;
+    private bool _warm;
+    private bool _reduceMotion;
     private bool _interactive = true;
 
     protected override void OnInitialized()
@@ -131,15 +172,9 @@
         ];
     }
 
-    private async Task Rename(BlowNode node)
-    {
-        var name = await JS.InvokeAsync<string?>("prompt", "Rename node", node.Label ?? string.Empty);
-        if (string.IsNullOrWhiteSpace(name)) return;
-
-        node.Label = name.Trim();
-        // A longer or shorter label changes the node's size, and the edges anchored to it.
-        _flow?.Refresh(remeasure: true);
-    }
+    // The toolbar shows on the selected node, so duplicating the selection copies the node it belongs to - and
+    // anything selected with it.
+    private Task Duplicate() => _flow?.DuplicateSelectionAsync() ?? Task.CompletedTask;
 
     private Task Delete(BlowNode node) => _flow?.DeleteElementsAsync([node]) ?? Task.CompletedTask;
 }

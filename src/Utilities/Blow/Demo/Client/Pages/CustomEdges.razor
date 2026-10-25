@@ -5,37 +5,55 @@
 <div class="bb-intro">
     <h1>Custom Edges, BlowBaseEdge &amp; Edge Toolbar</h1>
     <p class="bb-subtitle">
-        Edges are drawn with a custom <strong>EdgeTemplate</strong> built on <strong>BlowBaseEdge</strong> +
-        <strong>BlowEdgeText</strong> (colored by edge data). Selecting an edge reveals an
-        <strong>BlowEdgeToolbar</strong> (HTML overlay) to recolor or delete it. The connection line uses a
-        smooth-step path.
+        An <code>EdgeTemplate</code> draws every edge itself: <code>BlowBaseEdge</code> lays down the path and its
+        arrowheads in a colour taken from the edge's data, and <code>BlowEdgeText</code> puts the label on a plate of
+        the same colour. Selecting an edge opens a <code>BlowEdgeToolbar</code> to recolour or delete it.
     </p>
 </div>
 
 <DemoCode />
 
 <div class="bb-demo blow-demo bb-page-wide">
+    <div class="bb-demo-bar example-toolbar">
+        <label><input type="checkbox" checked="@_arrowheads" @onchange="@(e => _arrowheads = (bool)e.Value!)" /> Pass on arrowheads</label>
+        <label><input type="checkbox" checked="@_colouredLabels" @onchange="@(e => _colouredLabels = (bool)e.Value!)" /> Coloured label plates</label>
+        <label><input type="checkbox" checked="@_wideHitArea" @onchange="@(e => _wideHitArea = (bool)e.Value!)" /> Wide hit area</label>
+    </div>
     <div class="demo-canvas">
         <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" Class="recolor-edges"
                     ConnectionLineType="BlowEdgeType.SmoothStep"
                     DefaultEdgeType="BlowEdgeType.SmoothStep">
             <EdgeTemplate Context="ctx">
                 <g style="--edge-colour:@(EdgeColour(ctx.Edge))">
-                    <BlowBaseEdge Path="@ctx.Geometry.Path"
-                              Stroke="@(EdgeColour(ctx.Edge))"
-                              StrokeWidth="@(ctx.Edge.Selected ? 3 : 2)"
-                              Label="@ctx.Edge.Label"
-                              LabelX="@ctx.Geometry.LabelX"
-                              LabelY="@ctx.Geometry.LabelY" />
+                    @* The arrowheads are the canvas's own, declared once per colour and size: the template only says
+                       which ends get one, by passing the ready-made url(#...) references on - or not. *@
+                    <BlowBaseEdge Path="@ctx.Path"
+                                  Stroke="@(EdgeColour(ctx.Edge))"
+                                  StrokeWidth="@(ctx.Edge.Selected ? 3 : 2)"
+                                  MarkerStart="@(_arrowheads ? ctx.MarkerStartUrl : null)"
+                                  MarkerEnd="@(_arrowheads ? ctx.MarkerEndUrl : null)"
+                                  InteractionWidth="@(_wideHitArea ? 32 : 14)"
+                                  Label="@(_colouredLabels ? null : ctx.Edge.Label)"
+                                  LabelX="@ctx.LabelX"
+                                  LabelY="@ctx.LabelY" />
+                    @if (_colouredLabels && !string.IsNullOrEmpty(ctx.Edge.Label))
+                    {
+                        <BlowEdgeText X="@ctx.LabelX" Y="@ctx.LabelY" Label="@ctx.Edge.Label"
+                                      Style="fill:#fff;font-weight:600"
+                                      BgStyle="@($"fill:{EdgeColour(ctx.Edge)};fill-opacity:1")"
+                                      PaddingX="8" PaddingY="3" BorderRadius="9" />
+                    }
                 </g>
             </EdgeTemplate>
 
             <EdgeLabelTemplate Context="ctx">
                 @if (ctx.Edge.Selected)
                 {
-                    <BlowEdgeToolbar>
-                        <button class="btn-mini" @onclick="() => Recolor(ctx.Edge)">🎨</button>
-                        <button class="btn-mini danger" @onclick="() => Remove(ctx.Edge)">×</button>
+                    @* Lifted above the label point rather than over it, so the label stays readable and shows the
+                       colour the button has just given the edge. *@
+                    <BlowEdgeToolbar Class="ce-toolbar">
+                        <button class="btn-mini" title="Next colour" aria-label="Next colour" @onclick="() => Recolor(ctx.Edge)">🎨</button>
+                        <button class="btn-mini danger" title="Delete edge" aria-label="Delete edge" @onclick="() => Remove(ctx.Edge)">×</button>
                     </BlowEdgeToolbar>
                 }
             </EdgeLabelTemplate>
@@ -49,10 +67,31 @@
     </div>
 </div>
 
+<DemoNotes>
+    <TryIt>
+        <li><strong>Click an edge</strong> to select it: it thickens, and a toolbar opens above its label. <strong>🎨</strong> gives it the next colour - path, arrowheads and label plate together - and <strong>×</strong> deletes it.</li>
+        <li>Untick <strong>Pass on arrowheads</strong>: the edges lose their heads, although every edge still asks for one. Tick it again and the yes edge has one at each end.</li>
+        <li>Untick <strong>Coloured label plates</strong> to fall back to <code>BlowBaseEdge</code>'s own label on the theme's plate.</li>
+        <li>Tick <strong>Wide hit area</strong>, then click a little beside an edge: it is selected from further away than before.</li>
+        <li><strong>Drag from a handle</strong> to another node: the line you drag is a smooth step, and the new edge is drawn by the same template, in the theme's colour until you recolour it.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>EdgeTemplate</code> receives a <code>BlowEdgeContext</code> per edge - the <code>Edge</code>, its computed <code>Path</code> and label point (<code>LabelX</code>, <code>LabelY</code>), and <code>MarkerStartUrl</code>/<code>MarkerEndUrl</code> - and renders SVG. Around it the canvas still draws the focusable, selectable edge group and its own invisible click path.</li>
+        <li><code>BlowBaseEdge</code> takes the <code>Path</code>, a <code>Stroke</code> (here from <code>Edge.Data</code>) and <code>StrokeWidth</code> (1.5 by default; 2 here, 3 when selected).</li>
+        <li><code>MarkerStart</code> and <code>MarkerEnd</code> take a <code>url(#...)</code> reference: passing the context's on draws the heads the edge's <code>MarkerStart</code> and <code>MarkerEnd</code> ask for, in the edge's stroke colour; passing null draws none.</li>
+        <li><code>InteractionWidth</code> (14) is the width of <code>BlowBaseEdge</code>'s invisible click path, in screen pixels at any zoom. The canvas's own click path, <code>BlowEdge.InteractionWidth</code> wide, stays underneath, so only a wider value makes a difference.</li>
+        <li><code>BlowEdgeText</code> draws a label at any point: <code>X</code>, <code>Y</code> and <code>Label</code>, with <code>Style</code> for the text, <code>BgStyle</code> for the plate, and <code>PaddingX</code>, <code>PaddingY</code> and <code>BorderRadius</code> to shape it (4, 2 and 3 by default). <code>BlowBaseEdge</code>'s <code>Label</code> uses it with those defaults.</li>
+        <li><code>EdgeLabelTemplate</code> renders HTML at each label point in a layer that is not zoomed, so the toolbar keeps its size; <code>BlowEdgeToolbar</code> styles it and keeps its clicks from reaching the pane.</li>
+        <li><code>DefaultEdgeType</code> and <code>ConnectionLineType</code> make the edges you draw, and the line you draw them with, smooth steps.</li>
+    </HowItWorks>
+</DemoNotes>
+
 <style>
     /* Selection is shown by the width on this page: the selected edge keeps the colour it was given, instead of
        taking the selection colour that would hide what the recolour button just did. */
     .recolor-edges .bit-blow-edge.selected .bit-blow-edge-path { stroke: var(--edge-colour) !important; }
+    /* Its own height and a little more above the label point, which the layer centres it on. */
+    .ce-toolbar { transform: translateY(calc(-100% - 10px)); }
     /* Painted with the canvas's own --bit-blow-* colours, so the toolbar follows its colour mode. */
     .btn-mini { border:1px solid var(--bit-blow-border); background:var(--bit-blow-surface); color:var(--bit-blow-text); border-radius:4px; cursor:pointer; padding:1px 6px; font-size:13px; }
     .btn-mini:hover { background:var(--bit-blow-surface-hover); }
@@ -63,6 +102,10 @@
 @code {
     private List<BlowNode> _nodes = new();
     private List<BlowEdge> _edges = new();
+
+    private bool _arrowheads = true;
+    private bool _colouredLabels = true;
+    private bool _wideHitArea;
 
     protected override void OnInitialized()
     {
@@ -76,9 +119,9 @@
 
         _edges =
         [
-            new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Label = "yes", Data = "#16a34a" },
-            new BlowEdge { Id = "e1-3", Source = "1", Target = "3", Label = "no",  Data = "#dc2626" },
-            new BlowEdge { Id = "e2-4", Source = "2", Target = "4", Label = "done", Data = "#2563eb" },
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Type = BlowEdgeType.SmoothStep, Label = "yes", Data = "#16a34a", MarkerStart = true },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3", Type = BlowEdgeType.SmoothStep, Label = "no",  Data = "#dc2626", MarkerType = BlowMarkerType.ArrowClosed },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4", Type = BlowEdgeType.SmoothStep, Label = "done", Data = "#2563eb" },
         ];
     }
 

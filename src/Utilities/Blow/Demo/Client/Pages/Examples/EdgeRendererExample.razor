@@ -3,29 +3,62 @@
 <PageTitle>Edge Renderer · Blow</PageTitle>
 
 <ExampleScaffold Title="Edge Renderer"
-                 Summary="A custom edge that renders an interactive HTML button at its midpoint using the edge label layer (React Flow's EdgeLabelRenderer). Click the × to delete the edge.">
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" DefaultEdgeType="BlowEdgeType.Bezier">
-        <EdgeLabelTemplate Context="ctx">
-            @* nodrag nopan, as in React Flow: a press on the label would otherwise start a pan, and the pan's pointer
-               capture would take the click away from the button. *@
-            <button class="edge-button nodrag nopan" title="Remove edge" @onclick="() => Remove(ctx.Edge)">×</button>
-        </EdgeLabelTemplate>
-        <ChildContent>
-            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-            <BlowControls />
-        </ChildContent>
-    </BlowCanvas>
+                 Summary="EdgeLabelTemplate draws HTML at each edge's label point, in a layer that is not zoomed - React Flow's EdgeLabelRenderer. Here every edge gets its label as HTML with a button that removes the edge; the labels stay the same size at any zoom.">
+    <Toolbar>
+        <button class="btn btn-secondary" @onclick="Reset">Reset edges</button>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <EdgeLabelTemplate Context="ctx">
+                @* nodrag nopan, as in React Flow: a press on the label would otherwise start a pan, and the pan's pointer
+                   capture would take the click away from the button. *@
+                <div class="rnd-label nodrag nopan @(string.IsNullOrEmpty(ctx.Edge.Label) ? "rnd-bare" : null)">
+                    @if (!string.IsNullOrEmpty(ctx.Edge.Label))
+                    {
+                        <span>@ctx.Edge.Label</span>
+                    }
+                    <button class="rnd-remove" title="Remove edge"
+                            aria-label="@($"Remove the edge from {NodeName(ctx.Edge.Source)} to {NodeName(ctx.Edge.Target)}")"
+                            @onclick="() => Remove(ctx.Edge)">×</button>
+                </div>
+            </EdgeLabelTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Click</strong> the <strong>×</strong> on an edge's label to remove that edge.</li>
+        <li><strong>Scroll</strong> to zoom: the edges and nodes grow and shrink, the HTML labels keep their size and stay on their edges.</li>
+        <li><strong>Drag</strong> a node: each label follows its edge's midpoint.</li>
+        <li><strong>Drag</strong> from a node's bottom dot to another node's top dot: the new edge gets a <strong>×</strong> of its own, with no text since it has no label.</li>
+        <li><strong>Reset edges</strong> puts the two starting edges back.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>EdgeLabelTemplate</code> is a <code>RenderFragment&lt;BlowEdgeContext&gt;</code> rendered once per edge, centred on the edge's label point (<code>LabelX</code>, <code>LabelY</code>) in an overlay that is positioned but not scaled, so the HTML keeps a constant screen size.</li>
+        <li>While it is set it replaces the built-in SVG labels, which is why the template draws <code>ctx.Edge.Label</code> itself. The edge path, its arrowhead and its selection are still drawn by the canvas.</li>
+        <li>Anything in the label that takes a press carries the <code>nopan</code> class (and <code>nodrag</code>), the canvas's <code>NoPanClass</code> and <code>NoDragClass</code>; <code>BlowEdgeToolbar</code> is a ready-made container that does the same.</li>
+        <li>The button removes the edge from the <code>Edges</code> list the canvas was given; <strong>Reset edges</strong> hands it a new list.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
-    .edge-button {
-        width: 20px; height: 20px; border-radius: 50%;
+    .rnd-label {
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 2px 2px 2px 8px; border-radius: 12px;
+        background: var(--bit-blow-surface); color: var(--bit-blow-text); border: 1px solid var(--bit-blow-border);
+        font: 12px/1 sans-serif; box-shadow: 0 1px 3px var(--bit-blow-shadow);
+    }
+    /* A label with no text is just the button: the pill's left padding would sit beside it empty. */
+    .rnd-label.rnd-bare { padding-left: 2px; }
+    .rnd-remove {
+        width: 20px; height: 20px; border-radius: 50%; padding: 0;
         border: 1px solid var(--bit-blow-border); background: var(--bit-blow-surface); cursor: pointer;
         line-height: 1; font-size: 14px; color: var(--bit-blow-text-muted);
         display: inline-flex; align-items: center; justify-content: center;
-        box-shadow: 0 1px 3px var(--bit-blow-shadow);
     }
-    .edge-button:hover { background: color-mix(in srgb, #ef4444 16%, var(--bit-blow-surface)); color: #ef4444; border-color: color-mix(in srgb, #ef4444 45%, transparent); }
+    .rnd-remove:hover { background: color-mix(in srgb, #ef4444 16%, var(--bit-blow-surface)); color: #ef4444; border-color: color-mix(in srgb, #ef4444 45%, transparent); }
 </style>
 
 @code {
@@ -40,12 +73,17 @@
             new BlowNode { Id = "2", Label = "Node B", Position = new(120, 170) },
             new BlowNode { Id = "3", Label = "Node C", Position = new(380, 170) },
         ];
-        _edges =
-        [
-            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
-            new BlowEdge { Id = "e1-3", Source = "1", Target = "3" },
-        ];
+        Reset();
     }
 
+    private void Reset() =>
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Label = "to B" },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3", Label = "to C" },
+        ];
+
     private void Remove(BlowEdge edge) => _edges.RemoveAll(e => e.Id == edge.Id);
+
+    private string NodeName(string id) => _nodes.Find(n => n.Id == id)?.Label ?? id;
 }
