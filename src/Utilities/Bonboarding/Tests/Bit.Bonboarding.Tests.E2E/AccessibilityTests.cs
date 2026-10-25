@@ -21,6 +21,12 @@ public sealed class AccessibilityTests : BonboardingTest
     /// <summary>Fails with every violation, the rule and the elements it found, so a failure says what to fix.</summary>
     private static async Task AssertNoViolationsAsync(IPage page, string where)
     {
+        // axe reads colours as they are painted, and a card still fading in is painted blended with the page behind
+        // it: its text fails contrast against a background it never has once shown. Every animation and transition
+        // that ends is let finish first; the ones that loop (the spinner, a beacon's pulse) never would.
+        await page.EvaluateAsync(
+            "() => Promise.all(document.getAnimations().filter(a => a.effect?.getComputedTiming().iterations !== Infinity).map(a => a.finished.catch(() => null)))");
+
         AxeResult result = await page.RunAxe(WcagAA);
         if (result.Violations.Length == 0) return;
 

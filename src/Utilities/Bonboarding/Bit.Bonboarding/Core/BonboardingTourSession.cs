@@ -623,7 +623,10 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         {
             if (direction > 0)
             {
-                // Nothing eligible ahead: the tour is over.
+                // Nothing eligible ahead: the tour is over. The step being left has just reported its time on
+                // screen, and ending must not report it a second time.
+                if (leaving) _stepShown = false;
+
                 await EndAsync(BonboardingTourEndReason.Completed, cancellationToken);
             }
             else if (leaving)

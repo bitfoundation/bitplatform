@@ -206,6 +206,7 @@ P3 specialised. "E2E" means the Playwright suite (Chromium, Firefox, WebKit).
 | 8 | Browser verification | Done in round 1 and extended every round since: 48 browser tests in 8 classes, a per-test timeout (`testconfig.json`) so a hang is reported rather than blocking the run, and `HostingTests` proving a tour on both renderers InteractiveAuto picks (the demo exposes which one runs) |
 | 9 | Documentation, demo, MCP | README sections for every addition, an "Upgrading" table of every behaviour change, "Known limitations", the API reference brought up to date (components, services, options, enums, labels, browser layer); demo pages `/guidance` and the validating tour; MCP server instructions; package README features |
 | 10 | Final adversarial audit | Found and fixed: the "no way forward" warning ignored a step's own `Body`; checklist items and tour lists ignored a version bump of a tour that was not registered; a beacon hint forced `Persist = true` over a global `false`; focus rings (drawn with `box-shadow`) were invisible in forced colors, a pre-existing WCAG 2.4.7 failure; element ids built from user ids broke `aria-labelledby` when an id held a space; the one pre-existing build warning. +3 unit tests, +1 browser test |
+| 11 | Demo review in three engines | Every demo page driven by hand-written Playwright scripts in Chromium (installed Chrome 156), Firefox and WebKit, at 1280 and 390 pixels wide: every step's geometry (in the viewport, framing its target, not covering it, the target actually shown by its panes), focus, announcements and console. Found and fixed: a target hidden in a pane left scrolled was never scrolled to; a target scrolled wholly out of its pane was spotlit at its own box, over the content beside the pane; Tab escaped the trap of a `TargetOnly` step instead of reaching its target; completing a tour with Next reported `StepLeft` twice; the Flows page's feature flag could never be switched on (a `bool` bound to a `<select>`); the Workspace page told the reader to use the docs navigation that the step's blocker covers; the usage beacon on `/guidance` could not be brought back; the welcome tour invited a shortcut that opens the site's palette beneath its blocker. The accessibility tests now let a fade-in finish before axe reads colours (the waiting card failed contrast intermittently in Firefox, measured mid-fade). +1 engine test, +6 browser tests (new `FlowTests`) |
 
 ### Final verification (end of round 10)
 
@@ -229,6 +230,34 @@ P3 specialised. "E2E" means the Playwright suite (Chromium, Firefox, WebKit).
    part of it.
 5. Shadow DOM targets, if a component library built on web components needs them (needs an observation strategy
    that sees into shadow roots, or it would not be reliable).
+
+### Round 11 review notes
+
+- Verification: `dotnet build Bit.Bonboarding.slnx` with no warnings; `Bit.Bonboarding.Tests` 329 / 329 and
+  `Bit.Bonboarding.Tests.Mcp` 51 / 51 on net10.0; `Bit.Bonboarding.Tests.E2E` 54 / 54 in Chromium (installed Chrome
+  156), Firefox and WebKit.
+
+- The browser suite passed 48 / 48 in all three engines before this round, yet the scripts found eight defects: the
+  suite checks the bounding boxes of the spotlight and the target, and a target hidden by its pane still has a box in
+  the middle of the screen. The scripts also checked what each pane shows of the target, and every page in every
+  engine at a phone width as well as a desktop one.
+- A target scrolled wholly out of its pane is now pointed at as a one-pixel line on the pane's edge, the limit of
+  the partly clipped case, rather than collapsing the step into a centred card: .NET reads a rectangle with no area
+  as no target at all, and a card jumping to the middle of the screen while the user scrolls is worse than one that
+  stays by the pane. `TargetVisible` is still reported false for it, and still read by nothing in .NET.
+- The scroll check skips ancestors that clip without scrolling: scrolling cannot show more of a target there, and
+  `scrollIntoView` would scroll the page for nothing.
+- The focus trap moves focus by hand only when Tab leaves a scope (the popover, or a target); within one, the
+  browser's own order stands, so a modal step behaves exactly as before.
+- Left as they are, on purpose: in WebKit a mouse click does not focus a button, so a tour started that way gives
+  focus back to whatever had it (`<main>` here), as Safari does everywhere; a dismissed or completed tour starts
+  again from the top, and a replay is not resumed after a reload (completion is sticky); `Circle` draws a pill
+  around a target that is not square; the progress bar is empty on the first step and full on the last.
+- Not fixed, needing a decision: dismissing a checklist drops focus to the body, and the library cannot know where
+  it should go (an `OnDismissed` callback would let the application say). The site kit's `/` and Ctrl+K open the
+  palette beneath a modal tour's blocker, where Escape then ends the tour rather than closing the palette;
+  `site.js` is the same file in sixteen demos, so a fix (ignore the shortcut while an `aria-modal` dialog is open)
+  belongs in all of them at once. The welcome tour no longer invites the shortcut mid-tour.
 
 ### Round 4-7 review notes
 

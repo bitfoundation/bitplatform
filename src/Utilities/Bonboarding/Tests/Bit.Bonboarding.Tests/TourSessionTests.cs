@@ -1214,6 +1214,23 @@ public class TourSessionTests
     }
 
     [TestMethod]
+    public async Task Finishing_With_Next_Reports_Leaving_The_Last_Step_Once()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a", "#b");
+
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a"), Step("b", "#b")));
+        await session.NextAsync();
+
+        // Next on the last step is what a Done button does: the step is left, and the tour completes.
+        await session.NextAsync();
+
+        Assert.AreEqual(BonboardingTourStatus.Completed, session.Status);
+        Assert.AreEqual(1, harness.Events.Events.Count(e => e.Kind == BonboardingEventKind.StepLeft && e.Step?.Id == "b"));
+        Assert.AreEqual(BonboardingEventKind.TourCompleted, harness.Events.Kinds[^1]);
+    }
+
+    [TestMethod]
     public async Task A_Throwing_Observer_Cannot_Break_A_Tour()
     {
         await using var harness = new BonboardingHarness();

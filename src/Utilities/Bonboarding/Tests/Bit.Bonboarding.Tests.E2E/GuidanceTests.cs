@@ -85,7 +85,7 @@ public sealed class GuidanceTests : BonboardingTest
         await page.WaitForTimeoutAsync(500);
         Assert.AreEqual(0, await page.Locator(ImportBeacon).CountAsync());
 
-        await page.GetByRole(AriaRole.Button, new() { Name = "Bring the Import beacon back" }).ClickAsync();
+        await page.GetByRole(AriaRole.Button, new() { Name = "Bring the beacons back" }).ClickAsync();
         await Assertions.Expect(page.Locator(ImportBeacon)).ToHaveAttributeAsync("data-bonboarding-beacon-state", "visible");
     }
 

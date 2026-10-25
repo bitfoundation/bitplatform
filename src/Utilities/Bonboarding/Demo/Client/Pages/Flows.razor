@@ -36,9 +36,9 @@
 
             <label class="bb-field">
                 Feature flag
-                <select @bind="_betaEnabled">
-                    <option value="false">Beta off</option>
-                    <option value="true">Beta on</option>
+                <select @bind="BetaFlag">
+                    <option value="off">Beta off</option>
+                    <option value="on">Beta on</option>
                 </select>
             </label>
         </div>
@@ -101,6 +101,14 @@
     private string? _branchTaken;
 
     private bool IsAdministrator => _role == "Administrator";
+
+    // A <select> posts its value as a string, and Blazor binds a bool only to a checkbox's checked state: the
+    // flag goes through the option values instead.
+    private string BetaFlag
+    {
+        get => _betaEnabled ? "on" : "off";
+        set => _betaEnabled = value == "on";
+    }
 
     private Task StartConditionalAsync() => BonboardingService.StartAsync(new BonboardingTourDefinition
     {

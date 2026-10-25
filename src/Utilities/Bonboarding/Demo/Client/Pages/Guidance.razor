@@ -18,13 +18,14 @@
         Each dot below sits on an element of the fake product and follows it as the page scrolls or the layout changes,
         positioned in the browser with no call into .NET per frame. It hides while its element is hidden or scrolled out
         of sight, and while a tour runs. Press one: <strong>Import</strong> opens a hint, the usage tile starts a tour.
-        The hint on Import has an <code>Id</code>, so once read it does not come back - until you reset it.
+        The hint on Import has an <code>Id</code>, so once read it does not come back, and the usage beacon goes once
+        its tour is completed or dismissed - until you reset them.
     </p>
 
     <div class="bb-demo">
         <div class="bb-demo-bar">
             <span class="bb-demo-label">Live</span>
-            <button type="button" class="btn btn-secondary" @onclick="ResetBeaconAsync">Bring the Import beacon back</button>
+            <button type="button" class="btn btn-secondary" @onclick="ResetBeaconsAsync">Bring the beacons back</button>
             <button type="button" class="btn btn-secondary" @onclick="() => _showUsage = !_showUsage">@(_showUsage ? "Hide" : "Show") the usage tile</button>
         </div>
 
@@ -179,8 +180,12 @@
         if (!string.IsNullOrWhiteSpace(_query)) await BonboardingService.SignalAsync("searched");
     }
 
-    // The beacon hears of the reset and comes back by itself.
-    private Task ResetBeaconAsync() => BonboardingService.ResetAsync("import-hint");
+    // Each beacon hears of the reset of its record - the hint's own id, or the tour it starts - and comes back by itself.
+    private async Task ResetBeaconsAsync()
+    {
+        await BonboardingService.ResetAsync("import-hint");
+        await BonboardingService.ResetAsync(UsageTour.Id);
+    }
 
     private async Task ResetChecklistAsync()
     {

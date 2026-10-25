@@ -46,6 +46,60 @@ public sealed class PlacementTests : BonboardingTest
     }
 
     [TestMethod]
+    public async Task A_target_scrolled_out_of_its_pane_is_pointed_at_on_the_edge_it_went_past()
+    {
+        var page = await StartPlacementTourAsync(await OpenAsync("/placement"));
+
+        // Scroll the pane until the target is wholly above its top edge, with its box still in the middle of the screen.
+        await page.EvaluateAsync(
+            """
+            () => {
+              const pane = document.querySelector('.playground');
+              const target = document.querySelector("[data-bonboarding-anchor='spot-nw']");
+              pane.scrollTop = target.offsetTop + target.offsetHeight + 40;
+            }
+            """);
+        await page.WaitForTimeoutAsync(100);
+        await WaitForSettledAsync(page);
+
+        var paneTop = await page.EvaluateAsync<double>(
+            "() => { const p = document.querySelector('.playground'); return p.getBoundingClientRect().top + p.clientTop; }");
+        var spotlight = await BoxOfAsync(page, ".bit-bonboarding-spotlight");
+
+        // Nothing of the target shows, so what is spotlit is a pixel-thin line on the pane's edge with the 8 pixel
+        // padding either side of it - not the target's own box, which is over the content above the pane. The popover
+        // stays by that edge rather than falling back to the middle of the screen.
+        AssertNear(paneTop - 8.5, spotlight.Y, 1.5, "The spotlight's top edge");
+        AssertNear(17, spotlight.Height, 1.5, "The spotlight's height");
+        Assert.AreNotEqual("center", await page.Locator(".bit-bonboarding-popover").GetAttributeAsync("data-bonboarding-side"));
+    }
+
+    [TestMethod]
+    public async Task A_tour_run_again_brings_each_target_back_into_its_pane()
+    {
+        var page = await StartPlacementTourAsync(await OpenAsync("/placement"));
+        await page.Keyboard.PressAsync("Escape");
+        await Assertions.Expect(page.Locator(".bit-bonboarding-root")).ToHaveCountAsync(0);
+
+        // The pane left at its bottom, as the last steps of a first run leave it. The first target is then out of
+        // sight in the pane while its box is in the middle of the screen.
+        await page.EvaluateAsync("() => { const p = document.querySelector('.playground'); p.scrollTop = p.scrollHeight; }");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Run the tour" }).ClickAsync();
+        await WaitForStepAsync(page, "Top left");
+
+        var pane = await page.EvaluateAsync<double[]>(
+            "() => { const p = document.querySelector('.playground'); const r = p.getBoundingClientRect(); return [r.top + p.clientTop, r.top + p.clientTop + p.clientHeight]; }");
+        var target = await BoxOfAsync(page, "[data-bonboarding-anchor='spot-nw']");
+        var spotlight = await BoxOfAsync(page, ".bit-bonboarding-spotlight");
+
+        Assert.IsTrue(target.Y >= pane[0] - 0.5 && target.Y + target.Height <= pane[1] + 0.5,
+            $"The target ({target.Y}..{target.Y + target.Height}) was not scrolled into its pane ({pane[0]}..{pane[1]}).");
+        AssertNear(target.Y - 8, spotlight.Y, 1.5, "The spotlight's top edge");
+        AssertNear(target.Height + 16, spotlight.Height, 1.5, "The spotlight's height");
+    }
+
+    [TestMethod]
     public async Task A_logical_side_is_on_the_right_in_a_left_to_right_page()
     {
         var page = await StartPlacementTourAsync(await OpenAsync("/placement"), "InlineEnd");

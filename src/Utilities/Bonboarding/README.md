@@ -985,7 +985,9 @@ new BonboardingStepDefinition
 ```
 
 Scrolling walks every scrollable ancestor, so nested panes, dialogs and virtualized lists all work.
-A target that is already comfortably visible is left alone rather than being re-centred, and a smooth
+A target that is already comfortably visible - in the viewport, and in every pane that scrolls it - is left
+alone rather than being re-centred; one in the middle of the screen but scrolled out of sight inside its pane is
+scrolled to like any other. A smooth
 scroll is allowed to settle before the first measurement is taken so the popover does not appear
 mid-flight.
 
@@ -1016,7 +1018,8 @@ Both are handled without special configuration:
   rather than pointing at nothing.
 - A target **partly scrolled out of its pane** (a long table in a scrolling panel, a card in a carousel) is
   spotlit and pointed at only where its scrolling ancestors show it, not across the rest of the page. A target
-  scrolled out of its pane entirely keeps its whole box.
+  scrolled out of its pane entirely is pointed at on the edge of the pane it went past - where its visible part
+  shrank to as it left - rather than with its own box drawn over whatever is next to the pane.
 
 ### The visible part of the screen
 

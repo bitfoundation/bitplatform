@@ -702,12 +702,11 @@ function measureSession(session: Session): StepGeometry {
     }
 
     // Only the part of the target its scrolling ancestors show is pointed at: a long table in a pane is spotlit
-    // where it can be seen, not across the rest of the page. A target scrolled entirely out of its pane keeps its
-    // whole box, and is reported as not visible.
-    const whole = unionRect(connected);
-    const shown = clipToAncestors(whole, session.clips);
-    const target = shift(shown || whole, originX, originY);
-    const visible = !!shown
+    // where it can be seen, not across the rest of the page. A target scrolled entirely out of its pane is pointed
+    // at on the edge it went past, and is reported as not visible: its own box is over whatever is next to the pane.
+    const shown = clipToAncestors(unionRect(connected), session.clips);
+    const target = shift(shown.rect, originX, originY);
+    const visible = !shown.hidden
         && target.width > 0
         && target.height > 0
         && target.x < viewport.x + viewport.width
@@ -796,12 +795,17 @@ function visibleViewport(host: Element | null): BitBonboardingRect {
         : { x: 0, y: 0, width, height };
 }
 
-/** The part of a rectangle every clipping ancestor shows, or null when one of them hides it entirely. */
-function clipToAncestors(rect: BitBonboardingRect, clips: Element[]): BitBonboardingRect | null {
+/**
+ * The part of a rectangle every clipping ancestor shows. One that an ancestor hides entirely is pressed flat against the
+ * edge of that ancestor it went past, which is where the shown part shrinks to as it is scrolled out, and is reported
+ * hidden. It keeps a pixel of thickness across that edge: .NET reads a rectangle with no area as no target at all.
+ */
+function clipToAncestors(rect: BitBonboardingRect, clips: Element[]): { rect: BitBonboardingRect; hidden: boolean } {
     let left = rect.x;
     let top = rect.y;
     let right = rect.x + rect.width;
     let bottom = rect.y + rect.height;
+    let hidden = false;
 
     for (const clip of clips) {
         if (!clip.isConnected) continue;
@@ -810,16 +814,34 @@ function clipToAncestors(rect: BitBonboardingRect, clips: Element[]): BitBonboar
         const box = clip.getBoundingClientRect();
         const clipLeft = box.left + clip.clientLeft;
         const clipTop = box.top + clip.clientTop;
+        const clipRight = clipLeft + clip.clientWidth;
+        const clipBottom = clipTop + clip.clientHeight;
 
-        left = Math.max(left, clipLeft);
-        top = Math.max(top, clipTop);
-        right = Math.min(right, clipLeft + clip.clientWidth);
-        bottom = Math.min(bottom, clipTop + clip.clientHeight);
+        hidden = hidden || right <= clipLeft || left >= clipRight || bottom <= clipTop || top >= clipBottom;
 
-        if (right <= left || bottom <= top) return null;
+        left = clamp(left, clipLeft, clipRight);
+        top = clamp(top, clipTop, clipBottom);
+        right = clamp(right, clipLeft, clipRight);
+        bottom = clamp(bottom, clipTop, clipBottom);
     }
 
-    return { x: left, y: top, width: right - left, height: bottom - top };
+    if (hidden) {
+        if (right - left < 1) {
+            left -= 0.5;
+            right = left + 1;
+        }
+
+        if (bottom - top < 1) {
+            top -= 0.5;
+            bottom = top + 1;
+        }
+    }
+
+    return { rect: { x: left, y: top, width: right - left, height: bottom - top }, hidden };
+}
+
+function clamp(value: number, min: number, max: number): number {
+    return Math.min(Math.max(value, min), max);
 }
 
 function unionRect(elements: Element[]): BitBonboardingRect {
@@ -879,10 +901,13 @@ function scrollIntoView(elements: Element[], mode: StepActivation['scroll'], pad
     const rect = element.getBoundingClientRect();
     const pad = padding || 0;
 
+    // The viewport is not all that can hide a target: a pane that scrolls can have it out of sight while its box
+    // sits in the middle of the screen, which is where a tour started a second time over a pane left scrolled finds it.
     const fullyVisible = rect.top >= pad
         && rect.left >= pad
         && rect.bottom <= viewportHeight() - pad
-        && rect.right <= viewportWidth() - pad;
+        && rect.right <= viewportWidth() - pad
+        && shownByScrollingAncestors(rect, clippingAncestors(element));
 
     // Already comfortably on screen: scrolling anyway is jarring and costs a frame.
     if (fullyVisible) return Promise.resolve();
@@ -901,6 +926,35 @@ function scrollIntoView(elements: Element[], mode: StepActivation['scroll'], pad
 
     // Give the smooth scroll a moment to settle so the first measurement is not mid-flight.
     return waitForScrollEnd(element);
+}
+
+/**
+ * True when every ancestor that scrolls shows as much of a rectangle as it can: all of it along an axis it fits in,
+ * and the pane's whole extent along an axis it is larger than. An ancestor that clips without scrolling is left out:
+ * scrolling cannot show any more of the target there, so it is no reason to scroll the page.
+ */
+function shownByScrollingAncestors(rect: DOMRect, clips: Element[]): boolean {
+    for (const clip of clips) {
+        const scrollsX = clip.scrollWidth > clip.clientWidth;
+        const scrollsY = clip.scrollHeight > clip.clientHeight;
+        if (!scrollsX && !scrollsY) continue;
+
+        // The client area: inside the borders, without the scrollbars.
+        const box = clip.getBoundingClientRect();
+        const left = box.left + clip.clientLeft;
+        const top = box.top + clip.clientTop;
+
+        if (scrollsX && !shownAlong(rect.left, rect.right, left, left + clip.clientWidth)) return false;
+        if (scrollsY && !shownAlong(rect.top, rect.bottom, top, top + clip.clientHeight)) return false;
+    }
+
+    return true;
+}
+
+function shownAlong(start: number, end: number, paneStart: number, paneEnd: number): boolean {
+    return end - start <= paneEnd - paneStart
+        ? start >= paneStart - EPSILON && end <= paneEnd + EPSILON
+        : start <= paneStart + EPSILON && end >= paneEnd - EPSILON;
 }
 
 function waitForScrollEnd(element: Element): Promise<void> {
@@ -1029,14 +1083,24 @@ function trapTab(session: Session, spec: StepActivation, event: KeyboardEvent) {
     // An interactive step has to let Tab reach the element the user is being asked to use.
     if (spec.interaction === 'target') scopes.push(...session.targets);
 
+    // The controls of each scope, scope by scope: the popover's, then each target's.
+    const groups: HTMLElement[][] = [];
     const tabbables: HTMLElement[] = [];
     for (const scope of scopes) {
         if (!scope || !scope.isConnected) continue;
 
-        if (scope.matches(FOCUSABLE) && isVisible(scope)) tabbables.push(scope as HTMLElement);
-        scope.querySelectorAll<HTMLElement>(FOCUSABLE).forEach((element) => {
-            if (isVisible(element)) tabbables.push(element);
-        });
+        const group: HTMLElement[] = [];
+        const add = (element: HTMLElement) => {
+            if (isVisible(element) && !tabbables.includes(element)) {
+                group.push(element);
+                tabbables.push(element);
+            }
+        };
+
+        if (scope.matches(FOCUSABLE)) add(scope as HTMLElement);
+        scope.querySelectorAll<HTMLElement>(FOCUSABLE).forEach(add);
+
+        if (group.length > 0) groups.push(group);
     }
 
     if (tabbables.length === 0) {
@@ -1044,24 +1108,24 @@ function trapTab(session: Session, spec: StepActivation, event: KeyboardEvent) {
         return;
     }
 
-    const first = tabbables[0];
-    const last = tabbables[tabbables.length - 1];
     const active = document.activeElement as HTMLElement | null;
-    const inside = !!active && tabbables.includes(active);
+    const index = active ? tabbables.indexOf(active) : -1;
 
-    if (!inside) {
+    if (index < 0) {
         event.preventDefault();
-        (event.shiftKey ? last : first).focus();
+        (event.shiftKey ? tabbables[tabbables.length - 1] : tabbables[0]).focus();
         return;
     }
 
-    if (event.shiftKey && active === first) {
-        event.preventDefault();
-        last.focus();
-    } else if (!event.shiftKey && active === last) {
-        event.preventDefault();
-        first.focus();
-    }
+    // Within one scope the browser's own order is the right one. Leaving a scope is not: the popover and a target are
+    // in different parts of the document, so the browser would carry on into whatever follows the one being left. Focus
+    // is moved to the next scope by hand instead, round from the last control to the first and back.
+    const group = groups.find((candidate) => candidate.includes(active!))!;
+    const leaving = event.shiftKey ? active === group[0] : active === group[group.length - 1];
+    if (!leaving) return;
+
+    event.preventDefault();
+    tabbables[(index + (event.shiftKey ? tabbables.length - 1 : 1)) % tabbables.length].focus();
 }
 
 function isVisible(element: Element): boolean {

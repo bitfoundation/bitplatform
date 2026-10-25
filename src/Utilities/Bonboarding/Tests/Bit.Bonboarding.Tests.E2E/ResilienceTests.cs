@@ -186,4 +186,38 @@ public sealed class ResilienceTests : BonboardingTest
         await WaitForStepAsync(page, "Nicely done");
         await Assertions.Expect(page.Locator("[data-bonboarding-anchor='do-it']")).ToContainTextAsync("Clicked 1 time");
     }
+
+    [TestMethod]
+    public async Task Tab_on_an_interactive_step_goes_round_the_card_and_the_control_it_asks_for()
+    {
+        var page = await OpenAsync("/dynamic");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Run the interactive tour" }).ClickAsync();
+        await WaitForStepAsync(page, "Try it yourself");
+        await page.Locator("[data-bonboarding-action='next']").ClickAsync();
+        await WaitForStepAsync(page, "Now click this button");
+
+        // The card and the control are in different parts of the document. The trap spans both, in either
+        // direction, and lets focus out to neither the rest of the page nor the browser.
+        foreach (var key in new[] { "Tab", "Shift+Tab" })
+        {
+            var reached = false;
+            for (var i = 0; i < 6; i++)
+            {
+                await page.Keyboard.PressAsync(key);
+                var where = await page.EvaluateAsync<string>(
+                    "() => document.activeElement?.closest(\"[data-bonboarding-anchor='do-it']\") ? 'control' : document.activeElement?.closest('.bit-bonboarding-popover') ? 'card' : 'elsewhere'");
+
+                Assert.AreNotEqual("elsewhere", where, $"{key} press {i + 1} took focus out of the step, to {await FocusedAsync(page)}.");
+                reached |= where == "control";
+            }
+
+            Assert.IsTrue(reached, $"{key} never reached the control the step asks the user to press.");
+        }
+
+        // And the control does its job from the keyboard.
+        await page.Locator("[data-bonboarding-anchor='do-it']").FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await WaitForStepAsync(page, "Nicely done");
+    }
 }
