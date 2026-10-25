@@ -138,13 +138,15 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
 
     private async Task<bool> PushSubscriptionExists(string deviceId, CancellationToken cancellationToken)
     {
-        var subscription = await DbContext.PushNotificationSubscriptions
-            .FirstOrDefaultAsync(d => d.DeviceId == deviceId, cancellationToken);
+        var owners = await DbContext.PushNotificationSubscriptions
+            .Where(d => d.DeviceId == deviceId)
+            .Select(d => d.UserSessionId)
+            .ToArrayAsync(cancellationToken);
 
-        if (subscription?.UserSessionId is not null && subscription.UserSessionId != CallerUserSessionId)
+        if (owners.Length > 0 && owners.Any(owner => owner is null || owner == CallerUserSessionId) is false)
             throw new ResourceNotFoundException().WithData("Reason", "The push notification subscription belongs to another user session.");
 
-        return subscription is not null;
+        return owners.Length > 0;
     }
 
     private async Task RequestTestPush(string deviceId, CancellationToken cancellationToken)

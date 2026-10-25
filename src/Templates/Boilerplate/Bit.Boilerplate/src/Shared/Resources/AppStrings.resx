@@ -2090,4 +2090,10 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="AccountAlreadyExistsShortText" xml:space="preserve">
     <value>You already have a Boilerplate account with this phone number. If you just tried to sign up, sign in instead.</value>
   </data>
+    <data name="AddAnotherAccount" xml:space="preserve">
+    <value>Add another account</value>
+  </data>
+    <data name="SignOutOfAllAccounts" xml:space="preserve">
+    <value>Sign out of all accounts on this device</value>
+  </data>
 </root>

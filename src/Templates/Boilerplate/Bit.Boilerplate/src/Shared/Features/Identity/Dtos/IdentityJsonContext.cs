@@ -35,6 +35,7 @@ namespace Boilerplate.Shared.Features.Identity;
 [JsonSerializable(typeof(RoleDto))]
 [JsonSerializable(typeof(List<RoleDto>))]
 [JsonSerializable(typeof(List<UserDto>))]
+[JsonSerializable(typeof(List<DeviceAccountDto>))]
 [JsonSerializable(typeof(List<ClaimDto>))]
 [JsonSerializable(typeof(UserRoleDto))]
 [JsonSerializable(typeof(UpdateUserSessionRequestDto))]

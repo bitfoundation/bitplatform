@@ -2090,4 +2090,10 @@
     <data name="AccountAlreadyExistsShortText" xml:space="preserve">
     <value>لديك بالفعل حساب في Boilerplate بهذا الرقم. إذا كنت قد حاولت التسجيل للتو، فسجّل الدخول بدلًا من ذلك.</value>
   </data>
+    <data name="AddAnotherAccount" xml:space="preserve">
+    <value>إضافة حساب آخر</value>
+  </data>
+    <data name="SignOutOfAllAccounts" xml:space="preserve">
+    <value>تسجيل الخروج من جميع الحسابات على هذا الجهاز</value>
+  </data>
 </root>

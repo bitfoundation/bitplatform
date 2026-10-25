@@ -2090,4 +2090,10 @@
     <data name="AccountAlreadyExistsShortText" xml:space="preserve">
     <value>شما قبلاً با این شماره تلفن یک حساب Boilerplate دارید. اگر همین حالا قصد ثبت‌نام داشتید، به‌جای آن وارد شوید.</value>
   </data>
+    <data name="AddAnotherAccount" xml:space="preserve">
+    <value>افزودن حساب دیگر</value>
+  </data>
+    <data name="SignOutOfAllAccounts" xml:space="preserve">
+    <value>خروج از همه حساب‌های این دستگاه</value>
+  </data>
 </root>

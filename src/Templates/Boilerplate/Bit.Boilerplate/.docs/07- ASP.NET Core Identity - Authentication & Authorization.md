@@ -95,6 +95,16 @@ sessions stay signed in but lose access to pages guarded by `PRIVILEGED_ACCESS`.
 stays privileged. The Settings page is deliberately *not* guarded by this policy - otherwise a user could never
 reach the screen that lets them revoke a session and free a slot.
 
+### Several accounts on one device
+
+People can stay signed in to several accounts on one device and switch between them from the account menu, as in
+Gmail or GitHub. Each account keeps its own session and tokens on the device (See `AuthManager`), so revocation,
+the privileged-session cap, 2FA and elevated access work per account as before. Switching rebuilds the app with
+`SOFT_RESTART`, so nothing the previous account loaded stays on the screen, and on the web every tab follows the
+active account. Only the active account signs out, and another account on the device takes its place; the sign-out
+dialog can also sign out every account at once. Push notifications reach every account on the device, realtime
+messages only the active one.
+
 ### Configuration
 
 Everything lives under the `Identity` section of

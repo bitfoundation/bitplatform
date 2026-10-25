@@ -975,8 +975,7 @@ public partial class Initial : Migration
         migrationBuilder.CreateIndex(
             name: "IX_PushNotificationSubscriptions_DeviceId",
             table: "PushNotificationSubscriptions",
-            column: "DeviceId",
-            unique: true);
+            column: "DeviceId");
 
         migrationBuilder.CreateIndex(
             name: "IX_PushNotificationSubscriptions_ExpirationTime",

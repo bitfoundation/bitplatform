@@ -122,6 +122,8 @@ public partial class AppClientCoordinator : AppComponentBase
             SubscribeToSignalRSharedAppMessages();
             //#endif
             await PropagateAuthState(firstRun: true, AuthenticationStateTask);
+
+            await SwitchToAccountInUrl(NavigationManager.Uri);
         }
     }
 
@@ -158,6 +160,36 @@ public partial class AppClientCoordinator : AppComponentBase
         //#if (appInsights != true)
         navigatorLogger.LogInformation("Navigator's location changed to {Location}", TelemetryContext.PageUrl);
         //#endif
+
+        _ = SwitchToAccountInUrl(e.Location);
+    }
+
+    private async Task SwitchToAccountInUrl(string location)
+    {
+        try
+        {
+            var uri = new Uri(location);
+            var query = HttpUtility.ParseQueryString(uri.Query);
+
+            if (Guid.TryParse(query[DeviceAccountDto.QueryParameter], out var userId) is false)
+                return;
+
+            query.Remove(DeviceAccountDto.QueryParameter);
+            var remainingQuery = query.ToString();
+
+            NavigationManager.NavigateTo($"{uri.AbsolutePath}{(string.IsNullOrWhiteSpace(remainingQuery) ? "" : $"?{remainingQuery}")}{uri.Fragment}", replace: true);
+
+            var user = (await AuthManager.GetAuthenticationStateAsync()).User;
+
+            if (user.IsAuthenticated() && user.GetUserId() == userId)
+                return;
+
+            await AuthManager.SwitchAccount(userId);
+        }
+        catch (Exception exp)
+        {
+            ExceptionHandler.Handle(exp);
+        }
     }
 
     //#if (appInsights == true)
@@ -206,6 +238,7 @@ public partial class AppClientCoordinator : AppComponentBase
 
             //#if (brouter == true)
             brouter.TryClearKeepAlive();
+            brouter.ClearLoaderCache();
             //#endif
 
             TelemetryContext.UserId = userId;
