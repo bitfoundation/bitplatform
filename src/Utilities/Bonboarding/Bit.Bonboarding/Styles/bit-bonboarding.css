@@ -26,6 +26,7 @@
 
     --bit-bonboarding-danger: #dc2626;
     --bit-bonboarding-danger-hover: #b91c1c;
+    --bit-bonboarding-danger-text: #ffffff;
 
     --bit-bonboarding-overlay: 0, 0, 0;
     --bit-bonboarding-overlay-opacity: 0.55;
@@ -90,6 +91,7 @@
 
     --bit-bonboarding-danger: #f87171;
     --bit-bonboarding-danger-hover: #fca5a5;
+    --bit-bonboarding-danger-text: #0b1220;
 
     --bit-bonboarding-overlay: 0, 0, 0;
     --bit-bonboarding-overlay-opacity: 0.68;
@@ -409,7 +411,7 @@
 
 .bit-bonboarding-button-danger {
     background: var(--bit-bonboarding-danger);
-    color: #fff;
+    color: var(--bit-bonboarding-danger-text);
     border-color: var(--bit-bonboarding-danger);
 }
 

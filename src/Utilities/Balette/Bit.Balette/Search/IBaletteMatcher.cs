@@ -194,7 +194,7 @@ public static class BaletteMatcherExtensions
     }
 
     /// <summary>Whether the operators fold diacritics and keyboard variants: as the matcher does, and by default.</summary>
-    private static bool Normalizes(IBaletteMatcher matcher) => matcher switch
+    internal static bool Normalizes(IBaletteMatcher matcher) => matcher switch
     {
         BaletteFuzzyMatcher fuzzy => fuzzy.Normalize,
         BaletteSubstringMatcher substring => substring.Normalize,
@@ -500,7 +500,7 @@ internal sealed class BaletteTypoTolerantMatcher(IBaletteMatcher inner) : IBalet
         }
 
         var maxEdits = MaxEdits(query.Length);
-        return maxEdits == 0 ? BaletteFieldMatch.None : Approximate(query, text, maxEdits, Inner is not BaletteFuzzyMatcher { Normalize: false });
+        return maxEdits == 0 ? BaletteFieldMatch.None : Approximate(query, text, maxEdits, BaletteMatcherExtensions.Normalizes(Inner));
     }
 
     /// <summary>

@@ -549,7 +549,8 @@ function measureSession(session: Session): StepGeometry {
         && target.x < viewport.width
         && target.y < viewport.height
         && target.x + target.width > 0
-        && target.y + target.height > 0;
+        && target.y + target.height > 0
+        && connected.some(showsThroughClip);
 
     return {
         found: true,
@@ -615,6 +616,62 @@ function unionRect(elements: Element[]): BitBonboardingRect {
     return { x: left, y: top, width: right - left, height: bottom - top };
 }
 
+/** True when some of the element is left showing by the ancestors that clip their overflow. */
+function showsThroughClip(element: Element): boolean {
+    const rect = element.getBoundingClientRect();
+    const clip = clipBox(element);
+
+    return Math.min(rect.right, clip.right) - Math.max(rect.left, clip.left) > 0
+        && Math.min(rect.bottom, clip.bottom) - Math.max(rect.top, clip.top) > 0;
+}
+
+/**
+ * The part of the viewport the element's ancestors let it show in: the intersection of the padding
+ * boxes of every ancestor that clips its overflow (a scrolled list, a panel), unbounded when none does.
+ * An absolutely positioned element escapes the ancestors below its containing block, and a fixed one
+ * escapes them all.
+ */
+function clipBox(element: Element): { left: number; top: number; right: number; bottom: number } {
+    const box = { left: -Infinity, top: -Infinity, right: Infinity, bottom: Infinity };
+
+    try {
+        let position = getComputedStyle(element).position;
+
+        for (let ancestor = element.parentElement; ancestor && ancestor !== document.body && ancestor !== document.documentElement; ancestor = ancestor.parentElement) {
+            if (position === 'fixed') break;
+
+            const style = getComputedStyle(ancestor);
+            if (position === 'absolute' && style.position === 'static') continue;
+            position = style.position;
+
+            // Overflow applies to boxes that hold their content; an inline or display:contents one clips nothing.
+            if (style.display === 'inline' || style.display === 'contents') continue;
+
+            const clipsX = style.overflowX !== 'visible';
+            const clipsY = style.overflowY !== 'visible';
+            if (!clipsX && !clipsY) continue;
+
+            const rect = ancestor.getBoundingClientRect();
+            const left = rect.left + ancestor.clientLeft;
+            const top = rect.top + ancestor.clientTop;
+
+            if (clipsX) {
+                box.left = Math.max(box.left, left);
+                box.right = Math.min(box.right, left + ancestor.clientWidth);
+            }
+
+            if (clipsY) {
+                box.top = Math.max(box.top, top);
+                box.bottom = Math.min(box.bottom, top + ancestor.clientHeight);
+            }
+        }
+    } catch {
+        // A detached or foreign element: the viewport check alone decides.
+    }
+
+    return box;
+}
+
 function sameFrame(previous: StepGeometry | null, next: StepGeometry): boolean {
     if (!previous) return false;
 
@@ -644,11 +701,17 @@ function scrollIntoView(elements: Element[], mode: StepActivation['scroll'], pad
     const element = elements[0];
     const rect = element.getBoundingClientRect();
     const pad = padding || 0;
+    const clip = clipBox(element);
 
+    // A scrolled container can hide the element although its box lies within the viewport.
     const fullyVisible = rect.top >= pad
         && rect.left >= pad
         && rect.bottom <= viewportHeight() - pad
-        && rect.right <= viewportWidth() - pad;
+        && rect.right <= viewportWidth() - pad
+        && rect.top >= clip.top - EPSILON
+        && rect.left >= clip.left - EPSILON
+        && rect.bottom <= clip.bottom + EPSILON
+        && rect.right <= clip.right + EPSILON;
 
     // Already comfortably on screen: scrolling anyway is jarring and costs a frame.
     if (fullyVisible) return Promise.resolve();
@@ -805,28 +868,18 @@ function trapTab(session: Session, spec: StepActivation, event: KeyboardEvent) {
         });
     }
 
-    if (tabbables.length === 0) {
-        event.preventDefault();
-        return;
-    }
+    event.preventDefault();
+    if (tabbables.length === 0) return;
 
-    const first = tabbables[0];
-    const last = tabbables[tabbables.length - 1];
-    const active = document.activeElement as HTMLElement | null;
-    const inside = !!active && tabbables.includes(active);
+    // The popover and the targets sit apart in the document, so the browser's own Tab would leave
+    // one for whatever follows it there: the focus is moved through the combined list instead.
+    const index = tabbables.indexOf(document.activeElement as HTMLElement);
+    const count = tabbables.length;
 
-    if (!inside) {
-        event.preventDefault();
-        (event.shiftKey ? last : first).focus();
-        return;
-    }
-
-    if (event.shiftKey && active === first) {
-        event.preventDefault();
-        last.focus();
-    } else if (!event.shiftKey && active === last) {
-        event.preventDefault();
-        first.focus();
+    if (index < 0) {
+        tabbables[event.shiftKey ? count - 1 : 0].focus();
+    } else {
+        tabbables[(index + (event.shiftKey ? count - 1 : 1)) % count].focus();
     }
 }
 

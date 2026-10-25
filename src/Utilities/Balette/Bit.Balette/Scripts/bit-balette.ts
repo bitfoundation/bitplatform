@@ -287,6 +287,15 @@ export function init(dialog: HTMLElement, dotnet: DotNetObjectReference, toggles
         return null;
     }
 
+    /**
+     * Plain keys never fire from an editable element - typing "g" in a text box is typing - and neither does a character
+     * composed with AltGr or Option; chords with a modifier still do.
+     */
+    function isTyping(e: KeyboardEvent): boolean {
+        const hasModifier = e.ctrlKey || e.metaKey || e.altKey;
+        return suppressInEditable && isEditable(e.target) && (!hasModifier || typesWithAlt(e));
+    }
+
     function onDocumentKeyDown(e: KeyboardEvent): void {
         if (disposed || e.defaultPrevented || isComposing(e)) return;
         const alts = chordsFor(e, isMac);
@@ -294,8 +303,9 @@ export function init(dialog: HTMLElement, dotnet: DotNetObjectReference, toggles
 
         // A held key repeats its keydown: a held Ctrl+K would open and close the palette many times a second, and a held
         // shortcut would run its command as often. The repeats are still claimed, so the browser does not act on them
-        // either, but nothing runs and no sequence advances.
+        // either, but nothing runs and no sequence advances - unless they are typing, which goes on as it began.
         if (e.repeat) {
+            if (!modal.open && isTyping(e)) return;
             const claimed = modal.open
                 ? singleChordMatch(alts, toggleShortcuts)
                 : singleChordMatch(alts, allShortcuts());
@@ -319,10 +329,7 @@ export function init(dialog: HTMLElement, dotnet: DotNetObjectReference, toggles
             return;
         }
 
-        // Plain keys never fire from an editable element - typing "g" in a text box is typing - and neither does a
-        // character composed with AltGr or Option; chords with a modifier still do.
-        const hasModifier = e.ctrlKey || e.metaKey || e.altKey;
-        if (isEditable(e.target) && suppressInEditable && (!hasModifier || typesWithAlt(e))) {
+        if (isTyping(e)) {
             resetBuffer();
             return;
         }
