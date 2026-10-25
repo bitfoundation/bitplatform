@@ -77,33 +77,59 @@
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Elements that are not there yet</h3>
                 <p class="bb-card-desc">
                     Wait, skip, centre or fail, per step. Waiting uses a mutation observer rather than a
-                    polling timer, and a target replaced by a re-render is rebound rather than lost.
+                    polling timer, a target replaced by a re-render is rebound rather than lost, and a step
+                    can wait for the user to use the control - or for the application to say the job is done.
                 </p>
                 <a href="dynamic" class="btn btn-outline">Dynamic targets →</a>
             </section>
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Branching and conditions</h3>
                 <p class="bb-card-desc">
-                    Steps can be gated, tours can fork on an answer, and Back follows the path the user
-                    actually took rather than the order the steps were declared in.
+                    Steps can be gated, tours can be limited to some users, tours can fork on an answer, and
+                    Back follows the path the user actually took rather than the order the steps were declared in.
                 </p>
                 <a href="flows" class="btn btn-outline">Conditional &amp; branching →</a>
             </section>
             <section class="bb-card">
-                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Route-aware</h3>
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Respectful by default</h3>
+                <p class="bb-card-desc">
+                    An automatic tour queues behind the one the user is taking, by priority. "Remind me later"
+                    snoozes, a definition is checked before anyone sees it, and a tour can be paused, resumed
+                    or driven from code.
+                </p>
+                <a href="lifecycle" class="btn btn-outline">Lifecycle &amp; orchestration →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Guidance that stays on the page</h3>
+                <p class="bb-card-desc">
+                    Beacons that open a hint or a tour, an onboarding checklist that ticks itself off, and a
+                    list of tours to start, resume or replay from a help menu.
+                </p>
+                <a href="guidance" class="btn btn-outline">Beacons, checklists &amp; tour lists →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Route-aware</h3>
                 <p class="bb-card-desc">
                     A tour can span pages: it navigates for you and waits for the page to render. Wander
-                    off mid-tour and it holds its place instead of dragging you back.
+                    off mid-tour and it holds its place instead of dragging you back; reload, and it resumes.
                 </p>
                 <a href="workspace" class="btn btn-outline">Multi-page tour →</a>
             </section>
             <section class="bb-card">
-                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Yours to restyle</h3>
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Yours to restyle</h3>
                 <p class="bb-card-desc">
-                    Public CSS custom properties, per-step templates, or a completely headless popover that
-                    still gets measurement, placement and focus management for free.
+                    Every value of the card is a public CSS custom property, in light, dark and system
+                    palettes - plus localised labels and right-to-left tours.
                 </p>
                 <a href="theming" class="btn btn-outline">Theming &amp; RTL →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Headless when you need it</h3>
+                <p class="bb-card-desc">
+                    Replace one step's body or footer, or the whole card, overlay and waiting state. The
+                    library keeps measuring, placing and focusing the popover for you.
+                </p>
+                <a href="headless" class="btn btn-outline">Headless UI →</a>
             </section>
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Analytics-grade events</h3>
@@ -176,8 +202,8 @@
         },
         <span class="k">new</span> BonboardingStepDefinition
         {
-            Target = <span class="s">"#search-box"</span>,   <span class="c">// a CSS selector converts implicitly</span>
-            Title = <span class="s">"Find anything"</span>,
+            Target = <span class="s">".bb-search-trigger"</span>,   <span class="c">// a CSS selector converts implicitly</span>
+            Title = <span class="s">"That is the tour"</span>,
         },
     },
 };
@@ -273,6 +299,23 @@
                     Every value of the default card is a <code>--bit-bonboarding-*</code> custom property, a step
                     can replace its header, body or footer, and a host can render the whole card itself while
                     the library keeps placing and focusing it.
+                </p>
+            </details>
+            <details>
+                <summary>Can it show hints and checklists, not just tours?</summary>
+                <p>
+                    Yes. <code>BonboardingBeacon</code> puts a pulsing dot on an element that opens a hint or a tour,
+                    <code>BonboardingChecklist</code> lists the things a new user should do and ticks them off as they
+                    happen, and <code>BonboardingTourList</code> is the content of a help menu. They use the same engine,
+                    store and theme as the tours.
+                </p>
+            </details>
+            <details>
+                <summary>What happens when two tours want the screen at once?</summary>
+                <p>
+                    A tour the user starts replaces the running one, which keeps its progress. A tour that starts itself
+                    - a page's <code>AutoStart</code> - queues behind the running one instead, ordered by
+                    <code>Priority</code>, and is checked again when its turn comes.
                 </p>
             </details>
             <details>

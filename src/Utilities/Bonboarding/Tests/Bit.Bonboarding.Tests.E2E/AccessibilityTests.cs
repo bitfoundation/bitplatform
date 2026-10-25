@@ -51,6 +51,7 @@ public sealed class AccessibilityTests : BonboardingTest
     [DataRow("/placement")]
     [DataRow("/dynamic")]
     [DataRow("/flows")]
+    [DataRow("/lifecycle")]
     [DataRow("/guidance")]
     [DataRow("/workspace")]
     [DataRow("/workspace/settings")]

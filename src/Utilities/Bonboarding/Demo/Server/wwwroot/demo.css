@@ -349,6 +349,29 @@
     box-shadow: var(--fl-shadow-4);
 }
 
+/* ---------- The dynamic page's replaced target ----------
+
+   A card that is rendered as a new element on the other side of its lane each time it is replaced,
+   so a step pointing at it has both a new node to re-bind to and a new place to follow it to. */
+.rerender-lane {
+    display: flex;
+    min-height: 9.5rem;
+    align-items: flex-start;
+}
+
+.rerender-card {
+    width: min(20rem, 100%);
+    margin-top: 0;
+}
+
+.rerender-card .bb-toolbar {
+    margin-bottom: 0;
+}
+
+.rerender-card-end {
+    margin-inline-start: auto;
+}
+
 /* ---------- The events page's live stream - the kit's .bb-log, one column per field ---------- */
 .event-log {
     max-height: 20rem;
@@ -383,9 +406,10 @@
     }
 }
 
-/* Links inside running text: underlined, since colour alone does not tell a link from the words around it
-   (WCAG 1.4.1). The site kit's lists leave this to each page. */
-.bb-detail-list a {
+/* Links inside running text - lists, paragraphs and table cells of the docs: underlined, since colour alone
+   does not tell a link from the words around it (WCAG 1.4.1). The site kit leaves this to each page. */
+.bb-detail-list a,
+.bb-docs-content :is(p, td) a:not(.btn) {
     text-decoration: underline;
     text-underline-offset: 2px;
 }

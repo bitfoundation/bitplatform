@@ -14,8 +14,15 @@
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Conditional steps</h3>
     <p>
-        The billing step only appears for an administrator, and the progress indicator counts only the steps that
-        will actually be shown. Change the role and run the tour again.
+        <code>When</code> gates a step: one whose condition is false is skipped in whichever direction the user is going,
+        and left out of the progress count. Here the billing step appears only for an administrator, and the beta step only
+        with the feature flag on - change either and run the tour again, and watch the "1 of n" change.
+    </p>
+    <p>
+        Conditions are asked again on <strong>every</strong> transition, so a step can be unlocked by something an earlier
+        step did (the <a href="lifecycle">lifecycle page</a> shows one). Keep them cheap and free of side effects: load
+        anything they need in a hook and keep it in the session's <code>State</code>. Prefer <code>When</code> when the
+        reason is about the user or the data, and <code>MissingTarget = Skip</code> when it is about the page.
     </p>
 
     <div class="bb-demo">
@@ -53,13 +60,48 @@
             }
         </AppWindow>
     </div>
+
+    <pre class="bb-code">@ConditionalExample</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Whether the tour runs at all</h3>
+    <p>
+        <code>When</code> decides about one step; <code>CanStart</code> decides about the whole tour. This one is for
+        members only: with <strong>Signed in as</strong> above set to Viewer, <code>StartAsync</code> refuses it with a
+        <code>BonboardingException</code> (you asked for it explicitly) and <code>StartOnceAsync</code> quietly returns
+        <code>null</code>. <code>BonboardingStartOptions.Force</code> bypasses the check - and, given to
+        <code>StartOnceAsync</code>, a completion, a dismissal or a snooze as well.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Live</span>
+            <button type="button" class="btn btn-primary" @onclick="() => StartMembersTourAsync(force: false)">Start the members' tour</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => StartMembersTourAsync(force: true)">Start it with Force</button>
+        </div>
+
+        @if (_membersResult is not null)
+        {
+            <div class="bb-note @(_membersRefused ? "bb-note-warn" : null)" role="status">@_membersResult</div>
+        }
+    </div>
+
+    <pre class="bb-code">@CanStartExample</pre>
 </section>
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Branching on an answer</h3>
     <p>
         Footer buttons carry an effect. Combined with <code>BonboardingStepActionEffect.GoTo</code> this is the whole
-        of a branching tour: no state machine to write.
+        of a branching tour: no state machine to write. <code>ResolveNext</code> decides in code where Next goes - here
+        the designers' step jumps over the developers' one to where the paths rejoin; return <code>null</code> to fall
+        through to the next step, or <code>BonboardingTourDefinition.EndStepId</code> to finish the tour.
+    </p>
+    <p>
+        Back follows the path the user actually took, not the order the steps were declared in: on the last step it
+        returns to whichever branch you chose. The visit history is <code>session.History</code>, shown here as you go,
+        and <code>ResolvePrevious</code> overrides where Back goes when you need something else.
     </p>
 
     <div class="bb-demo">
@@ -69,6 +111,10 @@
             @if (_branchTaken is not null)
             {
                 <span class="bb-badge bb-badge-success">Branch taken: @_branchTaken</span>
+            }
+            @if (_branchPath is not null)
+            {
+                <span class="bb-badge">History: @_branchPath</span>
             }
         </div>
         <p class="bb-muted">The branches point at the product on the conditional tour's sample above.</p>
@@ -81,8 +127,10 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Validation before advancing</h3>
     <p>
         <code>CanAdvance</code> holds the user on the step until it is satisfied, and <code>ValidationMessage</code>
-        says why - shown in the card and read out by screen readers. Here the tour will not move on until the field
-        has a name of at least three characters.
+        says why - shown in the card with <code>role="alert"</code>, so screen readers read it out the moment the user is
+        told no. The guard can set a more precise message of its own through its context. Here the tour will not move on
+        until the field has a name of at least three characters; the step is <code>TargetOnly</code>, so the field can be
+        typed into while the card is up.
     </p>
 
     <div class="bb-demo">
@@ -92,6 +140,15 @@
             <button type="button" class="btn btn-primary" @onclick="StartValidatingAsync">Run the validating tour</button>
         </div>
     </div>
+
+    <p>
+        The guard decides for every way forward - the Next button, the arrow keys, an <code>AdvanceOn</code> trigger and an
+        application signal - and every held advance publishes an <code>AdvanceBlocked</code> event, which, counted per
+        step, points at instructions people find hard to follow. To stop the tour with an error instead, throw from
+        <code>OnBeforeLeave</code>.
+    </p>
+
+    <pre class="bb-code">@ValidationExample</pre>
 </section>
 
 @code {
@@ -99,6 +156,9 @@
     private bool _betaEnabled;
     private string _projectName = string.Empty;
     private string? _branchTaken;
+    private string? _branchPath;
+    private string? _membersResult;
+    private bool _membersRefused;
 
     private bool IsAdministrator => _role == "Administrator";
 
@@ -152,15 +212,59 @@
         },
     });
 
+    private async Task StartMembersTourAsync(bool force)
+    {
+        var tour = new BonboardingTourDefinition
+        {
+            Id = "members",
+            Title = "Members' tour",
+            Persist = false,
+            CanStart = _ => ValueTask.FromResult(_role != "Viewer"),
+            Steps =
+            {
+                new BonboardingStepDefinition
+                {
+                    Id = "members",
+                    Target = BonboardingStepTarget.Anchor("sidebar"),
+                    Title = "For members",
+                    Description = force && _role == "Viewer"
+                        ? "CanStart said no to a viewer, but Force started the tour anyway."
+                        : $"CanStart let a {_role.ToLowerInvariant()} in.",
+                    Placement = BonboardingPlacement.Right,
+                    DoneLabel = "Got it",
+                },
+            },
+        };
+
+        try
+        {
+            await BonboardingService.StartAsync(tour, new BonboardingStartOptions { Force = force });
+            _membersRefused = false;
+            _membersResult = force ? "Started with Force = true: CanStart was not asked." : $"Started: CanStart said yes to a {_role.ToLowerInvariant()}.";
+        }
+        catch (BonboardingException ex)
+        {
+            _membersRefused = true;
+            _membersResult = $"StartAsync threw a BonboardingException: \"{ex.Message}\" StartOnceAsync would have returned null instead.";
+        }
+    }
+
     private Task StartBranchingAsync()
     {
         _branchTaken = null;
+        _branchPath = null;
 
         return BonboardingService.StartAsync(new BonboardingTourDefinition
         {
             Id = "branching",
             Persist = false,
             Progress = BonboardingProgressStyle.None,
+            // History is the path the user actually took; Back walks it.
+            OnStepChanged = args =>
+            {
+                _branchPath = string.Join(" → ", args.Session.History);
+                return new ValueTask(InvokeAsync(StateHasChanged));
+            },
             Steps =
             {
                 new BonboardingStepDefinition
@@ -256,6 +360,36 @@
         },
     });
 
+    private const string ConditionalExample = """
+        new BonboardingStepDefinition
+        {
+            Id = "billing",
+            Target = BonboardingStepTarget.Anchor("billing"),
+            Title = "Billing",
+            // Asked on every transition; a false step is skipped and left out of the count.
+            When = _ => ValueTask.FromResult(user.IsInRole("Administrator")),
+        }
+
+        @* In markup, a step inside an @if that starts out false would join the end of the tour.
+           Order pins it: placed as the n-th step, ahead of the step that rendered n-th. *@
+        @if (showBeta)
+        {
+            <BonboardingStep Id="beta" Order="2" Anchor="beta-panel" Title="Beta insights" />
+        }
+        """;
+
+    private const string CanStartExample = """
+        new BonboardingTourDefinition
+        {
+            Id = "members",
+            CanStart = ctx => ValueTask.FromResult(user.IsInRole("Member")),
+        }
+
+        await BonboardingService.StartAsync(tour);       // throws BonboardingException when CanStart says no
+        await BonboardingService.StartOnceAsync(tour);   // returns null instead
+        await BonboardingService.StartAsync(tour, new BonboardingStartOptions { Force = true });   // not asked at all
+        """;
+
     private const string BranchExample = """
         new BonboardingStepDefinition
         {
@@ -268,7 +402,7 @@
                 {
                     Label = "I design",
                     Style = BonboardingStepActionStyle.Primary,
-                    Effect = BonboardingStepActionEffect.GoTo,
+                    Effect = BonboardingStepActionEffect.GoTo,   // also Next, Previous, Complete, Skip, Dismiss, Snooze
                     TargetStepId = "design",
                 },
                 new BonboardingStepAction
@@ -279,6 +413,36 @@
                     TargetStepId = "build",
                 },
             ],
+        },
+        new BonboardingStepDefinition
+        {
+            Id = "design",
+            // Jump over the developers' branch to where the paths rejoin.
+            // null falls through to the next step; BonboardingTourDefinition.EndStepId ends the tour.
+            ResolveNext = _ => ValueTask.FromResult<string?>("shared"),
+        },
+        new BonboardingStepDefinition { Id = "build", ... },
+        new BonboardingStepDefinition
+        {
+            Id = "shared",
+            // Back follows session.History; override it only when you need something else:
+            // ResolvePrevious = _ => ValueTask.FromResult<string?>("ask"),
+        }
+        """;
+
+    private const string ValidationExample = """
+        new BonboardingStepDefinition
+        {
+            Target = BonboardingStepTarget.Anchor("project-name"),
+            Title = "Name your project",
+            Interaction = BonboardingInteractionMode.TargetOnly,   // the field stays usable
+            ValidationMessage = "Give the project a name first.",
+            CanAdvance = ctx =>
+            {
+                // The guard's own message wins over the step's.
+                if (name.Length is > 0 and < 3) ctx.ValidationMessage = "Use at least three characters.";
+                return ValueTask.FromResult(name.Trim().Length >= 3);
+            },
         }
         """;
 }

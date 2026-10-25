@@ -85,8 +85,10 @@ The full walkthrough is in [getting started](#getting-started) and [installation
 dotnet run --project src/Utilities/Bonboarding/Demo/Server
 ```
 
-The demo covers placement and spotlights, dynamic and missing targets, conditional and branching
-flows, a tour spanning two routes, theming and RTL, headless rendering, and a live event log.
+The demo covers placement and spotlights, dynamic, missing and replaced targets, steps that advance on
+an interaction or an application signal, conditional and branching flows, driving, queueing, snoozing
+and validating tours, beacons, checklists and tour lists, a tour spanning two routes, theming, RTL and
+localisation, headless rendering, and a live event log with the stored record beside it.
 
 ## How it fits together
 
@@ -2073,9 +2075,12 @@ keeps handling everything else:
 
 ```razor
 @* One page: renders its own tour with a custom card *@
-<BonboardingRoot Session="_session" Unstyled="true">
-    <ChildContent> ... </ChildContent>
-</BonboardingRoot>
+@if (_session is not null)
+{
+    <BonboardingRoot Session="_session" Unstyled="true">
+        <ChildContent> ... </ChildContent>
+    </BonboardingRoot>
+}
 
 @code {
     private IBonboardingTourSession? _session;
@@ -2089,7 +2094,8 @@ keeps handling everything else:
 ```
 
 The claim is released when the host is disposed, so navigating away hands the session back to the
-layout rather than leaving it invisible.
+layout rather than leaving it invisible. Render such a host only once it has its session, as above: a host
+whose `Session` is `null` is an ambient host like the layout's, and would draw the active tour a second time.
 
 ### Building the UI from scratch
 
