@@ -147,6 +147,9 @@ public sealed class BmotionInterop : IBmotionInterop
         string elementId, DotNetObjectReference<T> dotnetRef, string axis, string? handleSelector) where T : class
         => await (await Module()).InvokeVoidAsync("attachReorderKeys", elementId, dotnetRef, axis, handleSelector);
 
+    public async ValueTask DetachReorderKeysAsync(string elementId)
+        => await (await Module()).InvokeVoidAsync("detachReorderKeys", elementId);
+
     public async ValueTask FocusAsync(string elementId)
         => await (await Module()).InvokeVoidAsync("focusElement", elementId);
 

@@ -1243,7 +1243,10 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
                 try { await Interop.PopLayoutAsync(_id, x, y); }
                 catch { /* popping is cosmetic; the exit animation must still play */ }
             }
-            await Engine.AnimateToAwaitAsync(_id, exitProps.ToJsDictionary(), BuildEffectiveTransition(exitProps));
+            // A preset's exit can carry the preset's own timing (Pop, Modal, Toast leave faster than they came): a
+            // Transition set on the component wins over it, as everything set on the component wins over the preset.
+            var exitTransition = Exit is null && Transition is not null ? Transition : null;
+            await Engine.AnimateToAwaitAsync(_id, exitProps.ToJsDictionary(), BuildEffectiveTransition(exitProps, exitTransition));
         }
         // Re-entered while the exit played (OnParametersSetAsync cleared the flag and bumped the
         // generation): this exit was cancelled, and reporting it would count it towards the next one.

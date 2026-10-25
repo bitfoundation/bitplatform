@@ -186,13 +186,17 @@ public static class BmPresets
     }
 
     /// <summary>A toast or notification arriving from <paramref name="from"/> on a spring, and leaving the same way.</summary>
-    public static BmPreset Toast(BmEdge from = BmEdge.Bottom, double distance = 40) => new()
+    public static BmPreset Toast(BmEdge from = BmEdge.Bottom, double distance = 40)
     {
-        Initial = Bm.To(opacity: 0, scale: 0.95, x: Offset(from, distance).X, y: Offset(from, distance).Y),
-        Animate = Bm.To(opacity: 1, scale: 1, x: 0, y: 0),
-        Exit = Bm.To(opacity: 0, scale: 0.95, transition: Bm.Tween(0.2, BmEase.In)),
-        Transition = Springy(0.25, 0.45),
-    };
+        var (x, y) = Offset(from, distance);
+        return new BmPreset
+        {
+            Initial = Bm.To(opacity: 0, scale: 0.95, x: x, y: y),
+            Animate = Bm.To(opacity: 1, scale: 1, x: 0, y: 0),
+            Exit = Bm.To(opacity: 0, scale: 0.95, x: x, y: y, transition: Bm.Tween(0.2, BmEase.In)),
+            Transition = Springy(0.25, 0.45),
+        };
+    }
 
     // ── Hover and press feedback ──────────────────────────────────────────────
 

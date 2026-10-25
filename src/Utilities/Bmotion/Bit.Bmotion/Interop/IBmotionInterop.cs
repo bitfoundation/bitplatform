@@ -63,11 +63,18 @@ public interface IBmotionInterop : IAsyncDisposable
     /// Lets a keyboard user reorder the item: Space/Enter on it calls <c>OnReorderPickUp</c> / <c>OnReorderDrop</c>
     /// on <paramref name="dotnetRef"/>, the arrow keys along <paramref name="axis"/> <c>OnReorderMove</c> while it is
     /// held (<c>x</c>, <c>y</c>, or <c>both</c> for a grid, whose up and down keys call <c>OnReorderMoveRow</c>), and
-    /// Escape <c>OnReorderCancel</c>. Makes the item focusable when it isn't. Defaults to a no-op.
+    /// Escape <c>OnReorderCancel</c>. Makes the item focusable when it isn't. Attaching again replaces the item's
+    /// listener with one on the new settings. Defaults to a no-op.
     /// </summary>
     ValueTask AttachReorderKeysAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(
         string elementId, DotNetObjectReference<T> dotnetRef, string axis, string? handleSelector) where T : class
         => ValueTask.CompletedTask;
+
+    /// <summary>
+    /// Stops the item listening for keyboard reordering (<see cref="AttachReorderKeysAsync{T}"/>), and takes away the
+    /// focusability that gave it. Defaults to a no-op.
+    /// </summary>
+    ValueTask DetachReorderKeysAsync(string elementId) => ValueTask.CompletedTask;
 
     /// <summary>Moves focus to the element (without scrolling it into view). Defaults to a no-op.</summary>
     ValueTask FocusAsync(string elementId) => ValueTask.CompletedTask;

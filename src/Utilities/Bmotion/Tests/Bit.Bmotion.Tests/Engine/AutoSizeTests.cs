@@ -52,6 +52,23 @@ public class AutoSizeTests
     }
 
     [TestMethod]
+    public async Task AStoredTarget_KeepsItsAuto_ForTheNextTimeItPlays()
+    {
+        var (engine, interop) = NewEngine();
+        await using var _ = engine;
+        engine.RegisterElement("el", Values(("height", "0px")));
+        var baseTarget = Values(("height", "auto"));
+        var hover = Values(("height", "auto"));
+
+        await engine.AnimateToAsync("el", baseTarget, Bm.Tween(0.3).ToConfig(), setAsBase: true);
+        await engine.ActivateGestureLayerAsync("el", "hover", hover, Bm.Tween(0.3).ToConfig());
+
+        Assert.AreEqual("120px", Keyframes(interop)[^1]["height"], "each plays to the natural size");
+        Assert.AreEqual("auto", baseTarget["height"], "the base target is still auto");
+        Assert.AreEqual("auto", hover["height"], "and so is the gesture layer's");
+    }
+
+    [TestMethod]
     public async Task ToAuto_OnTheFrameLoop_LandsOnAuto()
     {
         var (engine, interop) = NewEngine();

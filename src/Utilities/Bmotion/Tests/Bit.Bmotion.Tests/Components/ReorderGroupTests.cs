@@ -268,6 +268,74 @@ public class ReorderGroupTests
     }
 
     [TestMethod]
+    public async Task APointerDrag_StartedWhileAPickUpIsMeasuring_WaitsForIt_ThenPutsTheItemBack()
+    {
+        using var ctx = new BmotionTestContext();
+        List<string>? committed = null;
+        var cut = ctx.Render<BmotionReorderGroup<string>>(ps => ps
+            .Add(p => p.Items, new List<string> { "a", "b", "c" })
+            .Add(p => p.ItemsChanged, EventCallback.Factory.Create<List<string>>(this, l => committed = l))
+            .Add(p => p.ChildContent, Row));
+        var ids = RowIds(cut);
+        UseVerticalLayout(ctx, ids);
+        // The pick-up's measurement is a round trip still on its way (Blazor Server) when the pointer takes over.
+        var measured = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        ctx.Interop.BoundingRectGate = measured.Task;
+        var pickUp = cut.InvokeAsync(() => KeysOf(ctx, ids[2]).OnReorderPickUp(ids[2]));
+        var row = (Bmotion)ctx.Interop.EventListenerRefs[ids[0]];
+        var dragStart = cut.InvokeAsync(row.OnPointerDown_Drag);
+
+        measured.SetResult();
+        Assert.IsTrue(await pickUp.WaitAsync(TimeSpan.FromSeconds(10)));
+        await dragStart.WaitAsync(TimeSpan.FromSeconds(10));
+        await cut.InvokeAsync(() => row.SetDragPosition(0, 60));
+        await cut.InvokeAsync(row.OnDragMove);
+        await Settle(ctx, cut.InvokeAsync(() => row.OnPointerUp_Drag(0, 0)));
+
+        cut.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "b", "a", "c" }, committed));
+        Assert.AreEqual("Cancelled, back at position 3 of 3.", Announced(ctx)[^1], "the held item went back first");
+    }
+
+    [TestMethod]
+    public void ANewAxisOrHandle_ReattachesEveryRow()
+    {
+        using var ctx = new BmotionTestContext();
+        var cut = ctx.Render<BmotionReorderGroup<string>>(ps => ps
+            .Add(p => p.Items, new List<string> { "a", "b" })
+            .Add(p => p.ChildContent, Row));
+        var ids = RowIds(cut);
+
+        cut.Render(ps => ps.Add(p => p.Axis, BmDragAxis.X).Add(p => p.HandleSelector, ".grip"));
+
+        foreach (var id in ids)
+        {
+            var latest = ctx.Interop.ArgsOf("attachReorderKeys").Last(a => (string)a[0]! == id);
+            Assert.AreEqual("x", latest[1]);
+            Assert.AreEqual(".grip", latest[2]);
+        }
+    }
+
+    [TestMethod]
+    public async Task TurningTheKeyboardOff_PutsAHeldItemBack_AndDetachesEveryRow()
+    {
+        using var ctx = new BmotionTestContext();
+        var cut = ctx.Render<BmotionReorderGroup<string>>(ps => ps
+            .Add(p => p.Items, new List<string> { "a", "b", "c" })
+            .Add(p => p.ChildContent, Row));
+        var ids = RowIds(cut);
+        UseVerticalLayout(ctx, ids);
+        await cut.InvokeAsync(() => KeysOf(ctx, ids[0]).OnReorderPickUp(ids[0]));
+
+        cut.Render(ps => ps.Add(p => p.Keyboard, false));
+
+        cut.WaitForAssertion(() => CollectionAssert.AreEquivalent(ids, ctx.Interop.ArgsOf("detachReorderKeys").Select(a => (string)a[0]!).ToArray()));
+        Assert.AreEqual("Cancelled, back at position 1 of 3.", Announced(ctx)[^1]);
+
+        cut.Render(ps => ps.Add(p => p.Keyboard, true));
+        cut.WaitForAssertion(() => Assert.AreEqual(2 * ids.Length, ctx.Interop.CountOf("attachReorderKeys"), "turned back on, every row listens again"));
+    }
+
+    [TestMethod]
     public async Task Announcements_CanBeWorded()
     {
         using var ctx = new BmotionTestContext();

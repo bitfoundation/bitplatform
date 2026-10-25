@@ -201,6 +201,13 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
         return ValueTask.CompletedTask;
     }
 
+    public ValueTask DetachReorderKeysAsync(string elementId)
+    {
+        Record("detachReorderKeys", elementId);
+        ReorderKeyRefs.Remove(elementId);
+        return ValueTask.CompletedTask;
+    }
+
     public ValueTask FocusAsync(string elementId)
     {
         Record("focusElement", elementId);

@@ -1125,42 +1125,51 @@ export function popLayout(elementId: string, curX: number, curY: number): void {
 
 // ── Keyboard reordering (BmotionReorderGroup) ───────────────────────────────
 
-const _reorderKeyed = new WeakSet<Element>();
+/** An item's keyboard reordering: whether it is held, whether it was made focusable for it, and its listeners. */
+interface BmReorderKeys {
+    held: boolean;
+    madeFocusable: boolean;
+    unlisten(): void;
+}
+
+const _reorderKeys = new WeakMap<Element, BmReorderKeys>();
 
 /**
  * Keyboard reordering for one item of a BmotionReorderGroup: Space or Enter picks it up and drops it, the arrow keys
  * along the list's axis move it while it is held, Escape puts it back, and focus leaving it drops it. Only keys on
  * the item itself (or its drag handle) count - a field or a button inside it keeps its own. The item is made
- * focusable when it isn't.
+ * focusable when it isn't. Attaching again (the axis or the handle changed) replaces its listeners with ones on the
+ * new settings, the item still held if it was.
  */
 export function attachReorderKeys(elementId: string, dotnetRef: DotNet.DotNetObject, axis: 'x' | 'y' | 'both', handleSelector: string | null): void {
     const el = document.getElementById(elementId);
-    if (!el || _reorderKeyed.has(el)) return;
-    _reorderKeyed.add(el);
-    if (!el.hasAttribute('tabindex') && el.tabIndex < 0) el.setAttribute('tabindex', '0');
+    if (!el) return;
+    const previous = _reorderKeys.get(el);
+    previous?.unlisten();
+    const madeFocusable = previous ? previous.madeFocusable : !el.hasAttribute('tabindex') && el.tabIndex < 0;
+    if (madeFocusable && !previous) el.setAttribute('tabindex', '0');
 
     // Along the list; in a grid left and right move a cell, and up and down a row.
     const back = axis === 'y' ? 'ArrowUp' : 'ArrowLeft';
     const forward = axis === 'y' ? 'ArrowDown' : 'ArrowRight';
-    let held = false;
     const ours = (target: EventTarget | null) =>
         target === el || (!!handleSelector && target instanceof Element && target.matches(handleSelector) && el.contains(target));
 
-    el.addEventListener('keydown', (e: KeyboardEvent) => {
+    const onKeyDown = (e: KeyboardEvent) => {
         if (e.altKey || e.ctrlKey || e.metaKey || !ours(e.target)) return;
         if (e.key === ' ' || e.key === 'Enter') {
             e.preventDefault();
-            if (held) {
-                held = false;
+            if (keys.held) {
+                keys.held = false;
                 dotnetRef.invokeMethodAsync('OnReorderDrop', elementId);
             } else {
                 // Held until .NET says otherwise (another item, or a pointer drag, owns the list).
-                held = true;
-                dotnetRef.invokeMethodAsync('OnReorderPickUp', elementId).then((ok: boolean) => { if (!ok) held = false; }, () => { held = false; });
+                keys.held = true;
+                dotnetRef.invokeMethodAsync('OnReorderPickUp', elementId).then((ok: boolean) => { if (!ok) keys.held = false; }, () => { keys.held = false; });
             }
             return;
         }
-        if (!held) return;
+        if (!keys.held) return;
         if (e.key === back || e.key === forward) {
             e.preventDefault();
             dotnetRef.invokeMethodAsync('OnReorderMove', elementId, e.key === forward ? 1 : -1);
@@ -1169,15 +1178,36 @@ export function attachReorderKeys(elementId: string, dotnetRef: DotNet.DotNetObj
             dotnetRef.invokeMethodAsync('OnReorderMoveRow', elementId, e.key === 'ArrowDown' ? 1 : -1);
         } else if (e.key === 'Escape') {
             e.preventDefault();
-            held = false;
+            keys.held = false;
             dotnetRef.invokeMethodAsync('OnReorderCancel', elementId);
         }
-    });
-    el.addEventListener('focusout', (e: FocusEvent) => {
-        if (!held || el.contains(e.relatedTarget as Node | null)) return;
-        held = false;
+    };
+    const onFocusOut = (e: FocusEvent) => {
+        if (!keys.held || el.contains(e.relatedTarget as Node | null)) return;
+        keys.held = false;
         dotnetRef.invokeMethodAsync('OnReorderDrop', elementId);
-    });
+    };
+    const keys: BmReorderKeys = {
+        held: previous?.held ?? false,
+        madeFocusable,
+        unlisten: () => {
+            el.removeEventListener('keydown', onKeyDown);
+            el.removeEventListener('focusout', onFocusOut);
+        },
+    };
+    el.addEventListener('keydown', onKeyDown);
+    el.addEventListener('focusout', onFocusOut);
+    _reorderKeys.set(el, keys);
+}
+
+/** Takes keyboard reordering off the item again (attachReorderKeys), and the focusability it gave the item. */
+export function detachReorderKeys(elementId: string): void {
+    const el = document.getElementById(elementId);
+    const keys = el ? _reorderKeys.get(el) : undefined;
+    if (!el || !keys) return;
+    keys.unlisten();
+    _reorderKeys.delete(el);
+    if (keys.madeFocusable) el.removeAttribute('tabindex');
 }
 
 /** Moves focus to the element without scrolling it into view. */

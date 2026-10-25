@@ -861,6 +861,9 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         List<string>? landsOnAuto = null;
         if (unknown is not null || fromAuto is not null || toAuto is not null || stylesheetKeys is { Count: > 0 })
         {
+            // The read writes the measured targets into what it is given: a copy, as the caller's may be stored - a
+            // base or gesture-layer target, which must keep its "auto" for the next time it plays.
+            values = new Dictionary<string, object?>(values, values.Comparer);
             landsOnAuto = await ReadStylesheetAsync(elementId, state, values, unknown, stylesheetKeys, fromAuto, toAuto);
             if ((isCurrent is not null && !isCurrent()) || !IsLive(elementId, state))
             {

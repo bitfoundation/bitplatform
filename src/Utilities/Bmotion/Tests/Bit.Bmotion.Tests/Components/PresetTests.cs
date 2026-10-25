@@ -55,6 +55,41 @@ public class PresetTests
     }
 
     [TestMethod]
+    public async Task TheElementsTransition_WinsOverTheTimingAPresetsExitCarries()
+    {
+        foreach (var (transition, duration) in new (BmTransition?, double)[] { (null, 150), (Bm.Tween(0.5), 500) })
+        {
+            using var ctx = new BmotionTestContext();
+            var cut = ctx.Render<BmotionAnimatePresence>(ps => ps
+                .Add(p => p.IsPresent, true)
+                .Add(p => p.ChildContent, (RenderFragment)(b =>
+                {
+                    b.OpenComponent<Bmotion>(0);
+                    b.AddComponentParameter(1, nameof(Bmotion.Id), "box");
+                    b.AddComponentParameter(2, nameof(Bmotion.Preset), BmPresets.Pop());
+                    b.AddComponentParameter(3, nameof(Bmotion.Transition), transition);
+                    b.AddComponentParameter(4, nameof(Bmotion.ChildContent), Div);
+                    b.CloseComponent();
+                })));
+            await ctx.FinishWaapiAsync("box");
+
+            cut.Render(ps => ps.Add(p => p.IsPresent, false));
+
+            Assert.AreEqual("0", LastKeyframes(ctx)[^1]["opacity"], "the preset's exit plays");
+            Assert.AreEqual(duration, (double)LastTiming(ctx)["duration"]!, transition is null ? "on the preset's exit timing" : "on the element's transition");
+        }
+    }
+
+    [TestMethod]
+    public void AToast_LeavesTheWayItCame()
+    {
+        var toast = BmPresets.Toast(BmEdge.Right, distance: 30);
+
+        Assert.AreEqual(30, toast.Exit!.X!.Last);
+        Assert.AreEqual(toast.Initial!.Y!.Last, toast.Exit.Y!.Last);
+    }
+
+    [TestMethod]
     public async Task APresetsGestures_AreWired_AndPlay()
     {
         using var ctx = new BmotionTestContext();

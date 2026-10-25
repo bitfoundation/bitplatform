@@ -178,7 +178,7 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (Keyboard) await AttachKeysAsync();
+        await SyncKeysAsync();
 
         // After a commit re-render the DOM order matches the transform-displaced positions
         // exactly, so zeroing every transform is pixel-neutral - it just hands layout back to
@@ -225,8 +225,9 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
 
     private async Task StartDragSessionAsync(Entry entry)
     {
-        // A pointer takes over from an item held from the keyboard: it goes back first.
-        if (_held is { } held) await CancelHeldAsync(held);
+        // A pointer takes over from an item held from the keyboard: it goes back first - after the keyboard step in
+        // flight, which may still be measuring the held item or committing a drop.
+        await Step(() => _held is { } held ? CancelHeldAsync(held) : Task.CompletedTask);
         await MeasureDragSessionAsync(entry);
     }
 
@@ -362,7 +363,8 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
     // ── Keyboard ──────────────────────────────────────────────────────────────
 
     private DotNetObjectReference<BmotionReorderGroup<TItem>>? _keysRef;
-    private readonly HashSet<string> _keysAttached = new(StringComparer.Ordinal);
+    // The items listening for the keyboard, and the axis and handle each listens with.
+    private readonly Dictionary<string, (string Axis, string? Handle)> _keysAttached = new(StringComparer.Ordinal);
     // The item a keyboard user is holding, and the order it was picked up from (for Escape).
     private Entry? _held;
     private List<Entry>? _orderBeforeHold;
@@ -372,13 +374,31 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
     // key repeats faster than that.
     private Task _keySteps = Task.CompletedTask;
 
-    private async Task AttachKeysAsync()
+    // Brings every item's keyboard listener in line with Keyboard, Axis and HandleSelector.
+    private async Task SyncKeysAsync()
     {
+        if (!Keyboard)
+        {
+            // Nothing listens any more, so an item held from the keyboard could never be dropped: it goes back.
+            if (_held is { } held) await Step(() => _held == held ? CancelHeldAsync(held) : Task.CompletedTask);
+            foreach (var id in _keysAttached.Keys.ToArray())
+            {
+                _keysAttached.Remove(id);
+                try { await Interop.DetachReorderKeysAsync(id); } catch { /* gone */ }
+            }
+            return;
+        }
+
         _keysRef ??= DotNetObjectReference.Create(this);
         foreach (var entry in _entries.ToArray()) // a snapshot: a parameter update can rebuild the list while this awaits
         {
-            if (!_keysAttached.Add(entry.Id)) continue;
-            try { await Interop.AttachReorderKeysAsync(entry.Id, _keysRef, Grid ? "both" : Horizontal ? "x" : "y", HandleSelector); }
+            if (!Keyboard) return; // turned off while this awaited: that render detaches them
+            // Read each time round, as the parameters can change while this awaits. Attaching again replaces the
+            // item's listener with one on the new settings.
+            var settings = (Axis: Grid ? "both" : Horizontal ? "x" : "y", Handle: HandleSelector);
+            if (_keysAttached.TryGetValue(entry.Id, out var attached) && attached == settings) continue;
+            _keysAttached[entry.Id] = settings;
+            try { await Interop.AttachReorderKeysAsync(entry.Id, _keysRef, settings.Axis, settings.Handle); }
             catch { _keysAttached.Remove(entry.Id); /* not attached yet: the next render retries */ }
         }
     }
@@ -423,8 +443,9 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
 
     private async Task<bool> PickUpAsync(string elementId)
     {
-        // A pointer drag (or another held item) owns the session.
-        if (_dragged != null || _entries.Find(e => e.Id == elementId) is not { } entry) return false;
+        // A pointer drag - under way, or starting once the keyboard steps before it are done - or another held item
+        // owns the session.
+        if (_dragged != null || !_measuring.IsCompleted || _entries.Find(e => e.Id == elementId) is not { } entry) return false;
         _orderBeforeHold = _entries.ToList();
         _held = entry;
         await (_measuring = MeasureDragSessionAsync(entry));
