@@ -51,6 +51,9 @@ public sealed class BbDecoderResult
     /// <summary><see langword="true"/> when the symbol advertises a GS1 application identifier stream.</summary>
     public bool IsGs1 { get; init; }
 
+    /// <summary>The digits of an EAN-2 or EAN-5 add-on, when one was read beside the symbol.</summary>
+    public string? Extension { get; init; }
+
     /// <summary>Builds the public metadata object, or <see langword="null"/> when nothing is worth reporting.</summary>
     public BbBarcodeResultMetadata? ToMetadata()
     {
@@ -61,7 +64,8 @@ public sealed class BbDecoderResult
             StructuredAppendIndex is null &&
             Rows is null &&
             Columns is null &&
-            !IsGs1)
+            !IsGs1 &&
+            Extension is null)
         {
             return null;
         }
@@ -78,6 +82,7 @@ public sealed class BbDecoderResult
             Rows = Rows,
             Columns = Columns,
             IsGs1 = IsGs1 ? true : null,
+            Extension = Extension,
         };
     }
 }

@@ -1,0 +1,29 @@
+﻿@* A multi-drag list with a bound selection: the list and a field keep SelectedItems in step, both ways. *@
+
+<div class="bb-toolbar">
+    <button type="button" id="multi-select-all" class="btn btn-secondary" @onclick="() => _selected = _list.ToList()">Select all</button>
+    <button type="button" id="multi-clear" class="btn btn-secondary" @onclick="() => _selected = []">Clear the selection</button>
+</div>
+
+<Bortable @bind-Items="_list" @bind-SelectedItems="_selected" TItem="string" MultiDrag="true" Id="multi-list"
+          AriaLabel="Single list" OnEnd="OnListDragEnd"
+          Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+    <ItemTemplate Context="item">@item</ItemTemplate>
+</Bortable>
+
+<p class="demo-order"><strong>Order:</strong> <span id="multi-order">@string.Join(", ", _list)</span></p>
+<p class="demo-order"><strong>Selected:</strong> <span id="multi-selected">@(_selected.Count == 0 ? "nothing" : string.Join(", ", _selected))</span></p>
+<p class="demo-order"><strong>Last drag moved:</strong> <span id="multi-last">@_lastDrag</span></p>
+
+@code {
+    private IList<string> _list = new List<string>
+    {
+        "Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6"
+    };
+
+    private IReadOnlyCollection<string> _selected = [];
+    private string _lastDrag = "nothing yet";
+
+    private void OnListDragEnd(BortableEventArgs<string> e)
+        => _lastDrag = e.Canceled ? "nothing (cancelled)" : $"{string.Join(", ", e.Items)} - dragged by {e.Item}";
+}

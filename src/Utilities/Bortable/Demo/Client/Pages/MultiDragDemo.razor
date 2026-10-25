@@ -12,8 +12,6 @@
     </p>
 </div>
 
-<DemoCode />
-
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A single list, with a bound selection</h3>
     <p class="bb-card-desc">
@@ -22,21 +20,10 @@
     </p>
 
     <div class="bb-demo">
-        <div class="bb-toolbar">
-            <button type="button" id="multi-select-all" class="btn btn-secondary" @onclick="() => _selected = _list.ToList()">Select all</button>
-            <button type="button" id="multi-clear" class="btn btn-secondary" @onclick="() => _selected = []">Clear the selection</button>
-        </div>
-
-        <Bortable @bind-Items="_list" @bind-SelectedItems="_selected" TItem="string" MultiDrag="true" Id="multi-list"
-                  AriaLabel="Single list" OnEnd="OnListDragEnd"
-                  Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
-            <ItemTemplate Context="item">@item</ItemTemplate>
-        </Bortable>
-
-        <p class="demo-order"><strong>Order:</strong> <span id="multi-order">@string.Join(", ", _list)</span></p>
-        <p class="demo-order"><strong>Selected:</strong> <span id="multi-selected">@(_selected.Count == 0 ? "nothing" : string.Join(", ", _selected))</span></p>
-        <p class="demo-order"><strong>Last drag moved:</strong> <span id="multi-last">@_lastDrag</span></p>
+        <MultiSelectList />
     </div>
+
+    <DemoCode For="typeof(MultiSelectList)" />
 </section>
 
 <section class="bb-card">
@@ -46,26 +33,10 @@
     </p>
 
     <div class="bb-demo">
-        <div class="demo-columns">
-            <div class="demo-col">
-                <Bortable @bind-Items="_left" TItem="string" Group="multi-shared" MultiDrag="true" Id="multi-left"
-                          AriaLabel="Left"
-                          Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
-                    <ItemTemplate Context="item">@item</ItemTemplate>
-                </Bortable>
-            </div>
-            <div class="demo-col">
-                <Bortable @bind-Items="_right" TItem="string" Group="multi-shared" MultiDrag="true" Id="multi-right"
-                          AriaLabel="Right"
-                          Class="demo-list" ItemClass="demo-item tinted" GhostClass="demo-ghost">
-                    <ItemTemplate Context="item">@item</ItemTemplate>
-                </Bortable>
-            </div>
-        </div>
-
-        <p class="demo-order"><strong>Left:</strong> <span id="multi-left-order">@string.Join(", ", _left)</span></p>
-        <p class="demo-order"><strong>Right:</strong> <span id="multi-right-order">@string.Join(", ", _right)</span></p>
+        <MultiListDrag />
     </div>
+
+    <DemoCode For="typeof(MultiListDrag)" />
 </section>
 
 <section class="bb-card">
@@ -125,19 +96,3 @@
         </table>
     </div>
 </section>
-
-@code {
-    private IList<string> _list = new List<string>
-    {
-        "Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6"
-    };
-
-    private IReadOnlyCollection<string> _selected = [];
-    private string _lastDrag = "nothing yet";
-
-    private IList<string> _left = new List<string> { "Item 1", "Item 2", "Item 3", "Item 4" };
-    private IList<string> _right = new List<string> { "Item A", "Item B", "Item C", "Item D" };
-
-    private void OnListDragEnd(BortableEventArgs<string> e)
-        => _lastDrag = e.Canceled ? "nothing (cancelled)" : $"{string.Join(", ", e.Items)} - dragged by {e.Item}";
-}

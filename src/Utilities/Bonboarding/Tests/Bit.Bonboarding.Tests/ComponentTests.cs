@@ -228,6 +228,66 @@ public class ComponentTests : BunitContext
     }
 
     [TestMethod]
+    public async Task An_Action_Is_Busy_While_Its_Handler_Runs()
+    {
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var step = Step("a");
+        step.Actions =
+        [
+            new BonboardingStepAction
+            {
+                Id = "create",
+                Label = "Create",
+                OnClick = async _ => await release.Task,
+            },
+        ];
+
+        await BonboardingService.StartAsync(Tour(step, Step("b")));
+
+        var cut = Render<BonboardingRoot>();
+        var click = cut.Find("[data-bonboarding-action='create']").ClickAsync(new());
+
+        cut.WaitForAssertion(() =>
+        {
+            var button = cut.Find("[data-bonboarding-action='create']");
+            Assert.AreEqual("true", button.GetAttribute("aria-busy"));
+            Assert.AreEqual("true", button.GetAttribute("aria-disabled"));
+
+            // Not disabled outright: that would take focus away from the keyboard user who pressed it.
+            Assert.IsFalse(button.HasAttribute("disabled"));
+        });
+
+        release.SetResult();
+        await click;
+
+        cut.WaitForAssertion(() =>
+        {
+            var button = cut.Find("[data-bonboarding-action='create']");
+            Assert.IsNull(button.GetAttribute("aria-busy"));
+            Assert.IsNull(button.GetAttribute("aria-disabled"));
+        });
+    }
+
+    [TestMethod]
+    public async Task A_Held_Advance_Shows_Its_Reason_As_An_Alert()
+    {
+        var step = Step("a");
+        step.ValidationMessage = "Give the project a name first.";
+        step.CanAdvance = _ => ValueTask.FromResult(false);
+
+        await BonboardingService.StartAsync(Tour(step, Step("b")));
+
+        var cut = Render<BonboardingRoot>();
+        Assert.IsEmpty(cut.FindAll(".bit-bonboarding-validation"));
+
+        await cut.Find("[data-bonboarding-action='next']").ClickAsync(new());
+
+        var alert = cut.Find(".bit-bonboarding-validation");
+        Assert.AreEqual("alert", alert.GetAttribute("role"));
+        Assert.AreEqual("Give the project a name first.", alert.TextContent);
+    }
+
+    [TestMethod]
     public async Task A_Disabled_Action_Renders_As_Disabled()
     {
         var step = Step("a");
@@ -435,6 +495,135 @@ public class ComponentTests : BunitContext
         Assert.AreEqual("a", cut.Find(".bit-bonboarding-title").TextContent);
     }
 
+    [TestMethod]
+    public async Task The_Waiting_Card_Can_Be_Closed_With_The_Pointer()
+    {
+        var step = Step("a", selector: "#late");
+        step.MissingTarget = BonboardingMissingTargetBehavior.Wait;
+        step.WaitTimeout = TimeSpan.Zero;
+
+        var session = await BonboardingService.StartAsync(Tour(step));
+
+        var cut = Render<BonboardingRoot>();
+
+        // Waiting forever behind a blocker must not leave Escape as the only way out.
+        await cut.Find(".bit-bonboarding-waiting [data-bonboarding-action='close']").ClickAsync(new());
+
+        Assert.AreEqual(BonboardingTourStatus.Dismissed, session.Status);
+    }
+
+    [TestMethod]
+    public async Task A_Step_Waiting_For_Its_Target_Leaves_The_Page_Usable()
+    {
+        var step = Step("a", selector: "#late");
+        step.MissingTarget = BonboardingMissingTargetBehavior.Wait;
+
+        var session = await BonboardingService.StartAsync(Tour(step));
+        var cut = Render<BonboardingRoot>();
+
+        // The element often appears because the user does something (opens the menu it lives in), so the
+        // page cannot be blocked while the step waits for it.
+        Assert.IsNotNull(cut.Find(".bit-bonboarding-waiting"));
+        Assert.IsEmpty(cut.FindAll(".bit-bonboarding-blocker"));
+        Assert.AreEqual("false", cut.Find(".bit-bonboarding-popover").GetAttribute("aria-modal"));
+
+        await cut.InvokeAsync(() => _interop.AppearAsync(session.Id, "#late"));
+
+        Assert.IsNotNull(cut.Find(".bit-bonboarding-blocker"));
+        Assert.AreEqual("true", cut.Find(".bit-bonboarding-popover").GetAttribute("aria-modal"));
+    }
+
+    [TestMethod]
+    public async Task A_Step_Waiting_For_Its_Route_Leaves_The_Page_Usable()
+    {
+        var navigation = Services.GetRequiredService<NavigationManager>();
+        var step = Step("a");
+        step.Route = "settings/*";
+
+        // A wildcard route is a constraint: the user has to get there, so nothing may stand in the way.
+        var session = await BonboardingService.StartAsync(Tour(step));
+        var cut = Render<BonboardingRoot>();
+
+        Assert.AreEqual(BonboardingWaitReason.Route, session.WaitReason);
+        Assert.IsEmpty(cut.FindAll(".bit-bonboarding-root"), "Nothing may dim or block the page while the tour waits for a route.");
+        Assert.IsEmpty(cut.FindAll(".bit-bonboarding-blocker"));
+
+        await cut.InvokeAsync(() => navigation.NavigateTo("settings/profile"));
+
+        Assert.AreEqual(BonboardingWaitReason.None, session.WaitReason);
+        Assert.AreEqual("a", cut.Find(".bit-bonboarding-title").TextContent);
+    }
+
+    [TestMethod]
+    public async Task Navigating_Away_Mid_Step_Removes_The_Overlay_Until_The_User_Returns()
+    {
+        var navigation = Services.GetRequiredService<NavigationManager>();
+        navigation.NavigateTo("workspace");
+
+        var step = Step("a");
+        step.Route = "workspace";
+
+        var session = await BonboardingService.StartAsync(Tour(step));
+        var cut = Render<BonboardingRoot>();
+        Assert.IsNotNull(cut.Find(".bit-bonboarding-blocker"));
+
+        await cut.InvokeAsync(() => navigation.NavigateTo("elsewhere"));
+
+        Assert.AreEqual(BonboardingTourStatus.Waiting, session.Status);
+        Assert.IsEmpty(cut.FindAll(".bit-bonboarding-root"));
+
+        var focusesBefore = _interop.FocusPopoverCount;
+        await cut.InvokeAsync(() => navigation.NavigateTo("workspace"));
+
+        Assert.AreEqual("a", cut.Find(".bit-bonboarding-title").TextContent);
+        Assert.IsGreaterThan(focusesBefore, _interop.FocusPopoverCount, "A dialog that comes back takes focus again.");
+    }
+
+    // ---- Rendering cost -------------------------------------------------------------
+
+    [TestMethod]
+    public async Task A_Moving_Target_Repositions_Without_Rebuilding_The_Card()
+    {
+        var localizer = new CountingLocalizer();
+        Services.AddSingleton<IBonboardingLocalizer>(localizer);
+
+        var session = await BonboardingService.StartAsync(Tour(Step("a", "Create a project"), Step("b")));
+        var cut = Render<BonboardingRoot>();
+        var content = cut.FindComponent<BonboardingPopoverContent>();
+
+        var contentRenders = content.RenderCount;
+        var lookups = localizer.Calls;
+        var spotlight = cut.Find(".bit-bonboarding-spotlight").GetAttribute("style");
+
+        // A momentum scroll: twenty frames, each with the target somewhere new.
+        for (var frame = 1; frame <= 20; frame++)
+        {
+            _interop.TargetRect = new BonboardingRect(100, 100 + frame, 120, 40);
+            await cut.InvokeAsync(() => _interop.PushGeometryAsync(session.Id));
+        }
+
+        Assert.AreNotEqual(spotlight, cut.Find(".bit-bonboarding-spotlight").GetAttribute("style"), "The positions followed the target.");
+        Assert.AreEqual(contentRenders, content.RenderCount, $"The card's contents did not change, so they were not rendered again ({content.RenderCount - contentRenders} renders, {localizer.Calls - lookups} lookups in 20 frames).");
+        Assert.AreEqual(lookups, localizer.Calls, "Nor was its text looked up again.");
+
+        // A real change still renders.
+        await cut.InvokeAsync(() => session.NextAsync());
+        Assert.IsGreaterThan(contentRenders, content.RenderCount);
+    }
+
+    private sealed class CountingLocalizer : IBonboardingLocalizer
+    {
+        public int Calls { get; private set; }
+
+        public BonboardingLabels GetLabels(BonboardingTourDefinition? tour) => BonboardingLabels.Default;
+
+        public string? Localize(string? text)
+        {
+            Calls++;
+            return text;
+        }
+    }
+
     // ---- Headless -------------------------------------------------------------------
 
     [TestMethod]
@@ -590,6 +779,31 @@ public class ComponentTests : BunitContext
 
         var tour = BonboardingService.GetTour("toggleable");
         CollectionAssert.AreEqual(new[] { "one", "two", "three" }, tour!.Steps.Select(step => step.Id).ToArray());
+    }
+
+    [TestMethod]
+    public async Task An_Auto_Started_Tour_Waits_For_The_Tour_The_User_Is_Taking()
+    {
+        var taking = await BonboardingService.StartAsync(Tour(Step("a"), Step("b")));
+
+        Render<BonboardingTour>(parameters => parameters
+            .Add(tour => tour.Id, "page-tour")
+            .Add(tour => tour.AutoStart, BonboardingAutoStart.Once)
+            .Add(tour => tour.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BonboardingStep>(0);
+                builder.AddAttribute(1, nameof(BonboardingStep.Id), "p1");
+                builder.AddAttribute(2, nameof(BonboardingStep.Title), "Page tour");
+                builder.CloseComponent();
+            })));
+
+        Assert.AreEqual(BonboardingTourStatus.Running, taking.Status, "An automatic start never interrupts the user.");
+        Assert.AreSame(taking, BonboardingService.Active);
+
+        await taking.DismissAsync();
+
+        Assert.AreEqual("page-tour", BonboardingService.Active?.Tour.Id);
+        Assert.AreEqual(BonboardingTourStatus.Running, BonboardingService.Active!.Status);
     }
 
     [TestMethod]

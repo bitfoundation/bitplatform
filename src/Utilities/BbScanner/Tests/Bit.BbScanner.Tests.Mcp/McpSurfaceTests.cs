@@ -55,6 +55,7 @@ public class McpSurfaceTests
     {
         var info = McpTestHost.Client.ServerInfo;
 
+        Assert.IsNotNull(info);
         Assert.AreEqual("bit-bbscanner", info.Name);
         Assert.AreEqual("Bit.BbScanner", info.Title);
         Assert.AreEqual(BbScannerServerInstructions.BbScannerVersion, info.Version);

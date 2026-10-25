@@ -116,7 +116,7 @@ public static class BbScannerSearchIndex
             Title = hit.Entry.Title,
             Context = hit.Entry.Context,
             Tool = hit.Entry.Tool,
-            Snippet = Snippet(hit.Entry.Body, terms)
+            Snippet = Snippet(SnippetSource(hit.Entry, terms), terms)
         }).ToArray();
 
         if (hits.Length > 0)
@@ -298,6 +298,34 @@ public static class BbScannerSearchIndex
         var previous = text[index - 1];
 
         return char.IsLetterOrDigit(previous) is false || (char.IsUpper(text[index]) && char.IsLower(previous));
+    }
+
+    /// <summary>
+    /// The text a hit's snippet is cut from: its body, unless a term starts a word only in the
+    /// boosted text - an API member found through its signature, say, "can" in
+    /// <c>CancellationToken cancellationToken</c> - in which case the snippet shows the signature,
+    /// so that whatever was counted for the score is what the caller sees.
+    /// </summary>
+    private static string SnippetSource(Entry entry, string[] terms) =>
+        HasWordStart(entry.Body, terms) || !HasWordStart(entry.Boosted, terms) ? entry.Body : entry.Boosted;
+
+    private static bool HasWordStart(string text, string[] terms)
+    {
+        foreach (var term in terms)
+        {
+            var at = text.IndexOf(term, StringComparison.OrdinalIgnoreCase);
+            while (at >= 0)
+            {
+                if (StartsWord(text, at))
+                {
+                    return true;
+                }
+
+                at = text.IndexOf(term, at + term.Length, StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        return false;
     }
 
     private static string Snippet(string body, string[] terms)

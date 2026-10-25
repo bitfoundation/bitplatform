@@ -42,6 +42,22 @@ public sealed class BbDarkRegionFinder
     private int[] _prefix = [];
     private readonly List<BbDarkRegion> _regions = [];
 
+    /// <summary>Zeroes the cell map of the last image, a coarse picture of where its ink is, and the regions found in it.</summary>
+    internal void ForgetImage()
+    {
+        Array.Clear(_dark);
+        Array.Clear(_dilated);
+        Array.Clear(_labels);
+        Array.Clear(_parent);
+        Array.Clear(_minX);
+        Array.Clear(_minY);
+        Array.Clear(_maxX);
+        Array.Clear(_maxY);
+        Array.Clear(_cellCounts);
+        Array.Clear(_prefix);
+        _regions.Clear();
+    }
+
     /// <summary>Locates every patch of ink at least <paramref name="minCells"/> cells large.</summary>
     /// <param name="image">The binarised image.</param>
     /// <param name="minCells">Smallest number of dark cells worth reporting.</param>

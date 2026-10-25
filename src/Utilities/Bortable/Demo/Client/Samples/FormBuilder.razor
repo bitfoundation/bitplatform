@@ -1,0 +1,53 @@
+﻿@* A form builder: a read-only palette, a plain array, that is only ever cloned from. *@
+
+<div class="demo-columns">
+    <div class="demo-col">
+        <div class="demo-col-title">Palette (an array)</div>
+        <Bortable Items="_palette" TItem="Field" Group="form-builder" Id="clone-palette" AriaLabel="Palette"
+                  Pull="BortablePull.Clone" Clone="f => new Field(f.Icon, f.Label)" ItemLabel="f => f.Label"
+                  Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+            <ItemTemplate Context="field"><span class="demo-row"><span aria-hidden="true">@field.Icon</span> @field.Label</span></ItemTemplate>
+        </Bortable>
+    </div>
+    <div class="demo-col">
+        <div class="demo-col-title">Form</div>
+        <Bortable @bind-Items="_form" TItem="Field" Group="form-builder" Id="clone-form" AriaLabel="Form"
+                  ItemLabel="f => f.Label" OnAdd="OnFieldAdded"
+                  Class="demo-list" ItemClass="demo-item tinted" GhostClass="demo-ghost">
+            <ItemTemplate Context="field"><span class="demo-row"><span aria-hidden="true">@field.Icon</span> @field.Label</span></ItemTemplate>
+            <ChildContent>
+                @if (_form.Count == 0)
+                {
+                    <div class="demo-empty" role="listitem">Drag fields from the palette.</div>
+                }
+            </ChildContent>
+        </Bortable>
+    </div>
+</div>
+
+<p class="demo-order"><strong>Form:</strong> <span id="clone-form-order">@string.Join(", ", _form.Select(f => f.Label))</span></p>
+<p class="demo-order"><strong>Last added:</strong> <span id="clone-form-last">@_lastAdded</span></p>
+
+@code {
+    // A read-only list: it can be cloned from, but it is never sorted, pulled from or dropped into.
+    private readonly Field[] _palette =
+    [
+        new("✎", "Text box"),
+        new("☑", "Checkbox"),
+        new("▾", "Drop-down"),
+        new("📅", "Date"),
+    ];
+
+    private IList<Field> _form = new List<Field>();
+    private string _lastAdded = "nothing yet";
+
+    private void OnFieldAdded(BortableEventArgs<Field> e)
+        => _lastAdded = $"{e.Item.Label} at #{e.NewIndex}{(e.IsClone ? " (a copy)" : "")}";
+
+    // A class, not a record: two copies of the same field must not be equal.
+    public sealed class Field(string icon, string label)
+    {
+        public string Icon { get; } = icon;
+        public string Label { get; } = label;
+    }
+}

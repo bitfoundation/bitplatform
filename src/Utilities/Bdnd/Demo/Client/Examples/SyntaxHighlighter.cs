@@ -2,7 +2,6 @@
 using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Bdnd.Demo.Client.Examples;
 
@@ -19,6 +18,11 @@ namespace Bit.Bdnd.Demo.Client.Examples;
 /// one thing it does look up is the parameters of the components it can find, since only those say whether
 /// an attribute's value is text or C#.
 /// </para>
+/// <para>
+/// The Bdnd and Blow demos share this file, and CodeBlock.razor with it, byte for byte but for the namespace:
+/// it names no library of its own, and finds the components through the demo's references. Change it in one
+/// demo and copy it to the other.
+/// </para>
 /// </summary>
 public static class SyntaxHighlighter
 {
@@ -33,20 +37,26 @@ public static class SyntaxHighlighter
     private static Dictionary<string, Dictionary<string, bool>> FindComponents()
     {
         var components = new Dictionary<string, Dictionary<string, bool>>(StringComparer.Ordinal);
-        foreach (var assembly in new[] { typeof(BdndProvider).Assembly, typeof(SyntaxHighlighter).Assembly, typeof(PageTitle).Assembly, typeof(ComponentBase).Assembly })
+        foreach (var assembly in ComponentAssemblies())
         {
-            foreach (var type in assembly.GetTypes())
+            foreach (var type in LoadableTypes(assembly))
             {
-                if (type.IsAbstract || !typeof(IComponent).IsAssignableFrom(type)) continue;
+                if (type.IsAbstract || !typeof(IComponent).IsAssignableFrom(type))
+                {
+                    continue;
+                }
 
                 // Like the binding, a parameter's name is matched regardless of case.
                 var parameters = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
                 foreach (var property in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
                 {
-                    if (property.IsDefined(typeof(ParameterAttribute), inherit: true)) parameters[property.Name] = property.PropertyType == typeof(string);
+                    if (property.IsDefined(typeof(ParameterAttribute), inherit: true))
+                    {
+                        parameters[property.Name] = property.PropertyType == typeof(string);
+                    }
                 }
 
-                // A generic component's tag has no arity: BdndDraggable`1 is <BdndDraggable>.
+                // A generic component's tag has no arity: Virtualize`1 is <Virtualize>.
                 var tick = type.Name.IndexOf('`');
                 components.TryAdd(tick < 0 ? type.Name : type.Name[..tick], parameters);
             }
@@ -54,15 +64,60 @@ public static class SyntaxHighlighter
         return components;
     }
 
+    // The assemblies whose components the demo can render: the ones it references that are built on Blazor's
+    // components - the library's and the framework's - and then the demo itself, so a library's component keeps
+    // its name over a demo's of the same name. One a published app trimmed away is skipped.
+    private static IEnumerable<Assembly> ComponentAssemblies()
+    {
+        var demo = typeof(SyntaxHighlighter).Assembly;
+        var blazor = typeof(IComponent).Assembly.GetName().Name;
+        foreach (var reference in demo.GetReferencedAssemblies())
+        {
+            Assembly assembly;
+            try
+            {
+                assembly = Assembly.Load(reference);
+            }
+            catch (Exception e) when (e is FileNotFoundException or FileLoadException or BadImageFormatException)
+            {
+                continue;
+            }
+
+            if (reference.Name == blazor || assembly.GetReferencedAssemblies().Any(r => r.Name == blazor))
+            {
+                yield return assembly;
+            }
+        }
+        yield return demo;
+    }
+
+    // The types of an assembly that load. Trimming can remove a type another one depends on, which makes GetTypes
+    // throw for the whole assembly; the types that did load are still in the exception.
+    [RequiresUnreferencedCode("Types might be removed by trimming.")]
+    private static IEnumerable<Type> LoadableTypes(Assembly assembly)
+    {
+        try
+        {
+            return assembly.GetTypes();
+        }
+        catch (ReflectionTypeLoadException e)
+        {
+            return e.Types.OfType<Type>();
+        }
+    }
+
     /// <summary>
     /// Highlights <paramref name="code"/> - <c>razor</c> (a .razor file, the default) or <c>csharp</c> (plain C#,
     /// such as a Program.cs excerpt) - and returns HTML that is safe to render verbatim.
     /// </summary>
+    /// <exception cref="ArgumentException"><paramref name="language"/> is neither <c>razor</c> nor <c>csharp</c>.</exception>
     public static string Highlight(string code, string language = "razor")
     {
+        // Outside the safety net: a language it cannot read is the caller's mistake, not the snippet's.
+        var csharp = IsCSharp(language);
         try
         {
-            return HighlightOrThrow(code, language);
+            return Highlight(Normalize(code), csharp);
         }
         catch
         {
@@ -72,21 +127,42 @@ public static class SyntaxHighlighter
     }
 
     /// <summary>
-    /// <see cref="Highlight"/> without its safety net: a lexer bug throws instead of leaving the snippet
-    /// uncoloured, which is how the demo's tests find one.
+    /// <see cref="Highlight(string, string)"/> without its safety net: a lexer bug throws instead of leaving the
+    /// snippet uncoloured, which is how the demo's tests find one.
     /// </summary>
+    /// <exception cref="ArgumentException"><paramref name="language"/> is neither <c>razor</c> nor <c>csharp</c>.</exception>
     public static string HighlightOrThrow(string code, string language = "razor")
     {
-        code = Normalize(code);
-        var csharp = string.Equals(language, "csharp", StringComparison.OrdinalIgnoreCase);
+        return Highlight(Normalize(code), IsCSharp(language));
+    }
 
+    private static string Highlight(string code, bool csharp)
+    {
         // Two passes: the first learns the names the source declares, which the second colours by - a page's
         // markup uses the members of the @code block under it.
         var declared = new Lexer(code, null).Collect(csharp);
         return new Lexer(code, declared).Run(csharp);
     }
 
-    private static string Normalize(string code) => code.Replace("\r\n", "\n").Replace('\r', '\n');
+    // Whether `language` is C# rather than Razor. Any other name throws rather than falling back to Razor, which
+    // would take every `<` after a `;` or a `}` in a C# snippet for a tag.
+    private static bool IsCSharp(string language)
+    {
+        if (string.Equals(language, "csharp", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+        if (string.Equals(language, "razor", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+        throw new ArgumentException($"The highlighter reads \"razor\" or \"csharp\", not \"{language}\".", nameof(language));
+    }
+
+    private static string Normalize(string code)
+    {
+        return code.Replace("\r\n", "\n").Replace('\r', '\n');
+    }
 
     // The names a source declares - its fields, properties, parameters and locals - and its methods.
     private sealed class Declarations
@@ -101,6 +177,12 @@ public static class SyntaxHighlighter
         private static readonly HashSet<string> VoidElements = new(StringComparer.OrdinalIgnoreCase)
         {
             "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr",
+        };
+
+        // HTML elements whose content is text up to their end tag, never markup: a '<' in a script or a style is not a tag.
+        private static readonly HashSet<string> RawTextElements = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "script", "style",
         };
 
         private static readonly HashSet<string> Keywords = new(StringComparer.Ordinal)
@@ -155,12 +237,11 @@ public static class SyntaxHighlighter
             "if", "for", "foreach", "while", "switch", "lock", "do", "try",
         };
 
-        private readonly StringBuilder _sb = new(s.Length * 2);
-        private int _i;
-
         // The first pass only collects what the source declares, and writes nothing.
         private readonly bool _collecting = declared is null;
         private readonly Declarations _declared = declared ?? new();
+        private readonly StringBuilder _sb = new(declared is null ? 0 : s.Length * 2);
+        private int _i;
         // On an @inject line, which ends with the name it declares.
         private bool _injectLine;
 
@@ -180,7 +261,10 @@ public static class SyntaxHighlighter
         {
             if (csharp)
             {
-                while (_i < s.Length) CSharpToken();
+                while (_i < s.Length)
+                {
+                    CSharpToken();
+                }
             }
             else
             {
@@ -218,7 +302,10 @@ public static class SyntaxHighlighter
                     }
                     if (Peek(1) == '/' && IsNameStart(Peek(2)))
                     {
-                        if (EndTag() == element && element is not null) return;
+                        if (EndTag() == element && element is not null)
+                        {
+                            return;
+                        }
                         continue;
                     }
                     if (IsNameStart(Peek(1)))
@@ -236,9 +323,39 @@ public static class SyntaxHighlighter
         private void Element()
         {
             var (name, selfClosing) = StartTag();
-            if (!selfClosing && !(char.IsLower(name[0]) && VoidElements.Contains(name)))
+            var element = char.IsLower(name[0]);
+            if (selfClosing || (element && VoidElements.Contains(name)))
+            {
+                return;
+            }
+
+            if (element && RawTextElements.Contains(name))
+            {
+                RawText(name);
+            }
+            else
             {
                 MarkupContent(name);
+            }
+        }
+
+        // The content of a <script> or a <style> through its end tag: text in which only Razor's @ is not text -
+        // `@@media`, or an expression in a rule - so neither `if (a<b)` nor an SVG in a data URL opens a tag.
+        private void RawText(string element)
+        {
+            while (_i < s.Length)
+            {
+                if (s[_i] == '<' && Peek(1) == '/' && string.Equals(ReadName(_i + 2), element, StringComparison.OrdinalIgnoreCase))
+                {
+                    EndTag();
+                    return;
+                }
+                if (s[_i] == '@' && IsTransition())
+                {
+                    Transition();
+                    continue;
+                }
+                Plain(1);
             }
         }
 
@@ -286,8 +403,14 @@ public static class SyntaxHighlighter
                     if (Peek() == '=')
                     {
                         Plain(1);
-                        if (component) ComponentValue(name, attribute);
-                        else AttributeValue(csharp: false);
+                        if (component)
+                        {
+                            ComponentValue(name, attribute);
+                        }
+                        else
+                        {
+                            AttributeValue(csharp: false);
+                        }
                     }
                     continue;
                 }
@@ -307,8 +430,14 @@ public static class SyntaxHighlighter
             Take("tok-pun", 2);
             var name = ReadName();
             Take(char.IsUpper(name[0]) ? "tok-type" : "tok-tag", name.Length);
-            while (_i < s.Length && char.IsWhiteSpace(s[_i])) Plain(1);
-            if (Peek() == '>') Take("tok-pun", 1);
+            while (_i < s.Length && char.IsWhiteSpace(s[_i]))
+            {
+                Plain(1);
+            }
+            if (Peek() == '>')
+            {
+                Take("tok-pun", 1);
+            }
             return name;
         }
 
@@ -331,7 +460,10 @@ public static class SyntaxHighlighter
             if (attribute == "Context")
             {
                 // It names the parameter of the template inside, which the template's markup then uses.
-                if (_collecting) _declared.Names.Add(value.Trim());
+                if (_collecting)
+                {
+                    _declared.Names.Add(value.Trim());
+                }
                 AttributeValue(csharp: false);
                 return;
             }
@@ -361,28 +493,55 @@ public static class SyntaxHighlighter
         // or a name the source declares - but not two words in a row, which is text ("Drop here").
         private bool IsExpression(string value)
         {
-            if (value.Length == 0) return false;
-            if (value.Contains("=>", StringComparison.Ordinal) || value[0] is '(' or '[' or '!') return true;
+            if (value.Length == 0)
+            {
+                return false;
+            }
+            if (value.Contains("=>", StringComparison.Ordinal) || value[0] is '(' or '[' or '!')
+            {
+                return true;
+            }
 
             var k = value[0] == '-' ? 1 : 0;
             if (k < value.Length && char.IsDigit(value[k]))
             {
-                while (k < value.Length && (char.IsDigit(value[k]) || value[k] is '.' or '_')) k++;
-                while (k < value.Length && value[k] is 'f' or 'F' or 'd' or 'D' or 'm' or 'M' or 'l' or 'L' or 'u' or 'U') k++;
+                while (k < value.Length && (char.IsDigit(value[k]) || value[k] is '.' or '_'))
+                {
+                    k++;
+                }
+                while (k < value.Length && value[k] is 'f' or 'F' or 'd' or 'D' or 'm' or 'M' or 'l' or 'L' or 'u' or 'U')
+                {
+                    k++;
+                }
                 return k == value.Length;
             }
 
             var end = 0;
-            while (end < value.Length && IsIdentPart(value[end])) end++;
+            while (end < value.Length && IsIdentPart(value[end]))
+            {
+                end++;
+            }
             var word = value[..end];
-            if (ExpressionWords.Contains(word)) return true;
+            if (ExpressionWords.Contains(word))
+            {
+                return true;
+            }
 
             for (var j = 1; j < value.Length; j++)
             {
-                if (!char.IsWhiteSpace(value[j]) || !IsIdentPart(value[j - 1])) continue;
+                if (!char.IsWhiteSpace(value[j]) || !IsIdentPart(value[j - 1]))
+                {
+                    continue;
+                }
                 var m = j;
-                while (m < value.Length && char.IsWhiteSpace(value[m])) m++;
-                if (m < value.Length && IsIdentPart(value[m])) return false;
+                while (m < value.Length && char.IsWhiteSpace(value[m]))
+                {
+                    m++;
+                }
+                if (m < value.Length && IsIdentPart(value[m]))
+                {
+                    return false;
+                }
             }
             return _declared.Names.Contains(word) || _declared.Methods.Contains(word);
         }
@@ -400,7 +559,10 @@ public static class SyntaxHighlighter
                     return;
                 }
                 var end = _i;
-                while (end < s.Length && !char.IsWhiteSpace(s[end]) && s[end] != '>' && !(s[end] == '/' && end + 1 < s.Length && s[end + 1] == '>')) end++;
+                while (end < s.Length && !char.IsWhiteSpace(s[end]) && s[end] != '>' && !(s[end] == '/' && end + 1 < s.Length && s[end + 1] == '>'))
+                {
+                    end++;
+                }
                 Take("tok-str", end - _i);
                 return;
             }
@@ -411,13 +573,22 @@ public static class SyntaxHighlighter
                 // C# up to the closing quote; a quote inside parentheses is a C# string.
                 EnterCSharp('=');
                 // A type parameter's value is read as the type argument it is, as in List<Card>.
-                if (typeArgument) _generic = 1;
+                if (typeArgument)
+                {
+                    _generic = 1;
+                }
                 var depth = 0;
                 while (_i < s.Length && !(depth == 0 && s[_i] == quote))
                 {
                     var c = s[_i];
-                    if (c is '(' or '[' or '{') depth++;
-                    else if (c is ')' or ']' or '}') depth--;
+                    if (c is '(' or '[' or '{')
+                    {
+                        depth++;
+                    }
+                    else if (c is ')' or ']' or '}')
+                    {
+                        depth--;
+                    }
                     CSharpToken();
                 }
             }
@@ -442,13 +613,19 @@ public static class SyntaxHighlighter
                 }
                 Span("tok-str", start, _i);
             }
-            if (_i < s.Length) Take("tok-str", 1);
+            if (_i < s.Length)
+            {
+                Take("tok-str", 1);
+            }
         }
 
         // ------------------------------------------------------------------------------------------- Razor
 
         // An @ that is not part of a word (an e-mail address keeps its @).
-        private bool IsTransition() => _i == 0 || !char.IsLetterOrDigit(s[_i - 1]);
+        private bool IsTransition()
+        {
+            return _i == 0 || !char.IsLetterOrDigit(s[_i - 1]);
+        }
 
         // From an @: an escaped @@, a comment, or the switch into C# - an expression, a block, a template,
         // a directive or a control statement.
@@ -502,7 +679,10 @@ public static class SyntaxHighlighter
             {
                 Take("tok-key", word.Length);
                 Whitespace();
-                if (Peek() == '{') CodeBlock();
+                if (Peek() == '{')
+                {
+                    CodeBlock();
+                }
                 return;
             }
             if (LineDirectives.Contains(word))
@@ -525,8 +705,14 @@ public static class SyntaxHighlighter
             Take("tok-raz", 2);
             while (_i < s.Length && s[_i] != '\n')
             {
-                if (s[_i] == '@' && IsTransition()) Transition();
-                else Plain(1);
+                if (s[_i] == '@' && IsTransition())
+                {
+                    Transition();
+                }
+                else
+                {
+                    Plain(1);
+                }
             }
         }
 
@@ -535,12 +721,18 @@ public static class SyntaxHighlighter
         {
             if (directive is "using" or "namespace")
             {
-                while (_i < s.Length && s[_i] != '\n') Plain(1);
+                while (_i < s.Length && s[_i] != '\n')
+                {
+                    Plain(1);
+                }
                 return;
             }
             _prevWord = directive;
             _injectLine = directive == "inject";
-            while (_i < s.Length && s[_i] != '\n') CSharpToken();
+            while (_i < s.Length && s[_i] != '\n')
+            {
+                CSharpToken();
+            }
             _injectLine = false;
         }
 
@@ -556,12 +748,24 @@ public static class SyntaxHighlighter
 
                 if (word == "do")
                 {
-                    if (Peek() == '{') CodeBlock();
-                    if (!TryChain("while")) return;
+                    if (Peek() == '{')
+                    {
+                        CodeBlock();
+                    }
+                    if (!TryChain("while"))
+                    {
+                        return;
+                    }
                     Take("tok-key", 5);
                     Whitespace();
-                    if (Peek() == '(') CSharpGroup();
-                    if (Peek() == ';') Plain(1);
+                    if (Peek() == '(')
+                    {
+                        CSharpGroup();
+                    }
+                    if (Peek() == ';')
+                    {
+                        Plain(1);
+                    }
                     return;
                 }
 
@@ -575,11 +779,20 @@ public static class SyntaxHighlighter
                 {
                     Take("tok-key", 4);
                     Whitespace();
-                    if (Peek() == '(') CSharpGroup();
+                    if (Peek() == '(')
+                    {
+                        CSharpGroup();
+                    }
                     Whitespace();
                 }
-                if (word == "else" && ReadIdent(_i) == "if") continue;
-                if (Peek() == '{') CodeBlock();
+                if (word == "else" && ReadIdent(_i) == "if")
+                {
+                    continue;
+                }
+                if (Peek() == '{')
+                {
+                    CodeBlock();
+                }
 
                 var chained = word switch
                 {
@@ -587,7 +800,10 @@ public static class SyntaxHighlighter
                     "try" or "catch" => TryChain("catch") || TryChain("finally"),
                     _ => false,
                 };
-                if (!chained) return;
+                if (!chained)
+                {
+                    return;
+                }
             }
         }
 
@@ -596,9 +812,18 @@ public static class SyntaxHighlighter
         private bool TryChain(string keyword)
         {
             var j = _i;
-            while (j < s.Length && char.IsWhiteSpace(s[j])) j++;
-            if (ReadIdent(j) != keyword) return false;
-            while (_i < j) Plain(1);
+            while (j < s.Length && char.IsWhiteSpace(s[j]))
+            {
+                j++;
+            }
+            if (ReadIdent(j) != keyword)
+            {
+                return false;
+            }
+            while (_i < j)
+            {
+                Plain(1);
+            }
             return true;
         }
 
@@ -677,10 +902,19 @@ public static class SyntaxHighlighter
                     Element();
                     continue;
                 }
-                if (c is '(' or '[' or '{') depth++;
-                else if (c is ')' or ']' or '}') depth--;
+                if (c is '(' or '[' or '{')
+                {
+                    depth++;
+                }
+                else if (c is ')' or ']' or '}')
+                {
+                    depth--;
+                }
                 CSharpToken();
-                if (depth == 0) return;
+                if (depth == 0)
+                {
+                    return;
+                }
             }
         }
 
@@ -731,13 +965,28 @@ public static class SyntaxHighlighter
                 return;
             }
 
-            if (c == '<' && openGeneric) _generic++;
-            else if (c == '>' && _generic > 0) _generic--;
-            else if (c is ';' or '{' or '}') _generic = 0;
+            if (c == '<' && openGeneric)
+            {
+                _generic++;
+            }
+            else if (c == '>' && _generic > 0)
+            {
+                _generic--;
+            }
+            else if (c is ';' or '{' or '}')
+            {
+                _generic = 0;
+            }
 
             // An attribute opens a member or follows another one; a '[' anywhere else is an index or a collection.
-            if (c == '[' && _last is '{' or '}' or ';' or ']' or '@') _attribute = true;
-            else if (c == ']') _attribute = false;
+            if (c == '[' && _last is '{' or '}' or ';' or ']' or '@')
+            {
+                _attribute = true;
+            }
+            else if (c == ']')
+            {
+                _attribute = false;
+            }
 
             Plain(1);
             _last = c;
@@ -754,14 +1003,23 @@ public static class SyntaxHighlighter
             _i += word.Length;
 
             var next = _i;
-            while (!implicitExpression && next < s.Length && s[next] is ' ' or '\t') next++;
+            while (!implicitExpression && next < s.Length && s[next] is ' ' or '\t')
+            {
+                next++;
+            }
             var nc = next < s.Length ? s[next] : '\0';
-            if (implicitExpression && nc == '<') nc = '\0';
+            if (implicitExpression && nc == '<')
+            {
+                nc = '\0';
+            }
             var upper = char.IsUpper(word[0]);
             // A call, with type arguments or without: `Show(...)`, `Enum.GetValues<Mode>()`.
             var call = nc == '(' || (nc == '<' && IsGenericCall(next));
 
-            if (_collecting && !Keywords.Contains(word)) Declare(word, start, call);
+            if (_collecting && !Keywords.Contains(word))
+            {
+                Declare(word, start, call);
+            }
 
             string? cls;
             if (Keywords.Contains(word))
@@ -790,8 +1048,14 @@ public static class SyntaxHighlighter
                 cls = upper && IsTypePosition(word, next, nc) ? "tok-type" : null;
             }
 
-            if (cls is null) Plain(start, _i);
-            else Span(cls, start, _i);
+            if (cls is null)
+            {
+                Plain(start, _i);
+            }
+            else
+            {
+                Span(cls, start, _i);
+            }
 
             _openGeneric = Peek() == '<' && cls is "tok-type" or "tok-fn";
             _last = 'a';
@@ -804,28 +1068,48 @@ public static class SyntaxHighlighter
         // member where `ItemTypes.Box` is a type's.
         private bool IsTypePosition(string word, int next, char nc)
         {
-            if (_generic > 0 && AfterType()) return false;
-            if (_generic > 0 || _attribute) return true;
+            if (_generic > 0 && AfterType())
+            {
+                return false;
+            }
+            if (_generic > 0 || _attribute)
+            {
+                return true;
+            }
             if (next == _i)
             {
-                if (nc == '<') return true;
+                if (nc == '<')
+                {
+                    return true;
+                }
                 if (nc == '?')
                 {
                     var k = next + 1;
-                    while (k < s.Length && s[k] is ' ' or '\t') k++;
+                    while (k < s.Length && s[k] is ' ' or '\t')
+                    {
+                        k++;
+                    }
                     return k < s.Length && (IsIdentStart(s[k]) || s[k] is '>' or ',' or ')' or '[');
                 }
-                if (nc == '[') return next + 1 < s.Length && s[next + 1] is ']' or ',';
+                if (nc == '[')
+                {
+                    return next + 1 < s.Length && s[next + 1] is ']' or ',';
+                }
             }
-            if (nc == '.') return !_declared.Names.Contains(word);
+            if (nc == '.')
+            {
+                return !_declared.Names.Contains(word);
+            }
             return IsIdentStart(nc) && !OperatorWords.Contains(ReadIdent(next));
         }
 
         // Whether the last C# token ended a type - a name, a built-in type, or the `>`, `]` or `?` that closes a
         // generic, array or nullable one - so that a name here is the one declared after it: `(int From, int To)`.
-        private bool AfterType() =>
-            _last is '>' or ']' or '?' ||
-            (_last == 'a' && _prevWord is not null && (!Keywords.Contains(_prevWord) || BuiltInTypes.Contains(_prevWord)));
+        private bool AfterType()
+        {
+            return _last is '>' or ']' or '?' ||
+                (_last == 'a' && _prevWord is not null && (!Keywords.Contains(_prevWord) || BuiltInTypes.Contains(_prevWord)));
+        }
 
         // Whether `<` at `lt` opens type arguments that a call follows: `GetValues<Mode>()`, `Make<T>()` - rather
         // than a comparison.
@@ -841,9 +1125,15 @@ public static class SyntaxHighlighter
                 }
                 else if (c == '>')
                 {
-                    if (--depth > 0) continue;
+                    if (--depth > 0)
+                    {
+                        continue;
+                    }
                     k++;
-                    while (k < s.Length && s[k] is ' ' or '\t') k++;
+                    while (k < s.Length && s[k] is ' ' or '\t')
+                    {
+                        k++;
+                    }
                     return k < s.Length && s[k] == '(';
                 }
                 else if (!IsIdentPart(c) && c is not ('.' or ',' or ' ' or '\t' or '?' or '[' or ']' or '(' or ')'))
@@ -861,14 +1151,23 @@ public static class SyntaxHighlighter
         private void Declare(string word, int start, bool call)
         {
             var k = _i;
-            while (k < s.Length && s[k] is ' ' or '\t') k++;
+            while (k < s.Length && s[k] is ' ' or '\t')
+            {
+                k++;
+            }
             var lineEnd = k == s.Length || s[k] == '\n';
-            while (k < s.Length && char.IsWhiteSpace(s[k])) k++;
+            while (k < s.Length && char.IsWhiteSpace(s[k]))
+            {
+                k++;
+            }
             var after = k < s.Length ? s[k] : '\0';
 
             var declaration = call || after is '{' or ';' or ',' or ')' || (_injectLine && lineEnd) ||
                 (after == '=' && (k + 1 == s.Length || s[k + 1] != '=')) || ReadIdent(k) == "in";
-            if (!declaration || !FollowsType(start)) return;
+            if (!declaration || !FollowsType(start))
+            {
+                return;
+            }
 
             (call ? _declared.Methods : _declared.Names).Add(word);
         }
@@ -878,14 +1177,32 @@ public static class SyntaxHighlighter
         private bool FollowsType(int start)
         {
             var b = start - 1;
-            if (b < 0 || !char.IsWhiteSpace(s[b])) return false;
-            while (b >= 0 && char.IsWhiteSpace(s[b])) b--;
-            if (b < 0) return false;
-            if (s[b] is '>' or ']' or '?' or ')') return true;
+            if (b < 0 || !char.IsWhiteSpace(s[b]))
+            {
+                return false;
+            }
+            while (b >= 0 && char.IsWhiteSpace(s[b]))
+            {
+                b--;
+            }
+            if (b < 0)
+            {
+                return false;
+            }
+            if (s[b] is '>' or ']' or '?' or ')')
+            {
+                return true;
+            }
 
             var w = b + 1;
-            while (w > 0 && IsIdentPart(s[w - 1])) w--;
-            if (w > b) return false;
+            while (w > 0 && IsIdentPart(s[w - 1]))
+            {
+                w--;
+            }
+            if (w > b)
+            {
+                return false;
+            }
             var type = s[w..(b + 1)];
             return !Keywords.Contains(type) || BuiltInTypes.Contains(type);
         }
@@ -907,7 +1224,10 @@ public static class SyntaxHighlighter
             if (s[_i] == '\'')
             {
                 _i++;
-                while (_i < s.Length && s[_i] is not ('\'' or '\n')) _i += s[_i] == '\\' ? 2 : 1;
+                while (_i < s.Length && s[_i] is not ('\'' or '\n'))
+                {
+                    _i += s[_i] == '\\' ? 2 : 1;
+                }
                 _i = Math.Min(_i + 1, s.Length);
                 Span("tok-str", start, _i);
                 return;
@@ -947,7 +1267,10 @@ public static class SyntaxHighlighter
                     _i++;
                     break;
                 }
-                if (!verbatim && c == '\n') break;
+                if (!verbatim && c == '\n')
+                {
+                    break;
+                }
                 if (interpolated && c == '{')
                 {
                     if (Peek(1) == '{')
@@ -983,12 +1306,21 @@ public static class SyntaxHighlighter
                 if (depth == 0 && c == ':' && Peek(1) != ':' && s[_i - 1] != ':')
                 {
                     var end = _i;
-                    while (end < s.Length && s[end] is not ('}' or '"' or '\n')) end++;
+                    while (end < s.Length && s[end] is not ('}' or '"' or '\n'))
+                    {
+                        end++;
+                    }
                     Take("tok-str", end - _i);
                     continue;
                 }
-                if (c is '(' or '[' or '{') depth++;
-                else if (c is ')' or ']' or '}') depth--;
+                if (c is '(' or '[' or '{')
+                {
+                    depth++;
+                }
+                else if (c is ')' or ']' or '}')
+                {
+                    depth--;
+                }
                 CSharpToken();
             }
         }
@@ -999,23 +1331,39 @@ public static class SyntaxHighlighter
             if (At("0x") || At("0X"))
             {
                 _i += 2;
-                while (_i < s.Length && (char.IsAsciiHexDigit(s[_i]) || s[_i] == '_')) _i++;
+                while (_i < s.Length && (char.IsAsciiHexDigit(s[_i]) || s[_i] == '_'))
+                {
+                    _i++;
+                }
             }
             else
             {
-                while (_i < s.Length && (char.IsDigit(s[_i]) || s[_i] == '_')) _i++;
+                while (_i < s.Length && (char.IsDigit(s[_i]) || s[_i] == '_'))
+                {
+                    _i++;
+                }
                 if (Peek() == '.' && char.IsDigit(Peek(1)))
                 {
                     _i++;
-                    while (_i < s.Length && char.IsDigit(s[_i])) _i++;
+                    while (_i < s.Length && char.IsDigit(s[_i]))
+                    {
+                        _i++;
+                    }
                 }
                 if (Peek() is 'e' or 'E' && (char.IsDigit(Peek(1)) || (Peek(1) is '+' or '-' && char.IsDigit(Peek(2)))))
                 {
                     _i += 2;
-                    while (_i < s.Length && char.IsDigit(s[_i])) _i++;
+                    while (_i < s.Length && char.IsDigit(s[_i]))
+                    {
+                        _i++;
+                    }
                 }
             }
-            while (_i < s.Length && char.IsAsciiLetter(s[_i])) _i++; // a suffix: f, m, L, UL
+            // A suffix: f, m, L, UL.
+            while (_i < s.Length && char.IsAsciiLetter(s[_i]))
+            {
+                _i++;
+            }
             Span("tok-num", start, _i);
         }
 
@@ -1040,26 +1388,47 @@ public static class SyntaxHighlighter
         private bool IsStringStart()
         {
             var j = _i;
-            while (j < s.Length && j - _i < 3 && s[j] is '$' or '@') j++;
+            while (j < s.Length && j - _i < 3 && s[j] is '$' or '@')
+            {
+                j++;
+            }
             return j > _i && j < s.Length && s[j] == '"';
         }
 
         // ----------------------------------------------------------------------------------------- Helpers
 
-        private char Peek(int offset = 0) => _i + offset < s.Length ? s[_i + offset] : '\0';
+        private char Peek(int offset = 0)
+        {
+            return _i + offset < s.Length ? s[_i + offset] : '\0';
+        }
 
-        private bool At(string text) => s.AsSpan(_i).StartsWith(text, StringComparison.Ordinal);
+        private bool At(string text)
+        {
+            return s.AsSpan(_i).StartsWith(text, StringComparison.Ordinal);
+        }
 
-        private static bool IsIdentStart(char c) => char.IsLetter(c) || c == '_';
+        private static bool IsIdentStart(char c)
+        {
+            return char.IsLetter(c) || c == '_';
+        }
 
-        private static bool IsIdentPart(char c) => char.IsLetterOrDigit(c) || c == '_';
+        private static bool IsIdentPart(char c)
+        {
+            return char.IsLetterOrDigit(c) || c == '_';
+        }
 
-        private static bool IsNameStart(char c) => char.IsLetter(c);
+        private static bool IsNameStart(char c)
+        {
+            return char.IsLetter(c);
+        }
 
         private string ReadIdent(int from)
         {
             var end = from;
-            while (end < s.Length && IsIdentPart(s[end])) end++;
+            while (end < s.Length && IsIdentPart(s[end]))
+            {
+                end++;
+            }
             return s[from..end];
         }
 
@@ -1068,7 +1437,10 @@ public static class SyntaxHighlighter
         {
             var start = from ?? _i;
             var end = start;
-            while (end < s.Length && (char.IsLetterOrDigit(s[end]) || s[end] is '-' or '_' or ':' or '.')) end++;
+            while (end < s.Length && (char.IsLetterOrDigit(s[end]) || s[end] is '-' or '_' or ':' or '.'))
+            {
+                end++;
+            }
             return s[start..end];
         }
 
@@ -1081,7 +1453,10 @@ public static class SyntaxHighlighter
 
         private void Whitespace()
         {
-            while (_i < s.Length && char.IsWhiteSpace(s[_i])) Plain(1);
+            while (_i < s.Length && char.IsWhiteSpace(s[_i]))
+            {
+                Plain(1);
+            }
         }
 
         // Emits the next `length` characters as a token and moves past them.
@@ -1093,7 +1468,10 @@ public static class SyntaxHighlighter
 
         private void Span(string cls, int start, int end)
         {
-            if (end <= start || _collecting) return;
+            if (end <= start || _collecting)
+            {
+                return;
+            }
             _sb.Append("<span class=\"").Append(cls).Append("\">");
             Plain(start, end);
             _sb.Append("</span>");
@@ -1108,7 +1486,10 @@ public static class SyntaxHighlighter
 
         private void Plain(int start, int end)
         {
-            if (_collecting) return;
+            if (_collecting)
+            {
+                return;
+            }
             for (var k = start; k < end && k < s.Length; k++)
             {
                 switch (s[k])

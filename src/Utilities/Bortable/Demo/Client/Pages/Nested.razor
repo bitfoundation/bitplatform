@@ -10,13 +10,11 @@
     </p>
 </div>
 
-<DemoCode Files="NestedList.razor, NestedItem.cs" />
-
 <div class="bb-demo">
-    <NestedList Items="_tree" OnTreeChanged="StateHasChanged" />
-
-    <p class="demo-order"><strong>Tree:</strong> <span id="nested-order">@Describe(_tree)</span></p>
+    <NestedTree />
 </div>
+
+<DemoCode For="typeof(NestedTree)" Files="NestedList.razor, NestedItem.cs" />
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
@@ -38,7 +36,7 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> How it works</h3>
     <ul class="bb-detail-list">
         <li>
-            <code>NestedList</code> is a component of the page's own: a <code>Bortable</code> whose
+            <code>NestedList</code> is a component of the demo's own: a <code>Bortable</code> whose
             <code>ItemTemplate</code> renders another <code>NestedList</code> for the item's children. Every level has
             <code>Group="nested"</code>, so any list of the tree takes an item from any other.
         </li>
@@ -83,42 +81,3 @@
         </table>
     </div>
 </section>
-
-@code {
-    private List<NestedItem> _tree = new()
-    {
-        new NestedItem
-        {
-            Name = "Item 1.1",
-            Children = new()
-            {
-                new NestedItem { Name = "Item 2.1" },
-                new NestedItem
-                {
-                    Name = "Item 2.2",
-                    Children = new()
-                    {
-                        new NestedItem { Name = "Item 3.1" },
-                        new NestedItem { Name = "Item 3.2" },
-                    }
-                },
-                new NestedItem { Name = "Item 2.3" },
-            }
-        },
-        new NestedItem { Name = "Item 1.2" },
-        new NestedItem
-        {
-            Name = "Item 1.3",
-            Children = new()
-            {
-                new NestedItem { Name = "Item 2.4" },
-                new NestedItem { Name = "Item 2.5" },
-            }
-        },
-        new NestedItem { Name = "Item 1.4" },
-    };
-
-    // "Item 1.1 [Item 2.1, Item 2.2 [Item 3.1, Item 3.2]], Item 1.2": every item, its children in brackets.
-    private static string Describe(List<NestedItem> items)
-        => string.Join(", ", items.Select(i => i.Children.Count == 0 ? i.Name : $"{i.Name} [{Describe(i.Children)}]"));
-}

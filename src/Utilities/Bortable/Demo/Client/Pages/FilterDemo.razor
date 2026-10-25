@@ -10,8 +10,6 @@
     </p>
 </div>
 
-<DemoCode />
-
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A locked item</h3>
     <p class="bb-card-desc">
@@ -21,13 +19,10 @@
     </p>
 
     <div class="bb-demo">
-        <Bortable @bind-Items="_items" TItem="string" Id="filter-list" Filter="IsLocked"
-                  Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
-            <ItemTemplate Context="item">@item</ItemTemplate>
-        </Bortable>
-
-        <p class="demo-order"><strong>Order:</strong> <span id="filter-order">@string.Join(", ", _items)</span></p>
+        <LockedItem />
     </div>
+
+    <DemoCode For="typeof(LockedItem)" />
 </section>
 
 <section class="bb-card">
@@ -39,20 +34,10 @@
     </p>
 
     <div class="bb-demo">
-        <Bortable @bind-Items="_tasks" TItem="TaskItem" Id="filter-tasks" AriaLabel="Tasks"
-                  Filter="t => t.Locked" ItemLabel="t => t.Title"
-                  Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
-            <ItemTemplate Context="task">
-                <span class="demo-row">
-                    <span class="demo-row__text">@task.Title</span>
-                    <button type="button" class="demo-icon-btn" aria-pressed="@(task.Locked ? "true" : "false")"
-                            aria-label="@($"Lock {task.Title}")" @onclick="() => task.Locked = !task.Locked">@(task.Locked ? "🔒" : "🔓")</button>
-                </span>
-            </ItemTemplate>
-        </Bortable>
-
-        <p class="demo-order"><strong>Tasks:</strong> <span id="filter-tasks-order">@string.Join(", ", _tasks.Select(t => t.Locked ? $"{t.Title} (locked)" : t.Title))</span></p>
+        <LockableTasks />
     </div>
+
+    <DemoCode For="typeof(LockableTasks)" />
 </section>
 
 <section class="bb-card">
@@ -90,26 +75,3 @@
         <li>To lock a whole list instead, see <code>Disabled</code> on <a href="disable-sort">disabling sorting</a>.</li>
     </ul>
 </section>
-
-@code {
-    private IList<string> _items = new List<string>
-    {
-        "Item 1", "Item 2", "Item 3", "Filtered (locked)", "Item 4", "Item 5"
-    };
-
-    private IList<TaskItem> _tasks = new List<TaskItem>
-    {
-        new() { Title = "Write the tests" },
-        new() { Title = "Release notes", Locked = true },
-        new() { Title = "Deploy" },
-        new() { Title = "Announce" },
-    };
-
-    private bool IsLocked(string item) => item.StartsWith("Filtered", StringComparison.Ordinal);
-
-    public sealed class TaskItem
-    {
-        public required string Title { get; init; }
-        public bool Locked { get; set; }
-    }
-}

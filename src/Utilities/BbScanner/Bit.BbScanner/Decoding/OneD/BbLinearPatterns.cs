@@ -62,6 +62,46 @@ public static class BbLinearPatterns
         return counterPosition == counters.Length || (counterPosition == counters.Length - 1 && i == end);
     }
 
+    /// <summary>Zeroes a list of runs to its whole capacity, not just its count, and empties it.</summary>
+    /// <param name="list">The runs of the last line read.</param>
+    internal static void Forget(List<int> list)
+    {
+        // Clear on a list of numbers only resets the count; the backing array keeps the runs of the longest line yet.
+        System.Runtime.InteropServices.CollectionsMarshal.SetCount(list, list.Capacity);
+        System.Runtime.InteropServices.CollectionsMarshal.AsSpan(list).Clear();
+        list.Clear();
+    }
+
+    /// <summary>
+    /// Measures every run of the line at once, a machine word of pixels at a time, for a reader
+    /// that tries many candidate starts against the same runs.
+    /// </summary>
+    /// <param name="row">The binarised scan line.</param>
+    /// <param name="runs">Receives the run widths, alternating colour from the first pixel's.</param>
+    /// <param name="runStarts">Receives the index of each run's first pixel.</param>
+    /// <returns><see langword="false"/> for a line too short to hold a symbol.</returns>
+    internal static bool ReadRuns(BbBitRow row, List<int> runs, List<int> runStarts)
+    {
+        runs.Clear();
+        runStarts.Clear();
+        var size = row.Size;
+        if (size < 16)
+        {
+            return false;
+        }
+
+        var x = 0;
+        while (x < size)
+        {
+            var next = row[x] ? row.GetNextUnset(x) : row.GetNextSet(x);
+            runStarts.Add(x);
+            runs.Add(next - x);
+            x = next;
+        }
+
+        return true;
+    }
+
     /// <summary>
     /// Scores how closely measured run widths match an expected module width pattern.
     /// </summary>

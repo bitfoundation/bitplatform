@@ -50,6 +50,47 @@ public class PersistenceTests
     }
 
     [TestMethod]
+    public async Task Replaying_A_Completed_Tour_Does_Not_Un_Complete_It()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a", "#b", "#c");
+
+        var first = await harness.Service.StartAsync(Tour());
+        await first.CompleteAsync();
+        var completedAt = (await harness.Service.GetRecordAsync("persisted"))!.CompletedAt;
+
+        // Replayed from a help menu, then abandoned half way.
+        var replay = await harness.Service.StartAsync(Tour(), new BonboardingStartOptions { Force = true });
+        await replay.NextAsync();
+
+        Assert.IsTrue(await harness.Service.IsCompletedAsync("persisted"), "Completion is a fact about the user, not about the run in progress.");
+
+        await replay.DismissAsync();
+
+        var record = await harness.Service.GetRecordAsync("persisted");
+        Assert.IsTrue(record!.Completed);
+        Assert.AreEqual(completedAt, record.CompletedAt);
+        Assert.IsTrue(record.Dismissed, "The way the last run ended is still recorded.");
+    }
+
+    [TestMethod]
+    public async Task A_Completion_From_An_Older_Version_Is_Not_Carried_Over()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a", "#b", "#c");
+
+        var first = await harness.Service.StartAsync(Tour(version: 1));
+        await first.CompleteAsync();
+
+        var edited = await harness.Service.StartAsync(Tour(version: 2));
+        await edited.NextAsync();
+
+        var record = await harness.Service.GetRecordAsync("persisted");
+        Assert.IsFalse(record!.Completed);
+        Assert.IsNull(record.CompletedAt);
+    }
+
+    [TestMethod]
     public async Task Dismissal_Closes_The_Tour_Without_Completing_It()
     {
         await using var harness = new BonboardingHarness();
@@ -293,5 +334,36 @@ public class PersistenceTests
 
         Assert.IsNull(await store.GetAsync("broken"));
         Assert.IsEmpty(harness.Interop.Storage);
+    }
+
+    // ---- Checklists ---------------------------------------------------------------
+
+    [TestMethod]
+    public async Task Checklist_Items_Ticked_Off_Together_Are_All_Kept()
+    {
+        await using var harness = new BonboardingHarness(configureServices: services => services.AddBitBonboardingStore<SlowReadStore>());
+
+        // Two handlers raising their signals at once, or a page ticking two items off in one go.
+        await Task.WhenAll(
+            harness.Service.SetChecklistItemAsync("start", "invite"),
+            harness.Service.SetChecklistItemAsync("start", "profile"));
+
+        CollectionAssert.AreEquivalent(new[] { "invite", "profile" }, (await harness.Service.GetCompletedChecklistItemsAsync("start")).ToArray());
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task Resetting_Everything_Forgets_Checklists_Too(bool persist)
+    {
+        await using var harness = new BonboardingHarness(options => options.Persist = persist);
+
+        await harness.Service.SetChecklistItemAsync("start", "invite");
+        await harness.Service.DismissChecklistAsync("start");
+
+        await harness.Service.ResetAllAsync();
+
+        Assert.IsEmpty(await harness.Service.GetCompletedChecklistItemsAsync("start"));
+        Assert.IsFalse(await harness.Service.IsChecklistDismissedAsync("start"));
     }
 }

@@ -38,6 +38,49 @@ public class PlacementEngineTests
     }
 
     [TestMethod]
+    [DataRow(BonboardingPlacement.InlineStart, false, BonboardingPlacementSide.Left, BonboardingPlacementAlign.Center)]
+    [DataRow(BonboardingPlacement.InlineStart, true, BonboardingPlacementSide.Right, BonboardingPlacementAlign.Center)]
+    [DataRow(BonboardingPlacement.InlineEnd, false, BonboardingPlacementSide.Right, BonboardingPlacementAlign.Center)]
+    [DataRow(BonboardingPlacement.InlineEnd, true, BonboardingPlacementSide.Left, BonboardingPlacementAlign.Center)]
+    [DataRow(BonboardingPlacement.InlineStartTop, true, BonboardingPlacementSide.Right, BonboardingPlacementAlign.Start)]
+    [DataRow(BonboardingPlacement.InlineEndBottom, false, BonboardingPlacementSide.Right, BonboardingPlacementAlign.End)]
+    public void Logical_Sides_Follow_The_Direction(BonboardingPlacement placement, bool rtl, BonboardingPlacementSide side, BonboardingPlacementAlign align)
+    {
+        var result = BonboardingPlacementEngine.Place(Request(new BonboardingRect(450, 380, 100, 40), new BonboardingSize(200, 120), placement, rtl: rtl));
+
+        Assert.AreEqual(side, result.Side);
+        Assert.AreEqual(align, result.Align);
+        Assert.IsTrue(result.UsedPreferred);
+
+        // Vertical alignment is not mirrored: top is top in both directions.
+        if (align == BonboardingPlacementAlign.Start) Assert.AreEqual(380, result.Popover.Y);
+        if (align == BonboardingPlacementAlign.End) Assert.AreEqual(380 + 40 - 120, result.Popover.Y);
+    }
+
+    [TestMethod]
+    public void A_Logical_Fallback_Resolves_Against_The_Direction()
+    {
+        // No room above or below, so the right-to-left inline end - the left - is used.
+        var result = BonboardingPlacementEngine.Place(Request(
+            new BonboardingRect(600, 20, 100, 760), new BonboardingSize(200, 120), BonboardingPlacement.Top, rtl: true,
+            fallbacks: [BonboardingPlacement.InlineEnd]));
+
+        Assert.AreEqual(BonboardingPlacementSide.Left, result.Side);
+    }
+
+    [TestMethod]
+    public void A_Viewport_That_Does_Not_Start_At_The_Origin_Is_Honoured()
+    {
+        // The visible part of a pinch-zoomed or keyboard-shortened page: 300 pixels down, 400 tall.
+        var visible = new BonboardingRect(0, 300, 1000, 400);
+        var result = BonboardingPlacementEngine.Place(Request(new BonboardingRect(400, 320, 100, 40), new BonboardingSize(300, 150), BonboardingPlacement.Top, viewport: visible));
+
+        // There is no room above inside the visible part, so it goes below rather than under the keyboard's edge.
+        Assert.AreEqual(BonboardingPlacementSide.Bottom, result.Side);
+        Assert.IsTrue(result.Popover.Bottom <= visible.Bottom - 16);
+    }
+
+    [TestMethod]
     public void Honours_An_Explicit_Placement_That_Fits()
     {
         var result = BonboardingPlacementEngine.Place(Request(new BonboardingRect(400, 400, 100, 40), new BonboardingSize(300, 150), BonboardingPlacement.Top));

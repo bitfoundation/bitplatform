@@ -29,6 +29,35 @@ public class DemoCodeHighlighterTests
     }
 
     [TestMethod]
+    public void A_language_other_than_razor_or_csharp_throws_rather_than_being_read_as_razor()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => SyntaxHighlighter.Highlight("var x = a < b;", "cs"));
+        Assert.ThrowsExactly<ArgumentException>(() => SyntaxHighlighter.HighlightOrThrow("var x = a < b;", "c#"));
+        Assert.Contains("[key:var]", Tokens("var x = 1;", "CSharp"), "the language's name is matched regardless of case");
+    }
+
+    [TestMethod]
+    public void A_script_or_a_style_is_text_up_to_its_end_tag()
+    {
+        var tokens = Tokens("""
+            <style>
+                .icon { background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'></svg>"); }
+                @@media (max-width: 600px) { .icon { color: @Color; } }
+            </style>
+            <script>if (a<b) { go(); }</script>
+            <div>@Now</div>
+            """);
+
+        Assert.DoesNotContain("[tag:svg]", tokens, "a tag in a style's text is taken for an element");
+        Assert.Contains("@@media", tokens, "an escaped @ in a style is not text");
+        Assert.Contains("[raz:@]Color;", tokens, "an expression in a style is not C#");
+        Assert.Contains("</svg>\"); }", tokens);
+        Assert.Contains("[pun:</][tag:style][pun:>]", tokens, "the style's end tag is not a tag");
+        Assert.Contains("[pun:>]if (a<b) { go(); }[pun:</][tag:script][pun:>]", tokens, "a comparison in a script is taken for a tag");
+        Assert.Contains("[tag:div][pun:>][raz:@]Now[pun:</][tag:div]", tokens, "the markup after the script is not markup");
+    }
+
+    [TestMethod]
     public void A_member_the_source_declares_is_not_coloured_as_a_type()
     {
         var tokens = Tokens("""

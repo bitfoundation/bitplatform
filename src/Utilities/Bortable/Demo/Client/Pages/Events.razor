@@ -11,66 +11,11 @@
     </p>
 </div>
 
-<DemoCode />
-
 <div class="bb-demo">
-    <div class="demo-controls">
-        <label class="demo-check">
-            <input id="events-log-change" type="checkbox" @bind="_logChange" />
-            Log <code>OnChange</code> too - one line for every new position the item takes during a drag
-        </label>
-    </div>
-
-    <div class="demo-columns">
-        <div class="demo-col">
-            <div class="demo-col-title">events-left</div>
-            <Bortable @bind-Items="_left" TItem="string" Group="ev" Id="events-left" AriaLabel="Left"
-                      Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost"
-                      OnStart='e => Log("OnStart", "events-left", e)'
-                      OnChange='e => Log("OnChange", "events-left", e)'
-                      OnUpdate='e => Log("OnUpdate", "events-left", e)'
-                      OnRemove='e => Log("OnRemove", "events-left", e)'
-                      OnAdd='e => Log("OnAdd", "events-left", e)'
-                      OnSort='e => Log("OnSort", "events-left", e)'
-                      OnEnd='e => Log("OnEnd", "events-left", e)'>
-                <ItemTemplate Context="item">@item</ItemTemplate>
-            </Bortable>
-        </div>
-        <div class="demo-col">
-            <div class="demo-col-title">events-right</div>
-            <Bortable @bind-Items="_right" TItem="string" Group="ev" Id="events-right" AriaLabel="Right"
-                      Class="demo-list" ItemClass="demo-item tinted" GhostClass="demo-ghost"
-                      OnStart='e => Log("OnStart", "events-right", e)'
-                      OnChange='e => Log("OnChange", "events-right", e)'
-                      OnUpdate='e => Log("OnUpdate", "events-right", e)'
-                      OnRemove='e => Log("OnRemove", "events-right", e)'
-                      OnAdd='e => Log("OnAdd", "events-right", e)'
-                      OnSort='e => Log("OnSort", "events-right", e)'
-                      OnEnd='e => Log("OnEnd", "events-right", e)'>
-                <ItemTemplate Context="item">@item</ItemTemplate>
-            </Bortable>
-        </div>
-    </div>
-
-    <p class="demo-order"><strong>Left:</strong> <span id="events-left-order">@string.Join(", ", _left)</span></p>
-    <p class="demo-order"><strong>Right:</strong> <span id="events-right-order">@string.Join(", ", _right)</span></p>
-
-    <div class="bb-toolbar demo-log-bar">
-        <span class="demo-log-legend">Each line: <code>[event @@list that raised it] item FromId#OldIndex -&gt; ToId#NewIndex (input, flags)</code></span>
-        <span class="bb-spacer"></span>
-        <button type="button" id="events-clear" class="btn btn-secondary" @onclick="() => _log.Clear()">Clear the log</button>
-    </div>
-    <div class="bb-log event-log" id="events-log">
-        @if (_log.Count == 0)
-        {
-            <div class="bb-log-empty event-log__empty">No events yet…</div>
-        }
-        @foreach (var line in _log)
-        {
-            <div class="bb-log-line event-log__line">@line</div>
-        }
-    </div>
+    <EventLog />
 </div>
+
+<DemoCode For="typeof(EventLog)" />
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
@@ -139,21 +84,3 @@
         </table>
     </div>
 </section>
-
-@code {
-    private IList<string> _left = new List<string> { "Item 1", "Item 2", "Item 3", "Item 4" };
-    private IList<string> _right = new List<string> { "Item A", "Item B" };
-    private readonly List<string> _log = new();
-    private bool _logChange;
-
-    // "[OnAdd @events-right] item='Item 4' events-left#3 -> events-right#0 (mouse)": the event, the list that raised
-    // it, the item, where it came from and where it went, then how it was dragged and the flags that are set.
-    private void Log(string name, string list, BortableEventArgs<string> e)
-    {
-        if (name == "OnChange" && !_logChange) return;
-
-        var flags = string.Join(", ", new[] { e.Input.ToString().ToLowerInvariant(), e.IsClone ? "clone" : null, e.Canceled ? "canceled" : null }.OfType<string>());
-        _log.Insert(0, $"[{name} @{list}] item='{e.Item}' {e.FromId}#{e.OldIndex} -> {e.ToId}#{e.NewIndex} ({flags})");
-        if (_log.Count > 40) _log.RemoveAt(_log.Count - 1);
-    }
-}

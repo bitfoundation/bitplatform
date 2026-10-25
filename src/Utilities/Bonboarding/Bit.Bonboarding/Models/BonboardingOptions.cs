@@ -20,6 +20,26 @@ public sealed class BonboardingOptions : BonboardingStepOptions
     public string StorageKeyPrefix { get; set; } = "bit-bonboarding:";
 
     /// <summary>
+    /// Which browser storage the default store uses. Default <see cref="BonboardingStorageLocation.Local"/>.
+    /// </summary>
+    public BonboardingStorageLocation StorageLocation { get; set; } = BonboardingStorageLocation.Local;
+
+    /// <summary>
+    /// Keeps each user's progress apart on a shared device, or for an application where several accounts can be
+    /// signed in: returns who the progress belongs to (a user id, say), and the default store keys every record
+    /// with it. Asked on every read and write, so return a cached value. <see langword="null"/> (the default, and
+    /// the result while nobody is signed in) stores progress for the device as a whole.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// options.StorageScope = async (services, ct) =&gt;
+    ///     (await services.GetRequiredService&lt;AuthenticationStateProvider&gt;().GetAuthenticationStateAsync())
+    ///         .User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    /// </code>
+    /// </example>
+    public Func<IServiceProvider, CancellationToken, ValueTask<string?>>? StorageScope { get; set; }
+
+    /// <summary>
     /// When a tour spans routes and a step declares a <see cref="BonboardingStepDefinition.Route"/>, navigate
     /// there automatically. Default <see langword="true"/>.
     /// </summary>
