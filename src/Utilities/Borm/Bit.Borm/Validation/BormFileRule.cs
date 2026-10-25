@@ -34,6 +34,11 @@ public sealed class BormFileRule(
 
     public ValueTask<BormRuleResult> ValidateAsync(BormValidationContext ctx)
     {
+        // A field that uploads files as they are chosen holds what its uploader returned - an id, a URL - and
+        // its files were judged, by this rule, before they were sent.
+        if (ctx.Field?.Uploader is not null && ctx.Value is not IBrowserFile && ctx.Value is not IEnumerable<IBrowserFile>)
+            return new(BormRuleResult.Success());
+
         // A file *name* — what [FileExtensions] checks on a string property — has no size and no media
         // type, so only the extensions in the accept list can be held against it.
         if (ctx.Value is string name)

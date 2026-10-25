@@ -4,6 +4,7 @@
 @* Splat first so the renderer's own attributes below always win. *@
 <select @attributes="ExtraAttributes"
         id="@Context.ElementId"
+        name="@Context.InputName"
         @ref="Element"
         class="@CssClass"
         disabled="@(DisabledOrReadOnly || Context.IsLoadingOptions)"

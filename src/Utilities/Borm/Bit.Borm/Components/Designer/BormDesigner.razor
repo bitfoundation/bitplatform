@@ -1,0 +1,433 @@
+﻿@namespace Bit.Borm
+@implements IDisposable
+@inject IServiceProvider Services
+
+@* A form designer made of the library itself: a palette of kinds of field, the list of fields - each chosen, moved,
+   copied or deleted by buttons first and dragged second - the chosen field's properties as a Borm form, the form's
+   own settings, a live preview and the JSON Schema it all comes to. Every change is built into a BormDefinition
+   through the same builder an application uses, and handed out through ValueChanged. *@
+<div class="bit-borm-designer" lang="@Language">
+    <section class="bit-borm-designer__palette" aria-labelledby="@Id("palette")">
+        <h3 class="bit-borm-designer__heading" id="@Id("palette")">@T(BormMessageKeys.DesignerAdd)</h3>
+        <div class="bit-borm-designer__kinds">
+            @foreach (var (kind, _) in BormDesignerField.Kinds)
+            {
+                var chosen = kind;
+                <button type="button" class="bit-borm-btn bit-borm-btn--sm" @onclick="() => Add(chosen)">@T(BormMessageKeys.DesignerKind(chosen))</button>
+            }
+        </div>
+    </section>
+
+    <section class="bit-borm-designer__fields" aria-labelledby="@Id("fields")">
+        <h3 class="bit-borm-designer__heading" id="@Id("fields")">@T(BormMessageKeys.DesignerFields)</h3>
+        @if (_fields.Count == 0)
+        {
+            <p class="bit-borm-designer__empty">@T(BormMessageKeys.DesignerEmpty)</p>
+        }
+        else
+        {
+            <ol class="bit-borm-designer__list">
+                @for (var i = 0; i < _fields.Count; i++)
+                {
+                    var index = i;
+                    var field = _fields[i];
+                    var name = NameOf(field);
+                    var selected = ReferenceEquals(field, _selected);
+                    @* Draggable as a convenience for a mouse; the buttons are the way for everyone else, and they
+                       say what they did. *@
+                    <li class="bit-borm-designer__item @(selected ? "is-selected" : null)" @key="field" draggable="true"
+                        @ondragstart="() => _dragged = index" @ondragover:preventDefault="true" @ondrop="() => DropOnAsync(index)">
+                        <button type="button" class="bit-borm-designer__select" aria-pressed="@(selected ? "true" : "false")"
+                                aria-label="@T(BormMessageKeys.DesignerEdit, name)" @onclick="() => Select(field)" @ref="_selectButtons[field]">
+                            <span class="bit-borm-designer__label">@name@(field.Required ? " *" : null)</span>
+                            <span class="bit-borm-designer__meta">@T(BormMessageKeys.DesignerKind(field.Kind)) · <code>@field.Name</code></span>
+                        </button>
+                        <span class="bit-borm-designer__actions">
+                            <button type="button" class="bit-borm-btn bit-borm-btn--icon" title="@T(BormMessageKeys.DesignerMoveUp, name)"
+                                    aria-label="@T(BormMessageKeys.DesignerMoveUp, name)" aria-disabled="@(index == 0 ? "true" : null)"
+                                    @onclick="() => MoveAsync(index, index - 1)">↑</button>
+                            <button type="button" class="bit-borm-btn bit-borm-btn--icon" title="@T(BormMessageKeys.DesignerMoveDown, name)"
+                                    aria-label="@T(BormMessageKeys.DesignerMoveDown, name)" aria-disabled="@(index == _fields.Count - 1 ? "true" : null)"
+                                    @onclick="() => MoveAsync(index, index + 1)">↓</button>
+                            <button type="button" class="bit-borm-btn bit-borm-btn--icon" title="@T(BormMessageKeys.DesignerDuplicate, name)"
+                                    aria-label="@T(BormMessageKeys.DesignerDuplicate, name)" @onclick="() => DuplicateAsync(index)">⧉</button>
+                            <button type="button" class="bit-borm-btn bit-borm-btn--icon bit-borm-btn--danger" title="@T(BormMessageKeys.DesignerDelete, name)"
+                                    aria-label="@T(BormMessageKeys.DesignerDelete, name)" @onclick="() => DeleteAsync(index)">✕</button>
+                        </span>
+                    </li>
+                }
+            </ol>
+        }
+        <p class="bit-borm-sr-only" aria-live="polite">@_announcement</p>
+    </section>
+
+    <section class="bit-borm-designer__properties" aria-labelledby="@Id("properties")">
+        <h3 class="bit-borm-designer__heading" id="@Id("properties")">@T(BormMessageKeys.DesignerProperties)</h3>
+        @if (_selected is null || _propertiesState is null)
+        {
+            <p class="bit-borm-designer__empty">@T(BormMessageKeys.DesignerNothingSelected)</p>
+        }
+        else
+        {
+            @if (_selected.KeepsCode)
+            {
+                <p class="bit-borm-designer__note">@T(BormMessageKeys.DesignerKeepsCode)</p>
+            }
+            <BormView @key="_selected" State="_propertiesState" ShowSubmitButton="false" IdPrefix="@Id("p_")" OnFieldChanged="PropertyChangedAsync" />
+        }
+        <details class="bit-borm-designer__settings">
+            <summary>@T(BormMessageKeys.DesignerForm)</summary>
+            <BormView State="_formState" ShowSubmitButton="false" IdPrefix="@Id("f_")" OnFieldChanged="FormChangedAsync" />
+        </details>
+    </section>
+
+    <section class="bit-borm-designer__preview" aria-labelledby="@Id("preview")">
+        <h3 class="bit-borm-designer__heading" id="@Id("preview")">@T(BormMessageKeys.DesignerPreview)</h3>
+        @if (_buildError is not null)
+        {
+            <p class="bit-borm-designer__error" role="alert">@T(BormMessageKeys.DesignerInvalid, _buildError)</p>
+        }
+        <BormView @key="_version" Definition="_built" Data="_previewData" IdPrefix="@Id("v_")" ConfigureState="s => s.Language = Language" />
+    </section>
+
+    @if (ShowJson)
+    {
+        <section class="bit-borm-designer__json" aria-labelledby="@Id("json")">
+            <h3 class="bit-borm-designer__heading" id="@Id("json")">@T(BormMessageKeys.DesignerJson)</h3>
+            <textarea class="bit-borm-input bit-borm-designer__json-text" rows="14" spellcheck="false" aria-labelledby="@Id("json")"
+                      value="@_json" @onchange="e => _jsonInput = e.Value?.ToString()"></textarea>
+            <button type="button" class="bit-borm-btn" @onclick="ImportAsync">@T(BormMessageKeys.DesignerImport)</button>
+            @if (_importError is not null)
+            {
+                <p class="bit-borm-designer__error" role="alert">@T(BormMessageKeys.DesignerImportFailed, _importError)</p>
+            }
+        </section>
+    }
+</div>
+
+@code {
+    /// <summary>The form to start from - an existing schema to edit. Read again only when a different definition is passed.</summary>
+    [Parameter] public BormDefinition? Value { get; set; }
+
+    /// <summary>Raised with the form as it now stands after every change - a new definition each time.</summary>
+    [Parameter] public EventCallback<BormDefinition> ValueChanged { get; set; }
+
+    /// <summary>Whether the JSON Schema of the form is shown, with a way to load one in its place (default <c>true</c>).</summary>
+    [Parameter] public bool ShowJson { get; set; } = true;
+
+    /// <summary>What the designer's own ids start with (default <c>designer_</c>), for a page holding two.</summary>
+    [Parameter] public string IdPrefix { get; set; } = "designer_";
+
+    /// <summary>
+    /// The language the designer and its preview speak - a culture name, <c>de</c> or <c>pt-BR</c> - when the message
+    /// provider can answer in one (<c>services.AddBormTranslations()</c>). Null follows the current UI culture.
+    /// </summary>
+    [Parameter] public string? Language { get; set; }
+
+    private sealed class FormSettings
+    {
+        public string? Title { get; set; }
+        public string? Description { get; set; }
+        public int? Columns { get; set; }
+    }
+
+    private readonly List<BormDesignerField> _fields = [];
+    private readonly Dictionary<BormDesignerField, ElementReference> _selectButtons = new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<string, object?> _previewData = new(StringComparer.OrdinalIgnoreCase);
+    private readonly FormSettings _settings = new();
+    private BormDefinition? _loadedFrom;
+    private BormDefinition _built = new();
+    private BormDefinition? _propertiesForm;
+    private BormState? _propertiesState;
+    private BormState _formState = default!;
+    private string? _formsLanguage;
+    private BormDesignerField? _selected;
+    private BormDesignerField? _focus;
+    private int? _dragged;
+    private int _version;
+    private string? _announcement;
+    private string? _buildError;
+    private string _json = string.Empty;
+    private string? _jsonInput;
+    private string? _importError;
+    private IBormMessageProvider? _messages;
+
+    private string Id(string part) => IdPrefix + part;
+
+    private string T(string key, params object?[] args)
+        => BormMessageText.Get(_messages ??= BormMessageText.Provider(Services), Language, key, args);
+
+    private string P(string property) => T(BormMessageKeys.DesignerProperty(property));
+
+    private string NameOf(BormDesignerField field)
+        => !string.IsNullOrWhiteSpace(field.Label) ? field.Label! : field.Name.Length > 0 ? field.Name : T(BormMessageKeys.DesignerKind(field.Kind));
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // The settings and properties forms carry their labels in the language they were built in.
+        if (_formState is null || !string.Equals(_formsLanguage, Language, StringComparison.OrdinalIgnoreCase))
+        {
+            _formsLanguage = Language;
+            _propertiesForm = null;
+            _formState?.Dispose();
+            _formState = new BormState(SettingsForm(), new BormModelDataAccessor(_settings), Services)
+            {
+                ValidationTrigger = BormValidationTrigger.OnChange,
+                Language = Language
+            };
+            if (_selected is not null) Select(_selected, focus: false);
+            // And the preview is told its language when it is made.
+            _version++;
+        }
+
+        // The form handed back through ValueChanged and bound to Value again is the one already here.
+        if (Value is null || ReferenceEquals(Value, _loadedFrom) || ReferenceEquals(Value, _built)) return;
+        Load(Value);
+        await RebuildAsync(announce: false);
+    }
+
+    private void Load(BormDefinition definition)
+    {
+        _loadedFrom = definition;
+        _fields.Clear();
+        _fields.AddRange(definition.Fields.Select(BormDesignerField.From));
+        _settings.Title = definition.Title;
+        _settings.Description = definition.Description;
+        _settings.Columns = definition.Columns > 1 ? definition.Columns : null;
+        _formState.Reset([new("Title", _settings.Title), new("Description", _settings.Description), new("Columns", _settings.Columns)]);
+        Select(_fields.FirstOrDefault(), focus: false);
+    }
+
+    // ------------------------------------------------------------------ editing
+
+    private async Task Add(string kind)
+    {
+        var field = new BormDesignerField
+        {
+            Kind = kind,
+            Name = BormDesignerField.FreeName(kind, _fields.Select(f => f.Name)),
+            Label = T(BormMessageKeys.DesignerKind(kind))
+        };
+        if (BormDesignerField.Choice.Contains(kind)) field.Options = "a = A\nb = B";
+        var at = _selected is null ? _fields.Count : _fields.IndexOf(_selected) + 1;
+        _fields.Insert(at, field);
+        Select(field, focus: true);
+        _announcement = T(BormMessageKeys.DesignerAdded, NameOf(field));
+        await RebuildAsync();
+    }
+
+    private async Task MoveAsync(int from, int to)
+    {
+        if (to < 0 || to >= _fields.Count) return;
+        var field = _fields[from];
+        _fields.RemoveAt(from);
+        _fields.Insert(to, field);
+        _announcement = T(BormMessageKeys.DesignerMoved, NameOf(field), to + 1, _fields.Count);
+        await RebuildAsync();
+    }
+
+    private async Task DropOnAsync(int target)
+    {
+        if (_dragged is not { } from || from == target) return;
+        _dragged = null;
+        await MoveAsync(from, target);
+    }
+
+    private async Task DuplicateAsync(int index)
+    {
+        var copy = _fields[index].Copy(BormDesignerField.FreeName(_fields[index].Name, _fields.Select(f => f.Name)));
+        _fields.Insert(index + 1, copy);
+        Select(copy, focus: true);
+        _announcement = T(BormMessageKeys.DesignerAdded, NameOf(copy));
+        await RebuildAsync();
+    }
+
+    private async Task DeleteAsync(int index)
+    {
+        var field = _fields[index];
+        _fields.RemoveAt(index);
+        _announcement = T(BormMessageKeys.DesignerDeleted, NameOf(field));
+        // The field that took its place, or the one before it - never the page body.
+        Select(_fields.Count == 0 ? null : _fields[Math.Min(index, _fields.Count - 1)], focus: true);
+        await RebuildAsync();
+    }
+
+    private void Select(BormDesignerField? field, bool focus = true)
+    {
+        _selected = field;
+        _propertiesState?.Dispose();
+        _propertiesState = null;
+        if (field is null) return;
+
+        _propertiesState = new BormState(_propertiesForm ??= PropertiesForm(), new BormModelDataAccessor(field), Services)
+        {
+            ValidationTrigger = BormValidationTrigger.OnChange,
+            Language = Language
+        };
+        if (focus) _focus = field;
+    }
+
+    private async Task PropertyChangedAsync(string path) => await RebuildAsync(announce: false);
+
+    private async Task FormChangedAsync(string path) => await RebuildAsync(announce: false);
+
+    private async Task ImportAsync()
+    {
+        var json = _jsonInput ?? _json;
+        if (!BormJsonSchemaImporter.TryImport(json, out var definition, out var error) || definition is null)
+        {
+            _importError = error;
+            return;
+        }
+        _importError = null;
+        Load(definition);
+        await RebuildAsync(announce: false);
+    }
+
+    // ------------------------------------------------------------------ building
+
+    /// <summary>Builds the form as it now stands, shows it, and hands it out - unless a name is missing or taken.</summary>
+    private async Task RebuildAsync(bool announce = true)
+    {
+        if (!announce) _announcement = null;
+        if (_fields.Any(f => string.IsNullOrWhiteSpace(f.Name))
+            || _fields.GroupBy(f => f.Name, StringComparer.OrdinalIgnoreCase).Any(g => g.Count() > 1)) return;
+
+        BormDefinition definition;
+        try
+        {
+            definition = new BormDefinition
+            {
+                Title = string.IsNullOrWhiteSpace(_settings.Title) ? null : _settings.Title,
+                Description = string.IsNullOrWhiteSpace(_settings.Description) ? null : _settings.Description,
+                Columns = Math.Clamp(_settings.Columns ?? 1, 1, 4)
+            };
+            foreach (var field in _fields) definition.Fields.Add(field.Build());
+            KeepFormLevelSettings(definition);
+        }
+        catch (Exception ex) when (ex is FormatException or BormExpressionException or ArgumentException)
+        {
+            // A half-typed expression: the preview keeps the last form that built, and says why this one did not.
+            _buildError = ex.Message;
+            return;
+        }
+
+        _buildError = null;
+        _built = definition;
+        _version++;
+        _json = BormJsonSchemaExporter.Export(definition);
+        _jsonInput = null;
+        await ValueChanged.InvokeAsync(definition);
+    }
+
+    /// <summary>
+    /// Carries over what the designer does not edit from the form it was given: steps (a new field joining the last
+    /// one), translations, form-level rules and the version.
+    /// </summary>
+    private void KeepFormLevelSettings(BormDefinition definition)
+    {
+        if (_loadedFrom is not { } original) return;
+
+        definition.Version = original.Version;
+        definition.StepLayout = original.StepLayout;
+        definition.Translations = original.Translations;
+        foreach (var rule in original.Validators) definition.Validators.Add(rule);
+        if (original.Steps.Count == 0) return;
+
+        var names = _fields.Select(f => f.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var step in original.Steps)
+        {
+            var copy = new BormStep(step.Id, step.Title) { Description = step.Description, VisibleWhen = step.VisibleWhen };
+            foreach (var name in step.Fields.Where(names.Contains)) copy.Fields.Add(name);
+            definition.Steps.Add(copy);
+        }
+        var placed = definition.Steps.SelectMany(s => s.Fields).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var field in _fields.Where(f => !placed.Contains(f.Name))) definition.Steps[^1].Fields.Add(field.Name);
+    }
+
+    private BormDefinition PropertiesForm()
+    {
+        static bool Kind(IBormDataReader r, IEnumerable<string> kinds) => r.GetValue("Kind") is string k && kinds.Contains(k);
+
+        return BormBuilder.For<BormDesignerField>()
+            .Columns(2)
+            .Field(x => x.Kind, f => f.Label(P("kind")).AsSelect()
+                .Options([.. BormDesignerField.Kinds.Select(k => new BormSelectOption(k.Kind, T(BormMessageKeys.DesignerKind(k.Kind))))]))
+            .Field(x => x.Name, f => f.Label(P("name")).Required()
+                .Pattern(@"^[A-Za-z_][A-Za-z0-9_]*$", T(BormMessageKeys.DesignerInvalidName))
+                .Must(v => v is not string name || !_fields.Any(o => !ReferenceEquals(o, _selected) && string.Equals(o.Name, name, StringComparison.OrdinalIgnoreCase)),
+                    T(BormMessageKeys.DesignerDuplicateName)))
+            .Field(x => x.Label, f => f.Label(P("label")))
+            .Field(x => x.Help, f => f.Label(P("help")).VisibleWhen(r => !Kind(r, ["static"]), "Kind"))
+            .Field(x => x.Text, f => f.Label(P("text")).AsTextArea(3).ColumnSpan(2).VisibleWhen(r => Kind(r, ["static"]), "Kind"))
+            .Field(x => x.Placeholder, f => f.Label(P("placeholder"))
+                .VisibleWhen(r => Kind(r, BormDesignerField.Textual) || Kind(r, BormDesignerField.Choice), "Kind"))
+            .Field(x => x.Required, f => f.Label(P("required")).VisibleWhen(r => !Kind(r, ["static"]), "Kind"))
+            .Field(x => x.ReadOnly, f => f.Label(P("readOnly")).VisibleWhen(r => !Kind(r, ["static"]), "Kind"))
+            .Field(x => x.MinLength, f => f.Label(P("minLength")).Range(0, null).VisibleWhen(r => Kind(r, BormDesignerField.Textual), "Kind"))
+            .Field(x => x.MaxLength, f => f.Label(P("maxLength")).Range(1, null).VisibleWhen(r => Kind(r, BormDesignerField.Textual), "Kind"))
+            .Field(x => x.Min, f => f.Label(P("min")).VisibleWhen(r => Kind(r, BormDesignerField.Numeric), "Kind"))
+            .Field(x => x.Max, f => f.Label(P("max")).VisibleWhen(r => Kind(r, BormDesignerField.Numeric), "Kind"))
+            .Field(x => x.Pattern, f => f.Label(P("pattern")).VisibleWhen(r => Kind(r, BormDesignerField.Textual), "Kind"))
+            .Field(x => x.Mask, f => f.Label(P("mask")).Validate(new ReadsRule(text => new BormMask(text), T))
+                .VisibleWhen(r => Kind(r, BormDesignerField.Textual), "Kind"))
+            .Field(x => x.Options, f => f.Label(P("options")).AsTextArea(4).ColumnSpan(2).Help(T(BormMessageKeys.DesignerOptionsHelp))
+                .VisibleWhen(r => Kind(r, BormDesignerField.Choice) || Kind(r, ["tags"]), "Kind"))
+            .Field(x => x.VisibleWhen, f => f.Label(P("visibleWhen")).ColumnSpan(2).Help(T(BormMessageKeys.DesignerExpressionHelp))
+                .Validate(new ReadsRule(text => BormExpression.Parse(text), T)))
+            .Field(x => x.RequiredWhen, f => f.Label(P("requiredWhen")).ColumnSpan(2).Validate(new ReadsRule(text => BormExpression.Parse(text), T))
+                .VisibleWhen(r => !Kind(r, ["static"]), "Kind"))
+            .Field(x => x.Computed, f => f.Label(P("computed")).ColumnSpan(2).Validate(new ReadsRule(text => BormExpression.Parse(text), T))
+                .VisibleWhen(r => !Kind(r, ["static"]), "Kind"))
+            .Field(x => x.Group, f => f.Label(P("group")))
+            .Field(x => x.ColumnSpan, f => f.Label(P("columnSpan")).Range(1, 4))
+            .Build();
+    }
+
+    private BormDefinition SettingsForm() => BormBuilder.For<FormSettings>()
+        .Field(x => x.Title, f => f.Label(P("title")))
+        .Field(x => x.Description, f => f.Label(P("description")).AsTextArea(2))
+        .Field(x => x.Columns, f => f.Label(P("columns")).Range(1, 4))
+        .Build();
+
+    /// <summary>A rule that the text reads as what it is meant to be - an expression, a mask - saying why when it does not.</summary>
+    private sealed class ReadsRule(Action<string> read, Func<string, object?[], string> text) : IBormValidationRule
+    {
+        public string? Key => null;
+
+        public ValueTask<BormRuleResult> ValidateAsync(BormValidationContext ctx)
+        {
+            if (ctx.Value is not string { Length: > 0 } value || string.IsNullOrWhiteSpace(value)) return new(BormRuleResult.Success());
+            try
+            {
+                read(value);
+                return new(BormRuleResult.Success());
+            }
+            catch (Exception ex) when (ex is FormatException or ArgumentException)
+            {
+                return new(BormRuleResult.Fail(text(BormMessageKeys.DesignerInvalid, [ex.Message])));
+            }
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focus is not { } field) return;
+        _focus = null;
+        if (!_selectButtons.TryGetValue(field, out var button)) return;
+        try
+        {
+            await button.FocusAsync();
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or JSDisconnectedException or ObjectDisposedException)
+        {
+            // Prerendered, or the designer went away between the click and the render.
+        }
+    }
+
+    public void Dispose()
+    {
+        _propertiesState?.Dispose();
+        _formState?.Dispose();
+    }
+}

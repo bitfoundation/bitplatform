@@ -1,12 +1,23 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components;
 
 namespace Bit.Borm;
 
 /// <inheritdoc />
 public sealed class BormFieldRendererRegistry : IBormFieldRendererRegistry
 {
-    private readonly Dictionary<BormFieldType, Type> _byType = new();
-    private readonly Dictionary<string, Type> _byKey = new(StringComparer.OrdinalIgnoreCase);
+    /// <summary>What rendering a component needs kept: what Blazor's <c>OpenComponent</c> asks of a component type.</summary>
+    internal const DynamicallyAccessedMemberTypes Component = DynamicallyAccessedMemberTypes.All;
+
+    // A Type in a dictionary loses its annotation; one in an annotated property keeps it.
+    private readonly struct Renderer([DynamicallyAccessedMembers(Component)] Type type)
+    {
+        [DynamicallyAccessedMembers(Component)]
+        public Type Type { get; } = type;
+    }
+
+    private readonly Dictionary<BormFieldType, Renderer> _byType = new();
+    private readonly Dictionary<string, Renderer> _byKey = new(StringComparer.OrdinalIgnoreCase);
 
     public BormFieldRendererRegistry()
     {
@@ -36,32 +47,37 @@ public sealed class BormFieldRendererRegistry : IBormFieldRendererRegistry
         Register(BormFieldType.Week, typeof(BormDateInput));
         Register(BormFieldType.File, typeof(BormFileInput));
         Register(BormFieldType.Static, typeof(BormStaticContent));
+        Register(BormFieldType.Markdown, typeof(BormMarkdownInput));
+        Register(BormFieldType.Signature, typeof(BormSignatureInput));
     }
 
-    public void Register(BormFieldType type, Type componentType)
+    public void Register(BormFieldType type, [DynamicallyAccessedMembers(Component)] Type componentType)
     {
         EnsureComponent(componentType);
-        _byType[type] = componentType;
+        _byType[type] = new Renderer(componentType);
     }
 
-    public void RegisterCustom(string key, Type componentType)
+    public void RegisterCustom(string key, [DynamicallyAccessedMembers(Component)] Type componentType)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         EnsureComponent(componentType);
-        _byKey[key] = componentType;
+        _byKey[key] = new Renderer(componentType);
     }
 
-    public bool TryResolve(BormFieldDefinition field, out Type componentType)
+    public bool TryResolve(BormFieldDefinition field, [DynamicallyAccessedMembers(Component)] out Type componentType)
     {
         // An explicit renderer key always wins, so a field can opt out of its type's default widget.
-        if (field.CustomRenderer is { Length: > 0 } key && _byKey.TryGetValue(key, out var custom))
+        if (field.CustomRenderer is { Length: > 0 } key && _byKey.TryGetValue(key, out var custom)
+            || _byType.TryGetValue(field.Type, out custom))
         {
-            componentType = custom;
+            componentType = custom.Type;
             return true;
         }
-        return _byType.TryGetValue(field.Type, out componentType!);
+        componentType = null!;
+        return false;
     }
 
+    [return: DynamicallyAccessedMembers(Component)]
     public Type Resolve(BormFieldDefinition field)
     {
         if (TryResolve(field, out var componentType)) return componentType;

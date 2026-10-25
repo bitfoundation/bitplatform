@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Bit.Borm;
@@ -58,7 +59,8 @@ public static class BormServiceCollectionExtensions
     /// <typeparamref name="TProvider"/> — typically one wrapping <c>IStringLocalizer</c> — to localise
     /// the whole library without rewriting any rules.
     /// </summary>
-    public static IServiceCollection AddBormMessages<TProvider>(this IServiceCollection services)
+    public static IServiceCollection AddBormMessages<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProvider>(
+        this IServiceCollection services)
         where TProvider : class, IBormMessageProvider
     {
         services.TryAddScoped<IBormMessageProvider, TProvider>();
@@ -70,10 +72,29 @@ public static class BormServiceCollectionExtensions
     /// <typeparamref name="TLocalizer"/>, typically one wrapping <c>IStringLocalizer</c>. See
     /// <see cref="IBormSchemaLocalizer"/> for the keys it is asked for.
     /// </summary>
-    public static IServiceCollection AddBormSchemaLocalizer<TLocalizer>(this IServiceCollection services)
+    public static IServiceCollection AddBormSchemaLocalizer<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TLocalizer>(
+        this IServiceCollection services)
         where TLocalizer : class, IBormSchemaLocalizer
     {
         services.TryAddScoped<IBormSchemaLocalizer, TLocalizer>();
+        return services;
+    }
+
+    /// <summary>
+    /// Has the library speak German, Spanish, French, Italian, Dutch, Portuguese, Russian, Turkish, Persian, Arabic,
+    /// Japanese and simplified Chinese - its validation messages, buttons, announcements and designer - in the
+    /// form's <see cref="BormState.Language"/> when it has one, else in the current UI culture, and English otherwise.
+    /// See <see cref="BormTranslatedMessageProvider"/>.
+    /// </summary>
+    /// <remarks>
+    /// The schema's own words - labels, help, options - are the schema's to translate (<c>x-translations</c>,
+    /// <see cref="IBormSchemaLocalizer"/>). A provider registered first, by <see cref="AddBormMessages{TProvider}"/>
+    /// or an instance, is kept: this is a <c>TryAdd</c>.
+    /// </remarks>
+    public static IServiceCollection AddBormTranslations(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        services.TryAddSingleton<IBormMessageProvider>(BormTranslatedMessageProvider.Instance);
         return services;
     }
 

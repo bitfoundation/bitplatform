@@ -159,6 +159,11 @@ public sealed class WorkflowTests : BormTest
         await Expect(Form(page)).ToContainTextAsync("Bestellung");
         await Expect(Form(page)).ToContainTextAsync("Nutzer");
         await Expect(Form(page)).ToHaveAttributeAsync("lang", "de");
+        // And the library's own words follow it: the button, and the message a blank required field gets.
+        var submit = Form(page).Locator("button[type=submit]");
+        await Expect(submit).ToHaveTextAsync("Absenden");
+        await submit.ClickAsync();
+        await Expect(Form(page).Locator(".bit-borm-message--error").First).ToHaveTextAsync("Dieses Feld ist erforderlich.");
 
         // A dialect with no table of its own reads its language's.
         await page.GetByRole(AriaRole.Button, new() { Name = "Deutsch (Schweiz)", Exact = true }).ClickAsync();

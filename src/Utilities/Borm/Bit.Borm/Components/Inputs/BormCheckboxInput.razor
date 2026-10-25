@@ -8,6 +8,8 @@
     <input @attributes="ExtraAttributes"
            type="checkbox"
            id="@Context.ElementId"
+           name="@Context.InputName"
+           value="true"
            @ref="Element"
            class="@SwitchClass"
            checked="@Context.BoolValue"

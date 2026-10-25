@@ -41,8 +41,11 @@ wizard, which is what makes a form testable without a browser.
   with `$ref`, `allOf`, `if`/`then`/`else`, `dependentRequired`, `dependentSchemas` and discriminated
   `oneOf`/`anyOf` subforms) - and export any form back out again.
 - **Rich field types**: text, search, password, email, URL, number, select, combobox, multi-select, radio,
-  checkbox and switch, date, time, date-time, month and week, range, colour, file upload, tags, static headings,
-  nested objects and repeating arrays.
+  checkbox and switch, date, time, date-time, month and week, range, colour, file upload, tags, formatted text
+  (Markdown with a safe preview), a signature pad with a typed alternative, static headings, nested objects and
+  repeating arrays - and input masks (`(000) 000-0000`) on any text field.
+- **Uploads that start when a file is chosen**: progress, cancel and retry beside each file, the files judged before
+  they are sent, what the server returned stored in their place, and a submit made meanwhile that waits for them.
 - **Validation**: required, length, range (numbers, dates and times), pattern, email, URL, UUID, compare,
   multiple-of, unique items, collection size, file size and type, custom sync and async rules, form-level rules,
   conditional rules, DataAnnotations' `IValidatableObject`, and FluentValidation through
@@ -59,6 +62,12 @@ wizard, which is what makes a form testable without a browser.
   evaluated by a bounded interpreter that can read the answers and nothing else.
 - **Steps**: a wizard with per-step validation, conditional steps and a clickable stepper - or the same steps as
   tabs, an accordion or titled sections - and a review that reads every answer back in words.
+- **Long forms**: undo and redo of every change, typing coalesced into one step; a repeater of hundreds of rows
+  shown a page at a time, with rows needing attention on other pages pointed out and focus taken to them.
+- **No interactivity needed**: a named form posts like any HTML form from a page rendered on the server alone, judged
+  there exactly as an interactive one would be.
+- **A designer**: `BormDesigner` builds a form by clicking - its fields, their rules and conditions, a live preview
+  and the JSON Schema it comes to - out of the same builder an application uses.
 - **Unfinished work kept**: versioned drafts without the sensitive answers, autosave, and a guard that asks before
   the user leaves unsaved changes; a submit that says how it ended (invalid, rejected, failed, cancelled or
   succeeded) and can be cancelled, with a server's `ProblemDetails` errors placed on their fields.
@@ -66,8 +75,8 @@ wizard, which is what makes a form testable without a browser.
   multi-select controls, focus management after a failed submit, live announcements and an error summary that
   links to each field.
 - **Yours to restyle and extend**: every colour is a `--bit-borm-*` custom property with light and dark themes,
-  every built-in string goes through `IBormMessageProvider`, the schema's own text through `IBormSchemaLocalizer` or
-  the translations it carries, any control can be replaced through the renderer registry, and Blazor's own
+  every built-in string goes through `IBormMessageProvider` - and comes in twelve languages besides English with
+  `AddBormTranslations()` - the schema's own text through `IBormSchemaLocalizer` or the translations it carries, any control can be replaced through the renderer registry, and Blazor's own
   `InputBase` controls and `ValidationSummary` work inside a form through the `EditContext` it can provide.
 
 ## Quick start
@@ -425,7 +434,7 @@ UI intent that JSON Schema has no vocabulary for travels in `x-` extensions, and
 
 | Extension | Meaning |
 | --- | --- |
-| `x-widget` | Force a control: `select`, `textarea`, `radio`, `combobox`, `multiselect`, `tags`, `range`, `switch`, `file`, `static`, `hidden`, `array`, `month`, `week`, … A document that names its control is taken at its word; one that does not gets the friendliest default for the shape it describes. JSON Schema has no format for a month or a week, so their values travel as the pickers' text (`2024-05`, `2024-W19`). |
+| `x-widget` | Force a control: `select`, `textarea`, `radio`, `combobox`, `multiselect`, `tags`, `range`, `switch`, `file`, `static`, `hidden`, `array`, `month`, `week`, `markdown`, `signature`, … A document that names its control is taken at its word; one that does not gets the friendliest default for the shape it describes. JSON Schema has no format for a month or a week, so their values travel as the pickers' text (`2024-05`, `2024-W19`). |
 | `x-allowCustom`, `x-enum` | A combobox that also accepts answers on no list. Its choices travel as `x-enum`, because `enum` means "one of these and nothing else" to every validator; a combobox with a plain `enum` is a closed choice and rejects anything else. |
 | `x-renderer` | A custom renderer key registered with `RegisterCustom`. |
 | `x-order`, `x-group`, `x-placeholder`, `x-autocomplete`, `x-inputMode`, `x-autofocus` | Field metadata. |
@@ -440,6 +449,8 @@ UI intent that JSON Schema has no vocabulary for travels in `x-` extensions, and
 | `x-revalidateOn` | Paths whose change revalidates this field - the other half of a cross-field rule. |
 | `x-clearOnHide` | Clear the value when the field is hidden. |
 | `x-sensitive` | The value must not outlive the page: left out of [drafts](#drafts-and-autosave). Passwords are sensitive without it. |
+| `x-pageSize` | How many rows of a [long list](#long-lists) are shown at once. |
+| `x-mask` / `x-maskStoresRaw` | The [shape](#values-in-a-fixed-shape) the value is written in, `(000) 000-0000`, and whether the model holds only what filled its slots. |
 | `x-version` | On the root: which version of the form this is, recorded in every draft so one saved against an older version can be recognised and migrated. |
 | `x-i18n` | The key a field's texts are translated under (see [the schema's own text](#the-schemas-own-text)). |
 | `x-translations` | On the root: the form's texts per culture, `{"de": {"form.title": "…", "name.label": "…"}}`. |
@@ -453,6 +464,34 @@ Conditions, computed values and rules written as [expressions](#expressions) exp
 written as. Those backed by code (`VisibleWhen(predicate)`, `Must(predicate)`, `MustAsync`, `Computed(delegate)`,
 `OnChange`, `Normalize`, a delegate stashed in `Attributes`) have no JSON form and are omitted from the export
 rather than approximated.
+
+## Designing a form visually
+
+`BormDesigner` builds a form without code - for the people who own a form's questions but not the application:
+
+```razor
+<BormDesigner @bind-Value="_definition" />
+
+@code {
+    private BormDefinition? _definition;   // an existing schema to edit, or null to start empty
+}
+```
+
+A palette adds any kind of field; the list of fields chooses one, and moves, copies or deletes it; its properties -
+kind, name, label, help, placeholder, required and read-only, lengths and limits, a pattern or a mask, options one per
+line, a group and a column span, and [expressions](#expressions) for when it shows, when it is required and what it
+is computed as - are a Borm form of their own, which says when an expression or a mask does not read or a name is
+taken. The form's title, description and columns are settings of their own. A live preview renders the form as it
+stands, and keeps its answers as fields change; the JSON Schema beneath it can be copied out, or replaced and loaded
+back in. Every change is built through the same builder an application uses, and handed out through `ValueChanged`.
+
+Read in, an existing schema keeps what the designer has no place for: an options provider, a condition or a rule
+written in code, renderer hints, steps (a new field joins the last one), translations and form-level rules - and a
+field holding such code says so. Objects and repeaters are kept as they are, and edited in JSON.
+
+The list is a list of buttons first: each field is chosen, moved, copied and deleted with buttons named for it ("Move
+Email up"), focus stays where the user is, and each change is announced ("Email is now number 2 of 3"). Dragging a
+field onto another moves it too, for a mouse. Every word it shows goes through `IBormMessageProvider`.
 
 ## Validation
 
@@ -561,6 +600,27 @@ It runs when the user *leaves* the field, and once more over every field on subm
 tidied too. Never per keystroke, which would eat the space between two words the moment it was typed. `Trim()` turns
 a value that is nothing but whitespace into null, so a required field is not satisfied by `"   "`. React Hook Form
 spells this `setValueAs`.
+
+### Values in a fixed shape
+
+`Mask` writes a value in a fixed shape - a phone number, an IBAN, a postcode:
+
+```csharp
+.Field(x => x.Phone, f => f.Mask("(000) 000-0000"))
+.Field(x => x.Iban, f => f.Mask("AA00 0000 0000 0000 0000 00", storeRaw: true))
+```
+
+`0` is a digit, `A` a letter (written in capitals), `a` a letter as typed and `*` either; a backslash makes the next
+character literal, and anything else is literal already. When the user leaves the box what they typed is put into
+the shape: the literals they type stand for themselves and any other separator is passed over, so `5551234567`,
+`555-123-4567` and `(555) 123-4567` are the same answer. A value that does not fit is left as typed and reported
+with the shape to write it in (`Enter it in the form (###) ###-####.`, `BormMessageKeys.Mask`). `storeRaw: true`
+stores only what filled the slots - `5551234567` - while the box and a review still show it formatted. A mask of
+digits alone asks a phone for its number pad. `x-mask` and `x-maskStoresRaw` carry it through JSON Schema.
+
+The box is not rewritten under the caret as the user types. That needs script to put the caret back, and a box that
+changes what is being typed into it is one assistive technology describes badly - which is why GOV.UK's advice is
+not to use input masks at all. Formatting the answer once it is given keeps the benefit and drops the cost.
 
 ### Date and time windows
 
@@ -1174,6 +1234,34 @@ counterpart: a hidden answer is *retained* while the user can still toggle back 
 A draft is plain JSON holding personal data. Keep it where the user's other data is kept, and not in storage another
 user of the same machine can read.
 
+## Undo and redo
+
+`ShowUndo` puts Undo and Redo buttons beside Submit; `state.UndoAsync()` and `state.RedoAsync()` do the same from
+code, with `CanUndo`, `CanRedo` and `NextUndoPath` to drive buttons of your own.
+
+```razor
+<BormView Definition="_definition" Model="_model" ShowUndo="true" />
+```
+
+- **A change is everything one answer set off**: the value itself, a field a condition then hid and cleared, a
+  sibling a change handler filled in, a city an abandoned country took with it. They are taken back together, and the
+  handler is not run again on the way - what it did is part of the change. Computed values are not recorded; they
+  follow the answers back.
+- **Rows keep their identity.** Adding, removing, moving, swapping, copying and clearing rows are changes like any
+  other, and undoing a removal puts back the same row object - with whatever it held - rather than a copy.
+- Two writes to one field within a second are one change, so a field that writes as the user types is not undone a
+  character at a time, and the tidying a field does as the user leaves it (`Trim()`, a mask) belongs to that answer.
+  `ResetField` and `SetValues` are changes of their own.
+- A field put back is judged again as a change would be, so an error the user has been shown comes back with the
+  value that caused it.
+- `HistoryLimit` is how many changes are kept - 0, the default, keeps none; `ShowUndo` makes it 100. `Reset()` and
+  restoring a draft start the history again. Only changes made through the state are recorded: a model edited behind
+  the form's back has nothing to undo.
+
+The buttons keep the focus, so they can be pressed again; each is named for the field it acts on ("Undo the change to
+Full name"), and what it did is announced ("Undone: Full name"). Ctrl+Z inside a text box still undoes the typing in
+that box, as the browser always has - the form's Undo takes back answers already given.
+
 ## Layout
 
 Set a column count on the form and let individual fields span more than one. The grid collapses to a single column
@@ -1187,6 +1275,23 @@ BormBuilder.For<Profile>()
     .Field(x => x.Bio, f => f.AsTextArea(4).ColumnSpan(2))
     .Build();
 ```
+
+### Long lists
+
+A list of hundreds or thousands of rows is shown a page at a time:
+
+```csharp
+.Array(x => x.Lines, line => line.Field(l => l.Product), f => f.PageSize(25))
+```
+
+The pager offers Previous and Next, a page picker and the rows a page holds ("26–50 of 1,000"), and says how many rows
+on other pages need attention, with a button to the first of them. Every way of reaching a row still reaches it: the
+error summary's links and focus-the-first-error turn to the row's page before they move the focus - a list inside a
+row of another paged list included - and adding, copying or moving a row turns to the page it lands on. Row numbers
+and the rows' accessible names stay those of the whole list. `x-pageSize` carries it through JSON Schema.
+
+It is paged rather than virtualised on purpose. A virtualised list leaves the rows out of view out of the page, where
+neither the keyboard, nor the error summary, nor a screen reader can reach them; a page is always whole.
 
 ### Groups
 
@@ -1273,6 +1378,53 @@ A property typed `IBrowserFile` (or a list of them) renders a file picker. `Acce
 anyway; a list of files counts against `Items(min, max)` like any other collection. Each takes a message of its own,
 which is used only for its own failure, whichever order they are called in. Read the files in your submit
 handler with `OpenReadStream`, exactly as you would with Blazor's `InputFile`.
+
+Or send each file as soon as it is chosen, and keep what your storage returns for it instead:
+
+```csharp
+.Field(x => x.ResumeId, f => f.Accept(".pdf").MaxFileSize(5_000_000).UploadWith(async upload =>
+{
+    using var content = new StreamContent(upload.OpenReadStream());       // the bar follows these bytes
+    var response = await http.PostAsync("api/files", content, upload.CancellationToken);
+    response.EnsureSuccessStatusCode();
+    return await response.Content.ReadAsStringAsync(upload.CancellationToken);   // what the field stores
+}))
+```
+
+The field then holds a string - or a list of them for a field taking several files - and never the file itself, so it
+is an answer like any other: it goes into a draft, survives a reload and reaches the server as the id it is. Each file
+is judged by `Accept` and `MaxFileSize` before anything is sent, then listed with a progress bar and a Cancel button
+while it goes, Remove once it is there, and Retry - with the reason - if the uploader throws. Completion and failure
+are announced once each, not per percent. A submit pressed while a file is on its way waits for it, and Cancel,
+clearing the field or leaving the form cancels `upload.CancellationToken`. `state.UploadsFor(path)` lists them for a
+control of your own. Uploaders are code, so they are not exported to JSON Schema.
+
+### Formatted text and signatures
+
+```csharp
+.Field(x => x.CoverLetter, f => f.AsMarkdown().MaxLength(4000))
+.Field(x => x.Signature, f => f.AsSignature().Required())
+```
+
+`AsMarkdown()` is a text area for formatted text written in Markdown - paragraphs and line breaks, headings, bulleted
+and numbered lists, quotes, code, rules, `**bold**`, `*italic*`, `~~struck~~`, `` `code` `` and `[links](https://…)` -
+with a preview beneath it that follows the typing, a short guide to the syntax, and a review that shows it formatted.
+The value is the Markdown text, so its length rules count what the user typed. `BormMarkdown.ToHtml` renders it
+anywhere else, and `ToPlainText` takes the formatting out.
+
+What it renders is safe to put on a page: everything the user wrote is HTML-encoded, only the elements listed above
+are written, a link goes only to an `http`, `https` or `mailto` address - `javascript:` and every other scheme stay
+text - and links carry `rel="nofollow noopener noreferrer"`. Rendering is linear in the length of the text, however
+it is crafted. It is not a WYSIWYG editor: that needs a `contenteditable` element and script to read it, and Borm
+ships no script.
+
+`AsSignature()` is a signature pad: an SVG drawn on with a mouse, a finger or a pen (the page does not scroll while it
+is being signed), stroke by stroke, with Clear beside it - and **Type it instead**, for anyone who cannot draw, which
+writes the typed name in a handwriting face. Either way the value is an SVG image as a `data:` URL that an `<img>`
+shows as it is; `BormSignature` builds, checks and decodes them, and a review shows the signature as an image. Only a
+value in that shape is ever shown, and SVG shown through an `<img>` cannot run script. A signature is personal data:
+mark it `Sensitive()` if it should not be kept in a draft. `x-widget: markdown` and `x-widget: signature` carry both
+through JSON Schema.
 
 ## Checking a schema
 
@@ -1376,6 +1528,7 @@ Off by default: a form that does not use these controls has no cascade in its tr
 | `Disabled` | Disables every field and button - a save in flight, a locked record. Unlike `ReadOnly` the fields cannot be tabbed through or read out, so reach for it only when the form is genuinely inoperable. |
 | `ShowSubmitButton` / `SubmitText` / `SubmittingText` | The built-in submit button (default `true` / `"Submit"`). While the form is validating or saving the button says so, rather than only going grey. |
 | `ShowResetButton` / `ResetText` | A button restoring the values the form started with. |
+| `ShowUndo` | Undo and Redo buttons, and the history they need - see [Undo and redo](#undo-and-redo). |
 | `ShowErrorSummary` | Lists every error above the form, each linking to its field - or to its step on a wizard. The links name the current page in full, so they work under any `<base href>`. |
 | `FocusFirstError` | Moves focus to the first invalid field after a failed submit (default `true`; suppressed while `ShowErrorSummary` is on, since the summary takes focus itself). |
 | `AllowStepNavigation` | Lets the user click back to a completed wizard step (default `true`). |
@@ -1384,6 +1537,7 @@ Off by default: a form that does not use these controls has no cascade in its tr
 | `Class` | Extra CSS classes for the `<form>` element. |
 | `IdPrefix` | What every DOM id in the form starts with (default `borm_`). Give two forms on one page a prefix each. |
 | `ProvideEditContext` | Cascades a Blazor `EditContext` mirroring the form's validation, for `InputBase`-derived controls, `ValidationSummary` and component-library inputs placed in the form (default `false`). See [Blazor's own inputs inside a renderer](#blazors-own-inputs-inside-a-renderer). |
+| `FormName` / `PostedModelName` | Makes the form one the browser can post with no interactivity, its controls named for the page's `[SupplyParameterFromForm]` model (default `Model`). See [Forms that work with no interactivity](#forms-that-work-with-no-interactivity). |
 | `ChildContent` | Extra content rendered inside the `<form>`. |
 
 Any other attribute you set is splatted onto the `<form>` element.
@@ -1569,6 +1723,28 @@ recognise should fall through to the default provider (or to the key itself).
 
 Messages passed explicitly to a rule - and labels passed explicitly to `BormView` - always win over the provider.
 
+### Built-in translations
+
+The library's own words come translated, too: German, Spanish, French, Italian, Dutch, Portuguese, Russian, Turkish,
+Persian, Arabic, Japanese and simplified Chinese.
+
+```csharp
+builder.Services.AddBormTranslations();
+```
+
+Every validation message, button, announcement and accessible name the library renders, and the designer, is then
+said in the form's `state.Language` when it has one, else in `CurrentUICulture`, and in English for any other
+language. Regional cultures read their language's table (`de-CH`, `pt-BR`); simplified Chinese answers to `zh`,
+`zh-Hans`, `zh-CN` and `zh-SG`, and a traditional-Chinese culture is answered in English rather than in the wrong
+script. Counts are phrased to read right for any number ("Anzahl: 3") instead of imposing English plural rules on
+other languages, with a wording of its own for exactly one where a language has one. Changing `state.Language`
+rewrites the form's words at once; a rule's message already on screen is rewritten when its field is next validated.
+
+A provider of your own can answer in a form's language as well: implement `IBormLocalizedMessageProvider`, whose
+`Get(language, key, args)` the form calls with its `Language`. `BormValidator.Language` does the same for a form
+validated on its own, such as one posted to the server, and `BormDesigner` takes a `Language` parameter. The words a
+schema supplies - labels, options, a repeater's item noun - are the schema's to translate, below.
+
 ### The schema's own text
 
 The message provider translates the library's words; the schema's - labels, help, placeholders, the labels of its
@@ -1634,12 +1810,63 @@ Borm has no JavaScript and no browser-only API, so it runs the same way under ev
   its keystrokes over the circuit, so prefer the default update-on-change, or a debounce, on a busy form.
 - **Blazor Web App**: register `AddBorm()` in both the server and the client project - the page is prerendered on the
   server and then runs on the client, and both containers must resolve the renderer registry. The form prerenders as
-  plain HTML and becomes interactive once the page does; give the page an interactive render mode, since a form in
-  static server rendering cannot respond to input.
+  plain HTML and becomes interactive once the page does. A page in static server rendering - no interactive render
+  mode at all - can post a Borm form too; see below.
+
+### Forms that work with no interactivity
+
+Give the view a `FormName`, and bind the page's model from the post:
+
+```razor
+@page "/apply"
+@attribute [ExcludeFromInteractiveRouting]      @* .NET 9+: this page stays static in an interactive app *@
+
+<BormView Definition="_definition" Model="Model" FormName="apply" OnValidSubmit="SaveAsync" />
+
+@code {
+    [SupplyParameterFromForm(FormName = "apply")] public Application? Model { get; set; }
+
+    protected override void OnInitialized() => Model ??= new();
+}
+```
+
+The form then posts like any HTML form - in a page with no interactive render mode, or in a browser with no script -
+with an antiforgery token, each control under the name model binding reads (`Model.Address.City`,
+`Model.Lines[0].Product`, `PostedModelName` to change `Model`). On the server the view judges the posted answers
+exactly as an interactive one would and calls `OnValidSubmit`, or renders the page again with every message in place;
+text the binder could not read - letters in a number box - is shown back as the user typed it, with the reason. A
+combobox posts the label the user saw, and it is turned back into its value; tags post one entry each. Interactive,
+the same form is a Blazor form as before.
+
+With nothing to click, the form shows what a click would have: a wizard's steps, and tabs, as sections one after
+another (an accordion is the browser's own and still opens); a repeater's rows as they stand, every row of a paged one
+included, without add, remove or move buttons. Conditions are judged when the page is rendered, so a field that
+depends on another appears after the post that answered it. A box left unticked posts nothing and binds as `false`, so
+a `bool` whose default is `true` cannot be turned off without script; a file, a signature and a search lookup need an
+interactive page. Telling a static render from a prerender needs .NET 9 or later; on .NET 8 a named form still posts,
+but keeps its interactive shape - only the step and the page of rows on screen are posted - so give a form meant to
+work there without script a single step and no `PageSize`.
 - **Blazor Hybrid**: register `AddBorm()` in `MauiProgram.cs` and link the stylesheet from `wwwroot/index.html`.
 
-Generating a schema reads a model's properties by reflection, so `Bit.Borm` is not marked as trimmable: a trimmed
-app keeps it whole, and the models it binds to are kept by the app that declares them.
+### Trimming
+
+A Blazor WebAssembly app is trimmed when it is published. `Bit.Borm` is not marked as trimmable, so the default
+(`TrimMode` partial) keeps it whole, and keeps the app's own assembly, where its models live: the demo is published
+this way, and its end-to-end suite passes against that build. A bound model is read, written and generated from by
+reflection over its properties, all the way down through its objects and lists, which no annotation can describe;
+marking the package trimmable would mean hiding that from the trimmer, or a warning on every `BormView` that binds a
+model. With `TrimMode` full, keep Borm and the assemblies holding your models whole - the end-to-end suite passes
+against the demo published this way too:
+
+```xml
+<ItemGroup>
+    <TrimmerRootAssembly Include="Bit.Borm" />
+    <TrimmerRootAssembly Include="$(AssemblyName)" />   <!-- and any other assembly holding models -->
+</ItemGroup>
+```
+
+A control registered with `RegisterCustom<TComponent>()` keeps its constructor and parameters in a trimmed app: the
+registry's component types carry the annotation Blazor gives its own.
 
 ## Key types
 
@@ -1657,4 +1884,8 @@ app keeps it whole, and the models it binds to are kept by the app that declares
 | `BormModelDataAccessor` / `BormDictionaryDataAccessor` | Data backing stores. |
 | `IBormFieldRendererRegistry`, `BormInputBase` | Maps field types to renderer components, and the base class for your own. |
 | `IBormMessageProvider`, `BormMessageKeys` | Supplies the text of every built-in message and label. |
+| `BormTranslatedMessageProvider`, `IBormLocalizedMessageProvider` | The library's words in twelve more languages (`AddBormTranslations()`), and a provider that answers in a form's own `Language`. |
+| `BormMask`, `BormMarkdown`, `BormSignature` | An input mask; the safe Markdown renderer; a signature's SVG data URL, drawn or typed. |
+| `BormFileUploader`, `BormUpload`, `BormUploadContext` | Uploading a file as it is chosen (`UploadWith`), and following it. |
+| `BormDesigner` | The visual form designer: `Value` in, a new definition out through `ValueChanged`. |
 | `BormConditionOperator`, `BormValidationTrigger`, `BormUpdateTrigger` | The vocabulary of conditions, validation timing and write-back timing. |

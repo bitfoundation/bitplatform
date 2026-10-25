@@ -52,6 +52,9 @@ public static class BormMessageKeys
     /// </summary>
     public const string Rule = "rule";
 
+    /// <summary>A value that does not fit the field's <see cref="BormMask"/>. Arg 0 is the shape to write it in, <c>(###) ###-####</c>.</summary>
+    public const string Mask = "mask";
+
     // --- UI chrome ---
     // The library renders text of its own — buttons, placeholders, the empty state of a repeater. It
     // goes through the same provider as the validation messages, so translating a form means
@@ -99,8 +102,53 @@ public static class BormMessageKeys
     /// </summary>
     public const string ArrayItemGroup = "ui.array.itemGroup";
 
+    /// <summary>Accessible name of a paged repeater's pager. Arg 0 is the list's label.</summary>
+    public const string ArrayPages = "ui.array.pages";
+
+    /// <summary>Label of a paged repeater's "previous page" button.</summary>
+    public const string ArrayPreviousPage = "ui.array.previousPage";
+
+    /// <summary>Label of a paged repeater's "next page" button.</summary>
+    public const string ArrayNextPage = "ui.array.nextPage";
+
+    /// <summary>Accessible name of a paged repeater's page picker. Args: current page, number of pages.</summary>
+    public const string ArrayPage = "ui.array.page";
+
+    /// <summary>Which rows a page shows. Args: first row, last row, number of rows.</summary>
+    public const string ArrayRange = "ui.array.range";
+
+    /// <summary>How many rows on other pages need attention. Args: how many, item noun.</summary>
+    public const string ArrayElsewhere = "ui.array.elsewhere";
+
+    /// <summary>Label of the button that turns to the first row on another page that needs attention.</summary>
+    public const string ArrayShowElsewhere = "ui.array.showElsewhere";
+
     /// <summary>Label of the button that clears a file field's selection.</summary>
     public const string FileClear = "ui.file.clear";
+
+    /// <summary>How far a file's upload has got. Args: file name, percent.</summary>
+    public const string UploadProgress = "ui.upload.progress";
+
+    /// <summary>Said once a file has been uploaded. Arg 0 is the file name.</summary>
+    public const string UploadDone = "ui.upload.done";
+
+    /// <summary>Said when a file could not be uploaded. Arg 0 is the file name.</summary>
+    public const string UploadFailed = "ui.upload.failed";
+
+    /// <summary>The button that stops an upload. Arg 0 is the file name.</summary>
+    public const string UploadCancel = "ui.upload.cancel";
+
+    /// <summary>The button that tries a failed upload again. Arg 0 is the file name.</summary>
+    public const string UploadRetry = "ui.upload.retry";
+
+    /// <summary>The visible text of the button that stops an upload.</summary>
+    public const string UploadCancelShort = "ui.upload.cancel.short";
+
+    /// <summary>The visible text of the button that tries a failed upload again.</summary>
+    public const string UploadRetryShort = "ui.upload.retry.short";
+
+    /// <summary>The button that takes back an uploaded file. Arg 0 is the file name.</summary>
+    public const string UploadRemove = "ui.upload.remove";
 
     /// <summary>Heading of the error summary when it lists exactly one problem.</summary>
     public const string SummaryTitleOne = "ui.summary.title.one";
@@ -220,6 +268,158 @@ public static class BormMessageKeys
 
     /// <summary>The accessible name of a review's "change this step" button. Arg 0 is the step's title.</summary>
     public const string ReviewChangeStep = "ui.review.changeStep";
+
+    /// <summary>The button that opens a Markdown field's preview.</summary>
+    public const string MarkdownShowPreview = "ui.markdown.showPreview";
+
+    /// <summary>The button that closes a Markdown field's preview.</summary>
+    public const string MarkdownHidePreview = "ui.markdown.hidePreview";
+
+    /// <summary>The accessible name of a Markdown field's preview.</summary>
+    public const string MarkdownPreview = "ui.markdown.preview";
+
+    /// <summary>What the preview of an empty Markdown field says.</summary>
+    public const string MarkdownEmpty = "ui.markdown.empty";
+
+    /// <summary>The summary of a Markdown field's formatting guide.</summary>
+    public const string MarkdownHelp = "ui.markdown.help";
+
+    /// <summary>Bold, in the formatting guide.</summary>
+    public const string MarkdownBold = "ui.markdown.bold";
+
+    /// <summary>Italic, in the formatting guide.</summary>
+    public const string MarkdownItalic = "ui.markdown.italic";
+
+    /// <summary>Code, in the formatting guide.</summary>
+    public const string MarkdownCode = "ui.markdown.code";
+
+    /// <summary>A link, in the formatting guide.</summary>
+    public const string MarkdownLink = "ui.markdown.link";
+
+    /// <summary>A bulleted list item, in the formatting guide.</summary>
+    public const string MarkdownBulleted = "ui.markdown.bulleted";
+
+    /// <summary>A numbered list item, in the formatting guide.</summary>
+    public const string MarkdownNumbered = "ui.markdown.numbered";
+
+    /// <summary>A quote, in the formatting guide.</summary>
+    public const string MarkdownQuote = "ui.markdown.quote";
+
+    /// <summary>A heading, in the formatting guide.</summary>
+    public const string MarkdownHeading = "ui.markdown.heading";
+
+    /// <summary>The accessible name of the signature pad.</summary>
+    public const string SignaturePad = "ui.signature.pad";
+
+    /// <summary>The button that clears a signature.</summary>
+    public const string SignatureClear = "ui.signature.clear";
+
+    /// <summary>The toggle that types a signature instead of drawing it.</summary>
+    public const string SignatureTypeInstead = "ui.signature.typeInstead";
+
+    /// <summary>The accessible name of the box a signature is typed into.</summary>
+    public const string SignatureTypeLabel = "ui.signature.typeLabel";
+
+    /// <summary>The alternative text of a signature shown as an image. Arg 0 is the field's label.</summary>
+    public const string SignatureImage = "ui.signature.image";
+
+    // --- The form designer (BormDesigner) ---
+
+    /// <summary>Heading of the designer's list of fields.</summary>
+    public const string DesignerFields = "designer.fields";
+
+    /// <summary>Heading of the designer's palette of fields to add.</summary>
+    public const string DesignerAdd = "designer.add";
+
+    /// <summary>Heading of the designer's properties of the chosen field.</summary>
+    public const string DesignerProperties = "designer.properties";
+
+    /// <summary>Heading of the designer's settings of the form itself.</summary>
+    public const string DesignerForm = "designer.form";
+
+    /// <summary>Heading of the designer's live preview.</summary>
+    public const string DesignerPreview = "designer.preview";
+
+    /// <summary>Heading of the designer's JSON Schema of the form.</summary>
+    public const string DesignerJson = "designer.json";
+
+    /// <summary>The button that loads the JSON Schema typed into the designer.</summary>
+    public const string DesignerImport = "designer.import";
+
+    /// <summary>Said when the JSON Schema given to the designer cannot be read. Arg 0 is why.</summary>
+    public const string DesignerImportFailed = "designer.importFailed";
+
+    /// <summary>What the designer's list says before any field is added.</summary>
+    public const string DesignerEmpty = "designer.empty";
+
+    /// <summary>What the properties panel says while no field is chosen.</summary>
+    public const string DesignerNothingSelected = "designer.nothingSelected";
+
+    /// <summary>Accessible name of the button that chooses a field to edit. Arg 0 is the field's label.</summary>
+    public const string DesignerEdit = "designer.edit";
+
+    /// <summary>Accessible name of the button that moves a field up. Arg 0 is the field's label.</summary>
+    public const string DesignerMoveUp = "designer.moveUp";
+
+    /// <summary>Accessible name of the button that moves a field down. Arg 0 is the field's label.</summary>
+    public const string DesignerMoveDown = "designer.moveDown";
+
+    /// <summary>Accessible name of the button that copies a field. Arg 0 is the field's label.</summary>
+    public const string DesignerDuplicate = "designer.duplicate";
+
+    /// <summary>Accessible name of the button that deletes a field. Arg 0 is the field's label.</summary>
+    public const string DesignerDelete = "designer.delete";
+
+    /// <summary>Announced once a field is added. Arg 0 is its label.</summary>
+    public const string DesignerAdded = "designer.added";
+
+    /// <summary>Announced once a field is deleted. Arg 0 is its label.</summary>
+    public const string DesignerDeleted = "designer.deleted";
+
+    /// <summary>Announced once a field is moved. Args: its label, its new position, how many fields there are.</summary>
+    public const string DesignerMoved = "designer.moved";
+
+    /// <summary>Said of a field holding settings made in code, which the designer keeps as they are.</summary>
+    public const string DesignerKeepsCode = "designer.keepsCode";
+
+    /// <summary>Said of a field name that is not a valid one.</summary>
+    public const string DesignerInvalidName = "designer.invalidName";
+
+    /// <summary>Said of a field name another field has.</summary>
+    public const string DesignerDuplicateName = "designer.duplicateName";
+
+    /// <summary>Said of an expression or a mask that does not read. Arg 0 is why.</summary>
+    public const string DesignerInvalid = "designer.invalid";
+
+    /// <summary>Help beneath the designer's expression boxes.</summary>
+    public const string DesignerExpressionHelp = "designer.expressionHelp";
+
+    /// <summary>Help beneath the designer's options box.</summary>
+    public const string DesignerOptionsHelp = "designer.optionsHelp";
+
+    /// <summary>The label of one of the designer's properties. Arg: the property, as <see cref="DesignerProperty"/> names it.</summary>
+    public static string DesignerProperty(string property) => "designer.property." + property;
+
+    /// <summary>The name of one of the kinds of field the designer offers - <c>text</c>, <c>select</c>, <c>signature</c>.</summary>
+    public static string DesignerKind(string kind) => "designer.kind." + kind;
+
+    /// <summary>The visible text of the Undo button.</summary>
+    public const string Undo = "ui.undo";
+
+    /// <summary>The visible text of the Redo button.</summary>
+    public const string Redo = "ui.redo";
+
+    /// <summary>The accessible name of the Undo button. Arg 0 is the label of the field the change was to.</summary>
+    public const string UndoField = "ui.undo.field";
+
+    /// <summary>The accessible name of the Redo button. Arg 0 is the label of the field the change was to.</summary>
+    public const string RedoField = "ui.redo.field";
+
+    /// <summary>Announced once a change is undone. Arg 0 is the field's label.</summary>
+    public const string Undone = "ui.undone";
+
+    /// <summary>Announced once a change is made again. Arg 0 is the field's label.</summary>
+    public const string Redone = "ui.redone";
 }
 
 /// <summary>The English defaults used when no <see cref="IBormMessageProvider"/> is registered.</summary>
@@ -252,6 +452,7 @@ public sealed class BormDefaultMessageProvider : IBormMessageProvider
         BormMessageKeys.Conversion => $"'{Arg(args, 0)}' is not a valid value for this field.",
         BormMessageKeys.Uuid => "Enter a valid UUID.",
         BormMessageKeys.Rule => "This value is not valid.",
+        BormMessageKeys.Mask => $"Enter it in the form {Arg(args, 0)}.",
 
         BormMessageKeys.SelectPlaceholder => "-- Select --",
         BormMessageKeys.SelectLoading => "Loading…",
@@ -266,7 +467,24 @@ public sealed class BormDefaultMessageProvider : IBormMessageProvider
         BormMessageKeys.ArrayMoveDown => $"Move {Arg(args, 0)} {Arg(args, 1)} down",
         BormMessageKeys.ArrayEmpty => $"No {Arg(args, 0)}s yet.",
         BormMessageKeys.ArrayItemGroup => $"{Arg(args, 0)} {Arg(args, 1)}",
+        BormMessageKeys.ArrayPages => $"Pages of {Arg(args, 0)}",
+        BormMessageKeys.ArrayPreviousPage => "Previous page",
+        BormMessageKeys.ArrayNextPage => "Next page",
+        BormMessageKeys.ArrayPage => $"Page {Arg(args, 0)} of {Arg(args, 1)}",
+        BormMessageKeys.ArrayRange => $"{Arg(args, 0)}–{Arg(args, 1)} of {Arg(args, 2)}",
+        BormMessageKeys.ArrayElsewhere => Arg(args, 0) is 1
+            ? $"1 {Arg(args, 1)} on another page needs attention."
+            : $"{Arg(args, 0)} {Arg(args, 1)}s on other pages need attention.",
+        BormMessageKeys.ArrayShowElsewhere => "Show the first",
         BormMessageKeys.FileClear => "Clear selection",
+        BormMessageKeys.UploadProgress => $"{Arg(args, 0)}: {Arg(args, 1)}% uploaded",
+        BormMessageKeys.UploadDone => $"{Arg(args, 0)} uploaded",
+        BormMessageKeys.UploadFailed => $"{Arg(args, 0)} could not be uploaded.",
+        BormMessageKeys.UploadCancel => $"Cancel the upload of {Arg(args, 0)}",
+        BormMessageKeys.UploadRetry => $"Try {Arg(args, 0)} again",
+        BormMessageKeys.UploadRemove => $"Remove {Arg(args, 0)}",
+        BormMessageKeys.UploadCancelShort => "Cancel",
+        BormMessageKeys.UploadRetryShort => "Retry",
         BormMessageKeys.SummaryTitleOne => "There is a problem with this form:",
         BormMessageKeys.SummaryTitleMany => $"There are {Arg(args, 0)} problems with this form:",
         BormMessageKeys.Submit => "Submit",
@@ -301,9 +519,96 @@ public sealed class BormDefaultMessageProvider : IBormMessageProvider
         BormMessageKeys.ReviewHidden => "Not shown",
         BormMessageKeys.ReviewChange => "Change",
         BormMessageKeys.ReviewChangeStep => $"Change {Arg(args, 0)}",
+        BormMessageKeys.MarkdownShowPreview => "Show preview",
+        BormMessageKeys.MarkdownHidePreview => "Hide preview",
+        BormMessageKeys.MarkdownPreview => "Preview",
+        BormMessageKeys.MarkdownEmpty => "Nothing to preview yet.",
+        BormMessageKeys.MarkdownHelp => "Formatting help",
+        BormMessageKeys.MarkdownBold => "bold",
+        BormMessageKeys.MarkdownItalic => "italic",
+        BormMessageKeys.MarkdownCode => "code",
+        BormMessageKeys.MarkdownLink => "link",
+        BormMessageKeys.MarkdownBulleted => "bulleted list",
+        BormMessageKeys.MarkdownNumbered => "numbered list",
+        BormMessageKeys.MarkdownQuote => "quote",
+        BormMessageKeys.MarkdownHeading => "heading",
+        BormMessageKeys.SignaturePad => "Draw your signature here with a mouse, a finger or a pen",
+        BormMessageKeys.SignatureClear => "Clear",
+        BormMessageKeys.SignatureTypeInstead => "Type it instead",
+        BormMessageKeys.SignatureTypeLabel => "Type your full name",
+        BormMessageKeys.SignatureImage => $"{Arg(args, 0)}: signature",
+        BormMessageKeys.DesignerFields => "Fields",
+        BormMessageKeys.DesignerAdd => "Add a field",
+        BormMessageKeys.DesignerProperties => "Properties",
+        BormMessageKeys.DesignerForm => "Form",
+        BormMessageKeys.DesignerPreview => "Preview",
+        BormMessageKeys.DesignerJson => "JSON Schema",
+        BormMessageKeys.DesignerImport => "Load this JSON",
+        BormMessageKeys.DesignerImportFailed => $"That JSON could not be read: {Arg(args, 0)}",
+        BormMessageKeys.DesignerEmpty => "No fields yet. Add one from the list.",
+        BormMessageKeys.DesignerNothingSelected => "Choose a field to see its properties.",
+        BormMessageKeys.DesignerEdit => $"Edit {Arg(args, 0)}",
+        BormMessageKeys.DesignerMoveUp => $"Move {Arg(args, 0)} up",
+        BormMessageKeys.DesignerMoveDown => $"Move {Arg(args, 0)} down",
+        BormMessageKeys.DesignerDuplicate => $"Duplicate {Arg(args, 0)}",
+        BormMessageKeys.DesignerDelete => $"Delete {Arg(args, 0)}",
+        BormMessageKeys.DesignerAdded => $"Added {Arg(args, 0)}.",
+        BormMessageKeys.DesignerDeleted => $"Deleted {Arg(args, 0)}.",
+        BormMessageKeys.DesignerMoved => $"{Arg(args, 0)} is now number {Arg(args, 1)} of {Arg(args, 2)}.",
+        BormMessageKeys.DesignerKeepsCode => "This field has settings made in code - an options provider, a condition or a rule - which are kept as they are.",
+        BormMessageKeys.DesignerInvalidName => "Start with a letter; then letters, digits or _.",
+        BormMessageKeys.DesignerDuplicateName => "Another field already has this name.",
+        BormMessageKeys.DesignerInvalid => $"This does not read: {Arg(args, 0)}",
+        BormMessageKeys.DesignerExpressionHelp => "An expression, such as {Country} = 'NL' or {Quantity} * {Price}.",
+        BormMessageKeys.DesignerOptionsHelp => "One option per line: value = Label, or the value alone.",
+        _ when key.StartsWith("designer.property.", StringComparison.Ordinal) => DesignerProperties.GetValueOrDefault(key[18..], key[18..]),
+        _ when key.StartsWith("designer.kind.", StringComparison.Ordinal) => DesignerKinds.GetValueOrDefault(key[14..], key[14..]),
+        BormMessageKeys.Undo => "Undo",
+        BormMessageKeys.Redo => "Redo",
+        BormMessageKeys.UndoField => $"Undo the change to {Arg(args, 0)}",
+        BormMessageKeys.RedoField => $"Redo the change to {Arg(args, 0)}",
+        BormMessageKeys.Undone => $"Undone: {Arg(args, 0)}",
+        BormMessageKeys.Redone => $"Redone: {Arg(args, 0)}",
 
         _ => key
     };
 
     private static object? Arg(object?[] args, int index) => index < args.Length ? args[index] : null;
+
+    internal static readonly Dictionary<string, string> DesignerProperties = new(StringComparer.Ordinal)
+    {
+        ["kind"] = "Kind of field", ["name"] = "Name", ["label"] = "Label", ["help"] = "Help text",
+        ["placeholder"] = "Placeholder", ["text"] = "Text", ["required"] = "Required", ["readOnly"] = "Read-only",
+        ["minLength"] = "Shortest", ["maxLength"] = "Longest", ["min"] = "Smallest", ["max"] = "Largest",
+        ["pattern"] = "Pattern", ["mask"] = "Mask", ["options"] = "Options", ["visibleWhen"] = "Show when",
+        ["requiredWhen"] = "Required when", ["computed"] = "Computed as", ["group"] = "Group",
+        ["columnSpan"] = "Columns spanned", ["title"] = "Title", ["description"] = "Description", ["columns"] = "Columns"
+    };
+
+    internal static readonly Dictionary<string, string> DesignerKinds = new(StringComparer.Ordinal)
+    {
+        ["text"] = "Text", ["textarea"] = "Paragraph", ["markdown"] = "Formatted text", ["email"] = "Email",
+        ["password"] = "Password", ["url"] = "Web address", ["tel"] = "Phone", ["number"] = "Number",
+        ["integer"] = "Whole number", ["range"] = "Slider", ["date"] = "Date", ["datetime"] = "Date and time",
+        ["time"] = "Time", ["month"] = "Month", ["week"] = "Week", ["checkbox"] = "Checkbox", ["switch"] = "Switch",
+        ["select"] = "Dropdown", ["radio"] = "Choice", ["combobox"] = "Combobox", ["multiselect"] = "Several choices",
+        ["tags"] = "Tags", ["color"] = "Colour", ["file"] = "File", ["signature"] = "Signature", ["static"] = "Heading and text"
+    };
+}
+
+/// <summary>How the library resolves its own words, in one place.</summary>
+internal static class BormMessageText
+{
+    /// <summary>The registered provider, else the English defaults.</summary>
+    internal static IBormMessageProvider Provider(IServiceProvider? services)
+        => services?.GetService(typeof(IBormMessageProvider)) as IBormMessageProvider ?? BormDefaultMessageProvider.Instance;
+
+    /// <summary>
+    /// The text for <paramref name="key"/> in <paramref name="language"/> when there is one and the provider can answer in
+    /// a language of its choosing, else in the provider's own (the current UI culture's, for most).
+    /// </summary>
+    internal static string Get(IBormMessageProvider provider, string? language, string key, object?[] args)
+        => language is not null && provider is IBormLocalizedMessageProvider localized
+            ? localized.Get(language, key, args)
+            : provider.Get(key, args);
 }

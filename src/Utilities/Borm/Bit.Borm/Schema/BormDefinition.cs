@@ -216,6 +216,8 @@ public sealed class BormDefinition
                 RevalidateOn = new List<string>(field.RevalidateOn),
                 OnChanged = field.OnChanged,
                 Normalize = field.Normalize,
+                Mask = field.Mask,
+                MaskStoresRaw = field.MaskStoresRaw,
                 MinLength = field.MinLength,
                 MaxLength = field.MaxLength,
                 Min = field.Min,
@@ -225,6 +227,7 @@ public sealed class BormDefinition
                 Multiple = field.Multiple,
                 Accept = field.Accept,
                 MaxFileSize = field.MaxFileSize,
+                Uploader = field.Uploader,
                 Autocomplete = field.Autocomplete,
                 InputMode = field.InputMode,
                 Autofocus = field.Autofocus,
@@ -242,6 +245,7 @@ public sealed class BormDefinition
                 ItemTemplate = field.ItemTemplate is { } template ? CloneField(template) : null,
                 MinItems = field.MinItems,
                 MaxItems = field.MaxItems,
+                PageSize = field.PageSize,
                 CustomRenderer = field.CustomRenderer,
                 Attributes = new Dictionary<string, object?>(field.Attributes)
             };

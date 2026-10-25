@@ -106,6 +106,26 @@ public sealed class BormFieldBuilder
     // --- Type overrides ---
     public BormFieldBuilder As(BormFieldType type) { _field.Type = type; return this; }
     public BormFieldBuilder AsTextArea(int rows = 4) { _field.Type = BormFieldType.TextArea; _field.Attributes["rows"] = rows; return this; }
+
+    /// <summary>
+    /// Formatted text written in Markdown: a text area with a preview of the formatting beside a short guide to
+    /// it, and a review that shows it formatted. See <see cref="BormMarkdown"/> for what it understands and why
+    /// what it renders is safe. The preview follows the typing, a moment after the user pauses.
+    /// </summary>
+    public BormFieldBuilder AsMarkdown(int rows = 6)
+    {
+        _field.Type = BormFieldType.Markdown;
+        _field.Attributes["rows"] = rows;
+        _field.UpdateOn = BormUpdateTrigger.Input;
+        if (_field.DebounceMilliseconds == 0) _field.DebounceMilliseconds = 300;
+        return this;
+    }
+
+    /// <summary>
+    /// A handwritten signature, drawn with a mouse, a finger or a pen - or typed instead, by anyone who cannot
+    /// draw one. The value is an SVG image as a <c>data:</c> URL.
+    /// </summary>
+    public BormFieldBuilder AsSignature() { _field.Type = BormFieldType.Signature; return this; }
     public BormFieldBuilder AsEmail() => Email();
     public BormFieldBuilder AsPassword() { _field.Type = BormFieldType.Password; _field.Autocomplete ??= "current-password"; return this; }
     public BormFieldBuilder AsUrl() { _field.Type = BormFieldType.Url; return this; }
@@ -361,6 +381,30 @@ public sealed class BormFieldBuilder
     }
 
     /// <summary>
+    /// Writes the value in a fixed shape - <c>Mask("(000) 000-0000")</c>, <c>Mask("AA00 0000 0000 0000 0000 00")</c>.
+    /// What the user types is put into it when they leave the box, and a value that does not fit is reported
+    /// with the shape to write it in. See <see cref="BormMask"/> for the notation.
+    /// </summary>
+    /// <param name="pattern"><c>0</c> a digit, <c>A</c> a letter (in capitals), <c>a</c> a letter, <c>*</c> either; <c>\</c> escapes; anything else is literal.</param>
+    /// <param name="storeRaw">Store only what filled the slots (<c>5551234567</c>); the box still shows it formatted.</param>
+    /// <param name="message">The message for a value that does not fit, instead of the provider's.</param>
+    /// <remarks>
+    /// The box is not rewritten as the user types: that needs script to keep the caret where it was, and a
+    /// box changing what is being typed into it reads badly to assistive technology. A mask of digits alone
+    /// asks a phone for its number pad.
+    /// </remarks>
+    public BormFieldBuilder Mask(string pattern, bool storeRaw = false, string? message = null)
+    {
+        var mask = new BormMask(pattern);
+        _field.Mask = pattern;
+        _field.MaskStoresRaw = storeRaw;
+        _field.RemoveValidators(BormMessageKeys.Mask);
+        _field.AddValidator(new BormMaskRule(mask, message));
+        if (mask.OnlyDigits) _field.InputMode ??= "numeric";
+        return this;
+    }
+
+    /// <summary>
     /// Trims surrounding whitespace from a text value when the user leaves the field. Pasted values
     /// carry it in constantly, and it is invisible in the box and fatal in a lookup key.
     /// </summary>
@@ -575,6 +619,25 @@ public sealed class BormFieldBuilder
 
     private BormFileRule? CurrentFileRule() => _field.Validators.OfType<BormFileRule>().FirstOrDefault();
 
+    /// <summary>
+    /// Uploads each file as soon as it is chosen, through <paramref name="upload"/>, and stores what it returns -
+    /// an id, a URL - in place of the file: a string, or a list of them for a field taking several files.
+    /// </summary>
+    /// <remarks>
+    /// Each file is judged by <see cref="Accept"/> and <see cref="MaxFileSize"/> before anything is sent, and
+    /// shown with its progress, a Cancel button while it goes and Retry if it fails. A submit made while files
+    /// are on their way waits for them. Read the file through <see cref="BormUploadContext.OpenReadStream"/>
+    /// and the bar follows the bytes; honour <see cref="BormUploadContext.CancellationToken"/>, which a Cancel,
+    /// clearing the field or leaving the form sets. Uploaders are code, so they are not exported to JSON Schema.
+    /// </remarks>
+    public BormFieldBuilder UploadWith(BormFileUploader upload)
+    {
+        ArgumentNullException.ThrowIfNull(upload);
+        _field.Type = BormFieldType.File;
+        _field.Uploader = upload;
+        return this;
+    }
+
     public BormFieldBuilder Items(int? min = null, int? max = null, string? message = null)
     {
         _field.MinItems = min;
@@ -595,6 +658,22 @@ public sealed class BormFieldBuilder
     public BormFieldBuilder SeedMinItems(bool value = true)
     {
         _field.Attributes["seedMinItems"] = value;
+        return this;
+    }
+
+    /// <summary>
+    /// Shows a long list <paramref name="size"/> rows at a time, with a pager - for a list of hundreds or thousands of
+    /// rows that would otherwise all be on the page at once.
+    /// </summary>
+    /// <remarks>
+    /// Paged rather than virtualised: a virtualised list leaves the rows out of view out of the page, where neither
+    /// focus, nor the error summary, nor a screen reader can reach them. A page is always whole, and the pager says
+    /// how many rows on other pages need attention and takes the user to the first of them.
+    /// </remarks>
+    public BormFieldBuilder PageSize(int size)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(size, 1);
+        _field.PageSize = size;
         return this;
     }
 

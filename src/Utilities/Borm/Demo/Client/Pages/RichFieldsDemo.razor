@@ -1,0 +1,117 @@
+﻿@page "/rich-fields"
+@implements IDisposable
+
+<PageTitle>Masks, formatted text, signatures &amp; uploads · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Masks, formatted text, signatures &amp; uploads</h1>
+    <p class="bb-subtitle">
+        Four kinds of answer a plain text box does not give. A <strong>mask</strong> writes a phone number or an IBAN in
+        its shape once it is typed. <strong>Markdown</strong> is formatted text with a preview, rendered safely. A
+        <strong>signature</strong> is drawn - or typed instead - and kept as an image. A <strong>file</strong> is sent
+        the moment it is chosen, with its progress shown, and the field keeps what came back.
+    </p>
+</div>
+
+<div class="bb-note">
+    Type the phone number any way you like - <code>5551234567</code>, <code>555-123-4567</code> - and leave the box. The
+    IBAN is stored without its spaces, and shown with them. Open the cover letter's preview and try
+    <code>**bold**</code> or a <code>[link](https://bitplatform.dev)</code>; a <code>javascript:</code> link stays text.
+    Sign with the mouse or a finger, or choose <em>Type it instead</em>. The upload here goes nowhere: it reads the file
+    in pieces to move the bar, so pick something of a few megabytes to watch it.
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
+    <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Send application" />
+</div>
+
+@if (_submitted)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Sent ✓</strong><pre>@_json</pre></div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+"""
+@page "/rich-fields"
+
+<BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Send application" />
+
+@code {
+    private readonly Dictionary<string, object?> _data = new();
+    private BormState _state = default!;
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.Create()
+            .Title("Application")
+            .Text("Phone", f => f.Required().Mask("(000) 000-0000"))
+            .Text("Iban", f => f.Label("IBAN").Mask("AA00 0000 0000 0000 0000 00", storeRaw: true))
+            .Text("CoverLetter", f => f.Label("Cover letter").AsMarkdown().Required().MaxLength(2000).CharacterCount())
+            .Field("Resume", BormFieldType.File, f => f.Label("Résumé").Accept(".pdf,.doc,.docx,.txt")
+                .MaxFileSize(20_000_000).Required().UploadWith(SendAsync))
+            .Text("Signature", f => f.AsSignature().Required())
+            .Build();
+
+        _state = new BormState(schema, new BormDictionaryDataAccessor(_data));
+    }
+
+    // Reads the file as a request body would be read, and returns what storage would.
+    private static async Task<string> SendAsync(BormUploadContext upload)
+    {
+        await using var stream = upload.OpenReadStream();          // counts what is read as sent
+        var buffer = new byte[256 * 1024];
+        while (await stream.ReadAsync(buffer, upload.CancellationToken) > 0)
+            await Task.Delay(40, upload.CancellationToken);       // ... await http.PostAsync(...) ...
+        return $"file-{Guid.NewGuid():N}";
+    }
+
+    public void Dispose() => _state.Dispose();
+}
+""";
+
+    private readonly Dictionary<string, object?> _data = new();
+    private BormState _state = default!;
+    private bool _submitted;
+    private string _json = "";
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.Create()
+            .Title("Application")
+            .Text("Phone", f => f.Required().Mask("(000) 000-0000"))
+            .Text("Iban", f => f.Label("IBAN").Mask("AA00 0000 0000 0000 0000 00", storeRaw: true))
+            .Text("CoverLetter", f => f.Label("Cover letter").AsMarkdown().Required().MaxLength(2000).CharacterCount())
+            .Field("Resume", BormFieldType.File, f => f.Label("Résumé").Accept(".pdf,.doc,.docx,.txt")
+                .MaxFileSize(20_000_000).Required().UploadWith(SendAsync))
+            .Text("Signature", f => f.AsSignature().Required())
+            .Build();
+
+        _state = new BormState(schema, new BormDictionaryDataAccessor(_data));
+    }
+
+    private static async Task<string> SendAsync(BormUploadContext upload)
+    {
+        await using var stream = upload.OpenReadStream();
+        var buffer = new byte[256 * 1024];
+        while (await stream.ReadAsync(buffer, upload.CancellationToken) > 0)
+            await Task.Delay(40, upload.CancellationToken);
+        return $"file-{Guid.NewGuid():N}";
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        // The signature is an image: shown here by its size rather than as a page of base64.
+        var shown = _data.ToDictionary(kv => kv.Key, kv => kv.Value is string s && BormSignature.IsImage(s) ? $"(signature, {s.Length:N0} characters)" : kv.Value);
+        _json = System.Text.Json.JsonSerializer.Serialize(shown, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+
+    public void Dispose() => _state.Dispose();
+}

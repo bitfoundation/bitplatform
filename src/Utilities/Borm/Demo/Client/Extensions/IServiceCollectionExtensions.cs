@@ -21,6 +21,10 @@ public static class IServiceCollectionExtensions
             .RegisterCustom<BlazorTextInput>("blazor-text")
             .RegisterCustom<BlazorNumberInput>("blazor-number"));
 
+        // The library's own words in a form's language - the localization demo's buttons and messages. Every other
+        // page follows the UI culture, which InvariantGlobalization keeps invariant, so they read English.
+        services.AddBormTranslations();
+
         // The FluentValidation validator the FluentValidation demo resolves.
         services.AddScoped<IValidator<JobApplication>, JobApplicationValidator>();
 

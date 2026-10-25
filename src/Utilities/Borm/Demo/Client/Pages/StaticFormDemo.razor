@@ -1,0 +1,110 @@
+﻿@page "/static-form"
+@attribute [ExcludeFromInteractiveRouting]
+
+<PageTitle>Forms without interactivity · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Forms without interactivity</h1>
+    <p class="bb-subtitle">
+        This page has no interactive render mode: it is rendered on the server, and its form posts to the server like
+        any HTML form - which is also what a browser with script turned off gets. A <code>FormName</code> is all it
+        takes. The page's <code>[SupplyParameterFromForm]</code> model binds what each control posts, and the form judges
+        it on the server exactly as it would in the browser.
+    </p>
+</div>
+
+<div class="bb-note">
+    Submit it empty: the page comes back with every message in place. Type letters into <em>Hours a week</em>: model
+    binding cannot read them, and the form shows them back with the reason. <em>Country</em> is a combobox: it posts
+    the name you type, and the form turns it into the code it stands for. With nothing to click, what a click would show
+    is shown already - a field that depends on another appears after the post that answered it.
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form - posted, not interactive</span></div>
+    <BormView Definition="_schema" Model="Model" FormName="volunteer" OnValidSubmit="Received" SubmitText="Apply" ShowErrorSummary="true" />
+</div>
+
+@if (_received)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Received ✓</strong><pre>@_json</pre></div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+"""
+@page "/static-form"
+@attribute [ExcludeFromInteractiveRouting]     @* .NET 9+: stays on the server in an interactive app *@
+
+<BormView Definition="_schema" Model="Model" FormName="volunteer" OnValidSubmit="Received" SubmitText="Apply" />
+
+@code {
+    [SupplyParameterFromForm(FormName = "volunteer")]
+    public VolunteerApplication? Model { get; set; }
+
+    private BormDefinition _schema = default!;
+
+    protected override void OnInitialized()
+    {
+        Model ??= new();
+        _schema = BormBuilder.For<VolunteerApplication>()
+            .Title("Volunteer with us")
+            .Columns(2)
+            .Field(x => x.FullName, f => f.Required().ColumnSpan(2))
+            .Field(x => x.Email, f => f.Required().Email())
+            .Field(x => x.Hours, f => f.Range(1, 40))
+            .Field(x => x.Team, f => f.AsRadio()
+                .Options(("events", "Events"), ("kitchen", "Kitchen"), ("drivers", "Drivers")).Required())
+            .Field(x => x.Country, f => f.AsCombobox().Options([.. DemoDirectory.Countries]).Required())
+            .Field(x => x.Newsletter)
+            .Object(x => x.Address, a => a
+                .Field(c => c.City, f => f.Required())
+                .Field(c => c.PostCode, f => f.VisibleWhen("{City} != null")))
+            .Build();
+    }
+
+    private void Received(BormState state)
+    {
+        // ... save it, then send the user on: NavigationManager.NavigateTo("/thanks") ...
+    }
+}
+""";
+
+    [SupplyParameterFromForm(FormName = "volunteer")]
+    public VolunteerApplication? Model { get; set; }
+
+    private BormDefinition _schema = default!;
+    private bool _received;
+    private string _json = "";
+
+    protected override void OnInitialized()
+    {
+        Model ??= new();
+        _schema = BormBuilder.For<VolunteerApplication>()
+            .Title("Volunteer with us")
+            .Columns(2)
+            .Field(x => x.FullName, f => f.Required().ColumnSpan(2))
+            .Field(x => x.Email, f => f.Required().Email())
+            .Field(x => x.Hours, f => f.Range(1, 40))
+            .Field(x => x.Team, f => f.AsRadio()
+                .Options(("events", "Events"), ("kitchen", "Kitchen"), ("drivers", "Drivers")).Required())
+            .Field(x => x.Country, f => f.AsCombobox().Options([.. DemoDirectory.Countries]).Required())
+            .Field(x => x.Newsletter)
+            .Object(x => x.Address, a => a
+                .Field(c => c.City, f => f.Required())
+                .Field(c => c.PostCode, f => f.VisibleWhen("{City} != null")))
+            .Build();
+    }
+
+    private void Received(BormState state)
+    {
+        _received = true;
+        _json = System.Text.Json.JsonSerializer.Serialize(Model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+}

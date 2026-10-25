@@ -4,6 +4,7 @@
 @* Splat first so the renderer's own attributes below always win. *@
 <textarea @attributes="ExtraAttributes"
           id="@Context.ElementId"
+          name="@Context.InputName"
           @ref="Element"
           class="@CssClass"
           placeholder="@Context.Placeholder"

@@ -18,7 +18,8 @@
     <code>state.Language</code>, which needs no culture data - this site runs with <code>InvariantGlobalization</code>,
     as many WebAssembly apps do - and marks the form with a <code>lang</code> a screen reader follows. A dialect
     without a table of its own, <code>de-CH</code>, reads its language's. The library's own words - "This field is
-    required." and the buttons - come from <code>IBormMessageProvider</code>, which this site leaves in English.
+    required." and the buttons - follow the same language: this site registers <code>AddBormTranslations()</code>,
+    which speaks twelve languages besides English, and an <code>IBormMessageProvider</code> of your own can replace it.
     <em>Right to left</em> sets <code>dir="rtl"</code> on the container: the layout uses logical CSS properties
     throughout, so it mirrors as the page does.
 </div>
@@ -39,7 +40,7 @@
         </label>
     </div>
     <div dir="@(_rtl ? "rtl" : null)">
-        <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Order" />
+        <BormView State="_state" OnValidSubmit="HandleSubmit" />
     </div>
 </div>
 
@@ -59,7 +60,7 @@
 @page "/localization"
 
 <button type="button" @onclick='() => _state.Language = "de"'>Deutsch</button>
-<BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Order" />
+<BormView State="_state" OnValidSubmit="HandleSubmit" />
 
 @code {
     private readonly TeamOrder _model = new();

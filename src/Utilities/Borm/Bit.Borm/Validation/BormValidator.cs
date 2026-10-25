@@ -22,6 +22,15 @@ public sealed class BormValidator
     /// </summary>
     public bool RunAsyncRulesOnInvalidFields { get; set; }
 
+    /// <summary>
+    /// The language the built-in messages are written in - a culture name, <c>de</c> or <c>pt-BR</c> - when the
+    /// registered message provider is an <see cref="IBormLocalizedMessageProvider"/> such as
+    /// <see cref="BormTranslatedMessageProvider"/>. Null (the default) follows the current UI culture. A
+    /// <see cref="BormState"/> keeps it at its own <see cref="BormState.Language"/>; set it yourself to validate a
+    /// posted form on the server in the language of the person who filled it in.
+    /// </summary>
+    public string? Language { get; set; }
+
     /// <summary>The code a rule's messages carry: its key, looking through a <c>When(…)</c> wrapper to the rule inside.</summary>
     private static string? CodeOf(IBormValidationRule rule)
     {
@@ -77,7 +86,8 @@ public sealed class BormValidator
                 cancellationToken.ThrowIfCancellationRequested();
                 var ctx = new BormValidationContext(string.Empty, data.Root, data, services)
                 {
-                    CancellationToken = cancellationToken
+                    CancellationToken = cancellationToken,
+                    Language = Language
                 };
                 var result = await rule.ValidateAsync(ctx);
                 if (!result.IsValid && result.Message is not null)
@@ -147,7 +157,8 @@ public sealed class BormValidator
         var value = data.GetValue(path);
         var ctx = new BormValidationContext(path, value, scoped, services, field)
         {
-            CancellationToken = cancellationToken
+            CancellationToken = cancellationToken,
+            Language = Language
         };
 
         // Conditional requiredness is evaluated before the declared rules so its message leads.

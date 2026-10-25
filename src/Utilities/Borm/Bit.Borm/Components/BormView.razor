@@ -9,26 +9,44 @@
    attribute win, so the form's own class and submit handler override whatever the caller splatted.
    Without that, a stray `class` would erase `bit-borm-form` and a stray `onsubmit` would unhook validation.
    The form's language is the one exception, set before it: a `lang` the caller gives says more than the state's. *@
-<form lang="@FormState.Language" @attributes="AdditionalAttributes"
-      class="bit-borm-form @(Class)" novalidate aria-busy="@(Working ? "true" : null)"
-      @onsubmit="OnFormSubmitted" @onsubmit:preventDefault="true">
-    @* With ProvideEditContext, everything inside the form can find a Blazor EditContext that mirrors
-       this form's validation — so an InputBase-derived control or a component library's input placed in
-       a custom renderer shows the same invalid state Borm's own controls do. Only then is the content
-       wrapped: a cascade is one more component between the view and what it renders. *@
-    @if (_editContextAdapter is { } adapter)
-    {
-        @* Keyed: a fixed cascade never tells its consumers the value changed, so another state's context
-           has to arrive in components built for it. *@
-        <CascadingValue @key="adapter" Value="adapter.EditContext" IsFixed="true">@Content</CascadingValue>
-    }
-    else
-    {
-        @Content
-    }
-</form>
+@if (FormName is { Length: > 0 } formName)
+{
+    @* Named, it is also a form the browser posts: rendered statically, with no interactivity at all, it goes to the
+       server like any HTML form, the page's [SupplyParameterFromForm] model binds what each control posts under
+       its name, and this form's submit handler judges it there. Interactive, preventDefault keeps it a Blazor form. *@
+    <form method="post" @formname="@formName" lang="@FormState.Language" @attributes="AdditionalAttributes"
+          class="bit-borm-form @(Class)" novalidate aria-busy="@(Working ? "true" : null)"
+          @onsubmit="OnFormSubmitted" @onsubmit:preventDefault="true">
+        <Microsoft.AspNetCore.Components.Forms.AntiforgeryToken />
+        @Body
+    </form>
+}
+else
+{
+    <form lang="@FormState.Language" @attributes="AdditionalAttributes"
+          class="bit-borm-form @(Class)" novalidate aria-busy="@(Working ? "true" : null)"
+          @onsubmit="OnFormSubmitted" @onsubmit:preventDefault="true">
+        @Body
+    </form>
+}
 
 @code {
+    // With ProvideEditContext, everything inside the form can find a Blazor EditContext that mirrors this form's
+    // validation — so an InputBase-derived control or a component library's input placed in a custom renderer
+    // shows the same invalid state Borm's own controls do. Only then is the content wrapped: a cascade is one more
+    // component between the view and what it renders. Keyed: a fixed cascade never tells its consumers the value
+    // changed, so another state's context has to arrive in components built for it.
+    private RenderFragment Body => @<text>
+        @if (_editContextAdapter is { } adapter)
+        {
+            <CascadingValue @key="adapter" Value="adapter.EditContext" IsFixed="true">@Content</CascadingValue>
+        }
+        else
+        {
+            @Content
+        }
+    </text>;
+
     private RenderFragment Content => @<text>
     @* role="heading" rather than a fixed <h2>, for the same reason the Static field carries one: the
        form is rendered inside a page whose outline the library cannot know, and a form dropped under
@@ -54,7 +72,7 @@
     @if (FormLevelMessages.Count > 0 && !ShowErrorSummary)
     {
         <BormValidationMessages Messages="FormLevelMessages" Show="FormState.IsSubmitted"
-                                Id="@BormFieldContext.FormElementId(FormState, "form_errors")" />
+                                Id="@BormFieldContext.FormElementId(FormState, "form_errors")" Language="@FormState.Language" />
     }
 
     @* Silent unless nothing else reports the outcome — see SubmitAnnouncement. Always in the page, and
@@ -63,7 +81,8 @@
        it exists for the one most likely to be lost. *@
     <p class="bit-borm-sr-only" role="status">@SubmitAnnouncement</p>
 
-    @if (FormState.Definition.IsWizard)
+    @* Statically rendered, there is no Next to press: a wizard is shown whole, its steps as sections. *@
+    @if (FormState.Definition.IsWizard && !RendersStatically)
     {
         @* A landmark with a name, so a screen reader can jump straight to "where am I in this form".
            The count is announced politely, because it changes when a conditional step appears. *@
@@ -147,6 +166,10 @@
                 {
                     <button type="button" class="bit-borm-btn bit-borm-btn--ghost" disabled="@Busy" @onclick="Reset">@ResetLabel</button>
                 }
+                @if (ShowUndo && !FormState.ReadOnly)
+                {
+                    @UndoButtons
+                }
             }
         </div>
     }
@@ -157,7 +180,7 @@
             @* Tabs, an accordion or sections: one form the user moves around in freely, validated together
                on submit. A failed submit turns to the first tab with something to fix (see
                ShowStepWithFirstError) and opens every section that has some. *@
-            <BormStepsView State="FormState" Layout="FormState.Definition.StepLayout" Label="@StepperLabelText"
+            <BormStepsView State="FormState" Layout="StepsLayout" Label="@StepperLabelText"
                            HeadingLevel="@Math.Clamp(TitleHeadingLevel + 1, 1, 6)" />
         }
         else
@@ -171,7 +194,7 @@
         {
             <div class="bit-borm-form__actions">@Actions(FormState)</div>
         }
-        else if (!FormState.ReadOnly && (ShowSubmitButton || ShowResetButton))
+        else if (!FormState.ReadOnly && (ShowSubmitButton || ShowResetButton || ShowUndo))
         {
             <div class="bit-borm-form__actions">
                 @if (ShowSubmitButton)
@@ -181,6 +204,10 @@
                 @if (ShowResetButton)
                 {
                     <button type="button" class="bit-borm-btn bit-borm-btn--ghost" disabled="@Busy" @onclick="Reset">@ResetLabel</button>
+                }
+                @if (ShowUndo)
+                {
+                    @UndoButtons
                 }
             </div>
         }
@@ -276,6 +303,47 @@
     /// <summary>Renders a button that restores the form to the values it started with.</summary>
     [Parameter] public bool ShowResetButton { get; set; }
 
+    /// <summary>
+    /// Renders Undo and Redo buttons, and has the state keep the history they need
+    /// (<see cref="BormState.HistoryLimit"/>: 100 changes, unless it keeps some already).
+    /// </summary>
+    [Parameter] public bool ShowUndo { get; set; }
+
+    // The buttons keep the focus, so they can be pressed again; what they did is said in words. aria-disabled, not
+    // disabled: undoing the last change would otherwise disable the very button that did it, and drop the focus on
+    // the page body. The click is guarded instead.
+    private RenderFragment UndoButtons => @<text>
+        <button type="button" class="bit-borm-btn bit-borm-btn--ghost" aria-disabled="@(!FormState.CanUndo || Busy ? "true" : null)"
+                aria-label="@HistoryButtonName(BormMessageKeys.UndoField, FormState.NextUndoPath, BormMessageKeys.Undo)"
+                @onclick="Undo">@FormState.Text(BormMessageKeys.Undo)</button>
+        <button type="button" class="bit-borm-btn bit-borm-btn--ghost" aria-disabled="@(!FormState.CanRedo || Busy ? "true" : null)"
+                aria-label="@HistoryButtonName(BormMessageKeys.RedoField, FormState.NextRedoPath, BormMessageKeys.Redo)"
+                @onclick="Redo">@FormState.Text(BormMessageKeys.Redo)</button>
+        <span class="bit-borm-sr-only" aria-live="polite">@_historyAnnouncement</span>
+    </text>;
+
+    private string? _historyAnnouncement;
+
+    private string? HistoryButtonName(string key, string? path, string plain)
+        => path is null ? FormState.Text(plain) : FormState.Text(key, HistoryLabel(path));
+
+    private string HistoryLabel(string path)
+        => FormState.FindField(path) is { } field ? FormState.LabelOf(field, path) ?? path : path;
+
+    private async Task Undo()
+    {
+        var path = FormState.NextUndoPath;
+        if (path is not null && await FormState.UndoAsync())
+            _historyAnnouncement = FormState.Text(BormMessageKeys.Undone, HistoryLabel(path));
+    }
+
+    private async Task Redo()
+    {
+        var path = FormState.NextRedoPath;
+        if (path is not null && await FormState.RedoAsync())
+            _historyAnnouncement = FormState.Text(BormMessageKeys.Redone, HistoryLabel(path));
+    }
+
     /// <inheritdoc cref="SubmitText" />
     [Parameter] public string? ResetText { get; set; }
 
@@ -329,6 +397,58 @@
     /// field's errors, and a <c>ValidationSummary</c> placed in the form lists them. Off by default.
     /// </summary>
     [Parameter] public bool ProvideEditContext { get; set; }
+
+    /// <summary>
+    /// Names the form so it can also be posted. Rendered statically - a page with no interactive render mode, a
+    /// browser with no script - it posts to the server like any HTML form, each control under the name the page's
+    /// <c>[SupplyParameterFromForm]</c> model binds (see <see cref="PostedModelName"/>), and this view validates and
+    /// submits it there. Interactive, it is a Blazor form as before. Two forms on one page need two names.
+    /// </summary>
+    [Parameter] public string? FormName { get; set; }
+
+    /// <summary>
+    /// The name of the page's <c>[SupplyParameterFromForm]</c> property the posted values bind to - <c>Model</c>,
+    /// the default, posts <c>Model.Lines[0].Product</c>. Empty posts the bare paths.
+    /// </summary>
+    [Parameter] public string PostedModelName { get; set; } = "Model";
+
+    // What model binding could not read in a posted form: text in a number box, a date that is not one.
+    [CascadingParameter] private Microsoft.AspNetCore.Components.Forms.FormMappingContext? MappingContext { get; set; }
+
+    /// <summary>
+    /// Whether this is a posted form rendered with no interactivity: there is no Next to press and no row to add,
+    /// so a wizard is shown whole and a repeater as it stands. A form prerendered on its way to being interactive
+    /// is not one: it keeps the shape it is about to have.
+    /// </summary>
+    private bool RendersStatically
+    {
+        get
+        {
+#if NET9_0_OR_GREATER
+            return FormName is { Length: > 0 } && !RendererInfo.IsInteractive && AssignedRenderMode is null;
+#else
+            return false;
+#endif
+        }
+    }
+
+    // Tabs need a click to change; sections show everything. An accordion is the browser's own and opens without script.
+    private BormStepLayout StepsLayout
+        => RendersStatically && FormState.Definition.StepLayout is BormStepLayout.Wizard or BormStepLayout.Tabs
+            ? BormStepLayout.Sections
+            : FormState.Definition.StepLayout;
+
+    /// <summary>Puts what model binding refused back in front of the user, as the text they typed, with the reason.</summary>
+    private void ApplyMappingErrors()
+    {
+        if (MappingContext is null || FormName is not { Length: > 0 } formName) return;
+        var prefix = PostedModelName.Length == 0 ? string.Empty : PostedModelName + ".";
+        foreach (var error in MappingContext.GetAllErrors(formName))
+        {
+            var path = error.Path.StartsWith(prefix, StringComparison.Ordinal) ? error.Path[prefix.Length..] : error.Path;
+            FormState.RefuseEntry(path, error.AttemptedValue ?? string.Empty);
+        }
+    }
 
     [Parameter(CaptureUnmatchedValues = true)] public IDictionary<string, object>? AdditionalAttributes { get; set; }
 
@@ -510,6 +630,9 @@
         if (IdPrefix is not null) FormState.IdPrefix = IdPrefix;
         if (ReadOnly is { } value) FormState.ReadOnly = value;
         if (Disabled is { } disabled) FormState.Disabled = disabled;
+        if (ShowUndo && FormState.HistoryLimit == 0) FormState.HistoryLimit = 100;
+        FormState.PostedName = FormName is { Length: > 0 } ? PostedModelName : null;
+        FormState.RendersStatically = RendersStatically;
         SyncEditContext();
     }
 
@@ -518,6 +641,9 @@
         if (ReferenceEquals(FormState, state)) return;
         Detach();
         FormState = state;
+        // A state the page built without services renders with the app's: its message provider, translations,
+        // schema localizer and the rules that need DI.
+        FormState.AdoptServices(ServiceProvider);
         // Counted in the old state's submits, which mean nothing in the new one.
         _focusMissedForSubmit = 0;
         FormState.StateChanged += OnStateChanged;
@@ -665,7 +791,15 @@
     /// </remarks>
     private async Task OnFormSubmitted()
     {
-        if (FormState.Definition.IsWizard && !FormState.IsLastStep)
+        if (RendersStatically)
+        {
+            // Posted: what binding refused is said next to what was typed, and a combobox posted the label the
+            // user saw, which stands for a value.
+            ApplyMappingErrors();
+            await FormState.ResolvePostedChoicesAsync();
+        }
+
+        if (FormState.Definition.IsWizard && !FormState.IsLastStep && !RendersStatically)
         {
             // A read-only wizard has no Next of its own to press, but paging through it is still
             // reading rather than editing, so Enter moves on rather than doing nothing at all.

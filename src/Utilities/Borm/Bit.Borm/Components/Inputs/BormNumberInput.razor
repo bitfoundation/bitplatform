@@ -25,6 +25,7 @@ else
     // wiring below always overrides what the schema supplied.
     private RenderFragment Control => @<input @attributes="ExtraAttributes"
                                               id="@Context.ElementId"
+                                              name="@Context.InputName"
                                               @ref="Element"
                                               class="@CssClass"
                                               type="number"

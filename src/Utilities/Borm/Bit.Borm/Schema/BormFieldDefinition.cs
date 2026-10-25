@@ -172,6 +172,33 @@ public sealed class BormFieldDefinition
     /// </remarks>
     public BormValueNormalizer? Normalize { get; set; }
 
+    /// <summary>
+    /// The shape the value is written in - <c>(000) 000-0000</c>; see <see cref="BormMask"/> for the notation.
+    /// What the user types is put into it when they leave the box (after <see cref="Normalize"/>), and a value
+    /// that does not fit is reported. The builder's <c>Mask(...)</c> sets this and adds the rule.
+    /// </summary>
+    public string? Mask
+    {
+        get => _mask;
+        set
+        {
+            _mask = value;
+            _parsedMask = null;
+        }
+    }
+
+    private string? _mask;
+    private BormMask? _parsedMask;
+
+    /// <summary>The parsed <see cref="Mask"/>, or null when there is none.</summary>
+    public BormMask? ParsedMask => _mask is { Length: > 0 } mask ? _parsedMask ??= new BormMask(mask) : null;
+
+    /// <summary>
+    /// Whether the model holds only what filled the mask's slots (<c>5551234567</c>) rather than the
+    /// formatted text. The box shows it formatted either way.
+    /// </summary>
+    public bool MaskStoresRaw { get; set; }
+
     // --- Constraints (also surfaced as native input attributes) ---
     public int? MinLength { get; set; }
     public int? MaxLength { get; set; }
@@ -186,6 +213,13 @@ public sealed class BormFieldDefinition
 
     /// <summary>Maximum size, in bytes, of each selected file. Null means no limit.</summary>
     public long? MaxFileSize { get; set; }
+
+    /// <summary>
+    /// Uploads each file of a <see cref="BormFieldType.File"/> field as soon as it is chosen, with its progress
+    /// shown, and stores what this returns - an id, a URL - in its place: a string, or a list of them for
+    /// <see cref="Multiple"/>. Null keeps the files themselves, for the submit handler to read.
+    /// </summary>
+    public BormFileUploader? Uploader { get; set; }
 
     // --- Input hints ---
     /// <summary>Value for the HTML <c>autocomplete</c> attribute, e.g. <c>email</c> or <c>new-password</c>.</summary>
@@ -271,6 +305,12 @@ public sealed class BormFieldDefinition
 
     public int? MinItems { get; set; }
     public int? MaxItems { get; set; }
+
+    /// <summary>
+    /// How many rows of a <see cref="BormFieldType.Array"/> are shown at once; null shows them all. A list longer
+    /// than this is paged, and the error summary, focus-the-first-error and every link to a row turn to its page.
+    /// </summary>
+    public int? PageSize { get; set; }
 
     /// <summary>Key resolving a custom renderer for <see cref="BormFieldType.Custom"/> (and overrides).</summary>
     public string? CustomRenderer { get; set; }

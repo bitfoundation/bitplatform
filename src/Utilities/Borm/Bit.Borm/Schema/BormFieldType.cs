@@ -116,5 +116,18 @@ public enum BormFieldType
     /// <c>DateOnly</c> or <c>DateTime</c> holds the week's Monday; with no CLR type the value is the
     /// text the picker speaks, <c>2024-W19</c>.
     /// </summary>
-    Week
+    Week,
+
+    /// <summary>
+    /// Formatted text written in Markdown - a description, a cover letter, release notes. Renders a text area
+    /// with a preview of the formatting, and a review shows it formatted (see <see cref="BormMarkdown"/> for
+    /// what it understands, and why what it renders is safe). The value is the Markdown text.
+    /// </summary>
+    Markdown,
+
+    /// <summary>
+    /// A handwritten signature, drawn with a mouse, a finger or a pen - or typed, for anyone who cannot draw
+    /// one. The value is an SVG image as a <c>data:</c> URL, which an <c>&lt;img&gt;</c> shows as it is.
+    /// </summary>
+    Signature
 }

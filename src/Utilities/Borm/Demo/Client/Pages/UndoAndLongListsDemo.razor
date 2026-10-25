@@ -1,0 +1,92 @@
+﻿@page "/undo-long-lists"
+@implements IDisposable
+
+<PageTitle>Undo, redo &amp; long lists · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Undo, redo &amp; long lists</h1>
+    <p class="bb-subtitle">
+        A stock list of five hundred lines, shown twenty at a time, with Undo and Redo beside the Save button. Paged
+        rather than virtualised, so every line stays reachable: the error summary, focus-the-first-error and the pager's
+        own "show the first" turn to the page a problem is on.
+    </p>
+</div>
+
+<div class="bb-note">
+    Change a few quantities, remove a line, move one - then press Undo, again and again: each answer comes back with
+    what it set off, a removed line as itself. Clear a line's product on page 7 and press Save: the form turns to that
+    page and puts the caret in the box. Two changes to the same field within a second are one undo.
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
+    <BormView State="_state" ShowUndo="true" ShowErrorSummary="true" OnValidSubmit="HandleSubmit" SubmitText="Save stock" />
+</div>
+
+@if (_submitted)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Saved ✓</strong> @_model.Lines.Count lines, @_model.Total.ToString("N0") items in all.</div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+"""
+@page "/undo-long-lists"
+
+<BormView State="_state" ShowUndo="true" ShowErrorSummary="true" OnValidSubmit="HandleSubmit" SubmitText="Save stock" />
+
+@code {
+    private readonly Invoice _model = new();
+    private BormState _state = default!;
+
+    protected override void OnInitialized()
+    {
+        for (var i = 1; i <= 500; i++)
+            _model.Lines.Add(new InvoiceLine { Description = $"Item {i:000}", Quantity = 1 + i % 9, UnitPrice = 1 });
+
+        var schema = BormBuilder.For<Invoice>()
+            .Title("Stock")
+            .Array(x => x.Lines, line => line
+                    .Field(l => l.Description, f => f.Label("Product").Required())
+                    .Field(l => l.Quantity, f => f.Range(0, 9999)),
+                f => f.PageSize(20).Attr("itemNoun", "line"))
+            .Computed(x => x.Total, m => m.Lines.Sum(l => (decimal)l.Quantity), dependsOn: [nameof(Invoice.Lines)])
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+    }
+
+    public void Dispose() => _state.Dispose();
+}
+""";
+
+    private readonly Invoice _model = new();
+    private BormState _state = default!;
+    private bool _submitted;
+
+    protected override void OnInitialized()
+    {
+        for (var i = 1; i <= 500; i++)
+            _model.Lines.Add(new InvoiceLine { Description = $"Item {i:000}", Quantity = 1 + i % 9, UnitPrice = 1 });
+
+        var schema = BormBuilder.For<Invoice>()
+            .Title("Stock")
+            .Array(x => x.Lines, line => line
+                    .Field(l => l.Description, f => f.Label("Product").Required())
+                    .Field(l => l.Quantity, f => f.Range(0, 9999)),
+                f => f.PageSize(20).Attr("itemNoun", "line"))
+            .Computed(x => x.Total, m => m.Lines.Sum(l => (decimal)l.Quantity), dependsOn: [nameof(Invoice.Lines)])
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+    }
+
+    private void HandleSubmit(BormState state) => _submitted = true;
+
+    public void Dispose() => _state.Dispose();
+}

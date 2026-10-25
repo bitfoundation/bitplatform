@@ -1,0 +1,123 @@
+﻿@namespace Bit.Borm
+@inherits BormInputBase
+
+@* A signature pad with no script: an SVG that pointer events draw on, stroke by stroke, committed as each stroke
+   ends. Drawing needs a pointer, so "type it instead" is always there beside it - for a keyboard, a switch, a
+   screen reader, a hand that cannot draw - and gives an answer of the same kind: an image of the name. *@
+<div class="bit-borm-signature @(Context.HasError && Context.ShowMessages ? "bit-borm-signature--invalid" : null)"
+     id="@Context.ElementId" role="group" aria-labelledby="@(Field.ShowLabel ? Context.LabelId : null)" aria-label="@AriaLabel"
+     aria-describedby="@DescribedBy" aria-invalid="@AriaInvalid" tabindex="-1" @ref="Element">
+    @if (_typing)
+    {
+        <input class="bit-borm-input bit-borm-signature__typed" type="text" value="@_typedName" autocomplete="name"
+               aria-label="@Context.Text(BormMessageKeys.SignatureTypeLabel)" disabled="@Disabled" readonly="@ReadOnly"
+               @onchange="OnTypedAsync" />
+        @if (!string.IsNullOrEmpty(_typedName))
+        {
+            <p class="bit-borm-signature__typed-preview" aria-hidden="true">@_typedName</p>
+        }
+    }
+    else if (_strokes.Count == 0 && Stored is { } image)
+    {
+        <img class="bit-borm-signature__image" src="@image" alt="@Context.Text(BormMessageKeys.SignatureImage, Context.Label)" />
+    }
+    else if (!DisabledOrReadOnly)
+    {
+        <svg class="bit-borm-signature__pad" role="img" aria-label="@Context.Text(BormMessageKeys.SignaturePad)"
+             @onpointerdown="Down" @onpointerdown:preventDefault="true" @onpointermove="Move"
+             @onpointerup="UpAsync" @onpointerleave="UpAsync" @onpointercancel="UpAsync">
+            <line class="bit-borm-signature__baseline" x1="4%" x2="96%" y1="75%" y2="75%" />
+            @foreach (var stroke in _strokes)
+            {
+                <path d="@stroke.Data" />
+            }
+        </svg>
+    }
+    else
+    {
+        <p class="bit-borm-review__empty">@Context.Text(BormMessageKeys.ReviewEmpty)</p>
+    }
+
+    @if (!DisabledOrReadOnly)
+    {
+        <div class="bit-borm-signature__actions">
+            <button type="button" class="bit-borm-btn bit-borm-btn--sm" disabled="@(!HasSignature)" @onclick="ClearAsync">
+                @Context.Text(BormMessageKeys.SignatureClear)
+            </button>
+            <button type="button" class="bit-borm-btn bit-borm-btn--ghost bit-borm-btn--sm" aria-pressed="@(_typing ? "true" : "false")"
+                    @onclick="ToggleTyping">
+                @Context.Text(BormMessageKeys.SignatureTypeInstead)
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    private sealed class Stroke
+    {
+        public List<(double X, double Y)> Points { get; } = [];
+
+        private readonly System.Text.StringBuilder _data = new();
+
+        public string Data => _data.ToString();
+
+        public void Add(double x, double y)
+        {
+            Points.Add((x, y));
+            _data.Append(Points.Count == 1 ? 'M' : 'L')
+                 .Append(x.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)).Append(' ')
+                 .Append(y.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture));
+            if (Points.Count == 1) _data.Append('h').Append("0.5");
+        }
+    }
+
+    private readonly List<Stroke> _strokes = [];
+    private Stroke? _drawing;
+    private bool _typing;
+    private string? _typedName;
+
+    private string? Stored => Context.Value is string value && BormSignature.IsImage(value) ? value : null;
+
+    private bool HasSignature => _strokes.Count > 0 || Stored is not null || !string.IsNullOrEmpty(_typedName);
+
+    private void Down(PointerEventArgs e)
+    {
+        if (DisabledOrReadOnly) return;
+        _drawing = new Stroke();
+        _strokes.Add(_drawing);
+        _drawing.Add(e.OffsetX, e.OffsetY);
+    }
+
+    private void Move(PointerEventArgs e)
+    {
+        if (_drawing is null) return;
+        var (x, y) = _drawing.Points[^1];
+        // Two pixels apart at least: a slow hand sends hundreds of moves that draw nothing new.
+        if (Math.Abs(e.OffsetX - x) + Math.Abs(e.OffsetY - y) < 2) return;
+        _drawing.Add(e.OffsetX, e.OffsetY);
+    }
+
+    private async Task UpAsync(PointerEventArgs e)
+    {
+        if (_drawing is null) return;
+        _drawing = null;
+        await Context.SetValueAsync(BormSignature.FromStrokes(_strokes.Select(s => (IReadOnlyList<(double, double)>)s.Points)));
+    }
+
+    private async Task OnTypedAsync(ChangeEventArgs e)
+    {
+        _typedName = e.Value?.ToString();
+        _strokes.Clear();
+        await Context.SetValueAsync(BormSignature.FromTypedName(_typedName));
+    }
+
+    private async Task ClearAsync()
+    {
+        _strokes.Clear();
+        _drawing = null;
+        _typedName = null;
+        await Context.SetValueAsync(null);
+    }
+
+    private void ToggleTyping() => _typing = !_typing;
+}

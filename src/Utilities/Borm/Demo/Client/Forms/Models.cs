@@ -478,6 +478,39 @@ public class ContactCardAddress
     public string City { get; set; } = "";
 }
 
+/// <summary>
+/// Model for the static rendering demo: posted like any HTML form and bound by the page's
+/// [SupplyParameterFromForm]. Every bool starts false - a box left unticked posts nothing, and binds as false.
+/// </summary>
+public class VolunteerApplication
+{
+    [Display(Name = "Full name")]
+    public string FullName { get; set; } = "";
+
+    public string Email { get; set; } = "";
+
+    [Display(Name = "Hours a week")]
+    public int Hours { get; set; }
+
+    [Display(Name = "Where you'd like to help")]
+    public string Team { get; set; } = "";
+
+    public string Country { get; set; } = "";
+
+    [Display(Name = "Send me the newsletter")]
+    public bool Newsletter { get; set; }
+
+    public VolunteerAddress Address { get; set; } = new();
+}
+
+public class VolunteerAddress
+{
+    public string City { get; set; } = "";
+
+    [Display(Name = "Post code")]
+    public string PostCode { get; set; } = "";
+}
+
 /// <summary>One of the many customers the search lookup demo looks through.</summary>
 public sealed record DemoCustomer(string Id, string Name, string City);
 

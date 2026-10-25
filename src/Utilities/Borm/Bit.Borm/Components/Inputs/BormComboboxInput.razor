@@ -65,6 +65,7 @@
     // Splat first so the renderer's own id and ARIA wiring below always wins.
     private RenderFragment Control => @<input @attributes="ExtraAttributes"
                                               id="@Context.ElementId"
+                                              name="@Context.InputName"
                                               @ref="Element"
                                               class="@CssClass"
                                               type="text"

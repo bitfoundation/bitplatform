@@ -28,16 +28,19 @@
     /// <summary>DOM id, so an input's <c>aria-describedby</c> can point at this list.</summary>
     [Parameter] public string? Id { get; set; }
 
+    /// <summary>The form's <see cref="BormState.Language"/>, which the severity is said in.</summary>
+    [Parameter] public string? Language { get; set; }
+
     private IBormMessageProvider? _provider;
 
     private string SeverityLabel(BormValidationSeverity severity)
     {
-        _provider ??= Services.GetService(typeof(IBormMessageProvider)) as IBormMessageProvider ?? BormDefaultMessageProvider.Instance;
-        return _provider.Get(severity switch
+        _provider ??= BormMessageText.Provider(Services);
+        return BormMessageText.Get(_provider, Language, severity switch
         {
             BormValidationSeverity.Warning => BormMessageKeys.SeverityWarning,
             BormValidationSeverity.Info => BormMessageKeys.SeverityInfo,
             _ => BormMessageKeys.SeverityError
-        });
+        }, []);
     }
 }

@@ -166,6 +166,7 @@ public static class BormJsonSchemaExporter
         if (!isTags) WriteAdditionalPatterns(writer, field);
         if (field.MinItems is { } minI) writer.WriteNumber("minItems", minI);
         if (field.MaxItems is { } maxI) writer.WriteNumber("maxItems", maxI);
+        if (field.PageSize is { } pageSize) writer.WriteNumber("x-pageSize", pageSize);
 
         // A multi-select is a set: it cannot hold the same answer twice, and the standard spelling of
         // "pick several of these" says so.
@@ -323,6 +324,11 @@ public static class BormJsonSchemaExporter
         if (field.Multiple) writer.WriteBoolean("x-multiple", true);
         if (field.ClearOnHide) writer.WriteBoolean("x-clearOnHide", true);
         if (field.Sensitive) writer.WriteBoolean("x-sensitive", true);
+        if (field.Mask is { Length: > 0 } mask)
+        {
+            writer.WriteString("x-mask", mask);
+            if (field.MaskStoresRaw) writer.WriteBoolean("x-maskStoresRaw", true);
+        }
         if (field.TextKey is { Length: > 0 } textKey) writer.WriteString("x-i18n", textKey);
         if (field.Autofocus) writer.WriteBoolean("x-autofocus", true);
         if (field.MaxFileSize is { } maxFile) writer.WriteNumber("x-maxFileSize", maxFile);
@@ -547,6 +553,8 @@ public static class BormJsonSchemaExporter
         BormFieldType.Week => ("string", null, "week"),
         BormFieldType.Color => ("string", "color", null),
         BormFieldType.TextArea => ("string", null, "textarea"),
+        BormFieldType.Markdown => ("string", null, "markdown"),
+        BormFieldType.Signature => ("string", null, "signature"),
         // A dropdown whose choices arrive at run time (a cascading select) has no `enum` to give it
         // away, and without a widget it came back as a plain text box the app could not re-attach its
         // provider to.

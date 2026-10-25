@@ -30,7 +30,7 @@
         <label class="bit-borm-radio" for="@optionId">
             <input type="radio"
                    id="@optionId"
-                   name="@Context.ElementId"
+                   name="@(Context.InputName ?? Context.ElementId)"
                    value="@opt.Value"
                    checked="@(opt.Value == Context.StringValue)"
                    disabled="@(DisabledOrReadOnly || opt.Disabled)"

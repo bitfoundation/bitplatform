@@ -23,6 +23,11 @@
         var i = index;
         var value = tags[i];
         <span class="bit-borm-tag" @key="keys[i]">
+            @if (Context.InputName is { } posted)
+            {
+                @* Posted with the form, one indexed entry per tag, as model binding reads a list. *@
+                <input type="hidden" name="@($"{posted}[{i}]")" value="@value" />
+            }
             <span class="bit-borm-tag__label">@value</span>
             @if (!DisabledOrReadOnly)
             {

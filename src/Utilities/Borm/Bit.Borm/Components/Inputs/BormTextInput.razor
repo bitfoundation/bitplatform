@@ -66,6 +66,7 @@ else
     // stray aria-describedby in the schema from unhooking the field's own error message.
     private RenderFragment Control => @<input @attributes="ExtraAttributes"
                                               id="@Context.ElementId"
+                                              name="@Context.InputName"
                                               @ref="Element"
                                               class="@CssClass"
                                               type="@HtmlType"
@@ -107,7 +108,7 @@ else
     /// </summary>
     private string DisplayValue => Field.Type == BormFieldType.Color && Context.StringValue.Length == 0
         ? EmptyColour
-        : Context.StringValue;
+        : Context.DisplayText;
 
     /// <summary>The colour an empty picker shows — <c>Attr("emptyColor", "#rrggbb")</c>, else black.</summary>
     private string EmptyColour => Attr("emptyColor", "#000000")!;

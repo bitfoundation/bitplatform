@@ -5,18 +5,18 @@
 {
     @if (Field.Type == BormFieldType.Hidden)
     {
-        <DynamicComponent Type="Registry.Resolve(Field)" Parameters="Params" />
+        @Control
         @* A hidden field has nothing to look at, but a message about it — a server rejecting the record
            id it carries — still has to be readable somewhere. Without this it blocked the submit with
            nothing on the page saying why. The list renders nothing at all while there is nothing to say. *@
-        <BormValidationMessages Messages="Context.Messages" Show="Context.ShowMessages" Id="@Context.ErrorId" />
+        <BormValidationMessages Messages="Context.Messages" Show="Context.ShowMessages" Id="@Context.ErrorId" Language="@State.Language" />
     }
     else if (Field.Type == BormFieldType.Static)
     {
         @* Presentational content binds to no value, so it gets no label, no messages and no field
            wrapper — only the grid placement that lets it span a row. *@
         <div class="bit-borm-field bit-borm-field--static" style="@GridStyle">
-            <DynamicComponent Type="Registry.Resolve(Field)" Parameters="Params" />
+            @Control
         </div>
     }
     else if (Field.Type == BormFieldType.Object)
@@ -38,7 +38,7 @@
             @* A message about the object as a whole — "this address cannot be delivered to", from a server
                or a model-level validator — belongs to no single child. It used to be recorded and never
                drawn: the submit failed and nothing on the page said why. *@
-            <BormValidationMessages Messages="Context.Messages" Show="Context.ShowMessages" Id="@Context.ErrorId" />
+            <BormValidationMessages Messages="Context.Messages" Show="Context.ShowMessages" Id="@Context.ErrorId" Language="@State.Language" />
             <div class="bit-borm-group__body @(ChildColumns > 1 ? "bit-borm-grid" : "")" style="@ChildGridStyle">
                 <BormFieldList State="State" Items="ChildItems" />
             </div>
@@ -52,12 +52,12 @@
     {
         @* A checkbox labels itself, so it gets no separate <label> — that would announce twice. *@
         <div class="bit-borm-field bit-borm-field--checkbox @InvalidClass" style="@GridStyle">
-            <DynamicComponent Type="Registry.Resolve(Field)" Parameters="Params" />
+            @Control
             @if (!string.IsNullOrEmpty(Context.HelpText))
             {
                 <p class="bit-borm-help" id="@Context.HelpId">@Context.HelpText</p>
             }
-            <BormValidationMessages Messages="Context.Messages" Show="Context.ShowMessages" Id="@Context.ErrorId" />
+            <BormValidationMessages Messages="Context.Messages" Show="Context.ShowMessages" Id="@Context.ErrorId" Language="@State.Language" />
         </div>
     }
     else
@@ -90,12 +90,12 @@
                     }
                 </label>
             }
-            <DynamicComponent Type="Registry.Resolve(Field)" Parameters="Params" />
+            @Control
             @if (!string.IsNullOrEmpty(Context.HelpText))
             {
                 <p class="bit-borm-help" id="@Context.HelpId">@Context.HelpText</p>
             }
-            <BormValidationMessages Messages="Context.Messages" Show="Context.ShowMessages" Id="@Context.ErrorId" />
+            <BormValidationMessages Messages="Context.Messages" Show="Context.ShowMessages" Id="@Context.ErrorId" Language="@State.Language" />
         </div>
     }
 }
@@ -106,17 +106,26 @@
     [Parameter, EditorRequired] public string Path { get; set; } = default!;
 
     private BormFieldContext _context = default!;
-    private IDictionary<string, object> _params = default!;
+    private RenderFragment? _control;
     private RenderSignature _signature;
     private bool _hasRendered;
 
     /// <summary>
     /// The context is rebuilt only when the field it describes changes, not on every render — it is
-    /// handed to a DynamicComponent, and a fresh instance per render would churn its parameters.
+    /// handed to the control, and a fresh instance per render would churn its parameters.
     /// </summary>
     private BormFieldContext Context => _context;
 
-    private IDictionary<string, object> Params => _params;
+    /// <summary>
+    /// The control the registry names for the field. Opened directly rather than through a DynamicComponent, whose
+    /// type is set by name: the registry's types are annotated as components, so a trimmer keeps what one needs.
+    /// </summary>
+    private RenderFragment Control => _control ??= builder =>
+    {
+        builder.OpenComponent(0, Registry.Resolve(Field));
+        builder.AddComponentParameter(1, nameof(BormInputBase.Context), _context);
+        builder.CloseComponent();
+    };
 
     protected override void OnParametersSet()
     {
@@ -130,7 +139,6 @@
         var isFirstContext = _context is null;
 
         _context = new BormFieldContext(State, Field, Path);
-        _params = new Dictionary<string, object> { ["Context"] = _context };
 
         if (isFirstContext && !Field.IsContainer)
         {
@@ -261,7 +269,7 @@
     /// pointing at nothing.
     /// </summary>
     private bool IsGroupInput => Field.Type is BormFieldType.Radio or BormFieldType.MultiSelect
-        or BormFieldType.Tags;
+        or BormFieldType.Tags or BormFieldType.Signature;
 
     private string InvalidClass => Context.HasError && Context.ShowMessages ? "bit-borm-field--invalid" : "";
 

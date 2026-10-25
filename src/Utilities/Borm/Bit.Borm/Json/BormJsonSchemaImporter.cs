@@ -239,6 +239,22 @@ public static class BormJsonSchemaImporter
         if (ReadBool(schema, "x-multiple") == true) field.Multiple = true;
         if (ReadBool(schema, "x-clearOnHide") == true) field.ClearOnHide = true;
         if (ReadBool(schema, "x-sensitive") == true) field.Sensitive = true;
+        if (ReadString(schema, "x-mask") is { Length: > 0 } maskPattern)
+        {
+            BormMask mask;
+            try
+            {
+                mask = new BormMask(maskPattern);
+            }
+            catch (ArgumentException ex)
+            {
+                throw new FormatException($"x-mask of '{name}': {ex.Message}", ex);
+            }
+            field.Mask = maskPattern;
+            field.MaskStoresRaw = ReadBool(schema, "x-maskStoresRaw") == true;
+            field.AddValidator(new BormMaskRule(mask));
+            if (mask.OnlyDigits) field.InputMode ??= "numeric";
+        }
         if (ReadBool(schema, "x-autofocus") == true) field.Autofocus = true;
         if (ReadBool(schema, "x-showLabel") == false) field.ShowLabel = false;
         if (ReadBool(schema, "x-characterCount") == true) field.ShowCharacterCount = true;
@@ -396,6 +412,7 @@ public static class BormJsonSchemaImporter
 
         if (TryReadInt(schema, "minItems", out var minI)) field.MinItems = minI;
         if (TryReadInt(schema, "maxItems", out var maxI)) field.MaxItems = maxI;
+        if (TryReadInt(schema, "x-pageSize", out var pageSize) && pageSize > 0) field.PageSize = pageSize;
         if (field.MinItems is not null || field.MaxItems is not null)
             field.AddValidator(new BormCollectionSizeRule(field.MinItems, field.MaxItems));
 
@@ -497,6 +514,8 @@ public static class BormJsonSchemaImporter
             "switch" => BormFieldType.Checkbox,
             "month" => BormFieldType.Month,
             "week" => BormFieldType.Week,
+            "markdown" => BormFieldType.Markdown,
+            "signature" => BormFieldType.Signature,
             _ => field.Type
         };
 

@@ -84,8 +84,26 @@ public sealed class BormState : IDisposable
     /// <summary>The data store (typed model or dictionary).</summary>
     public IBormDataAccessor Data { get; }
 
-    /// <summary>Optional service provider for validators that need DI.</summary>
-    public IServiceProvider? Services { get; }
+    /// <summary>
+    /// Optional service provider for validators that need DI, and where the registered message provider and schema
+    /// localizer are found. A state built without one takes the services of the <see cref="BormView"/> it is shown in.
+    /// </summary>
+    public IServiceProvider? Services { get; private set; }
+
+    /// <summary>
+    /// Takes <paramref name="services"/> when the state was built without any - one a page made with
+    /// <c>new BormState(definition, data)</c> - so the app's message provider, translations and schema localizer apply
+    /// to it as they do to a state the view builds. A state given services of its own keeps them.
+    /// </summary>
+    internal void AdoptServices(IServiceProvider services)
+    {
+        if (Services is not null) return;
+        Services = services;
+        // Anything looked up before had nothing to look in.
+        _messageProvider = null;
+        _schemaLocalizer = null;
+        _schemaLocalizerResolved = false;
+    }
 
     /// <summary>Optional external validator merged with built-in rules (set by integrations).</summary>
     public BormExternalValidator? ExternalValidator { get; set; }
@@ -266,13 +284,21 @@ public sealed class BormState : IDisposable
     }
 
     /// <summary>Sets a value, marks the field dirty and touched, and notifies listeners.</summary>
-    public void SetValue(string path, object? value) => Write(path, value, markTouched: true);
+    public void SetValue(string path, object? value)
+    {
+        using var step = Step(typing: true);
+        Write(path, value, markTouched: true);
+    }
 
     /// <summary>
     /// Sets a value without marking the field touched — for programmatic updates (computed values,
     /// prefill) that should not make the user's untouched field start showing errors.
     /// </summary>
-    public void SetValueQuietly(string path, object? value) => Write(path, value, markTouched: false);
+    public void SetValueQuietly(string path, object? value)
+    {
+        using var step = Step(typing: true);
+        Write(path, value, markTouched: false);
+    }
 
     /// <summary>
     /// Writes several values as one change: listeners are notified once at the end rather than once per
@@ -288,6 +314,8 @@ public sealed class BormState : IDisposable
     public void SetValues(IEnumerable<KeyValuePair<string, object?>> values, bool markTouched = false)
     {
         ArgumentNullException.ThrowIfNull(values);
+        // One change, undone as one.
+        using var step = Step();
         Batch(() =>
         {
             foreach (var (path, value) in values) Write(path, value, markTouched);
@@ -328,7 +356,10 @@ public sealed class BormState : IDisposable
         // it. A dictionary store takes anything, so without this "1.5" in an integer box was stored as a
         // string, passed every rule and reached the submit handler as text in a numeric field.
         var rejected = IsUnreadableEntry(path, value);
+        // Copied first: a store may refill a list in place, and the instance would then remember nothing.
+        var before = Recording && !rejected ? ForHistory(Data.GetValue(path)) : null;
         if (!rejected) Data.SetValue(path, value);
+        if (Recording && !rejected && !Data.LastWriteFailed) RecordValue(path, before, Data.GetValue(path));
         RecordConversionResult(path, value, rejected || Data.LastWriteFailed);
 
         TrackDirty(path);
@@ -363,7 +394,8 @@ public sealed class BormState : IDisposable
     private void RunChangeHandler(string path)
     {
         const int maxDepth = 4;
-        if (!HasChangeHandlers || !_initialised || _restoring || _changeHandlerDepth >= maxDepth) return;
+        // Not while undoing either: what the handler did then is in the history and is put back with the rest.
+        if (!HasChangeHandlers || !_initialised || _restoring || _replaying || _changeHandlerDepth >= maxDepth) return;
         if (FindField(path)?.OnChanged is not { } handler) return;
 
         _changeHandlerDepth++;
@@ -598,8 +630,10 @@ public sealed class BormState : IDisposable
     /// registered <see cref="IBormMessageProvider"/>, falling back to the English defaults. The
     /// built-in components render everything through this, so a single provider translates the whole
     /// form — buttons, placeholders and repeater labels included, not only the validation messages.
+    /// It answers in <see cref="Language"/> when the form has one and the provider can answer in a language of
+    /// its choosing (<see cref="IBormLocalizedMessageProvider"/>, as <see cref="BormTranslatedMessageProvider"/> is).
     /// </summary>
-    public string Text(string key, params object?[] args) => Messages.Get(key, args);
+    public string Text(string key, params object?[] args) => BormMessageText.Get(Messages, _language, key, args);
 
     // ---------------------------------------------------------------- schema text
 
@@ -660,7 +694,10 @@ public sealed class BormState : IDisposable
     /// document's <see cref="BormDefinition.Translations"/> are looked up by this name, then by the name with
     /// its last part dropped (<c>de-CH</c>, then <c>de</c>). <see cref="BormView"/> marks the form with it as its
     /// <c>lang</c>, so a screen reader reads it in that language. A registered <see cref="IBormSchemaLocalizer"/>
-    /// is asked as before, and finds its culture its own way.
+    /// is asked as before, and finds its culture its own way. The library's own words - validation messages,
+    /// buttons, announcements - follow it when the message provider can answer in a language of its choosing:
+    /// <c>services.AddBormTranslations()</c> registers one. A rule's message already on screen is rewritten in
+    /// the new language when its field is next validated.
     /// </remarks>
     public string? Language
     {
@@ -670,6 +707,16 @@ public sealed class BormState : IDisposable
             var language = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
             if (string.Equals(language, _language, StringComparison.OrdinalIgnoreCase)) return;
             _language = language;
+            _validator.Language = language;
+            // An entry the model refused is described by the library alone, so it can be said again in the new
+            // language now; a rule's verdict is rewritten when its field is next validated.
+            foreach (var path in _conversionErrors.Keys)
+            {
+                if (!_messages.TryGetValue(path, out var list)) continue;
+                var next = new List<BormValidationMessage>(list.Count);
+                foreach (var message in list) next.Add(message.Source == BormValidationSource.Conversion ? ConversionMessage(path) : message);
+                _messages[path] = next;
+            }
             NotifyChanged();
         }
     }
@@ -762,8 +809,7 @@ public sealed class BormState : IDisposable
     private IBormMessageProvider? _messageProvider;
 
     private IBormMessageProvider Messages
-        => _messageProvider ??= Services?.GetService(typeof(IBormMessageProvider)) as IBormMessageProvider
-                                ?? BormDefaultMessageProvider.Instance;
+        => _messageProvider ??= BormMessageText.Provider(Services);
 
     /// <summary>
     /// Re-attaches conversion messages after a validation pass has rebuilt the message set, so a value
@@ -990,8 +1036,10 @@ public sealed class BormState : IDisposable
             var condition = field.VisibleWhen!;
             if (!DependsOn(condition, changedPath, BormPath.Parent(path))) continue;
             if (condition.Evaluate(ScopeFor(path))) continue;
-            if (Data.GetValue(path) is null) continue;
+            if (Data.GetValue(path) is not { } hidden) continue;
 
+            // Part of the change that hid it: undoing that change shows the field with its answer back.
+            RecordValue(path, hidden, null);
             Data.SetValue(path, null);
             RemoveMessagesUnder(path);
             _touched.Remove(path);
@@ -1194,6 +1242,144 @@ public sealed class BormState : IDisposable
     internal BormSelectOption? ChosenOption(string path, string value)
         => _chosen.TryGetValue(path, out var option) && string.Equals(option.Value, value, StringComparison.Ordinal) ? option : null;
 
+    /// <summary>
+    /// Turns what a posted combobox sent - the label the user saw and typed, which is all a plain form can post - into
+    /// the value it stands for, as the interactive control does on its way out of the box. Text that names no option
+    /// is left as it is, for the field's rules to judge.
+    /// </summary>
+    internal async Task ResolvePostedChoicesAsync()
+    {
+        foreach (var (field, path) in EnumerateFieldPaths().ToList())
+        {
+            if (field.Type != BormFieldType.Combobox || Data.GetValue(path) is not string { Length: > 0 } text) continue;
+
+            if (field.SearchMinLength is not null) await SearchOptionsAsync(field, path, text);
+            else await EnsureOptionsAsync(field, path);
+
+            var options = OptionsFor(field, path);
+            if (options.Any(o => string.Equals(o.Value, text, StringComparison.Ordinal))) continue;
+            if (options.FirstOrDefault(o => !o.Disabled && string.Equals(o.Label, text, StringComparison.OrdinalIgnoreCase)) is { } chosen)
+            {
+                RememberChoice(path, chosen);
+                SetValueQuietly(path, chosen.Value);
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------- uploads
+
+    private readonly Dictionary<string, List<BormUpload>> _uploads = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>The files chosen for the field at <paramref name="path"/> whose uploads are on their way, done or failed.</summary>
+    public IReadOnlyList<BormUpload> UploadsFor(string path) => _uploads.TryGetValue(path, out var uploads) ? uploads : [];
+
+    /// <summary>Whether any file is still on its way.</summary>
+    public bool IsUploading => _uploads.Values.Any(uploads => uploads.Any(u => u.Status == BormUploadStatus.Uploading));
+
+    /// <summary>
+    /// Uploads files chosen for a field with an <see cref="BormFieldDefinition.Uploader"/>: judged by the field's
+    /// file rules first - a file they refuse is not sent - then each on its way at once. A field taking one file
+    /// replaces the one it had; one taking several adds to them. A submit made meanwhile waits for them.
+    /// </summary>
+    public async Task UploadAsync(BormFieldDefinition field, string path, IReadOnlyList<Microsoft.AspNetCore.Components.Forms.IBrowserFile> files)
+    {
+        ArgumentNullException.ThrowIfNull(field);
+        ArgumentNullException.ThrowIfNull(files);
+        if (field.Uploader is not { } uploader || files.Count == 0) return;
+
+        var context = new BormValidationContext(path, field.Multiple ? files.ToList() : files[0], ScopeFor(path), Services, field)
+        {
+            Language = _language
+        };
+        foreach (var rule in field.Validators.OfType<BormFileRule>())
+        {
+            var verdict = await rule.ValidateAsync(context);
+            if (verdict.IsValid || verdict.Message is null) continue;
+
+            RemoveMessagesUnder(path);
+            AddMessage(new BormValidationMessage(path, verdict.Message, verdict.Severity) { Code = rule.Key });
+            _touched.Add(path);
+            NotifyChanged();
+            return;
+        }
+
+        if (!_uploads.TryGetValue(path, out var uploads)) _uploads[path] = uploads = [];
+        if (!field.Multiple)
+        {
+            foreach (var replaced in uploads) replaced.Cancel();
+            uploads.Clear();
+        }
+
+        var started = new List<Task>(files.Count);
+        foreach (var file in files)
+        {
+            var upload = new BormUpload(file);
+            uploads.Add(upload);
+            started.Add(RunUploadAsync(field, path, uploader, upload));
+        }
+        NotifyChanged();
+        await TrackEntryAsync(Task.WhenAll(started));
+    }
+
+    /// <summary>Tries a failed upload again.</summary>
+    public Task RetryUploadAsync(BormFieldDefinition field, string path, BormUpload upload)
+    {
+        ArgumentNullException.ThrowIfNull(field);
+        ArgumentNullException.ThrowIfNull(upload);
+        if (field.Uploader is not { } uploader || upload.Status is BormUploadStatus.Uploading or BormUploadStatus.Done) return Task.CompletedTask;
+        return TrackEntryAsync(RunUploadAsync(field, path, uploader, upload));
+    }
+
+    /// <summary>Stops an upload, or takes back a finished one, and the field no longer holds it.</summary>
+    public void RemoveUpload(BormFieldDefinition field, string path, BormUpload upload)
+    {
+        ArgumentNullException.ThrowIfNull(field);
+        ArgumentNullException.ThrowIfNull(upload);
+        upload.Cancel();
+        if (_uploads.TryGetValue(path, out var uploads) && uploads.Remove(upload) && upload.Status == BormUploadStatus.Done)
+            StoreUploads(field, path, uploads);
+        NotifyChanged();
+    }
+
+    /// <summary>Stops every upload of the field and forgets them - the field emptied.</summary>
+    internal void ForgetUploads(string path)
+    {
+        if (!_uploads.Remove(path, out var uploads)) return;
+        foreach (var upload in uploads) upload.Cancel();
+    }
+
+    private async Task RunUploadAsync(BormFieldDefinition field, string path, BormFileUploader uploader, BormUpload upload)
+    {
+        var token = upload.Start();
+        try
+        {
+            var result = await uploader(new BormUploadContext(upload, this, field, path, token));
+            token.ThrowIfCancellationRequested();
+            upload.Finish(result);
+            if (_uploads.TryGetValue(path, out var uploads)) StoreUploads(field, path, uploads);
+            // Judged as an answer the user just gave: "a file is required" goes as the file arrives.
+            if (IsSubmitted || IsTouched(path)) await ValidateFieldAsync(field, path, includeAsync: false);
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            upload.Stopped();
+            if (_uploads.TryGetValue(path, out var uploads)) uploads.Remove(upload);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !token.IsCancellationRequested)
+        {
+            // Whatever the uploader throws - a refused request, a dropped connection - is the file's to report,
+            // not the form's to crash on: it says so beside the file, and can be tried again.
+            upload.Fail(Text(BormMessageKeys.UploadFailed, upload.Name), ex);
+        }
+        NotifyChanged();
+    }
+
+    private void StoreUploads(BormFieldDefinition field, string path, List<BormUpload> uploads)
+    {
+        var results = uploads.Where(u => u.Status == BormUploadStatus.Done).Select(u => u.Result!).ToList();
+        SetValue(path, field.Multiple ? results : results.LastOrDefault());
+    }
+
     // Entries a control is still turning into a value: a search field's text, committed before its results
     // arrived. A submit made meanwhile judged, and sent, the value from before — the click lands while the
     // lookup that would have changed it is still out.
@@ -1317,8 +1503,9 @@ public sealed class BormState : IDisposable
             // dependency, and leaving it because no list had been fetched yet is how a city survives the
             // country it belongs to.
             // A draft being restored hands over the answer together with its dependency.
-            if (keepValue || _restoring || Data.GetValue(path) is null) continue;
+            if (keepValue || _restoring || Data.GetValue(path) is not { } stale) continue;
 
+            RecordValue(path, stale, null);
             Data.SetValue(path, null);
             TrackDirty(path);
             // Whatever was being said about this field described the answer that has just been taken
@@ -1717,13 +1904,21 @@ public sealed class BormState : IDisposable
     /// </remarks>
     public bool NormalizeField(BormFieldDefinition field, string path)
     {
-        if (field.Normalize is not { } normalize) return false;
+        if (field.Normalize is null && field.ParsedMask is null) return false;
 
         var current = Data.GetValue(path);
-        var tidied = normalize(current);
+        var tidied = field.Normalize is { } normalize ? normalize(current) : current;
+        // Then into the mask's shape. A value that does not fit is left as typed, for the rule to report
+        // next to what the user wrote rather than next to a rewrite of it.
+        if (field.ParsedMask is { } mask && tidied is string text)
+        {
+            if (text.Trim().Length == 0) tidied = null;
+            else if (field.MaskStoresRaw ? mask.TryUnmask(text, out var raw) : mask.TryFormat(text, out raw)) tidied = raw;
+        }
         if (Equals(current, tidied)) return false;
 
-        SetValueQuietly(path, tidied);
+        // Tidying is part of the answer just given: undone with it, not as a change of its own.
+        using (Step(tidying: true)) SetValueQuietly(path, tidied);
         return true;
     }
 
@@ -1789,6 +1984,8 @@ public sealed class BormState : IDisposable
     public async ValueTask<bool> FocusAsync(string path)
     {
         if (_focusTargets.TryGetValue(path, out var focus)) return await focus();
+        // A row on a page of a paged list that is not showing has no control to focus until its page is.
+        if (await RevealAsync(path) && _focusTargets.TryGetValue(path, out focus)) return await focus();
         if (string.IsNullOrEmpty(path) || _focusTargets.Count == 0) return false;
 
         foreach (var (_, candidate) in EnumerateFieldPaths().ToList())
@@ -1797,6 +1994,56 @@ public sealed class BormState : IDisposable
             if (_focusTargets.TryGetValue(candidate, out var inner) && await inner()) return true;
         }
         return false;
+    }
+
+    private readonly Dictionary<string, Func<int, Task<bool>>> _rowRevealers = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Registers how the list at <paramref name="arrayPath"/> brings one of its rows into view - a paged repeater
+    /// turning to the row's page - so focusing a field in it works wherever the row is. The callback reports
+    /// whether it had to show anything. Dispose the returned token to unregister.
+    /// </summary>
+    public IDisposable RegisterRowRevealer(string arrayPath, Func<int, Task<bool>> reveal)
+    {
+        _rowRevealers[arrayPath] = reveal;
+        return new RevealerRegistration(this, arrayPath, reveal);
+    }
+
+    /// <summary>
+    /// Brings <paramref name="path"/> into view in every paged list it runs through, outermost first: a list
+    /// inside a row of another one only exists once the outer row's page is showing.
+    /// </summary>
+    private async Task<bool> RevealAsync(string path)
+    {
+        if (_rowRevealers.Count == 0 || string.IsNullOrEmpty(path)) return false;
+
+        var revealed = false;
+        for (var depth = 0; depth < 8; depth++)
+        {
+            var moved = false;
+            foreach (var (arrayPath, reveal) in _rowRevealers.OrderBy(r => r.Key.Length).ToList())
+            {
+                if (!path.StartsWith(arrayPath + "[", StringComparison.OrdinalIgnoreCase)) continue;
+                var close = path.IndexOf(']', arrayPath.Length);
+                if (close < 0 || !int.TryParse(path.AsSpan(arrayPath.Length + 1, close - arrayPath.Length - 1), out var row)) continue;
+                if (!await reveal(row)) continue;
+
+                revealed = moved = true;
+                // The list's own rows - and any list inside them - registered as that page rendered.
+                break;
+            }
+            if (!moved) break;
+        }
+        return revealed;
+    }
+
+    private sealed class RevealerRegistration(BormState state, string arrayPath, Func<int, Task<bool>> reveal) : IDisposable
+    {
+        public void Dispose()
+        {
+            if (state._rowRevealers.TryGetValue(arrayPath, out var current) && ReferenceEquals(current, reveal))
+                state._rowRevealers.Remove(arrayPath);
+        }
     }
 
     private sealed class FocusRegistration(BormState state, string path, Func<ValueTask<bool>> focus) : IDisposable
@@ -2073,6 +2320,9 @@ public sealed class BormState : IDisposable
             RestoreInitial(path, value);
 
         ClearTracking();
+        // What there was to undo was the session just thrown away.
+        _undo.Clear();
+        _redo.Clear();
         NotifyChanged();
     }
 
@@ -2103,6 +2353,8 @@ public sealed class BormState : IDisposable
         CaptureInitialValues();
 
         ClearTracking();
+        _undo.Clear();
+        _redo.Clear();
         NotifyChanged();
     }
 
@@ -2183,6 +2435,9 @@ public sealed class BormState : IDisposable
         try
         {
             Batch(restore);
+            // The draft is where this session starts: there is nothing before it to go back to.
+            _undo.Clear();
+            _redo.Clear();
         }
         finally
         {
@@ -2283,6 +2538,27 @@ public sealed class BormState : IDisposable
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
 
+        // Putting one answer back is itself a change the user may want to take back.
+        using var step = Step();
+        var undoable = Recording
+            ? _initialValues.Keys.Where(k => BormPath.IsAtOrUnder(k, path)).Append(path)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Select(key => (Key: key, Before: ForHistory(Data.GetValue(key))))
+                .ToList()
+            : null;
+        try
+        {
+            ResetFieldCore(path);
+        }
+        finally
+        {
+            if (undoable is not null)
+                foreach (var (key, before) in undoable) RecordValue(key, before, Data.GetValue(key));
+        }
+    }
+
+    private void ResetFieldCore(string path)
+    {
         var restored = false;
         foreach (var (key, initial) in _initialValues.Where(kv => BormPath.IsAtOrUnder(kv.Key, path)))
         {
@@ -2589,7 +2865,7 @@ public sealed class BormState : IDisposable
     /// landed at. Messages below the insertion point are re-indexed so they stay with their item.
     /// </summary>
     public int InsertArrayItem(BormFieldDefinition arrayField, string arrayPath, int index)
-        => InsertItem(arrayField, arrayPath, index, notify: true);
+        => WithRows(arrayPath, () => InsertItem(arrayField, arrayPath, index, notify: true));
 
     // `track`: whether to judge the list's dirtiness now. A caller adding many rows judges it once at the
     // end, since the judgement compares the whole list with its baseline and per row that is quadratic.
@@ -2703,6 +2979,9 @@ public sealed class BormState : IDisposable
     /// nested objects and editing one would silently edit the other.
     /// </remarks>
     public int DuplicateArrayItem(BormFieldDefinition arrayField, string arrayPath, int index)
+        => WithRows(arrayPath, () => DuplicateItem(arrayField, arrayPath, index));
+
+    private int DuplicateItem(BormFieldDefinition arrayField, string arrayPath, int index)
     {
         if (Data.GetValue(arrayPath) is not IList list || index < 0 || index >= list.Count) return -1;
 
@@ -2787,7 +3066,9 @@ public sealed class BormState : IDisposable
     }
 
     /// <summary>Removes an item from an array field.</summary>
-    public void RemoveArrayItem(string arrayPath, int index)
+    public void RemoveArrayItem(string arrayPath, int index) => WithRows(arrayPath, () => RemoveItem(arrayPath, index));
+
+    private void RemoveItem(string arrayPath, int index)
     {
         if (Data.GetValue(arrayPath) is not IList list || index < 0 || index >= list.Count) return;
         if (!EditList(arrayPath, list, l => l.RemoveAt(index))) return;
@@ -2804,7 +3085,9 @@ public sealed class BormState : IDisposable
     }
 
     /// <summary>Moves an array item from one index to another.</summary>
-    public void MoveArrayItem(string arrayPath, int from, int to)
+    public void MoveArrayItem(string arrayPath, int from, int to) => WithRows(arrayPath, () => MoveItem(arrayPath, from, to));
+
+    private void MoveItem(string arrayPath, int from, int to)
     {
         if (Data.GetValue(arrayPath) is not IList list) return;
         if (from < 0 || from >= list.Count || to < 0 || to >= list.Count || from == to) return;
@@ -2833,7 +3116,9 @@ public sealed class BormState : IDisposable
     /// one; a swap leaves every other row exactly where it was, which is what a drag-and-drop reorder
     /// of two rows means and what React Hook Form's <c>useFieldArray</c> spells <c>swap</c>.
     /// </summary>
-    public void SwapArrayItems(string arrayPath, int first, int second)
+    public void SwapArrayItems(string arrayPath, int first, int second) => WithRows(arrayPath, () => SwapItems(arrayPath, first, second));
+
+    private void SwapItems(string arrayPath, int first, int second)
     {
         if (Data.GetValue(arrayPath) is not IList list) return;
         if (first < 0 || first >= list.Count || second < 0 || second >= list.Count || first == second) return;
@@ -2856,7 +3141,9 @@ public sealed class BormState : IDisposable
     /// Removing rows one at a time costs a re-render and a re-index per row, and the caller has to walk
     /// backwards to avoid the indices moving underneath them.
     /// </summary>
-    public void ClearArrayItems(string arrayPath)
+    public void ClearArrayItems(string arrayPath) => WithRows(arrayPath, () => ClearItems(arrayPath));
+
+    private void ClearItems(string arrayPath)
     {
         if (Data.GetValue(arrayPath) is not IList list || list.Count == 0) return;
         // A collection the model will not let go of keeps its rows rather than the form throwing.
@@ -2885,6 +3172,294 @@ public sealed class BormState : IDisposable
     /// <summary>Whether an item may be removed, given <see cref="BormFieldDefinition.MinItems"/>.</summary>
     public bool CanRemoveArrayItem(BormFieldDefinition arrayField, string arrayPath)
         => arrayField.MinItems is not { } min || ArrayCount(arrayPath) > min;
+
+    // ---------------------------------------------------------------- history
+
+    // Undo and redo. A step is everything one change made: the answer the user gave, and what that answer
+    // set off - a field a condition then hid and cleared, a sibling a change handler filled in, a city an
+    // abandoned country took with it. Computed values are not recorded: they follow from the answers, so
+    // putting the answers back puts them back too.
+    private abstract record HistoryEntry(string Path);
+
+    // One value, before and after. A collection is recorded as a copy of its elements: a multi-select's list
+    // is refilled in place, and the instance itself would say nothing about what it used to hold.
+    private sealed record ValueEntry(string Path, object? Before, object? After) : HistoryEntry(Path);
+
+    // A list's rows, before and after a structural edit - an insert, a removal, a move, a swap, a copy, a
+    // clear - as the row objects themselves. Restoring a sequence of rows undoes any of them alike, and each
+    // row's messages and touched state follow it by identity.
+    private sealed record RowsEntry(string Path, object?[]? Before, object?[]? After) : HistoryEntry(Path);
+
+    private sealed class HistoryStep
+    {
+        public List<HistoryEntry> Entries { get; } = [];
+
+        public long At { get; set; }
+
+        public bool Tidying { get; init; }
+
+        // Typing into a box, rather than an action of its own - a reset, a row added, several values at once.
+        public bool Typing { get; init; }
+    }
+
+    private readonly List<HistoryStep> _undo = [];
+    private readonly List<HistoryStep> _redo = [];
+    private HistoryStep? _openStep;
+    private int _stepDepth;
+    private bool _replaying;
+    private int _historyLimit;
+
+    // Two writes to the same field this close together are one change: a field that writes as the user
+    // types would otherwise need one undo per character.
+    private const long CoalesceMilliseconds = 1000;
+
+    /// <summary>
+    /// How many changes <see cref="UndoAsync"/> can take back. Zero, the default, keeps no history at all;
+    /// <see cref="BormView"/>'s <c>ShowUndo</c> turns it on.
+    /// </summary>
+    /// <remarks>
+    /// A change is everything one answer set off: the value, a field a condition then hid and cleared, a
+    /// sibling a change handler filled in, a row added, removed, moved or copied. Two writes to the same
+    /// field within a second are one change, and so is the tidying a field does when the user leaves it.
+    /// What changes the model behind the form's back is not recorded, so undo is only as good as the
+    /// discipline of making changes through the state. <see cref="Reset()"/> and restoring a draft start the
+    /// history again.
+    /// </remarks>
+    public int HistoryLimit
+    {
+        get => _historyLimit;
+        set
+        {
+            _historyLimit = Math.Max(0, value);
+            if (_historyLimit == 0)
+            {
+                ClearHistory();
+                return;
+            }
+            if (_undo.Count > _historyLimit) _undo.RemoveRange(0, _undo.Count - _historyLimit);
+            if (_redo.Count > _historyLimit) _redo.RemoveRange(0, _redo.Count - _historyLimit);
+        }
+    }
+
+    /// <summary>Whether there is a change to take back.</summary>
+    public bool CanUndo => _undo.Count > 0 && !IsSubmitting;
+
+    /// <summary>Whether there is a change taken back that can be made again.</summary>
+    public bool CanRedo => _redo.Count > 0 && !IsSubmitting;
+
+    /// <summary>The field the next <see cref="UndoAsync"/> takes back the change to, for a button or an announcement to name.</summary>
+    public string? NextUndoPath => _undo.Count > 0 ? _undo[^1].Entries[0].Path : null;
+
+    /// <summary>The field the next <see cref="RedoAsync"/> makes the change to again.</summary>
+    public string? NextRedoPath => _redo.Count > 0 ? _redo[^1].Entries[0].Path : null;
+
+    /// <summary>Forgets every change, so there is nothing to undo or redo.</summary>
+    public void ClearHistory()
+    {
+        if (_undo.Count == 0 && _redo.Count == 0) return;
+        _undo.Clear();
+        _redo.Clear();
+        NotifyChanged();
+    }
+
+    /// <summary>
+    /// Takes back the last change - everything it set off with it - and judges again what it touched. True
+    /// when there was one to take back.
+    /// </summary>
+    public Task<bool> UndoAsync() => ReplayAsync(_undo, _redo, undo: true);
+
+    /// <summary>Makes the last change taken back again. True when there was one.</summary>
+    public Task<bool> RedoAsync() => ReplayAsync(_redo, _undo, undo: false);
+
+    private async Task<bool> ReplayAsync(List<HistoryStep> from, List<HistoryStep> to, bool undo)
+    {
+        if (from.Count == 0 || IsSubmitting || _stepDepth > 0) return false;
+
+        var step = from[^1];
+        from.RemoveAt(from.Count - 1);
+        to.Add(step);
+
+        _replaying = true;
+        try
+        {
+            Batch(() =>
+            {
+                if (undo)
+                {
+                    for (var i = step.Entries.Count - 1; i >= 0; i--) Apply(step.Entries[i], before: true);
+                }
+                else
+                {
+                    foreach (var entry in step.Entries) Apply(entry, before: false);
+                }
+            });
+        }
+        finally
+        {
+            _replaying = false;
+        }
+
+        // Judged again as a change would be: what the user has already been told about, the field put back
+        // owes an answer to.
+        foreach (var path in step.Entries.Select(e => e.Path).Distinct(StringComparer.OrdinalIgnoreCase).ToList())
+        {
+            if (!IsSubmitted && !IsTouched(path) && MessagesFor(path).Count == 0) continue;
+            if (FindField(path) is { } field) await ValidateFieldAsync(field, path, includeAsync: false);
+        }
+        NotifyChanged();
+        return true;
+    }
+
+    private void Apply(HistoryEntry entry, bool before)
+    {
+        switch (entry)
+        {
+            case ValueEntry value:
+                var recorded = before ? value.Before : value.After;
+                Write(value.Path, recorded is List<object?> items ? new List<object?>(items) : recorded, markTouched: false);
+                break;
+            case RowsEntry rows:
+                RestoreRows(rows.Path, before ? rows.Before : rows.After);
+                break;
+        }
+    }
+
+    /// <summary>Puts a list back to <paramref name="rows"/>, each row's state following it by identity.</summary>
+    private void RestoreRows(string arrayPath, object?[]? rows)
+    {
+        var current = Data.GetValue(arrayPath) as IList;
+        var old = current?.Cast<object?>().ToArray() ?? [];
+
+        if (rows is null)
+        {
+            if (current is null) return;
+            RemapArrayIndices(arrayPath, _ => null);
+            Data.SetValue(arrayPath, null);
+        }
+        else
+        {
+            var list = current ?? EnsureList(arrayPath);
+            if (!EditList(arrayPath, list, l =>
+                {
+                    l.Clear();
+                    foreach (var row in rows) l.Add(row);
+                }))
+                return;
+
+            var target = new Dictionary<object, int>(ReferenceEqualityComparer.Instance);
+            for (var i = 0; i < rows.Length; i++)
+                if (rows[i] is { } row && IsRowObject(row)) target.TryAdd(row, i);
+            RemapArrayIndices(arrayPath, i => i < old.Length && old[i] is { } row && target.TryGetValue(row, out var j) ? j : null);
+        }
+
+        TrackDirty(arrayPath, rowsFollowed: true);
+        NotifyArrayChanged(arrayPath);
+
+        // A value in a list of plain values is not a row with an identity of its own: two equal strings are
+        // the same answer, and which one a message belonged to cannot be told.
+        static bool IsRowObject(object row) => row is not string && !row.GetType().IsValueType;
+    }
+
+    /// <summary>
+    /// Opens a history step for one change made through the state's API, or joins the one already open - a
+    /// change handler writing during the change that set it off belongs to that change.
+    /// </summary>
+    private HistoryScope Step(bool tidying = false, bool typing = false) => new(this, tidying, typing);
+
+    private readonly struct HistoryScope : IDisposable
+    {
+        private readonly BormState? _state;
+
+        public HistoryScope(BormState state, bool tidying, bool typing)
+        {
+            if (state._historyLimit == 0 || state._replaying || state._restoring || !state._initialised) return;
+            _state = state;
+            if (state._stepDepth++ == 0) state._openStep = new HistoryStep { Tidying = tidying, Typing = typing || tidying };
+        }
+
+        public void Dispose()
+        {
+            if (_state is null || --_state._stepDepth > 0) return;
+
+            var step = _state._openStep!;
+            _state._openStep = null;
+            _state.Commit(step);
+        }
+    }
+
+    private void Commit(HistoryStep step)
+    {
+        if (step.Entries.Count == 0) return;
+        step.At = Environment.TickCount64;
+
+        // One field written twice in quick succession, or tidied as the user left it, is one change.
+        if (_undo.Count > 0 && step.Typing && step.Entries is [ValueEntry next] && _undo[^1] is { Typing: true, Entries: [ValueEntry last] } previous
+            && string.Equals(last.Path, next.Path, StringComparison.OrdinalIgnoreCase)
+            && (step.Tidying || step.At - previous.At < CoalesceMilliseconds))
+        {
+            previous.Entries[0] = last with { After = next.After };
+            previous.At = step.At;
+            // Typed and typed back: there is nothing left to undo.
+            if (SameRecorded(last.Before, next.After)) _undo.RemoveAt(_undo.Count - 1);
+            _redo.Clear();
+            return;
+        }
+
+        _undo.Add(step);
+        if (_undo.Count > _historyLimit) _undo.RemoveAt(0);
+        _redo.Clear();
+    }
+
+    private static bool SameRecorded(object? a, object? b)
+        => a is List<object?> x && b is List<object?> y ? x.SequenceEqual(y) : SameValue(a, b);
+
+    private bool Recording => _openStep is not null;
+
+    private void RecordValue(string path, object? before, object? after)
+    {
+        if (_openStep is not { } step) return;
+        var recordedBefore = ForHistory(before);
+        var recordedAfter = ForHistory(after);
+        if (SameRecorded(recordedBefore, recordedAfter)) return;
+        step.Entries.Add(new ValueEntry(path, recordedBefore, recordedAfter));
+    }
+
+    private static object? ForHistory(object? value) => value is IList list and not Array ? list.Cast<object?>().ToList() : value;
+
+    /// <summary>
+    /// Runs a structural edit of the list at <paramref name="arrayPath"/> as one change, recording its rows
+    /// before and after. They are recorded where the change began, ahead of what the edit's sweeps then did -
+    /// a value a condition cleared once the row went - so taking the change back runs it in reverse.
+    /// </summary>
+    private T WithRows<T>(string arrayPath, Func<T> edit)
+    {
+        using var step = Step();
+        var rows = Recording && Data.GetValue(arrayPath) is IList list ? list.Cast<object?>().ToArray() : null;
+        var at = _openStep?.Entries.Count ?? 0;
+        try
+        {
+            return edit();
+        }
+        finally
+        {
+            RecordRows(arrayPath, rows, at);
+        }
+    }
+
+    private void WithRows(string arrayPath, Action edit) => WithRows(arrayPath, () =>
+    {
+        edit();
+        return 0;
+    });
+
+    private void RecordRows(string arrayPath, object?[]? before, int at)
+    {
+        if (_openStep is not { } step) return;
+        var after = Data.GetValue(arrayPath) is IList list ? list.Cast<object?>().ToArray() : null;
+        if ((before?.Length ?? 0) == (after?.Length ?? 0)
+            && (before ?? []).SequenceEqual(after ?? [], ReferenceEqualityComparer.Instance)) return;
+        step.Entries.Insert(Math.Min(at, step.Entries.Count), new RowsEntry(arrayPath, before, after));
+    }
 
     // ---------------------------------------------------------------- internals
 
@@ -3381,6 +3956,15 @@ public sealed class BormState : IDisposable
     /// <summary>The Blazor edit context provided for this form, when one is — by a view, or by hand.</summary>
     internal BormEditContextAdapter? EditContextAdapter { get; set; }
 
+    /// <summary>
+    /// What the controls post their values under when a view renders the form to be posted (its <c>FormName</c>): the
+    /// name of the page's <c>[SupplyParameterFromForm]</c> model, or empty to post the bare paths. Null while nothing posts.
+    /// </summary>
+    internal string? PostedName { get; set; }
+
+    /// <summary>Whether a view renders the form to be posted with no interactivity, where nothing can add a row or turn a page.</summary>
+    internal bool RendersStatically { get; set; }
+
     /// <summary>Moves on every time <see cref="NotifyDefinitionChanged"/> runs, for views that cache what they derived from the schema.</summary>
     internal int DefinitionVersion { get; private set; }
 
@@ -3493,6 +4077,10 @@ public sealed class BormState : IDisposable
 
         // A save still running for a form that is gone is told so; the submit disposes its own source.
         _submitCts?.Cancel();
+
+        // So is a file still on its way: nobody is left to see where it lands.
+        foreach (var uploads in _uploads.Values)
+            foreach (var upload in uploads) upload.Cancel();
 
         foreach (var cts in _fieldValidationCts.Values.Concat(_optionsCts.Values))
         {

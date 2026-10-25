@@ -38,7 +38,7 @@ internal sealed class BormFieldIndex
         Computed = all.Where(t => t.Field.Computed is not null).ToArray();
         CascadingOptions = all.Where(t => t.Field.OptionsProvider is not null && t.Field.OptionsDependencies.Count > 0).ToArray();
         Revalidating = all.Where(t => t.Field.RevalidateOn.Count > 0).ToArray();
-        Normalizing = all.Where(t => t.Field.Normalize is not null).ToArray();
+        Normalizing = all.Where(t => t.Field.Normalize is not null || t.Field.Mask is { Length: > 0 }).ToArray();
         Conditional = all.Where(t => t.Field.VisibleWhen is not null).ToArray();
         HasChangeHandlers = all.Any(t => t.Field.OnChanged is not null);
     }

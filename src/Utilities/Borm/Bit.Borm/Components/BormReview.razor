@@ -121,7 +121,18 @@
 
     private RenderFragment Text(BormFieldDefinition field, string path) => __builder =>
     {
-        if (Format(field, path) is { Length: > 0 } text)
+        // Formatted text reads back formatted, and a signature as itself - both still nothing when unanswered,
+        // and a sensitive one still not shown.
+        if (field.Type == BormFieldType.Markdown && !field.IsSensitive && State.GetValue(path) is string { Length: > 0 } markdown)
+        {
+            <div class="bit-borm-markdown__preview">@((MarkupString)BormMarkdown.ToHtml(markdown))</div>
+        }
+        else if (field.Type == BormFieldType.Signature && !field.IsSensitive && State.GetValue(path) is string { Length: > 0 } signature
+                 && BormSignature.IsImage(signature))
+        {
+            <img class="bit-borm-signature__image" src="@signature" alt="@State.Text(BormMessageKeys.SignatureImage, State.LabelOf(field, path) ?? field.Name)" />
+        }
+        else if (Format(field, path) is { Length: > 0 } text)
         {
             @text
         }
@@ -161,6 +172,10 @@
             return Label(value);
         }
 
+        // Files sent as they were chosen are what the user picked, not the ids the uploader returned for them.
+        if (field.Uploader is not null && State.UploadsFor(path).Where(u => u.Status == BormUploadStatus.Done).Select(u => u.Name).ToList() is { Count: > 0 } sent)
+            return string.Join(", ", sent);
+
         return value switch
         {
             bool b => State.Text(b ? BormMessageKeys.Yes : BormMessageKeys.No),
@@ -174,6 +189,7 @@
             TimeOnly time => time.ToString("t", culture),
             DateTime date => date.ToString(field.Type == BormFieldType.Date ? "d" : field.Type == BormFieldType.Time ? "t" : "g", culture),
             DateTimeOffset date => date.ToString(field.Type == BormFieldType.Date ? "d" : "g", culture),
+            string text when field.ParsedMask is { } mask && mask.TryFormat(text, out var shaped) => Affixed(shaped),
             IFormattable number when BormNumber.IsNumber(value) => Affixed(number.ToString(null, culture)),
             IEnumerable list and not string => string.Join(", ", list.Cast<object?>().Select(BormValueConverter.ToInvariantString)),
             _ => Affixed(Convert.ToString(value, culture) ?? string.Empty)

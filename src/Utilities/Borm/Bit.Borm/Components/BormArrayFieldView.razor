@@ -38,8 +38,8 @@
        screen-reader user presses "Add" and hears nothing at all. *@
     <p class="bit-borm-sr-only" aria-live="polite">@Announcement</p>
 
-    @{ var keys = BuildKeys(); }
-    @for (var index = 0; index < keys.Length; index++)
+    @{ var first = First; var keys = BuildKeys(first, End); }
+    @for (var index = first; index < first + keys.Length; index++)
     {
         var i = index;
         var itemPath = BormPath.Combine(Path, i);
@@ -50,7 +50,7 @@
            and the visible row number beside it is decorative. *@
         @* The row's id is what an error-summary link to a message about the row lands on. Only a row of
            an object has one: a row of a single value is that value's control, which already carries it. *@
-        <div class="bit-borm-array__item" @key="keys[i]" id="@(Template.Type == BormFieldType.Object ? $"{ElementId}_{i}" : null)" role="group" aria-label="@State.Text(BormMessageKeys.ArrayItemGroup, ItemNoun, i + 1)"
+        <div class="bit-borm-array__item" @key="keys[i - first]" id="@(Template.Type == BormFieldType.Object ? $"{ElementId}_{i}" : null)" role="group" aria-label="@State.Text(BormMessageKeys.ArrayItemGroup, ItemNoun, i + 1)"
              aria-describedby="@RowDescribedBy(itemPath, i)">
             <div class="bit-borm-array__item-body">
                 <span class="bit-borm-array__item-index" aria-hidden="true">@(i + 1)</span>
@@ -60,13 +60,16 @@
                     @* A message about the row as a whole — "this line duplicates line 2" — belongs to none
                        of its fields. It used to be recorded and never drawn. A row of a single value
                        needs nothing here: that value's own field shows it. *@
-                    <BormValidationMessages Messages="State.MessagesFor(itemPath)" Show="RowShowsMessages(itemPath)" Id="@RowErrorId(i)" />
+                    <BormValidationMessages Messages="State.MessagesFor(itemPath)" Show="RowShowsMessages(itemPath)" Id="@RowErrorId(i)" Language="@State.Language" />
                 }
                 else
                 {
                     <BormFieldView State="State" Field="Template" Path="@itemPath" />
                 }
             </div>
+            @* Posted with no interactivity, a row cannot be added, moved or removed: the rows are shown as they stand. *@
+            @if (!State.RendersStatically)
+            {
             <div class="bit-borm-array__item-actions">
                 @{
                     var moveUp = State.Text(BormMessageKeys.ArrayMoveUp, ItemNoun, i + 1);
@@ -84,7 +87,7 @@
                     <button type="button" class="bit-borm-btn bit-borm-btn--icon" title="@moveUp" aria-label="@moveUp" disabled="@Locked"
                             aria-disabled="@(i == 0 ? "true" : null)" @onclick="@(() => Move(i, i - 1))">↑</button>
                     <button type="button" class="bit-borm-btn bit-borm-btn--icon" title="@moveDown" aria-label="@moveDown" disabled="@Locked"
-                            aria-disabled="@(i == keys.Length - 1 ? "true" : null)" @onclick="@(() => Move(i, i + 1))">↓</button>
+                            aria-disabled="@(i == Count - 1 ? "true" : null)" @onclick="@(() => Move(i, i + 1))">↓</button>
                 }
                 @if (Duplicable)
                 {
@@ -96,14 +99,54 @@
                 <button type="button" class="bit-borm-btn bit-borm-btn--danger" title="@remove" aria-label="@remove"
                         disabled="@(!CanRemove)" @onclick="@(() => Remove(i))">@RemoveText</button>
             </div>
+            }
         </div>
     }
 
+    @if (Paged)
+    {
+        @* A page is always whole, so every row on it is reachable; the rows on other pages are reached through
+           the pager, and through anything that focuses one of them - the error summary's links, focus-the-first-
+           error - which turns to the row's page first. Rows on other pages that need attention are counted
+           here, with a way to the first of them, so a problem is never out of sight and out of mind. *@
+        <nav class="bit-borm-array__pager" aria-label="@State.Text(BormMessageKeys.ArrayPages, Title)">
+            <button type="button" class="bit-borm-btn bit-borm-btn--sm" disabled="@(_page == 0)" @onclick="() => TurnTo(_page - 1)">
+                @State.Text(BormMessageKeys.ArrayPreviousPage)
+            </button>
+            <label class="bit-borm-array__page">
+                <span class="bit-borm-sr-only">@State.Text(BormMessageKeys.ArrayPage, _page + 1, PageCount)</span>
+                <select class="bit-borm-input" @onchange="OnPagePicked">
+                    @for (var p = 0; p < PageCount; p++)
+                    {
+                        var number = p;
+                        <option value="@number" selected="@(number == _page)">@(number + 1)</option>
+                    }
+                </select>
+            </label>
+            <button type="button" class="bit-borm-btn bit-borm-btn--sm" disabled="@(_page >= PageCount - 1)" @onclick="() => TurnTo(_page + 1)">
+                @State.Text(BormMessageKeys.ArrayNextPage)
+            </button>
+            <span class="bit-borm-array__range" aria-live="polite">@State.Text(BormMessageKeys.ArrayRange, First + 1, End, Count)</span>
+            @if (RowsElsewhereNeedingAttention() is { Count: > 0 } elsewhere)
+            {
+                <span class="bit-borm-array__elsewhere">
+                    @State.Text(BormMessageKeys.ArrayElsewhere, elsewhere.Count, ItemNoun)
+                    <button type="button" class="bit-borm-btn bit-borm-btn--ghost bit-borm-btn--sm" @onclick="() => ShowRow(elsewhere[0])">
+                        @State.Text(BormMessageKeys.ArrayShowElsewhere)
+                    </button>
+                </span>
+            }
+        </nav>
+    }
+
+    @if (!State.RendersStatically)
+    {
     <button type="button" class="bit-borm-btn bit-borm-btn--add" @ref="_addButton" disabled="@(!CanAdd)" @onclick="Add">
         @State.Text(BormMessageKeys.ArrayAdd, ItemNoun)
     </button>
+    }
 
-    <BormValidationMessages Messages="State.MessagesFor(Path)" Show="ShowMessages" Id="@ErrorId" />
+    <BormValidationMessages Messages="State.MessagesFor(Path)" Show="ShowMessages" Id="@ErrorId" Language="@State.Language" />
 </fieldset>
 
 @code {
@@ -213,7 +256,13 @@
             _registeredPath = Path;
             _registeredState = State;
             _focusRegistration = State.RegisterFocusTarget(Path, FocusGroupAsync);
+            _revealRegistration?.Dispose();
+            _revealRegistration = State.RegisterRowRevealer(Path, RevealRowAsync);
         }
+
+        // Rows taken away under the page the user was on - removed, or the list emptied by an undo - leave the
+        // last page showing rather than one past the end.
+        _page = Math.Clamp(_page, 0, PageCount - 1);
     }
 
     private ElementReference _fieldset;
@@ -238,6 +287,9 @@
     {
         _focusRegistration?.Dispose();
         _focusRegistration = null;
+        _revealRegistration?.Dispose();
+        _revealRegistration = null;
+        _rendered?.TrySetResult();
     }
 
     private string? DescribedBy
@@ -269,20 +321,87 @@
     /// two equal ones apart — and so does any instance already used: a list may legitimately hold the
     /// same object twice, and a duplicate <c>@key</c> is an exception, not a rendering quirk.
     /// </remarks>
-    private object[] BuildKeys()
+    private object[] BuildKeys(int first, int end)
     {
-        var count = Count;
-        var keys = new object[count];
+        var keys = new object[Math.Max(0, end - first)];
         var seen = new HashSet<object>(ReferenceEqualityComparer.Instance);
 
-        for (var i = 0; i < count; i++)
+        for (var i = first; i < end; i++)
         {
             var item = State.GetValue(BormPath.Combine(Path, i));
-            keys[i] = item is null || item is string || item.GetType().IsValueType || !seen.Add(item)
+            keys[i - first] = item is null || item is string || item.GetType().IsValueType || !seen.Add(item)
                 ? i
                 : item;
         }
         return keys;
+    }
+
+    // ------------------------------------------------------------------ pages
+
+    private int _page;
+
+    private int? PageSize => Field.PageSize is > 0 and var size ? size : null;
+
+    /// <summary>Whether the list is longer than a page.</summary>
+    // Posted with no interactivity, every row is on the page: a row on a page not showing would not be posted, and lost.
+    private bool Paged => !State.RendersStatically && PageSize is { } size && Count > size;
+
+    private int PageCount => Paged ? (Count + PageSize!.Value - 1) / PageSize.Value : 1;
+
+    private int First => Paged ? Math.Clamp(_page, 0, PageCount - 1) * PageSize!.Value : 0;
+
+    private int End => Paged ? Math.Min(Count, First + PageSize!.Value) : Count;
+
+    private int PageOf(int row) => PageSize is { } size ? row / size : 0;
+
+    private void TurnTo(int page) => _page = Math.Clamp(page, 0, PageCount - 1);
+
+    private void OnPagePicked(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var page)) TurnTo(page);
+    }
+
+    /// <summary>The rows on other pages with an error the user has been shown, in order.</summary>
+    private List<int> RowsElsewhereNeedingAttention()
+    {
+        var rows = new SortedSet<int>();
+        var prefix = Path + "[";
+        foreach (var message in State.AllMessages)
+        {
+            if (message.Severity != BormValidationSeverity.Error
+                || !message.FieldPath.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) continue;
+            var close = message.FieldPath.IndexOf(']', prefix.Length);
+            if (close < 0 || !int.TryParse(message.FieldPath.AsSpan(prefix.Length, close - prefix.Length), out var row)) continue;
+            if (row >= First && row < End) continue;
+            if (State.IsSubmitted || State.IsTouched(message.FieldPath)) rows.Add(row);
+        }
+        return [.. rows];
+    }
+
+    /// <summary>Turns to the row's page and puts the focus in it.</summary>
+    private void ShowRow(int row)
+    {
+        _focusRow = row;
+        TurnTo(PageOf(row));
+    }
+
+    private TaskCompletionSource? _rendered;
+    private IDisposable? _revealRegistration;
+
+    /// <summary>
+    /// What the state asks before it focuses a field in one of this list's rows: the row's page is shown, and
+    /// the answer waits until it has rendered, so the row's controls are there to take the focus.
+    /// </summary>
+    private async Task<bool> RevealRowAsync(int row)
+    {
+        if (!Paged || PageOf(row) == Math.Clamp(_page, 0, PageCount - 1)) return false;
+
+        var rendered = _rendered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        TurnTo(PageOf(row));
+        await InvokeAsync(StateHasChanged);
+        // Bounded: a list taken away before it rendered must not leave the caller waiting for ever.
+        await Task.WhenAny(rendered.Task, Task.Delay(2000));
+        return true;
     }
 
     // ------------------------------------------------------------------ focus
@@ -299,7 +418,7 @@
     private async Task Add()
     {
         var index = State.AddArrayItem(Field, Path);
-        if (index >= 0) _focusRow = index;
+        if (index >= 0) ShowRow(index);
         _said = null;
         await Dependents();
     }
@@ -321,6 +440,8 @@
     {
         if (Locked || to < 0 || to >= Count) return;
         State.MoveArrayItem(Path, from, to);
+        // Past the edge of the page: the page follows the row, so the button that moved it is still under the hand.
+        if (Paged && PageOf(to) != _page) ShowRow(to);
         // The count has not changed, so on its own the region would say nothing: say where the row
         // landed instead — the one thing a user who cannot see the list moving needs to know.
         Say(State.Text(BormMessageKeys.ArrayItemGroup, ItemNoun, to + 1));
@@ -330,7 +451,7 @@
     private async Task Duplicate(int index)
     {
         var target = State.DuplicateArrayItem(Field, Path, index);
-        if (target >= 0) _focusRow = target;
+        if (target >= 0) ShowRow(target);
         _said = null;
         await Dependents();
     }
@@ -349,7 +470,7 @@
         }
         else
         {
-            _focusRow = Math.Min(index, Count - 1);
+            ShowRow(Math.Min(index, Count - 1));
             _said = null;
         }
 
@@ -358,6 +479,10 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // A page turned for a focus request has rendered: its rows' controls are registered now.
+        _rendered?.TrySetResult();
+        _rendered = null;
+
         if (_focusRow is { } row)
         {
             _focusRow = null;

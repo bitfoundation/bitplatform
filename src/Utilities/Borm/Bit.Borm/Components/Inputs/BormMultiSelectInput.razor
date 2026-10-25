@@ -28,6 +28,7 @@
         <label class="bit-borm-checkbox" for="@optionId">
             <input type="checkbox"
                    id="@optionId"
+                   name="@Context.InputName"
                    value="@opt.Value"
                    checked="@selected.Contains(opt.Value)"
                    disabled="@(DisabledOrReadOnly || opt.Disabled)"
