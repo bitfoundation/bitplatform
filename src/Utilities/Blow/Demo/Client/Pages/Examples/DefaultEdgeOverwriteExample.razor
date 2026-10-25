@@ -3,11 +3,27 @@
 <PageTitle>Default Edge Overwrite · Blow</PageTitle>
 
 <ExampleScaffold Title="Default Edge Overwrite"
-                 Summary="DefaultEdgeOptions apply to every newly created edge. Here new connections are animated smooth-step edges with a closed arrow and a thicker indigo stroke.">
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" DefaultEdgeOptions="_options">
-        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-        <BlowControls />
-    </BlowCanvas>
+                 Summary="DefaultEdgeOptions gives every edge the user draws a house style - here an animated, round-cornered smooth step with a closed arrow, a thicker indigo stroke, a wider hit area and ends that stay put. The edge already in the list keeps the plain defaults: the options only reach new edges.">
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" DefaultEdgeOptions="_options">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Drag</strong> from the dot under <strong>Drag from my handle</strong> to the dot on top of <strong>or here</strong>: the new edge arrives animated, smooth-stepped with round corners, indigo, thicker and with a filled arrowhead.</li>
+        <li>Compare it with the grey edge into <strong>to here</strong>, which was in the list from the start and keeps the built-in look.</li>
+        <li><strong>Click</strong> near the new edge rather than on it: its wider hit area still selects it.</li>
+        <li>With the new edge selected no end dots appear, so its ends cannot be dragged to other handles; select the grey edge and its two dots are there to drag.</li>
+        <li>Press <strong>Backspace</strong> or <strong>Delete</strong> to remove a selected edge and draw it again.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>DefaultEdgeOptions</code> takes a <code>BlowDefaultEdgeOptions</code>, applied to each edge the moment the user creates it; edges put in the <code>Edges</code> list by code are left alone.</li>
+        <li><code>Type = SmoothStep</code> sets the path; left null it falls back to the canvas's <code>DefaultEdgeType</code>. <code>PathOptions</code> (here a <code>BorderRadius</code> of 16 instead of 5) is cloned into each new edge, so retuning one edge never retunes the others.</li>
+        <li><code>Animated</code> (off by default) runs the marching dash; <code>MarkerType = ArrowClosed</code> fills the arrowhead that <code>MarkerEnd</code> (on by default) draws.</li>
+        <li><code>Stroke</code> and <code>StrokeWidth</code> replace the theme colour and the 1.5 width; <code>InteractionWidth</code> widens the invisible hit path from 14 to 24 screen pixels.</li>
+        <li><code>Reconnectable = false</code> (true by default) keeps new edges' ends where they were drawn. <code>Style</code>, <code>Class</code> and <code>MarkerStart</code> are there too.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 @code {
@@ -17,11 +33,13 @@
     private readonly BlowDefaultEdgeOptions _options = new()
     {
         Type = BlowEdgeType.SmoothStep,
+        PathOptions = new BlowEdgePathOptions { BorderRadius = 16 },
         Animated = true,
-        MarkerEnd = true,
         MarkerType = BlowMarkerType.ArrowClosed,
         StrokeWidth = 2.5,
         Stroke = "#6366f1",
+        InteractionWidth = 24,
+        Reconnectable = false,
     };
 
     protected override void OnInitialized()

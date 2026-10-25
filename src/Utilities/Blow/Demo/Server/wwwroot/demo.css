@@ -85,6 +85,26 @@
     height: clamp(24rem, calc(100vh - 25rem), 46rem);
 }
 
+/* On a phone a minimap's fixed size is a third of the canvas or more, and it sits on the very nodes it maps. The
+   samples leave it out there, except those about the minimap itself, which mark it demo-minimap-keep. */
+@media (max-width: 600px) {
+    .demo-canvas .bit-blow-minimap:not(.demo-minimap-keep) {
+        display: none;
+    }
+}
+
+/* The footer under a sample's canvas: an event log, say, which as a panel over the canvas would grow over the nodes.
+   A fixed height, so the page does not jump as lines come in. */
+.example-footer {
+    height: 7.5rem;
+    overflow: auto;
+    padding: .5rem .875rem;
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text);
+    background: var(--bb-surface-sunken);
+    border-top: 1px solid var(--bb-border);
+}
+
 /* The toolbar's controls: labels hold their control and its value on one line, and the row wraps
    on a narrow screen rather than pushing the page sideways. */
 .example-toolbar {
@@ -102,6 +122,39 @@
 
 .example-toolbar input[type="range"] {
     max-width: 10rem;
+}
+
+/* ---------- The reading guide under a sample: "Try it" and "How it works", side by side where there is room. ---------- */
+
+.demo-notes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+    gap: 1rem 2rem;
+    margin-top: 1.5rem;
+}
+
+.demo-notes__title {
+    margin: 0 0 .5rem;
+    font-size: var(--fl-font-size-400);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-text);
+}
+
+.demo-notes__list {
+    margin: 0;
+    padding-inline-start: 1.25rem;
+    font-size: var(--fl-font-size-300);
+    line-height: 1.6;
+    color: var(--bb-text-muted);
+}
+
+.demo-notes__list > li + li {
+    margin-top: .375rem;
+}
+
+.demo-notes__list strong,
+.demo-notes__list code {
+    color: var(--bb-text);
 }
 
 /* ---------- The "View code" toggle: the kit's secondary button, with the caret and the code glyph in it. ---------- */

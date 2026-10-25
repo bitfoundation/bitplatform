@@ -5,9 +5,10 @@
 <div class="bb-intro">
     <h1>Basic Flow</h1>
     <p class="bb-subtitle">
-        Drag nodes, drag from a handle to another node to connect, scroll to zoom, drag the background to pan.
-        Click a node/edge to select, press <kbd>Delete</kbd> to remove. Hold <kbd>Shift</kbd> for multi-select,
-        or <kbd>Shift</kbd>-drag the background to box-select. See the <a href="interactions">Interactions</a> page for more.
+        Every default gesture on one canvas: a <code>BlowCanvas</code> over your own <code>List&lt;BlowNode&gt;</code>
+        and <code>List&lt;BlowEdge&gt;</code>, which it edits in place as you drag, connect, select and delete - with
+        a background, the control bar, a minimap and a panel of your own on top. The
+        <a href="interactions">Interactions</a> page switches these gestures on and off.
     </p>
 </div>
 
@@ -28,6 +29,30 @@
         </BlowCanvas>
     </div>
 </div>
+
+<DemoNotes>
+    <TryIt>
+        <li><strong>Drag a node</strong> to move it; its edges follow. Hold it against the canvas border and the view scrolls along with it.</li>
+        <li><strong>Drag from a handle</strong> (the dot on a node's edge) and let go on another node's handle to connect them. Let go on empty space and nothing is added.</li>
+        <li><strong>Click</strong> a node or an edge to select it, <strong>Shift+click</strong> to add to the selection, and <strong>Shift+drag</strong> the background to draw a selection box. <strong>Escape</strong> clears the selection.</li>
+        <li>Press <strong>Delete</strong> or <strong>Backspace</strong> to remove what is selected; deleting a node takes its edges with it.</li>
+        <li><strong>Drag the background</strong> to pan, <strong>scroll</strong> to zoom toward the cursor and <strong>double-click</strong> the background to zoom in (<strong>Shift+double-click</strong> zooms out). On a touch screen, pinch with two fingers.</li>
+        <li>The control bar in the bottom-left corner zooms in, zooms out and fits the whole graph in view.</li>
+        <li><strong>Click or drag in the minimap</strong> in the bottom-right corner to move the view there.</li>
+        <li><strong>Add node</strong> drops a new node at a random spot on the canvas.</li>
+        <li>Press <strong>Tab</strong> to move through the edges and nodes, <strong>Enter</strong> to select the focused one and the <strong>arrow keys</strong> to move the selected nodes.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>Nodes</code> and <code>Edges</code> are plain lists; the canvas adds, moves and removes items in them directly, so the page's state is always the graph on screen.</li>
+        <li>A node's <code>Type</code> picks the built-in look: <code>input</code> has only a source handle, <code>output</code> only a target handle, and the default has both.</li>
+        <li>An edge joins <code>Source</code> to <code>Target</code> by node id; <code>Animated</code> runs dashes along it and <code>Label</code> draws text at its middle.</li>
+        <li><code>FitViewOnInit</code> zooms the graph to fit once the nodes have been measured.</li>
+        <li><code>OnConnect</code> is raised after the canvas has already added the new edge to <code>Edges</code>, so it is only for side effects - here it writes a line to the browser's console.</li>
+        <li><code>BlowBackground</code> draws the dot pattern (<code>Variant="Dots"</code>, <code>Gap="20"</code>). <code>BlowControls</code> shows zoom in, zoom out and fit view; its lock button stays hidden unless <code>ShowInteractive</code> is set. <code>BlowMiniMap</code> is <code>Pannable</code> by default (<code>Zoomable</code> is off).</li>
+        <li><code>BlowPanel Position="top-right"</code> holds the button over the canvas, unaffected by pan and zoom; a press inside a panel never starts a pan.</li>
+        <li><strong>Add node</strong> adds a <code>BlowNode</code> to <code>_nodes</code>. The page re-renders after the click, and the canvas picks the new node up and measures it - no call into the canvas is needed.</li>
+    </HowItWorks>
+</DemoNotes>
 
 @code {
     private List<BlowNode> _nodes = new();

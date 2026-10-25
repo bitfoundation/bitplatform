@@ -5,7 +5,9 @@
 <div class="bb-intro">
     <h1>Custom Nodes</h1>
     <p class="bb-subtitle">
-        Nodes rendered with a custom template. The "color" node has multiple labelled source handles.
+        A <code>NodeTemplate</code> renders your own markup inside each node: here a colour node with a working colour
+        picker and two labelled source handles, while every other node falls back to the built-in look through
+        <code>BlowDefaultNode</code>.
     </p>
 </div>
 
@@ -19,20 +21,24 @@
                 {
                     <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Left" />
                     <div class="custom-node">
-                        <div class="custom-node__swatch" style="background:@data.Color"></div>
+                        @* nodrag: a press on the picker opens it, rather than selecting and dragging the node. *@
+                        <input type="color" class="custom-node__swatch nodrag" aria-label="@($"Colour of {node.Label}")"
+                               @bind="data.Color" @bind:event="oninput" />
                         <div class="custom-node__body">
                             <strong>@node.Label</strong>
                             <div class="custom-node__hex">@data.Color</div>
                         </div>
                     </div>
+                    @* Two source handles on one side, moved along it by their style; the ids are what an edge's
+                       SourceHandle names, and each letter sits at the height of its handle. *@
+                    <span class="custom-node__port" style="top:35%" aria-hidden="true">A</span>
                     <BlowHandle Type="BlowHandleType.Source" Id="a" Position="BlowPosition.Right" Style="top:35%" />
+                    <span class="custom-node__port" style="top:65%" aria-hidden="true">B</span>
                     <BlowHandle Type="BlowHandleType.Source" Id="b" Position="BlowPosition.Right" Style="top:65%" />
                 }
                 else
                 {
-                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
-                    <div>@node.Label</div>
-                    <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+                    <BlowDefaultNode Node="node" />
                 }
             </NodeTemplate>
 
@@ -44,15 +50,42 @@
     </div>
 </div>
 
+<DemoNotes>
+    <TryIt>
+        <li><strong>Click the swatch</strong> on Crimson or Emerald and pick another colour: the swatch and the hex code under the name follow as you choose.</li>
+        <li><strong>Hover</strong> the two handles on the right of a colour node: the tooltips name them <em>Output A</em> and <em>Output B</em>.</li>
+        <li><strong>Drag from either handle</strong> to another node to connect it; each edge remembers which of the two it leaves from.</li>
+        <li><strong>Drag a colour node</strong> by its name to move it - a press on the swatch opens the picker instead.</li>
+        <li><strong>Tab</strong> to Crimson and press <strong>C</strong>: a connection starts from Output A and is announced by that name, and <strong>C</strong> again switches it to Output B. Keep pressing <strong>Tab</strong> until Palette has focus, then <strong>Enter</strong> connects and <strong>Escape</strong> gives up.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>NodeTemplate</code> is a <code>RenderFragment&lt;BlowNode&gt;</code> that replaces the content of every node; it switches on <code>node.Type</code> and reads its own payload from <code>node.Data</code>.</li>
+        <li>The template is part of the page, so <code>@@bind</code> on the picker writes straight into the node's <code>ColorData</code>, and the re-render that follows redraws the node.</li>
+        <li>The picker carries the <code>nodrag</code> class (the canvas's <code>NoDragClass</code>), so pressing it neither selects nor drags the node.</li>
+        <li><code>BlowHandle</code> goes anywhere in the template: <code>Type</code> and <code>Position</code> say what and on which side, <code>Style="top:35%"</code> moves it along that side, and an <code>Id</code> tells handles of the same type apart. The starting edges pick theirs with <code>SourceHandle = "a"</code> and <code>"b"</code>.</li>
+        <li><code>Ports</code> on the node model declares the two outputs as <code>BlowPort</code>s; a port's <code>Label</code> becomes its handle's tooltip and the name a screen reader hears when connecting from the keyboard.</li>
+        <li>Every other type is handed back to <code>BlowDefaultNode</code>, which draws the built-in content; Mixer's <code>TargetPosition</code> and <code>SourcePosition</code> put its handles on the left and right.</li>
+        <li>The template renders inside the node's own chrome - padding, border, background - and <code>Width = 180</code> fixes the colour nodes' width. With a template set, the add-ons go in an explicit <code>&lt;ChildContent&gt;</code>.</li>
+    </HowItWorks>
+</DemoNotes>
+
 <style>
-    .custom-node { display:flex; align-items:center; gap:10px; padding:2px; }
-    .custom-node__swatch { width:28px; height:28px; border-radius:6px; border:1px solid rgba(0,0,0,0.15); }
+    /* Room on the right for the handle letters. */
+    .custom-node { display:flex; align-items:center; gap:10px; padding:2px 16px 2px 2px; }
+    .custom-node__swatch { width:28px; height:28px; padding:0; border:1px solid var(--bit-blow-border); border-radius:6px; background:none; cursor:pointer; }
+    .custom-node__swatch::-webkit-color-swatch-wrapper { padding:0; }
+    .custom-node__swatch::-webkit-color-swatch { border:none; border-radius:5px; }
+    .custom-node__swatch::-moz-color-swatch { border:none; border-radius:5px; }
     .custom-node__body { text-align:left; }
     .custom-node__hex { font-size:11px; color:var(--bit-blow-text-muted); }
+    .custom-node__port { position:absolute; right:8px; transform:translateY(-50%); font-size:10px; color:var(--bit-blow-text-muted); pointer-events:none; }
 </style>
 
 @code {
-    public record ColorData(string Color);
+    public sealed class ColorData
+    {
+        public required string Color { get; set; }
+    }
 
     private List<BlowNode> _nodes = new();
     private List<BlowEdge> _edges = new();
@@ -61,15 +94,34 @@
     {
         _nodes =
         [
-            new BlowNode { Id = "1", Type = "color", Label = "Crimson",  Position = new(80, 80),  Data = new ColorData("#dc2626"), Width = 180 },
-            new BlowNode { Id = "2", Type = "color", Label = "Emerald",  Position = new(80, 220), Data = new ColorData("#10b981"), Width = 180 },
-            new BlowNode { Id = "3",                 Label = "Mixer",    Position = new(400, 150) },
+            ColorNode("1", "Crimson", "#dc2626", new(80, 80)),
+            ColorNode("2", "Emerald", "#10b981", new(80, 220)),
+            new BlowNode { Id = "3", Label = "Mixer", Position = new(400, 150), TargetPosition = BlowPosition.Left, SourcePosition = BlowPosition.Right },
+            new BlowNode { Id = "4", Type = "output", Label = "Palette", Position = new(600, 150), TargetPosition = BlowPosition.Left },
         ];
 
         _edges =
         [
             new BlowEdge { Id = "e1-3", Source = "1", Target = "3", SourceHandle = "a", Type = BlowEdgeType.SmoothStep },
             new BlowEdge { Id = "e2-3", Source = "2", Target = "3", SourceHandle = "b", Type = BlowEdgeType.SmoothStep },
+            new BlowEdge { Id = "e3-4", Source = "3", Target = "4", Type = BlowEdgeType.SmoothStep },
         ];
     }
+
+    // The ports are the model of the two source handles the template draws: their labels are what the handles'
+    // tooltips show and what a screen reader hears while connecting from the keyboard.
+    private static BlowNode ColorNode(string id, string label, string color, BlowXYPosition position) => new()
+    {
+        Id = id,
+        Type = "color",
+        Label = label,
+        Position = position,
+        Width = 180,
+        Data = new ColorData { Color = color },
+        Ports =
+        [
+            new BlowPort { Id = "a", Type = BlowHandleType.Source, Label = "Output A" },
+            new BlowPort { Id = "b", Type = BlowHandleType.Source, Label = "Output B" },
+        ],
+    };
 }

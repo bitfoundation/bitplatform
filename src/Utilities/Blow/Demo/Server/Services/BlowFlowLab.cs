@@ -19,8 +19,8 @@ namespace Bit.Blow.Demo.Server.Services;
 /// <see cref="BlowCanvasHost"/>) and raises what it finds wrong through OnError, resolving every
 /// node's absolute position and size on the way, so <see cref="BlowGraphUtils.GetNodesBounds"/> and
 /// <see cref="BlowLayout"/> then measure the flow the canvas would draw. What this class adds is only
-/// what the canvas does not report - a parent cycle, an edge pointing at a handle that is not there -
-/// and the notes that say what to do about each finding.
+/// what the canvas does not report - an edge pointing at a handle that is not there, say - and the notes
+/// that say what to do about each finding.
 /// </para>
 /// </summary>
 public static class BlowFlowLab
@@ -37,10 +37,14 @@ public static class BlowFlowLab
     /// <summary>The most items one note lists by id before it says how many more there are.</summary>
     private const int MaxListed = 8;
 
-    /// <summary>The layouts the tool can run: "none", and the three of <see cref="BlowLayout"/> (the layered one in each direction).</summary>
+    /// <summary>
+    /// The layouts the tool can run: "none", and those of <see cref="BlowLayout"/> - the layered one in each direction,
+    /// the tree in two, radial, force, grid and circle.
+    /// </summary>
     public static readonly string[] Layouts =
     [
-        "none", "layered", "layered-left-to-right", "layered-bottom-to-top", "layered-right-to-left", "grid", "circle"
+        "none", "layered", "layered-left-to-right", "layered-bottom-to-top", "layered-right-to-left",
+        "tree", "tree-left-to-right", "radial", "force", "grid", "circle"
     ];
 
     /// <summary>The node types the built-in renderer draws; any other one needs a NodeTemplate.</summary>
@@ -530,9 +534,8 @@ public static class BlowFlowLab
 
     /// <summary>
     /// The sub-flow structure: every node that is somebody's parent, with its children, and how deep
-    /// the nesting goes. Walking the chains here is also where a parent cycle shows up - which the
-    /// canvas does not report: it walks a chain at most fifty parents deep and positions the node at
-    /// wherever that leaves it.
+    /// the nesting goes. A parent cycle is reported by the canvas itself (<c>parent-cycle</c>); the note
+    /// here says what to do about it.
     /// </summary>
     private static (BlowSubFlowDto[] SubFlows, int MaxDepth) SubFlows(List<BlowNode> nodes, Dictionary<string, BlowNode> index, List<string> notes)
     {
@@ -570,14 +573,14 @@ public static class BlowFlowLab
 
         if (cycles.Count > 0)
         {
-            notes.Add($"Node(s) {List(cycles)} sit in a parent cycle - following ParentId leads back to where it started. The canvas does not report " +
-                      "this: it adds up the relative positions round the loop until it gives up, fifty parents later, and the nodes land far from where " +
-                      "they were meant to be. Break the cycle by clearing one ParentId.");
+            notes.Add($"Node(s) {List(cycles)} sit in a parent cycle - following ParentId leads back to where it started. The canvas reports it " +
+                      "(parent-cycle) and cuts the loop where it found it, laying that node out as a root, so the nesting is not what was meant. " +
+                      "Break the cycle by clearing one ParentId.");
         }
 
         if (ownParent.Count > 0)
         {
-            notes.Add($"Node(s) {List(ownParent)} name themselves as their own parent. The canvas does not report this and treats each as a root node. Clear ParentId.");
+            notes.Add($"Node(s) {List(ownParent)} name themselves as their own parent. The canvas reports it (parent-cycle) and treats each as a root node. Clear ParentId.");
         }
 
         var subFlows = index.Values
@@ -610,13 +613,17 @@ public static class BlowFlowLab
     {
         var direction = algorithm switch
         {
-            "layered-left-to-right" => BlowLayoutDirection.LeftToRight,
+            "layered-left-to-right" or "tree-left-to-right" => BlowLayoutDirection.LeftToRight,
             "layered-bottom-to-top" => BlowLayoutDirection.BottomToTop,
             "layered-right-to-left" => BlowLayoutDirection.RightToLeft,
             _ => BlowLayoutDirection.TopToBottom
         };
 
         var layered = algorithm.StartsWith("layered", StringComparison.Ordinal);
+        var tree = algorithm.StartsWith("tree", StringComparison.Ordinal);
+
+        // The layered and tree layouts turn each node's handles to face the flow; the others leave them alone.
+        var turnsHandles = layered || tree;
 
         // Only the node an id resolves to takes part, as it is the only one the canvas draws.
         var siblings = nodes.Where(node => node.Hidden is false && ReferenceEquals(index[node.Id], node))
@@ -628,6 +635,9 @@ public static class BlowFlowLab
             var group = set.ToList();
 
             if (layered) BlowLayout.Layered(group, edges, new BlowLayeredLayoutOptions { Direction = direction });
+            else if (tree) BlowLayout.Tree(group, edges, new BlowTreeLayoutOptions { Direction = direction });
+            else if (algorithm == "radial") BlowLayout.Radial(group, edges, new BlowRadialLayoutOptions());
+            else if (algorithm == "force") BlowLayout.Force(group, edges, new BlowForceLayoutOptions());
             else if (algorithm == "grid") BlowLayout.Grid(group, new BlowGridLayoutOptions());
             else BlowLayout.Circle(group, new BlowCircleLayoutOptions());
         }
@@ -655,25 +665,31 @@ public static class BlowFlowLab
             ParentId = set.Key,
             X = Round(node.Position.X),
             Y = Round(node.Position.Y),
-            SourcePosition = layered ? node.SourcePosition.ToString() : null,
-            TargetPosition = layered ? node.TargetPosition.ToString() : null
+            SourcePosition = turnsHandles ? node.SourcePosition.ToString() : null,
+            TargetPosition = turnsHandles ? node.TargetPosition.ToString() : null
         })).ToArray();
 
-        var call = layered
-            ? direction == BlowLayoutDirection.TopToBottom
-                ? "BlowLayout.Layered(siblings, edges);"
-                : $"BlowLayout.Layered(siblings, edges, new BlowLayeredLayoutOptions {{ Direction = BlowLayoutDirection.{direction} }});"
-            : algorithm == "grid" ? "BlowLayout.Grid(siblings);" : "BlowLayout.Circle(siblings);";
+        var call = algorithm switch
+        {
+            _ when layered && direction == BlowLayoutDirection.TopToBottom => "BlowLayout.Layered(siblings, edges);",
+            _ when layered => $"BlowLayout.Layered(siblings, edges, new BlowLayeredLayoutOptions {{ Direction = BlowLayoutDirection.{direction} }});",
+            _ when tree && direction == BlowLayoutDirection.TopToBottom => "BlowLayout.Tree(siblings, edges);",
+            _ when tree => $"BlowLayout.Tree(siblings, edges, new BlowTreeLayoutOptions {{ Direction = BlowLayoutDirection.{direction} }});",
+            "radial" => "BlowLayout.Radial(siblings, edges);",
+            "force" => "BlowLayout.Force(siblings, edges);",
+            "grid" => "BlowLayout.Grid(siblings);",
+            _ => "BlowLayout.Circle(siblings);",
+        };
 
         var code = $"""
             // Once for the root nodes, and once for each parent's children - positions are parent-relative.
             {call}
-            {(layered ? "canvas.UpdateNodeInternals(); // the layout turned the handles to face the flow\n" : string.Empty)}canvas.FitView();
+            {(turnsHandles ? "canvas.UpdateNodeInternals(); // the layout turned the handles to face the flow\n" : string.Empty)}canvas.FitView();
             """;
 
         notes.Add($"The {algorithm} layout ran with the library's default options over {siblings.Length} set(s) of siblings - the root nodes, then each " +
                   "parent's children, in the parent's own space from its top-left corner. " +
-                  (layered ? "It also turned every node's SourcePosition and TargetPosition to face the flow (AlignHandlesToDirection), which only the " +
+                  (turnsHandles ? "It also turned every node's SourcePosition and TargetPosition to face the flow (AlignHandlesToDirection), which only the " +
                              "built-in node renderer reads. " : string.Empty) +
                   "Sizes came from each node's Width/Height, else its measured size, else the 150 x 40 fallback - lay a live flow out from " +
                   "OnNodesInitialized, once every node has been measured. Hidden nodes were left where they are.");
