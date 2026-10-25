@@ -240,7 +240,7 @@ Narrow `Formats` to the symbologies you need - it is the single most effective s
 | UPC-A | Supported | Reported as UPC-A rather than as a zero-prefixed EAN-13; add-ons read |
 | UPC-E | Supported | Expanded and check-digit verified against its UPC-A form; add-ons read |
 | ITF | Supported | Configurable accepted lengths |
-| PDF417 | Supported | Any orientation, 1-30 columns and 3-90 rows, security levels 0-8, text / byte / numeric compaction, ECI, Macro PDF417 segment numbering; not compact (truncated) PDF417 or MicroPDF417 - see [PDF417 status](#pdf417-status) |
+| PDF417 | Supported | Any orientation, 1-30 columns and 3-90 rows, security levels 0-8, text / byte / numeric compaction, ECI, Macro PDF417 segment numbering, compact (truncated) PDF417; not MicroPDF417 - see [PDF417 status](#pdf417-status) |
 | Aztec Code | Supported | Compact (1-4 layers) and full range (1-32 layers), any orientation, every character mode, ECI, GS1 (FNC1), mirrored symbols, and Aztec Runes, reported as their number from 0 to 255; structured append is not interpreted. A symbol written at an encoder's lowest error correction level - three check codewords - is only read undamaged: so few cannot tell a repaired block from a wrong one |
 | MaxiCode | Supported | Modes 2 to 5: the structured carrier message of modes 2 and 3 - postal code, country and class of service - reported as the carrier writes it, after the `[)>` header; standard and enhanced error correction; the five code sets with their shifts and locks, the numeric shift and ECI. `Metadata.SymbolVersion` is `Mode 2` to `Mode 5`. Found by its bullseye at any angle, the four diameters of its rings giving the grid's shape and their edges, to a fraction of a pixel, its scale; the grid's foreshortening away from the rings is searched for when it does not read flat. Mode 6, which programs a reader, is not read, and structured append is not interpreted |
 | GS1 DataBar | Supported | Omnidirectional, Truncated, Stacked and Stacked Omnidirectional; the GTIN-14 reported as the GS1 element string `01` followed by its fourteen digits, check digit included, with `Metadata.IsGs1` set and `Metadata.SymbolVersion` `Stacked` for a symbol read from two rows. The modulo 79 checksum is verified, and as it is the only check, every read is confirmed on a second scan line; bars printed wider or narrower than their modules are measured on the guards and finder patterns and corrected for. A stacked symbol's rows, and the halves of a short symbol turned further off a line than one line can cross whole, are read on different lines and put together by where they lie - along the symbol's own axis, which the lines' starts trace - and the checksum between them; each half has to be read on two lines and more than twice as often as anything else its place reads as. A module and a half of light is wanted beyond each guard bar, although DataBar itself needs no quiet zone: a symbol printed right up against other ink is missed rather than risked. The linear part of a GS1 Composite symbol is not read |
@@ -980,8 +980,12 @@ corners that come out of that are resampled upright from the grayscale image. Th
 if it had been printed straight. Every reference symbol reads at every orientation, in fifteen degree steps round the
 full circle, at two and at four pixels a module, with the live camera settings.
 
-**Not read.** Compact (truncated) PDF417, which drops the right row indicator and most of the stop pattern, and
-MicroPDF417, which is a different symbology.
+**Compact PDF417.** Compact (truncated) PDF417, which drops the right row indicator and cuts the stop pattern to a
+single bar, is read the same way: the left row indicators carry everything the symbol's structure needs. Rows are
+read as a full symbol's first, and as a compact symbol's only when they do not make one, so a full symbol whose stop
+pattern a line missed is never taken for a compact one.
+
+**Not read.** MicroPDF417, which is a different symbology.
 
 **Side by side.** A line along a row of one symbol runs on into the stop pattern of a symbol printed beside it, and
 paired with that the quad comes out sheared. A stop pattern spans the same rows as its own start pattern, give or take

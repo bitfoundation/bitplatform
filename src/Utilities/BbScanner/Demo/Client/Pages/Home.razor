@@ -128,10 +128,19 @@
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Photos and buffers</h3>
                 <p class="bb-card-desc">
-                    A built-in file picker for still images, and <code>DecodeImage</code> for pixels the
-                    application already has - tuned for one exhaustive attempt rather than fifteen a second.
+                    A built-in file picker and drop target for still images, <code>ScanImageAsync</code> for an
+                    upload the application already holds, and <code>DecodeImage</code> for raw pixels - tuned for
+                    one exhaustive attempt rather than fifteen a second, and never asking for the camera.
                 </p>
                 <a href="image" class="btn btn-outline">Image scanning →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Built for real workflows</h3>
+                <p class="bb-card-desc">
+                    Read one code and stop, pause for "scan another", count each value once for a stocktake, ignore
+                    every code but the one you expect, read a whole sheet of labels at once, and beep or vibrate on a scan.
+                </p>
+                <a href="lifecycle" class="btn btn-outline">Lifecycle &amp; duplicates →</a>
             </section>
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Measured, not guessed</h3>
@@ -142,12 +151,22 @@
                 <a href="performance" class="btn btn-outline">Performance →</a>
             </section>
             <section class="bb-card">
-                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Yours to restyle</h3>
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Yours to restyle and translate</h3>
                 <p class="bb-card-desc">
-                    Every colour, radius and dimension is a CSS custom property, and the reticle and the messages
-                    are render fragments - with right-to-left, reduced motion and forced colours built in.
+                    Every colour, radius and dimension is a CSS custom property, the reticle and the messages are
+                    render fragments, and every text it shows or announces can be translated - with right-to-left,
+                    screen readers, reduced motion and forced colours built in.
                 </p>
                 <a href="customize" class="btn btn-outline">Customisation →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Failures you can act on</h3>
+                <p class="bb-card-desc">
+                    Permission refused, no camera, camera in use, no HTTPS, an image that is not one: every failure
+                    arrives as a classified <code>BbScannerException</code>, and the permission can be checked before
+                    the browser ever asks.
+                </p>
+                <a href="errors" class="btn btn-outline">Errors &amp; permissions →</a>
             </section>
         </div>
     </section>
@@ -288,8 +307,10 @@
                 <summary>How does it avoid misreads?</summary>
                 <p>
                     Misreading is treated as worse than missing: check digits and guard patterns are verified, a
-                    Reed-Solomon correction is only accepted when the corrected block re-verifies, and ITF, UPC-E and
-                    unchecked Code 39 results must repeat on a second scan line before they are reported.
+                    Reed-Solomon correction is only accepted when the corrected block re-verifies, and ITF, Codabar,
+                    UPC-E, the GS1 DataBar family and unchecked Code 39 results must repeat on a second scan line
+                    before they are reported. Narrowing <code>Formats</code> to what you expect, and
+                    <code>ItfLengths</code> to the lengths you use, closes the rest of the gap.
                 </p>
             </details>
             <details>
@@ -297,8 +318,8 @@
                 <p>
                     Yes - the kind on driving licences, boarding passes and shipping labels. The library ships the
                     specification's symbol character table, finds a symbol at any rotation before reading it row by
-                    row, and repairs damaged rows with the symbol's own error correction. Compact (truncated) PDF417
-                    and MicroPDF417 are not read.
+                    row, and repairs damaged rows with the symbol's own error correction. Compact (truncated) PDF417,
+                    with its right row indicator dropped, reads too; MicroPDF417, a different symbology, is not read.
                 </p>
             </details>
             <details>

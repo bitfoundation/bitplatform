@@ -1,7 +1,7 @@
 ﻿# Bit.BbScanner
 
-A dependency-free, high performance barcode scanner for Blazor: QR Code, Data Matrix, PDF417, Aztec, Code 128, Code 39,
-Code 93, Codabar, EAN-13, EAN-8, UPC-A, UPC-E (with their add-ons), ITF, GS1 DataBar (with its stacked forms), DataBar
+A dependency-free, high performance barcode scanner for Blazor: QR Code, Micro QR, Data Matrix, PDF417, Aztec, MaxiCode,
+Code 128, Code 39, Code 93, Codabar, EAN-13, EAN-8, UPC-A, UPC-E (with their add-ons), ITF, GS1 DataBar (with its stacked forms), DataBar
 Limited and DataBar Expanded, from the camera or from still images. The decoding - luminance conversion, binarization,
 detection, Reed-Solomon correction and bit stream parsing - is written in C#. JavaScript only opens the camera and
 copies pixels - there is no barcode SDK or JavaScript scanner library underneath.

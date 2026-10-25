@@ -6,7 +6,9 @@
     <h1>Lifecycle and duplicate prevention</h1>
     <p class="bb-subtitle">
         Start, stop, pause and resume are explicit and cheap. Pausing keeps the camera open, so
-        resuming is instant; stopping releases the track and turns the camera indicator off.
+        resuming is instant; stopping releases the track and turns the camera indicator off. This
+        scanner has <code>AutoStart="false"</code> and <code>ShowControls="false"</code>, so nothing happens
+        until the page's own buttons call the methods.
     </p>
 </div>
 
@@ -24,6 +26,7 @@
                            ShowControls="false"
                            DuplicateSuppressionWindow="@(_oncePerSession ? Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(_windowSeconds))"
                            AcceptResult="@(r => r.Text.StartsWith(_prefix, StringComparison.Ordinal))"
+                           AfterScan="_afterScan"
                            ReleaseCameraWhenHidden="_releaseWhenHidden"
                            Feedback="Feedback"
                            OnScan="HandleScan"
@@ -34,20 +37,30 @@
                     <button class="btn btn-secondary" type="button" @onclick="Stop">Stop</button>
                     <button class="btn btn-secondary" type="button" @onclick="Pause">Pause</button>
                     <button class="btn btn-secondary" type="button" @onclick="Resume">Resume</button>
+                    <button class="btn btn-secondary" type="button" id="forget-reported" @onclick="Forget">Forget reported values</button>
                 </div>
+                <p class="bb-card-desc">
+                    <em>Start</em> calls <code>StartAsync</code>, <em>Stop</em> <code>StopAsync</code>, <em>Pause</em>
+                    and <em>Resume</em> the methods of the same name, and <em>Forget reported values</em>
+                    <code>ResetDuplicateFilter</code>. Every call is safe at any time: <em>Pause</em> and
+                    <em>Resume</em> do nothing in a status they do not apply to, and a start made while an earlier
+                    one still waits for the permission prompt supersedes it, so only one camera is ever opened.
+                </p>
             </div>
 
             <div class="scan-panels">
                 <section class="scan-panel">
                     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Duplicate suppression</h3>
                     <label class="bb-field">
-                        <span class="scan-field-head"><span>Window</span><output>@_windowSeconds s</output></span>
-                        <input type="range" min="0" max="10" step="1" value="@_windowSeconds" @onchange="OnWindowChanged" />
+                        <span class="scan-field-head"><span>Window</span><output>@(_oncePerSession ? "session" : $"{_windowSeconds} s")</output></span>
+                        <input type="range" min="0" max="10" step="1" value="@_windowSeconds" disabled="@_oncePerSession" @onchange="OnWindowChanged" />
                     </label>
                     <p class="bb-card-desc">
-                        Suppression is keyed on the value and the symbology together, so moving the camera
-                        to a different barcode reports immediately instead of waiting out the window.
-                        Holding the same one in view keeps it suppressed rather than re-firing on a timer.
+                        A camera decodes the same symbol in frame after frame, so <code>DuplicateSuppressionWindow</code>
+                        (two seconds by default) holds a value back after it was reported. Suppression is keyed on the
+                        value and the symbology together, so moving the camera to a different barcode reports
+                        immediately instead of waiting out the window. Holding the same one in view keeps it
+                        suppressed rather than re-firing on a timer.
                     </p>
                     <p class="bb-card-desc">
                         Set it to zero and the scanner reports every frame that decodes, which is the
@@ -55,14 +68,40 @@
                     </p>
                     <label class="bb-check">
                         <input type="checkbox" id="once-per-session" @bind="_oncePerSession" />
-                        Each value once until restarted (<code>Timeout.InfiniteTimeSpan</code>)
+                        Each value once per session (<code>Timeout.InfiniteTimeSpan</code>)
                     </label>
+                    <p class="bb-card-desc">
+                        For a stocktake or a check-in desk: each value is reported once for as long as the camera
+                        stays open, up to 4 096 values. <em>Start</em> and <em>Forget reported values</em> begin a
+                        new session; <em>Resume</em> and a camera reopened after the page was hidden do not, so
+                        nothing is counted twice. With a finite window, <em>Resume</em> reports the symbol in view
+                        again.
+                    </p>
+                </section>
+
+                <section class="scan-panel">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> What a scan does</h3>
                     <label class="bb-field">
                         <span>Only accept codes starting with</span>
                         <input type="text" id="accept-prefix" @bind="_prefix" placeholder="(anything)" />
                         <small>
-                            <code>AcceptResult</code> turns every other code down: it is not reported, outlined
-                            or counted, as if it were not there.
+                            <code>AcceptResult</code> turns every other code down: it is not reported, outlined,
+                            announced or counted as a scan, as if it were not there - so a page expecting a ticket
+                            number ignores every other code in view. It runs on every frame that reads a symbol,
+                            so keep it cheap.
+                        </small>
+                    </label>
+                    <label class="bb-field">
+                        <span>After an accepted scan</span>
+                        <select id="lifecycle-after-scan" value="@_afterScan" @onchange="OnAfterScanChanged">
+                            <option value="@BbAfterScan.Continue">Keep scanning (Continue)</option>
+                            <option value="@BbAfterScan.Pause">Pause - Resume scans another</option>
+                            <option value="@BbAfterScan.Stop">Stop the camera - Start scans another</option>
+                        </select>
+                        <small>
+                            <code>AfterScan</code>: <code>Pause</code> keeps the camera open and the view live, so a
+                            "scan another" button's <code>Resume</code> is instant; <code>Stop</code> releases the
+                            camera, for a page that reads one code and is done.
                         </small>
                     </label>
                 </section>
@@ -74,18 +113,25 @@
                         Close the camera while the page is hidden (<code>ReleaseCameraWhenHidden</code>)
                     </label>
                     <p class="bb-card-desc">
-                        Switch to another tab and back: the camera indicator goes out and the scanner picks up
-                        where it left off. Either way, a camera the phone ends when the page goes into the
-                        background is reopened when it returns rather than reported as lost.
+                        Switch to another tab and back: the camera indicator goes out, the status reads
+                        <em>Starting</em> while the page is hidden, and the scanner picks up where it left off -
+                        paused, if it was paused. It saves the battery, at the cost of a moment's restart. Either way,
+                        a camera the phone ends when the page goes into the background is reopened when it returns
+                        rather than reported as lost.
                     </p>
                     <label class="bb-check">
                         <input type="checkbox" id="feedback-vibrate" @bind="_vibrate" />
-                        Vibrate on a scan
+                        Vibrate on a scan (<code>BbScanFeedback.Vibrate</code>)
                     </label>
                     <label class="bb-check">
                         <input type="checkbox" id="feedback-beep" @bind="_beep" />
-                        Beep on a scan
+                        Beep on a scan (<code>BbScanFeedback.Beep</code>)
                     </label>
+                    <p class="bb-card-desc">
+                        <code>Feedback</code> is best effort: browsers only play the tone after the user has
+                        interacted with the page, and Safari does not vibrate. The outline and the screen reader
+                        announcement always come too, so neither is the only sign of a scan.
+                    </p>
                 </section>
 
                 <section class="scan-panel">
@@ -113,6 +159,48 @@
 </div>
 
 <div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Status</h3>
+    <p class="bb-card-desc">
+        <code>Status</code> is always one of these. <code>OnStatusChanged</code> reports every change, the badge
+        above the scanner shows it, and the root element carries it as <code>data-status</code> for styling.
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Status</th><th>Camera</th><th>Decoding</th><th>Reached by</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key">Idle</td><td>Closed</td><td>No</td><td>Creating the scanner; it stays here when <code>AutoStart</code> is off.</td></tr>
+                <tr><td class="bb-table-key">Starting</td><td>Opening</td><td>No</td><td><code>StartAsync</code>, while the browser asks for permission and opens the track; also while a camera ended in the background waits for the page to be shown.</td></tr>
+                <tr><td class="bb-table-key">Scanning</td><td>Open</td><td>Yes</td><td>The camera opened, or <code>Resume</code>.</td></tr>
+                <tr><td class="bb-table-key">Paused</td><td>Open</td><td>No</td><td><code>Pause</code>, or a scan under <code>AfterScan="BbAfterScan.Pause"</code>.</td></tr>
+                <tr><td class="bb-table-key">Stopped</td><td>Released</td><td>No</td><td><code>StopAsync</code>, or a scan under <code>AfterScan="BbAfterScan.Stop"</code>.</td></tr>
+                <tr><td class="bb-table-key">Faulted</td><td>Released</td><td>No</td><td>A failure, reported through <code>OnError</code>; <code>StartAsync</code> tries again. See <a href="errors">errors</a>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> In code</h3>
+    <p class="bb-card-desc">A check-in desk that reads one ticket at a time and ignores every other code:</p>
+    <pre class="bb-code">&lt;<span class="k">BbScanner</span> @@ref=<span class="s">"_scanner"</span>
+           AfterScan=<span class="s">"BbAfterScan.Pause"</span>
+           AcceptResult=<span class="s">"@@(r =&gt; r.Text.StartsWith("TICKET-", StringComparison.Ordinal))"</span>
+           DuplicateSuppressionWindow=<span class="s">"Timeout.InfiniteTimeSpan"</span>
+           Feedback=<span class="s">"BbScanFeedback.Beep"</span>
+           OnScan=<span class="s">"CheckIn"</span> /&gt;
+
+&lt;<span class="k">button</span> @@onclick=<span class="s">"() =&gt; _scanner.Resume()"</span>&gt;Scan another&lt;/<span class="k">button</span>&gt;
+
+<span class="k">@@code</span> {
+    <span class="k">private</span> BbScanner _scanner = <span class="k">default</span>!;
+
+    <span class="k">private</span> Task CheckIn(BbBarcodeResult ticket) =&gt; Tickets.CheckInAsync(ticket.Text);
+}</pre>
+</div>
+
+<div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Disposal</h3>
     <p class="bb-card-desc">
         The component implements <code>IAsyncDisposable</code>. Navigating away cancels the
@@ -131,9 +219,20 @@
     private string _prefix = string.Empty;
     private int _reported;
     private int _statusChanges;
+    private BbAfterScan _afterScan = BbAfterScan.Continue;
     private bool _releaseWhenHidden;
     private bool _vibrate;
     private bool _beep;
+
+    private void Forget() => _scanner?.ResetDuplicateFilter();
+
+    private void OnAfterScanChanged(ChangeEventArgs args)
+    {
+        if (Enum.TryParse<BbAfterScan>(args.Value?.ToString(), out var afterScan))
+        {
+            _afterScan = afterScan;
+        }
+    }
 
     private BbScanFeedback Feedback =>
         (_vibrate ? BbScanFeedback.Vibrate : BbScanFeedback.None) | (_beep ? BbScanFeedback.Beep : BbScanFeedback.None);

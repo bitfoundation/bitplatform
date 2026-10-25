@@ -7,7 +7,8 @@
     <p class="bb-subtitle">
         Camera selection, torch and zoom are all capabilities of the running media track. The
         component reports what the browser says is available and never offers a control the hardware
-        will refuse.
+        will refuse: its own control bar shows a camera picker only when there is more than one camera,
+        and a torch button and a zoom slider only when the open camera supports them.
     </p>
 </div>
 
@@ -64,7 +65,13 @@
                                     @foreach (var camera in _cameras)
                                     {
                                         <tr>
-                                            <td>@camera.Label</td>
+                                            <td>
+                                                @camera.Label
+                                                @if (camera.DeviceId == _camera?.DeviceId)
+                                                {
+                                                    <span class="bb-badge bb-badge-success">in use</span>
+                                                }
+                                            </td>
                                             <td class="bb-table-action">
                                                 <button class="btn btn-secondary" type="button" @onclick="() => Switch(camera.DeviceId)">Use</button>
                                             </td>
@@ -75,18 +82,37 @@
                         </div>
                     }
 
+                    <p class="bb-card-desc">
+                        <em>Enumerate</em> calls <code>GetCamerasAsync</code>, and <em>Use</em>
+                        <code>SwitchCameraAsync</code>, which reopens the scanner on that camera without tearing the
+                        component down. Binding the <code>DeviceId</code> parameter does the same. A camera the
+                        browser gives no name - every one, before permission - is listed as
+                        <code>BbScannerTexts.UnnamedCamera</code>, "Camera 1" in English.
+                    </p>
+
                     <label class="bb-field">
-                        <span>Preferred facing for the next start</span>
+                        <span>Preferred facing</span>
                         <select id="facing" value="@_facing" @onchange="OnFacingChanged">
                             <option value="@BbCameraFacing.Rear">Rear</option>
                             <option value="@BbCameraFacing.Front">Front</option>
                             <option value="@BbCameraFacing.Any">Any</option>
                         </select>
+                        <small>
+                            <code>Facing</code> picks a camera when no <code>DeviceId</code> is set: <code>Rear</code>
+                            (the default, what a scanner normally wants), <code>Front</code>, or <code>Any</code> to
+                            let the browser decide. Changing it reopens the running camera. A front camera's preview
+                            is mirrored, as a selfie view is; the highlights follow it.
+                        </small>
                     </label>
                 </section>
 
                 <section class="scan-panel">
                     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Negotiated track</h3>
+                    <p class="bb-card-desc">
+                        The <code>BbCameraInfo</code> that <code>OnCameraChanged</code> delivers each time a camera
+                        opens, also readable as the scanner's <code>Camera</code> property: what the browser actually
+                        negotiated, which may differ from <code>RequestedWidth</code> and <code>RequestedHeight</code>.
+                    </p>
                     @if (_camera is null)
                     {
                         <div class="bb-empty">No camera open.</div>
@@ -98,8 +124,10 @@
                             <dd>@_camera.Label</dd>
                             <dt>Resolution</dt>
                             <dd>@_camera.Width × @_camera.Height</dd>
+                            <dt>Decoded at</dt>
+                            <dd>@(_scanner?.ProcessingSize.Width) × @(_scanner?.ProcessingSize.Height) (<code>ProcessingSize</code>)</dd>
                             <dt>Frame rate</dt>
-                            <dd>@_camera.FrameRate.ToString("0.#") fps</dd>
+                            <dd>@(_camera.FrameRate > 0 ? $"{_camera.FrameRate:0.#} fps" : "unreported")</dd>
                             <dt>Facing</dt>
                             <dd>@(_camera.FacingMode.Length == 0 ? "unreported" : _camera.FacingMode)</dd>
                             <dt>Torch</dt>
@@ -118,6 +146,10 @@
                                 @if (_camera.SupportsZoom)
                                 {
                                     <span class="bb-badge bb-badge-success">@_camera.ZoomMin.ToString("0.#") to @_camera.ZoomMax.ToString("0.#")</span>
+                                    @if (_camera.ZoomStep > 0)
+                                    {
+                                        <span class="bb-soft"> in steps of @_camera.ZoomStep.ToString("0.###")</span>
+                                    }
                                 }
                                 else
                                 {
@@ -160,16 +192,50 @@
                     }
 
                     <p class="bb-card-desc">
-                        Torch and zoom are almost always rear-camera-only, and support varies by browser.
-                        Both calls report whether the browser accepted them rather than throwing.
-                        <em>Scan full frame</em> calls <code>ScanCurrentFrameAsync</code>, which reads the
-                        current frame at the camera's own resolution - for a code too dense or too far
-                        away for the scaled-down live frames.
+                        The torch button calls <code>SetTorchAsync</code> and the slider <code>SetZoomAsync</code>;
+                        <code>IsTorchOn</code> and <code>Zoom</code> read the current state back. Torch and zoom are
+                        almost always rear-camera-only, and support varies by browser, so both calls return whether
+                        the browser accepted them rather than throwing, and a zoom outside the range is clamped to it.
+                    </p>
+                    <p class="bb-card-desc">
+                        <em>Scan full frame</em> calls <code>ScanCurrentFrameAsync</code>, which reads the current
+                        frame at the camera's own resolution with the still image settings - for a code too dense or
+                        too far away for the live frames, which are scaled down to <code>MaxProcessingSize</code>.
+                        It returns every symbol it finds and raises no event, which makes it a good "capture" button.
                     </p>
                 </section>
             </div>
         </div>
     </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> In code</h3>
+    <p class="bb-card-desc">
+        A camera picker of your own: list the cameras once the scanner has opened one - so their labels are
+        readable - and bind the choice to <code>DeviceId</code>.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">BbScanner</span> @@ref=<span class="s">"_scanner"</span> DeviceId=<span class="s">"@@_deviceId"</span> OnCameraChanged=<span class="s">"OnCameraChanged"</span> /&gt;
+
+&lt;<span class="k">select</span> @@bind=<span class="s">"_deviceId"</span>&gt;
+    <span class="k">@@foreach</span> (<span class="k">var</span> camera <span class="k">in</span> _cameras)
+    {
+        &lt;<span class="k">option</span> value=<span class="s">"@@camera.DeviceId"</span>&gt;@@camera.Label&lt;/<span class="k">option</span>&gt;
+    }
+&lt;/<span class="k">select</span>&gt;
+
+<span class="k">@@code</span> {
+    <span class="k">private</span> BbScanner _scanner = <span class="k">default</span>!;
+    <span class="k">private</span> IReadOnlyList&lt;BbCameraDevice&gt; _cameras = [];
+    <span class="k">private string</span>? _deviceId;
+    <span class="k">private bool</span> _canTorch;   <span class="c">// offer a torch button of your own only when there is a torch</span>
+
+    <span class="k">private async</span> Task OnCameraChanged(BbCameraInfo camera)
+    {
+        _canTorch = camera.SupportsTorch;
+        _cameras = <span class="k">await</span> _scanner.GetCamerasAsync();
+    }
+}</pre>
 </div>
 
 @code {
