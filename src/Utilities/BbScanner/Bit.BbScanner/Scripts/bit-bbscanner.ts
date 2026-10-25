@@ -15,6 +15,7 @@
 interface MemoryViewLike {
     readonly length: number;
     set(source: Uint8Array, targetOffset?: number): void;
+    slice(start?: number, end?: number): Uint8Array;
 }
 
 // camelCase JSON of BbCameraDevice.
@@ -82,6 +83,12 @@ interface GlReadback {
     pixels: Uint8Array;
     width: number;
     height: number;
+    // Whether the shader writes luminance, four pixels to an RGBA texel, so that the frame comes back as the
+    // grayscale plane the decoder works on - a quarter of the bytes, and no conversion left for managed code - or the
+    // RGBA frame itself.
+    luminance: boolean;
+    // The width actually drawn and read back: a quarter of the frame's when it carries luminance.
+    targetWidth: number;
 }
 
 interface Session {
@@ -98,17 +105,34 @@ interface Session {
     hasNewFrame: boolean;
     usesFrameCallback: boolean;
     trackEnded: boolean;
+    // Whether the page was hidden when the track ended: a phone ends a background page's camera, which is an
+    // interruption to recover from rather than a camera that went away.
+    endedWhileHidden: boolean;
     frameCallbackHandle: number;
     onTrackEnded: (() => void) | null;
     onVideoResize: (() => void) | null;
+    onDeviceChange: (() => void) | null;
     resizeObserver: ResizeObserver | null;
     viewWidth: number;
     viewHeight: number;
     videoSizeVersion: number;
     viewSizeVersion: number;
+    devicesVersion: number;
     // Still images waiting to be read, keyed by the request that prepared them: two selections in flight at once
     // must never hand each other's pixels over.
     prepared: Map<number, Uint8ClampedArray>;
+    // Encoded images the application handed over, waiting to be decoded, keyed the same way.
+    staged: Map<number, Blob>;
+    // The element files can be dropped onto, and the listeners that make it a drop target.
+    dropTarget: HTMLElement | null;
+    dropListeners: DropListeners | null;
+}
+
+interface DropListeners {
+    dragEnter: (event: DragEvent) => void;
+    dragOver: (event: DragEvent) => void;
+    dragLeave: (event: DragEvent) => void;
+    drop: (event: DragEvent) => void;
 }
 
 const state = {
@@ -120,6 +144,22 @@ const FRAME_TRACK_ENDED = -2;
 
 /** grabFrame result: the supplied buffer is too small for a frame. */
 const FRAME_BUFFER_TOO_SMALL = -1;
+
+/** prepareImage result: the file is larger than the application allows. */
+const IMAGE_TOO_LARGE = -3;
+
+/** prepareImage result: the file does not declare an image type. */
+const IMAGE_NOT_AN_IMAGE = -4;
+
+/** prepareImage result: the image declares more pixels than it is safe to decode. */
+const IMAGE_TOO_MANY_PIXELS = -5;
+
+/**
+ * The most pixels a selected image may declare. A phone's largest photograph is around 200 megapixels; an image
+ * beyond this is either a panorama nobody aims at a barcode or a file crafted to exhaust memory, and the decoded
+ * bitmap alone would be more than a gigabyte. Checked against the file's header, before it is decoded.
+ */
+const MAX_IMAGE_PIXELS = 268_435_456;
 
 function getSession(id: string): Session {
     let session = state.sessions.get(id);
@@ -138,15 +178,21 @@ function getSession(id: string): Session {
             hasNewFrame: false,
             usesFrameCallback: false,
             trackEnded: false,
+            endedWhileHidden: false,
             frameCallbackHandle: 0,
             onTrackEnded: null,
             onVideoResize: null,
+            onDeviceChange: null,
             resizeObserver: null,
             viewWidth: 0,
             viewHeight: 0,
             videoSizeVersion: 0,
             viewSizeVersion: 0,
+            devicesVersion: 0,
             prepared: new Map<number, Uint8ClampedArray>(),
+            staged: new Map<number, Blob>(),
+            dropTarget: null,
+            dropListeners: null,
         };
         state.sessions.set(id, session);
     }
@@ -200,11 +246,39 @@ function releaseStream(session: Session): void {
     }
 
     session.onVideoResize = null;
+    if (session.onDeviceChange && navigator.mediaDevices && typeof navigator.mediaDevices.removeEventListener === 'function') {
+        navigator.mediaDevices.removeEventListener('devicechange', session.onDeviceChange);
+    }
+
+    session.onDeviceChange = null;
     session.stream = null;
     session.track = null;
     session.hasNewFrame = false;
     session.usesFrameCallback = false;
     session.trackEnded = false;
+    session.endedWhileHidden = false;
+
+    // The readback array and the canvas still hold the last frame the camera saw. With no camera open there is
+    // nothing to keep them for: the managed side configures a fresh pair after every start, and until then the
+    // picture of whatever the camera last pointed at is not kept in the page. Dropping the WebGL context also hands
+    // one back to the browser, which allows only a handful per page.
+    releaseReadback(session);
+    wipeCanvas(session.canvas);
+    session.canvas = null;
+    session.ctx = null;
+}
+
+/** Overwrites a copy of camera or image pixels before it is let go: freed memory keeps its contents until it is reused. */
+function wipe(data: Uint8Array | Uint8ClampedArray | null | undefined): void {
+    data?.fill(0);
+}
+
+/** Lets go of a canvas's picture: resizing a canvas discards its backing store. */
+function wipeCanvas(canvas: ScanCanvas | null | undefined): void {
+    if (canvas) {
+        canvas.width = 0;
+        canvas.height = 0;
+    }
 }
 
 function createCanvas(width: number, height: number): ScanCanvas {
@@ -227,9 +301,18 @@ const READBACK_VERTEX_SHADER =
     'attribute vec2 p;varying vec2 t;void main(){t=p*0.5+0.5;gl_Position=vec4(p,0.0,1.0);}';
 
 // mediump cannot address every texel of a wide frame on some mobile GPUs, so highp is used wherever it exists.
-const READBACK_FRAGMENT_SHADER =
-    '#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\n'
+const READBACK_PRECISION = '#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\n';
+
+const READBACK_FRAGMENT_SHADER = READBACK_PRECISION
     + 'uniform sampler2D s;varying vec2 t;void main(){gl_FragColor=texture2D(s,t);}';
+
+// Four horizontally adjacent pixels' luminance to a texel, with the decoder's own BT.601 weights (77, 150 and 29 over
+// 256), so the bytes read back are the grayscale plane itself. d is one frame pixel in texture coordinates: the texel
+// at t covers frame pixels 4x to 4x + 3, whose centres are at t - 1.5d, t - 0.5d, t + 0.5d and t + 1.5d.
+const LUMINANCE_FRAGMENT_SHADER = READBACK_PRECISION
+    + 'uniform sampler2D s;uniform float d;varying vec2 t;const vec3 w=vec3(77.0,150.0,29.0)/256.0;'
+    + 'float l(float o){return dot(texture2D(s,vec2(t.x+o*d,t.y)).rgb,w);}'
+    + 'void main(){gl_FragColor=vec4(l(-1.5),l(-0.5),l(0.5),l(1.5));}';
 
 function compileShader(gl: WebGLRenderingContext, type: number, source: string): WebGLShader | null {
     const shader = gl.createShader(type);
@@ -252,11 +335,15 @@ function loseContext(gl: WebGLRenderingContext): void {
 }
 
 function createReadback(width: number, height: number): GlReadback | null {
-    const canvas = createCanvas(width, height);
+    // Luminance needs four pixels to a texel, and every channel of it read back as written: an alpha channel, not
+    // premultiplied into the others.
+    const luminance = width % 4 === 0;
+    const targetWidth = luminance ? width / 4 : width;
+    const canvas = createCanvas(targetWidth, height);
     let gl: WebGLRenderingContext | null = null;
     try {
         gl = canvas.getContext('webgl', {
-            alpha: false,
+            alpha: luminance,
             antialias: false,
             depth: false,
             stencil: false,
@@ -272,7 +359,7 @@ function createReadback(width: number, height: number): GlReadback | null {
     }
 
     const vertex = compileShader(gl, gl.VERTEX_SHADER, READBACK_VERTEX_SHADER);
-    const fragment = compileShader(gl, gl.FRAGMENT_SHADER, READBACK_FRAGMENT_SHADER);
+    const fragment = compileShader(gl, gl.FRAGMENT_SHADER, luminance ? LUMINANCE_FRAGMENT_SHADER : READBACK_FRAGMENT_SHADER);
     const program = gl.createProgram();
     const quad = gl.createBuffer();
     const texture = gl.createTexture();
@@ -305,13 +392,27 @@ function createReadback(width: number, height: number): GlReadback | null {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-    gl.viewport(0, 0, width, height);
+    gl.viewport(0, 0, targetWidth, height);
+    if (luminance) {
+        gl.uniform1f(gl.getUniformLocation(program, 'd'), 1 / width);
+    }
 
-    return { canvas, gl, texture, pixels: new Uint8Array(width * height * 4), width, height };
+    // RGBA or packed luminance, the array is the size of what is read back: four bytes a texel either way.
+    return {
+        canvas,
+        gl,
+        texture,
+        pixels: new Uint8Array(targetWidth * height * 4),
+        width,
+        height,
+        luminance,
+        targetWidth,
+    };
 }
 
 function releaseReadback(session: Session): void {
     if (session.readback) {
+        wipe(session.readback.pixels);
         loseContext(session.readback.gl);
         session.readback = null;
     }
@@ -327,7 +428,7 @@ function readWithGl(readback: GlReadback, video: HTMLVideoElement): boolean {
     try {
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-        gl.readPixels(0, 0, readback.width, readback.height, gl.RGBA, gl.UNSIGNED_BYTE, readback.pixels);
+        gl.readPixels(0, 0, readback.targetWidth, readback.height, gl.RGBA, gl.UNSIGNED_BYTE, readback.pixels);
     } catch {
         return false;
     }
@@ -341,6 +442,7 @@ function ensureCanvas(session: Session, width: number, height: number): void {
     }
 
     releaseReadback(session);
+    wipeCanvas(session.canvas);
     session.canvas = null;
     session.ctx = null;
     session.canvasWidth = width;
@@ -463,13 +565,10 @@ export async function listCameras(): Promise<string> {
     const devices = await navigator.mediaDevices.enumerateDevices();
     const cameras: CameraDeviceDescription[] = [];
     const seen = new Set<string>();
-    let index = 0;
     for (const device of devices) {
         if (device.kind !== 'videoinput') {
             continue;
         }
-
-        index++;
 
         // Before permission is granted every device reports an empty id; one placeholder entry
         // is enough to say "a camera exists".
@@ -477,10 +576,11 @@ export async function listCameras(): Promise<string> {
             continue;
         }
 
+        // A camera without a label is named on the managed side, in the application's language.
         seen.add(device.deviceId);
         cameras.push({
             deviceId: device.deviceId,
-            label: device.label || `Camera ${index}`,
+            label: device.label,
         });
     }
 
@@ -564,6 +664,7 @@ export async function start(sessionId: string, videoElementId: string, deviceId:
     session.trackEnded = false;
     session.onTrackEnded = () => {
         session.trackEnded = true;
+        session.endedWhileHidden = document.visibilityState === 'hidden';
     };
     track.addEventListener('ended', session.onTrackEnded);
 
@@ -572,6 +673,14 @@ export async function start(sessionId: string, videoElementId: string, deviceId:
     };
 
     video.addEventListener('resize', session.onVideoResize);
+
+    // A camera plugged in or unplugged while scanning belongs in the camera picker without a restart.
+    if (typeof navigator.mediaDevices.addEventListener === 'function') {
+        session.onDeviceChange = () => {
+            session.devicesVersion = (session.devicesVersion + 1) & 0xFF;
+        };
+        navigator.mediaDevices.addEventListener('devicechange', session.onDeviceChange);
+    }
 
     scheduleFrameCallback(session);
     observeViewSize(session, video);
@@ -595,9 +704,10 @@ function observeViewSize(session: Session, video: HTMLVideoElement): void {
 }
 
 /**
- * Returns a token that changes whenever the camera renegotiates its resolution or the video
- * element is resized. The managed side polls it once per frame and recomputes only what
- * actually changed, which is far cheaper than pushing an event across the boundary.
+ * Returns a token that changes whenever the camera renegotiates its resolution, the video
+ * element is resized or the set of cameras changes, a byte for each. The managed side polls it
+ * once per frame and recomputes only what actually changed, which is far cheaper than pushing an
+ * event across the boundary.
  */
 export function pollChanges(sessionId: string): number {
     const session = state.sessions.get(sessionId);
@@ -605,7 +715,7 @@ export function pollChanges(sessionId: string): number {
         return 0;
     }
 
-    return (session.videoSizeVersion << 8) | session.viewSizeVersion;
+    return (session.devicesVersion << 16) | (session.videoSizeVersion << 8) | session.viewSizeVersion;
 }
 
 /**
@@ -631,9 +741,9 @@ export function configure(sessionId: string, width: number, height: number): voi
 }
 
 /**
- * Copies the most recent camera frame into a .NET buffer as RGBA.
- * Returns the number of bytes written, 0 when there is no new frame, -1 when the buffer is
- * too small, or -2 when the camera track has ended.
+ * Copies the most recent camera frame into a .NET buffer: as the grayscale plane, a byte a pixel, when the GPU path is
+ * in use, and as RGBA when the 2D canvas is. Returns the number of bytes written, which says which of the two it is, 0
+ * when there is no new frame, -1 when the buffer is too small, or -2 when the camera track has ended.
  */
 export function grabFrame(sessionId: string, buffer: MemoryViewLike): number {
     const session = state.sessions.get(sessionId);
@@ -655,8 +765,8 @@ export function grabFrame(sessionId: string, buffer: MemoryViewLike): number {
         return 0;
     }
 
-    const required = width * height * 4;
-    if (buffer.length < required) {
+    // The buffer is always sized for RGBA, which the 2D fallback needs, so either kind of frame fits.
+    if (buffer.length < width * height * 4) {
         return FRAME_BUFFER_TOO_SMALL;
     }
 
@@ -667,12 +777,15 @@ export function grabFrame(sessionId: string, buffer: MemoryViewLike): number {
         ensure2dCanvas(session);
     }
 
+    let written: number;
     if (session.readback) {
         buffer.set(session.readback.pixels);
+        written = session.readback.pixels.length;
     } else if (session.ctx) {
         session.ctx.drawImage(session.video, 0, 0, width, height);
         const data = session.ctx.getImageData(0, 0, width, height).data;
         buffer.set(new Uint8Array(data.buffer, data.byteOffset, data.byteLength));
+        written = data.byteLength;
     } else {
         return 0;
     }
@@ -681,11 +794,115 @@ export function grabFrame(sessionId: string, buffer: MemoryViewLike): number {
         session.hasNewFrame = false;
     }
 
-    return required;
+    return written;
 }
 
 function isEnded(session: Session): boolean {
     return session.trackEnded || (!!session.track && session.track.readyState === 'ended');
+}
+
+/**
+ * Reports whether the camera that ended was lost to the page being hidden - a phone switching to another app or
+ * locking its screen ends the page's camera - rather than unplugged, revoked or taken by another application. The
+ * page still being hidden counts: an ended track is not always announced by an event.
+ */
+export function wasLostWhileHidden(sessionId: string): boolean {
+    const session = state.sessions.get(sessionId);
+    return !!session && (session.endedWhileHidden || document.visibilityState === 'hidden');
+}
+
+/** Reports whether the page is hidden: in a background tab, a minimised window, or behind a locked screen. */
+export function isPageHidden(): boolean {
+    return document.visibilityState === 'hidden';
+}
+
+/** Kinds of feedback; the values of BbScanFeedback. */
+const FEEDBACK_VIBRATE = 1;
+const FEEDBACK_BEEP = 2;
+
+let feedbackAudio: AudioContext | null = null;
+
+/**
+ * Signals a scan. Both kinds are best effort: vibration is missing from Safari, and a page may only make a sound once
+ * the user has interacted with it, so either can do nothing at all without that being an error.
+ */
+export function feedback(kinds: number): void {
+    if (kinds & FEEDBACK_VIBRATE && typeof navigator.vibrate === 'function') {
+        try {
+            navigator.vibrate(80);
+        } catch {
+            // A browser may refuse outside a user gesture; there is nothing to report.
+        }
+    }
+
+    if (kinds & FEEDBACK_BEEP) {
+        beep();
+    }
+}
+
+function beep(): void {
+    const AudioContextType = window.AudioContext
+        ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextType) {
+        return;
+    }
+
+    try {
+        // One context for the page, suspended between beeps so that it does not keep the audio hardware awake.
+        const audio = feedbackAudio ??= new AudioContextType();
+        if (audio.state !== 'running') {
+            // Resuming needs the page to have had a user gesture. A beep that cannot sound now is dropped rather than
+            // queued on a context that may never run, where its nodes would pile up, or played late, after the scan.
+            const asked = performance.now();
+            void audio.resume().then(() => {
+                if (performance.now() - asked < 150) {
+                    playBeep(audio);
+                } else if (beepsPlaying === 0 && feedbackAudio === audio && audio.state === 'running') {
+                    // Resumed too late to belong to the scan - typically at the user's first tap, long after it - so
+                    // the context it woke goes back to sleep rather than keeping the audio hardware awake.
+                    void audio.suspend().catch(() => undefined);
+                }
+            }).catch(() => undefined);
+            return;
+        }
+
+        playBeep(audio);
+    } catch {
+        // No audio output, or the browser refused the context; the scan was still reported.
+    }
+}
+
+let beepsPlaying = 0;
+
+function playBeep(audio: AudioContext): void {
+    try {
+        const start = audio.currentTime;
+        const oscillator = audio.createOscillator();
+        const gain = audio.createGain();
+        oscillator.type = 'sine';
+        oscillator.frequency.value = 1760;
+
+        // A short swell and fade rather than a square edge, which clicks.
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(0.25, start + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.12);
+        oscillator.connect(gain);
+        gain.connect(audio.destination);
+        oscillator.start(start);
+        oscillator.stop(start + 0.13);
+        beepsPlaying++;
+        oscillator.onended = () => {
+            oscillator.disconnect();
+            gain.disconnect();
+
+            // Two scans a frame apart overlap their beeps: only the last one to finish may suspend the context.
+            if (--beepsPlaying === 0 && feedbackAudio === audio && audio.state === 'running') {
+                void audio.suspend().catch(() => undefined);
+            }
+        };
+    } catch {
+        // The browser refused the nodes; the scan was still reported.
+    }
 }
 
 /**
@@ -754,7 +971,11 @@ export function dispose(sessionId: string): void {
 
     releaseStream(session);
     releaseReadback(session);
+    detachDropTarget(session);
+    session.prepared.forEach(wipe);
     session.prepared.clear();
+    session.staged.clear();
+    wipeCanvas(session.canvas);
     session.canvas = null;
     session.ctx = null;
     session.video = null;
@@ -764,10 +985,11 @@ export function dispose(sessionId: string): void {
 /**
  * Decodes the first file selected in the given <input type="file"> into a pixel buffer held on
  * the JS side under requestId, scaled so that neither edge exceeds maxDimension.
- * Returns the dimensions packed as (width << 16) | height, or 0 when there is nothing to read.
+ * Returns the dimensions packed as (width << 16) | height, 0 when there is nothing to read, or one of the negative
+ * IMAGE_* codes when the file is refused before or after decoding.
  */
 export async function prepareImageFromInput(sessionId: string, inputElementId: string, requestId: number,
-                                            maxDimension: number): Promise<number> {
+                                            maxDimension: number, maxBytes: number): Promise<number> {
     const input = document.getElementById(inputElementId) as HTMLInputElement | null;
     if (!input || !input.files || input.files.length === 0) {
         return 0;
@@ -783,7 +1005,135 @@ export async function prepareImageFromInput(sessionId: string, inputElementId: s
         // still works.
     }
 
-    return await prepareImageFromBlob(sessionId, requestId, file, maxDimension);
+    return await prepareImageFromBlob(sessionId, requestId, file, maxDimension, maxBytes);
+}
+
+/**
+ * Checks what a file claims to be before anything decodes it. The picker's accept attribute is a hint the user can
+ * override, and a dropped file was never filtered at all, so both are checked here. A file with no type at all is
+ * let through: some platforms report none for formats they do not know by name, such as HEIC on Windows, and the
+ * decoder is the authority on whether it is an image.
+ */
+function refuseBlob(blob: Blob, maxBytes: number): number {
+    if (maxBytes > 0 && blob.size > maxBytes) {
+        return IMAGE_TOO_LARGE;
+    }
+
+    if (blob.type && !blob.type.startsWith('image/')) {
+        return IMAGE_NOT_AN_IMAGE;
+    }
+
+    return 0;
+}
+
+/** How much of a file declaredPixels reads: enough to get past a JPEG's EXIF, thumbnail and colour profile. */
+const IMAGE_HEADER_BYTES = 512 * 1024;
+
+/**
+ * The number of pixels an image declares in its header, read without decoding it, or 0 for a format this does not
+ * know - PNG, JPEG, GIF, BMP, WebP, and AVIF and HEIC through their ispe box, are known. The size has to be known
+ * before the image is decoded: decoding allocates the whole bitmap, so a small file that declares an enormous image
+ * would have exhausted the tab's memory before any check made afterwards could refuse it.
+ */
+async function declaredPixels(blob: Blob): Promise<number> {
+    const bytes = new Uint8Array(await blob.slice(0, IMAGE_HEADER_BYTES).arrayBuffer());
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    const length = bytes.length;
+    const ascii = (offset: number, text: string): boolean => {
+        if (offset + text.length > length) {
+            return false;
+        }
+
+        for (let i = 0; i < text.length; i++) {
+            if (bytes[offset + i] !== text.charCodeAt(i)) {
+                return false;
+            }
+        }
+
+        return true;
+    };
+
+    // PNG: the IHDR chunk always comes first.
+    if (length >= 24 && bytes[0] === 0x89 && ascii(1, 'PNG') && ascii(12, 'IHDR')) {
+        return view.getUint32(16) * view.getUint32(20);
+    }
+
+    // GIF: the logical screen, which every frame is drawn into.
+    if (length >= 10 && (ascii(0, 'GIF87a') || ascii(0, 'GIF89a'))) {
+        return view.getUint16(6, true) * view.getUint16(8, true);
+    }
+
+    // BMP: a twelve byte core header or any of the larger info headers; a top-down bitmap's height is negative.
+    if (length >= 26 && ascii(0, 'BM')) {
+        return view.getUint32(14, true) === 12
+            ? view.getUint16(18, true) * view.getUint16(20, true)
+            : Math.abs(view.getInt32(18, true)) * Math.abs(view.getInt32(22, true));
+    }
+
+    // WebP: lossy, lossless or extended, each with its own way of writing the size.
+    if (length >= 30 && ascii(0, 'RIFF') && ascii(8, 'WEBP')) {
+        if (ascii(12, 'VP8 ')) {
+            return (view.getUint16(26, true) & 0x3FFF) * (view.getUint16(28, true) & 0x3FFF);
+        }
+
+        if (ascii(12, 'VP8L')) {
+            const bits = view.getUint32(21, true);
+            return ((bits & 0x3FFF) + 1) * (((bits >>> 14) & 0x3FFF) + 1);
+        }
+
+        if (ascii(12, 'VP8X')) {
+            const width = (bytes[24] | (bytes[25] << 8) | (bytes[26] << 16)) + 1;
+            const height = (bytes[27] | (bytes[28] << 8) | (bytes[29] << 16)) + 1;
+            return width * height;
+        }
+
+        return 0;
+    }
+
+    // JPEG: the segments are walked to the start of frame, which follows the application segments.
+    if (length >= 4 && bytes[0] === 0xFF && bytes[1] === 0xD8) {
+        let offset = 2;
+        while (offset + 9 <= length) {
+            if (bytes[offset] !== 0xFF) {
+                return 0;
+            }
+
+            const marker = bytes[offset + 1];
+            if (marker === 0xFF) {
+                offset++;
+                continue;
+            }
+
+            // Every start of frame marker but the three that are not one: DHT, JPG and DAC.
+            if (marker >= 0xC0 && marker <= 0xCF && marker !== 0xC4 && marker !== 0xC8 && marker !== 0xCC) {
+                return view.getUint16(offset + 5) * view.getUint16(offset + 7);
+            }
+
+            // Markers without a length: the restart markers and the start and end of image.
+            if ((marker >= 0xD0 && marker <= 0xD9) || marker === 0x01) {
+                offset += 2;
+                continue;
+            }
+
+            offset += 2 + view.getUint16(offset + 2);
+        }
+
+        return 0;
+    }
+
+    // AVIF and HEIC: an ISO base media file whose image spatial extents box gives the size of each image it holds.
+    if (length >= 12 && ascii(4, 'ftyp')) {
+        let largest = 0;
+        for (let offset = 8; offset + 16 <= length; offset++) {
+            if (bytes[offset] === 0x69 && ascii(offset, 'ispe')) {
+                largest = Math.max(largest, view.getUint32(offset + 8) * view.getUint32(offset + 12));
+            }
+        }
+
+        return largest;
+    }
+
+    return 0;
 }
 
 async function decodeBitmap(blob: Blob): Promise<ImageBitmap> {
@@ -801,8 +1151,22 @@ async function decodeBitmap(blob: Blob): Promise<ImageBitmap> {
 }
 
 /** Decodes an image blob the same way as prepareImageFromInput. */
-export async function prepareImageFromBlob(sessionId: string, requestId: number, blob: Blob, maxDimension: number): Promise<number> {
+export async function prepareImageFromBlob(sessionId: string, requestId: number, blob: Blob, maxDimension: number,
+                                           maxBytes: number): Promise<number> {
+    const refused = refuseBlob(blob, maxBytes);
+    if (refused) {
+        return refused;
+    }
+
     const session = getSession(sessionId);
+
+    // A small file can still declare an enormous image. Browsers bound what they decode, but not tightly enough to
+    // keep a phone's tab alive through it, so the size the file declares is checked before anything is decoded. What
+    // is decoded is then copied out at maxDimension, whatever its size.
+    if (await declaredPixels(blob) > MAX_IMAGE_PIXELS) {
+        return IMAGE_TOO_MANY_PIXELS;
+    }
+
     const bitmap = await decodeBitmap(blob);
 
     try {
@@ -843,6 +1207,7 @@ export async function prepareImageFromBlob(sessionId: string, requestId: number,
         ctx.fillRect(0, 0, width, height);
         ctx.drawImage(bitmap, 0, 0, width, height);
         session.prepared.set(requestId, ctx.getImageData(0, 0, width, height).data);
+        wipeCanvas(ctx.canvas as ScanCanvas);
 
         return (width << 16) | height;
     } finally {
@@ -863,10 +1228,12 @@ export function readPrepared(sessionId: string, requestId: number, buffer: Memor
     session.prepared.delete(requestId);
 
     if (buffer.length < data.byteLength) {
+        wipe(data);
         return FRAME_BUFFER_TOO_SMALL;
     }
 
     buffer.set(new Uint8Array(data.buffer, data.byteOffset, data.byteLength));
+    wipe(data);
     return data.byteLength;
 }
 
@@ -874,13 +1241,183 @@ export function readPrepared(sessionId: string, requestId: number, buffer: Memor
 export function releasePrepared(sessionId: string, requestId: number): void {
     const session = state.sessions.get(sessionId);
     if (session) {
+        wipe(session.prepared.get(requestId));
         session.prepared.delete(requestId);
+        session.staged.delete(requestId);
     }
+}
+
+/**
+ * Holds an encoded image the application handed over - the bytes of a PNG or JPEG file - under requestId, for
+ * prepareStagedImage to decode. The view onto managed memory is only valid for the duration of this call, so the bytes
+ * are copied out of it here, synchronously.
+ */
+export function stageImage(sessionId: string, requestId: number, bytes: MemoryViewLike, type: string | null): void {
+    const session = getSession(sessionId);
+    session.staged.set(requestId, new Blob([bytes.slice() as BlobPart], type ? { type } : undefined));
+}
+
+/**
+ * Decodes an image stageImage holds under requestId into a pixel buffer, with the same checks and the same scaling as a
+ * file picked from the input. Returns the dimensions packed as (width << 16) | height, 0 when nothing is staged, or one
+ * of the negative IMAGE_* codes.
+ */
+export async function prepareStagedImage(sessionId: string, requestId: number, maxDimension: number,
+                                         maxBytes: number): Promise<number> {
+    const session = state.sessions.get(sessionId);
+    const blob = session ? session.staged.get(requestId) : undefined;
+    if (!session || !blob) {
+        return 0;
+    }
+
+    session.staged.delete(requestId);
+    return await prepareImageFromBlob(sessionId, requestId, blob, maxDimension, maxBytes);
+}
+
+/**
+ * Copies the camera's current frame into a pixel buffer held under requestId, at the camera's own resolution scaled so
+ * that neither edge exceeds maxDimension. The live frame loop reads frames scaled down for speed; this is the one frame
+ * a dense or distant symbol needs every pixel of. Returns the packed dimensions, or 0 when no camera is running.
+ */
+export function prepareVideoFrame(sessionId: string, requestId: number, maxDimension: number): number {
+    const session = state.sessions.get(sessionId);
+    const video = session ? session.video : null;
+    if (!session || !video || !session.stream || !video.videoWidth || !video.videoHeight || isEnded(session)) {
+        return 0;
+    }
+
+    let width = video.videoWidth;
+    let height = video.videoHeight;
+    const longest = Math.max(width, height);
+    if (maxDimension > 0 && longest > maxDimension) {
+        const scale = maxDimension / longest;
+        width = Math.max(1, Math.round(width * scale));
+        height = Math.max(1, Math.round(height * scale));
+    }
+
+    // Dimensions travel packed into one positive integer.
+    if (width > 0x7FFF || height > 0xFFFF) {
+        return 0;
+    }
+
+    const ctx = getReadbackContext(createCanvas(width, height));
+    if (!ctx) {
+        return 0;
+    }
+
+    ctx.drawImage(video, 0, 0, width, height);
+    session.prepared.set(requestId, ctx.getImageData(0, 0, width, height).data);
+    wipeCanvas(ctx.canvas as ScanCanvas);
+    return (width << 16) | height;
+}
+
+/**
+ * Makes an element a drop target for image files. A file dropped onto it is handed to the scanner's file input as if
+ * it had been picked, so it goes through exactly the same checks and the same decoding. While a file is dragged over
+ * it the element carries data-drop="true", so a style can show that it will be taken.
+ */
+export function attachDropTarget(sessionId: string, targetElementId: string, inputElementId: string): void {
+    const session = getSession(sessionId);
+    detachDropTarget(session);
+
+    const target = document.getElementById(targetElementId);
+    if (!target) {
+        return;
+    }
+
+    const input = (): HTMLInputElement | null => document.getElementById(inputElementId) as HTMLInputElement | null;
+    const carriesFiles = (event: DragEvent): boolean =>
+        !!event.dataTransfer && Array.prototype.indexOf.call(event.dataTransfer.types, 'Files') >= 0;
+
+    // dragenter and dragleave fire for every child the pointer crosses, so the element counts them rather than
+    // trusting any single dragleave to mean the pointer has gone.
+    let depth = 0;
+    const listeners: DropListeners = {
+        dragEnter: event => {
+            if (carriesFiles(event)) {
+                depth++;
+            }
+        },
+        dragOver: event => {
+            // The input only exists while file scanning is enabled; without it a drop is not taken.
+            if (!carriesFiles(event) || !input()) {
+                return;
+            }
+
+            event.preventDefault();
+            event.dataTransfer!.dropEffect = 'copy';
+            if (depth === 0) {
+                depth = 1;
+            }
+
+            target.setAttribute('data-drop', 'true');
+        },
+        dragLeave: () => {
+            depth = Math.max(0, depth - 1);
+            if (depth === 0) {
+                target.removeAttribute('data-drop');
+            }
+        },
+        drop: event => {
+            depth = 0;
+            target.removeAttribute('data-drop');
+            const element = input();
+            if (!carriesFiles(event) || !element || !event.dataTransfer || event.dataTransfer.files.length === 0) {
+                return;
+            }
+
+            event.preventDefault();
+
+            // A FileList cannot be constructed, but the one a drop carries can be assigned; the input's change event
+            // then runs the same path as a file chosen from the dialog.
+            element.files = event.dataTransfer.files;
+            element.dispatchEvent(new Event('change', { bubbles: true }));
+        },
+    };
+
+    target.addEventListener('dragenter', listeners.dragEnter);
+    target.addEventListener('dragover', listeners.dragOver);
+    target.addEventListener('dragleave', listeners.dragLeave);
+    target.addEventListener('drop', listeners.drop);
+    session.dropTarget = target;
+    session.dropListeners = listeners;
+}
+
+function detachDropTarget(session: Session): void {
+    const target = session.dropTarget;
+    const listeners = session.dropListeners;
+    if (target && listeners) {
+        target.removeEventListener('dragenter', listeners.dragEnter);
+        target.removeEventListener('dragover', listeners.dragOver);
+        target.removeEventListener('dragleave', listeners.dragLeave);
+        target.removeEventListener('drop', listeners.drop);
+        target.removeAttribute('data-drop');
+    }
+
+    session.dropTarget = null;
+    session.dropListeners = null;
 }
 
 /** Reports whether the page is in a context where the camera API is reachable at all. */
 export function isCameraSupported(): boolean {
     return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+}
+
+/**
+ * Reports what the browser would do with a request for the camera - 'granted', 'denied' or 'prompt' - without making
+ * one, or '' where it will not say: the Permissions API is missing, or does not know the camera permission by name.
+ */
+export async function queryCameraPermission(): Promise<string> {
+    if (!navigator.permissions || typeof navigator.permissions.query !== 'function') {
+        return '';
+    }
+
+    try {
+        const status = await navigator.permissions.query({ name: 'camera' as PermissionName });
+        return status.state;
+    } catch {
+        return '';
+    }
 }
 
 /** Reports whether the page is served from a secure context, which the camera API requires. */

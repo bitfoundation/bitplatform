@@ -19,6 +19,11 @@
 /// row then vote on every codeword, and a codeword no scan line could read is reported as an
 /// erasure for the error correction stage rather than discarding the row.
 /// </para>
+/// <para>
+/// A compact (truncated) symbol drops the right row indicator and cuts the stop pattern to a single bar. A row with no
+/// stop pattern is read codeword by codeword from the start pattern instead, up to a narrow bar that does not begin a
+/// codeword of the row's cluster - the stop bar - and is marked <see cref="SymbolRow.Compact"/>.
+/// </para>
 /// </remarks>
 public sealed class BbPdf417Detector
 {
@@ -42,7 +47,14 @@ public sealed class BbPdf417Detector
     /// <param name="Bottom">Last image row this symbol row was seen on.</param>
     /// <param name="Left">X of the first module of the start pattern.</param>
     /// <param name="Right">X just past the last module of the stop pattern.</param>
-    public sealed record SymbolRow(int RowNumber, int[] Codewords, int[] Clusters, int Top, int Bottom, int Left, int Right);
+    public sealed record SymbolRow(int RowNumber, int[] Codewords, int[] Clusters, int Top, int Bottom, int Left, int Right)
+    {
+        /// <summary>
+        /// Whether the row is of a compact (truncated) symbol: no right row indicator, so <see cref="Codewords"/> is the
+        /// left one and the data codewords, and a stop bar of a single module.
+        /// </summary>
+        public bool Compact { get; init; }
+    }
 
     /// <summary>The scan lines gathered for one symbol row before they vote.</summary>
     private sealed class RowAccumulator(int top, int left, int right)
@@ -69,10 +81,14 @@ public sealed class BbPdf417Detector
         ArgumentNullException.ThrowIfNull(image);
         ArgumentNullException.ThrowIfNull(table);
 
-        var accumulators = new SortedDictionary<int, RowAccumulator>();
-
+        // Full rows first, between the start and stop patterns. Only when they do not make a symbol are the rows read as
+        // a compact symbol's, from the start pattern to its stop bar: a full symbol's line that misses its stop pattern
+        // would read as a compact row too, and must not stand in for the full ones. The image is searched for start
+        // patterns once, and the compact reading - codeword by codeword, with no stop pattern to bound it - is only
+        // tried on the lines no full row was read on.
+        var full = new SortedDictionary<int, RowAccumulator>();
+        List<(int Y, int StartBegin, int StartEnd)>? unread = null;
         Span<int> counters = stackalloc int[9];
-
         for (var y = 0; y < image.Height; y++)
         {
             if (!TryFindPattern(image, y, 0, StartPattern, counters, out var startBegin, out var startEnd))
@@ -80,35 +96,63 @@ public sealed class BbPdf417Detector
                 continue;
             }
 
-            if (!TryFindPattern(image, y, startEnd, StopPattern, counters, out var stopBegin, out var stopEnd))
+            if (!TryFindPattern(image, y, startEnd, StopPattern, counters, out var stopBegin, out var stopEnd) ||
+                !Accumulate(full, y, startBegin, stopEnd, TryReadRow(image, y, startEnd, stopBegin, table, out var clusters), clusters, compact: false))
             {
-                continue;
+                (unread ??= []).Add((y, startBegin, startEnd));
             }
-
-            var codewords = TryReadRow(image, y, startEnd, stopBegin, table, out var clusters);
-            if (codewords is null)
-            {
-                continue;
-            }
-
-            var rowNumber = RowNumberOf(codewords, clusters!);
-            if (rowNumber < 0)
-            {
-                continue;
-            }
-
-            if (!accumulators.TryGetValue(rowNumber, out var accumulator))
-            {
-                accumulator = new RowAccumulator(y, startBegin, stopEnd);
-                accumulators.Add(rowNumber, accumulator);
-            }
-
-            accumulator.ScanLines.Add(codewords);
-            accumulator.Bottom = y;
-            accumulator.Left = Math.Min(accumulator.Left, startBegin);
-            accumulator.Right = Math.Max(accumulator.Right, stopEnd);
         }
 
+        var rows = Rows(full, compact: false);
+        if (rows.Count >= 3 || unread is null)
+        {
+            return rows;
+        }
+
+        var truncated = new SortedDictionary<int, RowAccumulator>();
+        foreach (var (y, startBegin, startEnd) in unread)
+        {
+            var moduleWidth = (startEnd - startBegin) / (float)BbPdf417SymbolTable.ModulesPerCodeword;
+            var codewords = TryReadCompactRow(image, y, startEnd, moduleWidth, table, out var clusters, out var stopEnd);
+            Accumulate(truncated, y, startBegin, stopEnd, codewords, clusters, compact: true);
+        }
+
+        return Rows(truncated, compact: true);
+    }
+
+    /// <summary>
+    /// Adds a scan line's codewords to the symbol row its row indicator names; returns whether it named one.
+    /// </summary>
+    private static bool Accumulate(
+        SortedDictionary<int, RowAccumulator> accumulators, int y, int startBegin, int stopEnd, int[]? codewords, int[]? clusters, bool compact)
+    {
+        if (codewords is null)
+        {
+            return false;
+        }
+
+        var rowNumber = RowNumberOf(codewords, clusters!, compact);
+        if (rowNumber < 0)
+        {
+            return false;
+        }
+
+        if (!accumulators.TryGetValue(rowNumber, out var accumulator))
+        {
+            accumulator = new RowAccumulator(y, startBegin, stopEnd);
+            accumulators.Add(rowNumber, accumulator);
+        }
+
+        accumulator.ScanLines.Add(codewords);
+        accumulator.Bottom = y;
+        accumulator.Left = Math.Min(accumulator.Left, startBegin);
+        accumulator.Right = Math.Max(accumulator.Right, stopEnd);
+        return true;
+    }
+
+    /// <summary>Lets the scan lines of each symbol row vote, and returns the rows in row number order.</summary>
+    private static IReadOnlyList<SymbolRow> Rows(SortedDictionary<int, RowAccumulator> accumulators, bool compact)
+    {
         if (accumulators.Count == 0)
         {
             return [];
@@ -131,7 +175,10 @@ public sealed class BbPdf417Detector
             var voted = Vote(accumulator.ScanLines);
             var clusters = new int[voted.Length];
             Array.Fill(clusters, (rowNumber % 3) * 3);
-            rows.Add(new SymbolRow(rowNumber, voted, clusters, accumulator.Top, accumulator.Bottom, accumulator.Left, accumulator.Right));
+            rows.Add(new SymbolRow(rowNumber, voted, clusters, accumulator.Top, accumulator.Bottom, accumulator.Left, accumulator.Right)
+            {
+                Compact = compact,
+            });
         }
 
         return rows;
@@ -140,14 +187,19 @@ public sealed class BbPdf417Detector
     /// <summary>
     /// Derives the row number from whichever row indicator could be read: the indicator's value
     /// divided by thirty gives the row number divided by three, and its cluster gives the row
-    /// number modulo three.
+    /// number modulo three. A compact row has only the left one.
     /// </summary>
-    private static int RowNumberOf(int[] codewords, int[] clusters)
+    private static int RowNumberOf(int[] codewords, int[] clusters, bool compact)
     {
         var left = codewords[0];
         if (left != Erasure && clusters[0] is 0 or 3 or 6)
         {
             return ((left / 30) * 3) + (clusters[0] / 3);
+        }
+
+        if (compact)
+        {
+            return -1;
         }
 
         var right = codewords[^1];
@@ -259,6 +311,108 @@ public sealed class BbPdf417Detector
 
         clusters = [.. clusterList];
         return [.. codewords];
+    }
+
+    /// <summary>
+    /// Reads the codewords of a compact row, from the end of the start pattern to the stop bar: a bar no wider than a
+    /// module and a half, followed by at least two modules of light or the edge of the image, where the runs from it do
+    /// not make a codeword of the row's cluster - that of its left row indicator. A row needs the indicator and at least
+    /// one data codeword, and no element of a codeword can be wider than six modules.
+    /// </summary>
+    private static int[]? TryReadCompactRow(
+        BbBitMatrix image, int y, int from, float module, BbPdf417SymbolTable table, out int[]? clusters, out int end)
+    {
+        clusters = null;
+        end = 0;
+
+        var codewords = new List<int>(16);
+        var clusterList = new List<int>(16);
+
+        Span<int> counters = stackalloc int[8];
+        Span<int> widths = stackalloc int[8];
+
+        var width = image.Width;
+        var x = from;
+        while (x < width && image[x, y])
+        {
+            // The stop bar: narrow, with light after it to the quiet zone - unless the runs from it are a codeword of
+            // the row's cluster after all.
+            var bar = 0;
+            while (x + bar < width && image[x + bar, y])
+            {
+                bar++;
+            }
+
+            var light = 0;
+            while (x + bar + light < width && !image[x + bar + light, y])
+            {
+                light++;
+            }
+
+            var stopShaped = codewords.Count >= 2 && bar <= 1.5f * module + 0.5f && (light >= 2 * module || x + bar + light >= width);
+
+            var next = x;
+            var isCodeword = TryRecordRuns(image, y, ref next, counters, width) && TryReadCharacter(counters, widths, module, table, out var codeword, out var cluster) &&
+                             (codewords.Count == 0 || cluster == clusterList[0]);
+            if (stopShaped && !isCodeword)
+            {
+                end = x + bar;
+                break;
+            }
+
+            if (!TryRecordRuns(image, y, ref x, counters, width))
+            {
+                return null;
+            }
+
+            if (!TryReadCharacter(counters, widths, module, table, out codeword, out cluster))
+            {
+                return null;
+            }
+
+            codewords.Add(codeword);
+            clusterList.Add(cluster);
+
+            // A row can hold at most 30 columns plus its indicator.
+            if (codewords.Count > 32)
+            {
+                return null;
+            }
+        }
+
+        if (end == 0 || codewords.Count < 2)
+        {
+            return null;
+        }
+
+        clusters = [.. clusterList];
+        return [.. codewords];
+
+        static bool TryReadCharacter(ReadOnlySpan<int> counters, Span<int> widths, float module, BbPdf417SymbolTable table, out int codeword, out int cluster)
+        {
+            codeword = Erasure;
+            cluster = -1;
+            foreach (var counter in counters)
+            {
+                if (counter > 6.7f * module)
+                {
+                    return false;
+                }
+            }
+
+            if (!TryNormalize(counters, widths))
+            {
+                return false;
+            }
+
+            cluster = BbPdf417SymbolTable.ClusterOf(widths);
+            if (!table.TryGetCodeword(cluster, BbPdf417SymbolTable.ToPattern(widths), out codeword))
+            {
+                (codeword, cluster) = (Erasure, -1);
+            }
+
+            return true;
+        }
     }
 
     /// <summary>Measures eight alternating runs starting at a bar.</summary>

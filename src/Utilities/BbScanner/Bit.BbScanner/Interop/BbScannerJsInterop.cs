@@ -111,12 +111,22 @@ internal static partial class BbScannerJsInterop
     [JSImport("isTrackEnded", ModuleName)]
     internal static partial bool IsTrackEnded(string sessionId);
 
+    [JSImport("wasLostWhileHidden", ModuleName)]
+    internal static partial bool WasLostWhileHidden(string sessionId);
+
+    [JSImport("isPageHidden", ModuleName)]
+    internal static partial bool IsPageHidden();
+
+    [JSImport("feedback", ModuleName)]
+    internal static partial void Feedback(int kinds);
+
     [JSImport("prepareImageFromInput", ModuleName)]
     internal static partial Task<int> PrepareImageFromInputAsync(
         string sessionId,
         string inputElementId,
         int requestId,
-        int maxDimension);
+        int maxDimension,
+        double maxBytes);
 
     [JSImport("readPrepared", ModuleName)]
     internal static partial int ReadPrepared(
@@ -127,6 +137,26 @@ internal static partial class BbScannerJsInterop
     [JSImport("releasePrepared", ModuleName)]
     internal static partial void ReleasePrepared(string sessionId, int requestId);
 
+    [JSImport("stageImage", ModuleName)]
+    internal static partial void StageImage(
+        string sessionId,
+        int requestId,
+        [JSMarshalAs<JSType.MemoryView>] Span<byte> bytes,
+        string? contentType);
+
+    [JSImport("prepareStagedImage", ModuleName)]
+    internal static partial Task<int> PrepareStagedImageAsync(
+        string sessionId,
+        int requestId,
+        int maxDimension,
+        double maxBytes);
+
+    [JSImport("prepareVideoFrame", ModuleName)]
+    internal static partial int PrepareVideoFrame(string sessionId, int requestId, int maxDimension);
+
+    [JSImport("attachDropTarget", ModuleName)]
+    internal static partial void AttachDropTarget(string sessionId, string targetElementId, string inputElementId);
+
     [JSImport("click", ModuleName)]
     internal static partial void Click(string elementId);
 
@@ -135,4 +165,7 @@ internal static partial class BbScannerJsInterop
 
     [JSImport("isSecureContext", ModuleName)]
     internal static partial bool IsSecureContext();
+
+    [JSImport("queryCameraPermission", ModuleName)]
+    internal static partial Task<string> QueryCameraPermissionAsync();
 }
