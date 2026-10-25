@@ -323,7 +323,9 @@ public static partial class Program
                         httpContext.Response.Redirect($"{PageUrls.NotAuthorized}{redirectQuery}");
                     }
                     else if (httpContext.Response.StatusCode is 404 &&
-                        httpContext.GetEndpoint() is null /* Please be aware that certain endpoints, particularly those associated with web API actions, may intentionally return a 404 error. */)
+                        httpContext.GetEndpoint() is null /* Please be aware that certain endpoints, particularly those associated with web API actions, may intentionally return a 404 error. */ &&
+                        httpContext.Request.Path.StartsWithSegments("/_framework") is false &&
+                        httpContext.Request.Path.StartsWithSegments("/_content") is false)
                     {
                         httpContext.Response.Redirect($"{PageUrls.NotFound}{QueryString.Create("url", httpContext.Request.GetEncodedPathAndQuery())}");
                     }
