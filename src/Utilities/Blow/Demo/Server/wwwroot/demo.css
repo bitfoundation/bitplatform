@@ -85,6 +85,26 @@
     height: clamp(24rem, calc(100vh - 25rem), 46rem);
 }
 
+/* On a phone a minimap's fixed size is a third of the canvas or more, and it sits on the very nodes it maps. The
+   samples leave it out there, except those about the minimap itself, which mark it demo-minimap-keep. */
+@media (max-width: 600px) {
+    .demo-canvas .bit-blow-minimap:not(.demo-minimap-keep) {
+        display: none;
+    }
+}
+
+/* The footer under a sample's canvas: an event log, say, which as a panel over the canvas would grow over the nodes.
+   A fixed height, so the page does not jump as lines come in. */
+.example-footer {
+    height: 7.5rem;
+    overflow: auto;
+    padding: .5rem .875rem;
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text);
+    background: var(--bb-surface-sunken);
+    border-top: 1px solid var(--bb-border);
+}
+
 /* The toolbar's controls: labels hold their control and its value on one line, and the row wraps
    on a narrow screen rather than pushing the page sideways. */
 .example-toolbar {

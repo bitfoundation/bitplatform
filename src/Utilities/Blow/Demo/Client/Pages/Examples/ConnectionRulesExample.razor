@@ -32,24 +32,22 @@
             <ChildContent>
                 <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
                 <BlowControls />
-                <BlowPanel Anchor="BlowPanelPosition.TopRight">
-                    <div class="rule-log">
-                        <strong>Edges (@_edges.Count)</strong>
-                        @foreach (var edge in _edges)
-                        {
-                            <div>@edge.Source → @edge.Target</div>
-                        }
-                    </div>
-                </BlowPanel>
             </ChildContent>
         </BlowCanvas>
     </ChildContent>
+    <Footer>
+        @* Under the canvas: as a panel in its corner the list grew over node B and its output handle. *@
+        <strong>Edges (@_edges.Count)</strong>
+        @foreach (var edge in _edges)
+        {
+            <div>@edge.Source → @edge.Target</div>
+        }
+    </Footer>
 </ExampleScaffold>
 
 <style>
     .rule-node { padding: 4px 2px; }
     .rule-flag { margin-top: 4px; font-size: 10px; color: #ef4444; }
-    .rule-log { min-width: 150px; padding: 8px 10px; font-size: 12px; background: var(--bit-blow-surface); color: var(--bit-blow-text); border: 1px solid var(--bit-blow-border); border-radius: 6px; }
 </style>
 
 @code {

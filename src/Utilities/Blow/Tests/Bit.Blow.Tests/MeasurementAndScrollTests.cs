@@ -45,6 +45,27 @@ public class MeasurementAndScrollTests : BunitContext
     }
 
     [TestMethod]
+    public void InLooseModeAnEdgeBetweenTwoSourcesEndsOnTheSourceItWasDroppedOn()
+    {
+        // A source dropped on a source names that source as the edge's target handle. Looked for among the target
+        // handles alone it is not there, and the edge ran to the middle of the node's top instead.
+        Module().Setup<BlowMeasuredNode[]>("measureNodes", _ => true).SetResult(
+        [
+            new("a", 100, 40, [Handle("t", "target", "left", 0, 20), Handle("s", "source", "right", 100, 20)]),
+            new("b", 100, 40, [Handle("t", "target", "left", 0, 20), Handle("s", "source", "right", 100, 20)]),
+        ]);
+
+        var cut = Render<BlowCanvas>(p =>
+        {
+            p.Add(c => c.Nodes, [new BlowNode { Id = "a", Position = new(0, 0) }, new BlowNode { Id = "b", Position = new(300, 100) }]);
+            p.Add(c => c.Edges, [new BlowEdge { Id = "e", Source = "a", SourceHandle = "s", Target = "b", TargetHandle = "s", Type = BlowEdgeType.Straight }]);
+            p.Add(c => c.ConnectionMode, BlowConnectionMode.Loose);
+        });
+
+        StringAssert.EndsWith(cut.Find(".bit-blow-edge-path").GetAttribute("d")!, "400,120");
+    }
+
+    [TestMethod]
     public void TwoAnonymousHandlesOfOneTypeAreReportedWithAdviceToNameThem()
     {
         var module = Module();
@@ -147,6 +168,25 @@ public class MeasurementAndScrollTests : BunitContext
 
         Assert.IsInRange(0, 800, topLeft.X);
         Assert.IsInRange(0, 600, topLeft.Y);
+    }
+
+    [TestMethod]
+    public void AnOffScreenNodeFocusedByAPressLeavesTheViewportAlone()
+    {
+        // A press in a nodrag control focuses its node without starting a gesture, and WebKit hands the focus of a
+        // control it will not focus to the node: following that focus would move the view under the pointer.
+        var module = Module();
+        module.Setup<BlowDomRect?>("getRect", _ => true).SetResult(new BlowDomRect(0, 0, 800, 600));
+        module.Setup<bool>("isPointerFocus", _ => true).SetResult(true);
+        var cut = Render<BlowCanvas>(p =>
+        {
+            p.Add(c => c.Nodes, NearAndFar());
+            p.Add(c => c.AutoPanOnNodeFocusDuration, 0);
+        });
+
+        cut.FindAll(".bit-blow-node")[1].Focus();
+
+        Assert.AreEqual(BlowViewport.Identity, cut.Instance.GetViewport());
     }
 
     [TestMethod]

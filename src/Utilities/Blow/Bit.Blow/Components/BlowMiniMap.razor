@@ -1,6 +1,10 @@
 ﻿@namespace Bit.Blow
+@* The viewBox is on an inner <svg>, not on the root that takes focus: WebKit scrolls a focused <svg> into view by
+   its content's bounds in user units, unscaled - a graph hundreds of units tall - so tabbing to the minimap, or
+   steering it with the arrow keys, would scroll the page by that much. The inner one is laid out at the root's size,
+   so it draws exactly what a viewBox on the root would. *@
 <svg class="bit-blow-minimap bit-blow-minimap-@PositionClass @(Pannable ? "pannable" : null) @(Zoomable ? "zoomable" : null) @Class"
-     width="@Width" height="@Height" viewBox="@ViewBox"
+     width="@Width" height="@Height"
      style="@StyleString"
      role="@(Interactive ? "group" : "img")"
      aria-roledescription="@(Interactive ? RoleDescription : null)"
@@ -25,33 +29,35 @@
     {
         <desc id="@_descriptionId">@Instructions</desc>
     }
-    @foreach (var node in Nodes)
-    {
-        if (node.Hidden) continue;
-        var r = node.GetRect();
-        @if (NodeTemplate is not null)
+    <svg class="bit-blow-minimap-graph" width="100%" height="100%" viewBox="@ViewBox" aria-hidden="true">
+        @foreach (var node in Nodes)
         {
-            <g transform="@($"translate({Inv(r.X)},{Inv(r.Y)})")">
-                @NodeTemplate(node)
-            </g>
+            if (node.Hidden) continue;
+            var r = node.GetRect();
+            @if (NodeTemplate is not null)
+            {
+                <g transform="@($"translate({Inv(r.X)},{Inv(r.Y)})")">
+                    @NodeTemplate(node)
+                </g>
+            }
+            else
+            {
+                <rect class="bit-blow-minimap-node @(node.Selected ? "selected" : null) @NodeClassFunc?.Invoke(node)"
+                      x="@Inv(r.X)" y="@Inv(r.Y)"
+                      width="@Inv(r.Width)" height="@Inv(r.Height)"
+                      rx="@Inv(BorderRadius)"
+                      fill="@(NodeColorFunc?.Invoke(node) ?? (node.Selected ? "var(--bit-blow-node-selected)" : NodeColor))"
+                      stroke="@(NodeStrokeColorFunc?.Invoke(node) ?? NodeStrokeColor)"
+                      stroke-width="@Inv(NodeStrokeWidth)" />
+            }
         }
-        else
-        {
-            <rect class="bit-blow-minimap-node @(node.Selected ? "selected" : null) @NodeClassFunc?.Invoke(node)"
-                  x="@Inv(r.X)" y="@Inv(r.Y)"
-                  width="@Inv(r.Width)" height="@Inv(r.Height)"
-                  rx="@Inv(BorderRadius)"
-                  fill="@(NodeColorFunc?.Invoke(node) ?? NodeColor)"
-                  stroke="@(NodeStrokeColorFunc?.Invoke(node) ?? NodeStrokeColor)"
-                  stroke-width="@Inv(NodeStrokeWidth)" />
-        }
-    }
-    <path class="bit-blow-minimap-mask"
-          d="@MaskPath"
-          fill="@MaskColor"
-          stroke="@MaskStrokeColor"
-          stroke-width="@Inv(MaskStrokeWidth)"
-          fill-rule="evenodd" />
+        <path class="bit-blow-minimap-mask"
+              d="@MaskPath"
+              fill="@MaskColor"
+              stroke="@MaskStrokeColor"
+              stroke-width="@Inv(MaskStrokeWidth)"
+              fill-rule="evenodd" />
+    </svg>
 </svg>
 
 @code {
@@ -61,7 +67,10 @@
 
     [Parameter] public int Width { get; set; } = 200;
     [Parameter] public int Height { get; set; } = 150;
-    /// <summary>Default node fill. Defaults to the theme's minimap colour, so it follows the colour mode.</summary>
+    /// <summary>
+    /// Default node fill. Defaults to the theme's minimap colour, so it follows the colour mode. A selected node is
+    /// filled with the theme's selection colour instead, unless <see cref="NodeColorFunc"/> decides every fill.
+    /// </summary>
     [Parameter] public string NodeColor { get; set; } = "var(--bit-blow-minimap-node)";
 
     /// <summary>Fill of the area outside the visible viewport. Defaults to the theme's mask colour.</summary>
@@ -76,7 +85,7 @@
     /// <summary>Corner radius of the default node rectangles.</summary>
     [Parameter] public double BorderRadius { get; set; } = 2;
 
-    /// <summary>Per-node fill color. Overrides <see cref="NodeColor"/> when provided.</summary>
+    /// <summary>Per-node fill color, selected nodes included. Overrides <see cref="NodeColor"/> when provided.</summary>
     [Parameter] public Func<BlowNode, string>? NodeColorFunc { get; set; }
 
     /// <summary>Per-node outline color. Overrides <see cref="NodeStrokeColor"/> when provided.</summary>

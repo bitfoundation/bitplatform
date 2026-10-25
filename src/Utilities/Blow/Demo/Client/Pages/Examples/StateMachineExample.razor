@@ -37,10 +37,10 @@
     protected override void OnInitialized()
     {
         // States cannot be deleted: the toolbar always names the current one.
-        BlowNode State(string id, string label, double x, double y) => new()
+        BlowNode State(string id, string label, double x, double y, BlowPosition source = BlowPosition.Right) => new()
         {
             Id = id, Label = label, Position = new(x, y), Width = 120, Height = 44,
-            SourcePosition = BlowPosition.Right, TargetPosition = BlowPosition.Left, Deletable = false,
+            SourcePosition = source, TargetPosition = BlowPosition.Left, Deletable = false,
         };
         BlowEdge Transition(string from, string to, string on) => new()
         {
@@ -51,8 +51,10 @@
         [
             State("idle", "Idle", 0, 120),
             State("loading", "Loading", 260, 120),
-            State("ready", "Ready", 560, 0),
-            State("error", "Error", 560, 240),
+            // The transitions out of Ready and Error lead back: they leave over the top and under the bottom, so the
+            // way back does not share the way there and each label sits on a line of its own.
+            State("ready", "Ready", 560, 120, BlowPosition.Top),
+            State("error", "Error", 560, 300, BlowPosition.Bottom),
         ];
         _edges =
         [

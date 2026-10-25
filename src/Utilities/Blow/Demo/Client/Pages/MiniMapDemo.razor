@@ -26,7 +26,7 @@
             <BlowControls />
             @if (_useTemplate)
             {
-                <BlowMiniMap Width="240" Height="180" Pannable="_pannable" Zoomable="_zoomable">
+                <BlowMiniMap Class="demo-minimap-keep" Width="240" Height="180" Pannable="_pannable" Zoomable="_zoomable">
                     <NodeTemplate Context="node">
                         <circle cx="@Inv(node.GetRect().Width / 2)" cy="@Inv(node.GetRect().Height / 2)"
                                 r="@Inv(Math.Min(node.GetRect().Width, node.GetRect().Height) / 2)"
@@ -36,7 +36,7 @@
             }
             else
             {
-                <BlowMiniMap Width="240" Height="180" Pannable="_pannable" Zoomable="_zoomable"
+                <BlowMiniMap Class="demo-minimap-keep" Width="240" Height="180" Pannable="_pannable" Zoomable="_zoomable"
                          NodeColorFunc="NodeColor"
                          NodeStrokeColorFunc="@(n => n.Selected ? "var(--bit-blow-text)" : "transparent")"
                          NodeStrokeWidth="3" BorderRadius="6" />
@@ -55,7 +55,8 @@
         for (var i = 0; i < 10; i++)
         {
             var type = i == 0 ? "input" : i == 9 ? "output" : "default";
-            _nodes.Add(new BlowNode { Id = i.ToString(), Type = type, Label = $"Node {i}", Position = new((i % 5) * 180, (i / 5) * 200) });
+            // Four to a row, so the last row ends short and leaves the bottom-right corner to the minimap.
+            _nodes.Add(new BlowNode { Id = i.ToString(), Type = type, Label = $"Node {i}", Position = new((i % 4) * 180, (i / 4) * 150) });
             if (i > 0)
                 _edges.Add(new BlowEdge { Id = $"e{i}", Source = (i - 1).ToString(), Target = i.ToString() });
         }

@@ -56,6 +56,7 @@ interface BlowInputPolicy {
     selectAllKey?: boolean;
     clipboardKeys?: boolean;
     historyKeys?: boolean;
+    deleteKeys?: string | null;
 }
 
 // What observeResize and installInteractionGuards hand back; .NET disposes it as a JS object reference.
@@ -315,11 +316,12 @@ function isEditable(el: Element | null): boolean {
 //     its zoom activation key is not held, is left to scroll the page; so is a wheel over a
 //     panel, the controls or a non-zoomable minimap, which keep the behaviour of ordinary page
 //     content.
-//   panKey, keyboardA11y, selectAllKey, clipboardKeys, historyKeys - which keys the flow uses
+//   panKey, keyboardA11y, selectAllKey, clipboardKeys, historyKeys, deleteKeys - which keys the flow uses
 //     while it (or a node or edge in it) has focus, so they do not also reach the browser: Space/
 //     Enter activate a focused node or edge, the arrow keys move the selection, the pan key held
 //     over the pane pans, and Ctrl/Cmd+A, C, X, V, D, Z and Y select, copy, paste, duplicate, undo
-//     and redo - which would otherwise also select the page's text or open the bookmark dialog.
+//     and redo - which would otherwise also select the page's text or open the bookmark dialog - and the delete keys,
+//     Backspace among them, which some browsers (WebKit) take for going back a page.
 //
 // Returns a handle whose dispose() removes the listeners.
 export function installInteractionGuards(paneEl: HTMLElement | null, noDragClass: string | null, noPanClass: string | null,
@@ -363,6 +365,7 @@ export function installInteractionGuards(paneEl: HTMLElement | null, noDragClass
     const selectAllKey = !!(policy && policy.selectAllKey);
     const clipboardKeys = !!(policy && policy.clipboardKeys);
     const historyKeys = !!(policy && policy.historyKeys);
+    const deleteKeys = policy && policy.deleteKeys ? policy.deleteKeys.split('\n') : [];
     const overlaySelector = '.bit-blow-panel, .bit-blow-controls, .bit-blow-minimap';
 
     // The Ctrl/Cmd shortcuts the flow has been told to handle itself.
@@ -428,18 +431,31 @@ export function installInteractionGuards(paneEl: HTMLElement | null, noDragClass
         else if (panKey && e.key === panKey) e.preventDefault();
         else if (keyboardA11y && e.key && e.key.startsWith('Arrow')) e.preventDefault();
         else if (isFlowShortcut(e)) e.preventDefault();
+        else if (!e.ctrlKey && !e.metaKey && !e.altKey && deleteKeys.includes(e.key)) e.preventDefault();
+    };
+
+    // The browser's own drag and drop, started on a selection of text inside the flow (or an image, or a link): WebKit
+    // then takes the pointer without the pointercancel the Pointer Events spec asks for, the release never reaches the
+    // pane, and the node being dragged follows the cursor with no button held. Only something marked draggable by the
+    // app keeps it.
+    const onDragStart = (e: DragEvent) => {
+        if (inNestedFlow(e.target)) return;
+        if (e.target instanceof Element && e.target.closest('[draggable="true"]')) return;
+        e.preventDefault();
     };
 
     if (pointerSelector) pane.addEventListener('pointerdown', onPointerDown);
     // Not passive: preventDefault() has to be able to stop the page from scrolling.
     pane.addEventListener('wheel', onWheel, { passive: false });
     pane.addEventListener('keydown', onKeyDown);
+    pane.addEventListener('dragstart', onDragStart);
 
     return {
         dispose: () => {
             pane.removeEventListener('pointerdown', onPointerDown);
             pane.removeEventListener('wheel', onWheel);
             pane.removeEventListener('keydown', onKeyDown);
+            pane.removeEventListener('dragstart', onDragStart);
         }
     };
 }
@@ -477,6 +493,33 @@ export function focusElement(pane: HTMLElement, kind: string, id: string): boole
         }
     }
     return false;
+}
+
+// True when this flow's node `id` holds focus that a pointer gave it rather than the keyboard (it is not
+// :focus-visible), or no longer holds focus at all. Only keyboard focus brings a node into view, as in React Flow: a
+// press in a nodrag control, or on a control WebKit will not focus and so hands the focus to the node, must not move
+// the view under the pointer.
+export function isPointerFocus(pane: HTMLElement, id: string): boolean {
+    const el = document.activeElement;
+    if (!el || !el.classList.contains(NODE_CLASS) || el.getAttribute('data-id') !== id
+        || el.closest(`.${ROOT_CLASS}`) !== pane) {
+        return true;
+    }
+    try {
+        return !el.matches(':focus-visible');
+    } catch {
+        // A browser without :focus-visible: every focus counts as the keyboard's, as it always did.
+        return false;
+    }
+}
+
+// Gives focus back to the pane when it fell to the page, as it does when the node or edge holding it is deleted: the
+// flow's keys are heard on the pane, so without this the key after a Delete would go nowhere.
+export function keepFocus(pane: HTMLElement | null): void {
+    if (!pane || !pane.isConnected) return;
+    const active = document.activeElement;
+    if (active && active !== document.body && active !== document.documentElement) return;
+    pane.focus({ preventScroll: true });
 }
 
 // True when focus sits in something the user is typing into, so the flow can ignore

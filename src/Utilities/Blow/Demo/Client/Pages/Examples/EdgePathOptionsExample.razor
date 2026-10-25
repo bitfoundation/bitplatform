@@ -37,16 +37,19 @@
     private double _offset = 20;
     private double _stepPosition = 0.5;
 
+    // Side by side, each pair placed so its sliders show. Curvature only shapes a bezier whose target is behind its
+    // source, so the first pair runs right to left and loops back; the bend and the offset need room between the two
+    // ends, so the others drop well below theirs.
     private readonly List<BlowNode> _nodes =
     [
-        new() { Id = "a1", Type = "input",  Label = "Bezier",        Position = new(0, 0) },
-        new() { Id = "a2", Type = "output", Label = "…",             Position = new(300, 60) },
-        new() { Id = "b1", Type = "input",  Label = "Simple bezier", Position = new(0, 140) },
-        new() { Id = "b2", Type = "output", Label = "…",             Position = new(300, 200) },
-        new() { Id = "c1", Type = "input",  Label = "Smooth step",   Position = new(0, 280) },
-        new() { Id = "c2", Type = "output", Label = "…",             Position = new(300, 340) },
-        new() { Id = "d1", Type = "input",  Label = "Step",          Position = new(0, 420) },
-        new() { Id = "d2", Type = "output", Label = "…",             Position = new(300, 480) },
+        new() { Id = "a1", Type = "input",  Label = "Bezier",        Position = new(120, 0), SourcePosition = BlowPosition.Right },
+        new() { Id = "a2", Type = "output", Label = "…",             Position = new(0, 200), TargetPosition = BlowPosition.Left },
+        new() { Id = "b1", Type = "input",  Label = "Simple bezier", Position = new(340, 0) },
+        new() { Id = "b2", Type = "output", Label = "…",             Position = new(440, 200) },
+        new() { Id = "c1", Type = "input",  Label = "Smooth step",   Position = new(560, 0) },
+        new() { Id = "c2", Type = "output", Label = "…",             Position = new(660, 200) },
+        new() { Id = "d1", Type = "input",  Label = "Step",          Position = new(780, 0) },
+        new() { Id = "d2", Type = "output", Label = "…",             Position = new(880, 200) },
     ];
 
     // Each edge keeps its own options object, retuned in place by ApplyOptions.

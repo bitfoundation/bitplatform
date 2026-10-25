@@ -1158,6 +1158,9 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     private (double X, double Y) _autoPanVector;
     private (double X, double Y) _autoPanPointer;
 
+    /// <summary>True once the running auto-pan has moved the viewport, so its end is reported as a move's end.</summary>
+    private bool _autoPanned;
+
     // pointer capture (the pane captures the pointer for the duration of a gesture)
     private long? _capturedPointerId;
 
@@ -1304,6 +1307,13 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
                 RenderGeometry();
         }
 
+        if (_keepFocusInPane)
+        {
+            _keepFocusInPane = false;
+            try { await _interop.KeepFocusAsync(_paneRef); }
+            catch (Exception ex) when (IsInteropTeardown(ex)) { }
+        }
+
         await FlushErrorsAsync();
         await NotifyNodesInitializedAsync();
 
@@ -1402,7 +1412,9 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
             BlowModifierKey.Meta => "metaKey",
             _ => null,
         }, PanActivationKey, !DisableKeyboardA11y, SelectAllKeyEnabled && ElementsSelectable,
-            ClipboardShortcutsEnabled, HistoryEnabled);
+            ClipboardShortcutsEnabled, HistoryEnabled,
+            // One string rather than the list, so the policy still compares by value from render to render.
+            DeleteKeyEnabled && DeleteKeys.Count > 0 ? string.Join('\n', DeleteKeys) : null);
         var wanted = (NoDragClass, NoPanClass, NoWheelClass, policy);
         if (_installedGuards == wanted) return;
 
@@ -2161,7 +2173,12 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         BlowNode node, BlowHandleType type, string? handleId, BlowPosition fallback)
     {
         var key = BlowHandleBounds.Key(type, handleId);
-        if (node.Handles.TryGetValue(key, out var h))
+        if (node.Handles.TryGetValue(key, out var h)
+            // In Loose mode either end can be a handle of either type - a source dropped on another source names that
+            // source as the edge's target - so the handle is looked for among the other type too, as React Flow does.
+            || (ConnectionMode == BlowConnectionMode.Loose
+                && node.Handles.TryGetValue(BlowHandleBounds.Key(
+                    type == BlowHandleType.Source ? BlowHandleType.Target : BlowHandleType.Source, handleId), out h)))
             return (node.AbsolutePosition.X + h.OffsetX, node.AbsolutePosition.Y + h.OffsetY, h.Position);
 
         // No measured handle: anchor on the fallback side at the node's edge midpoint.
@@ -2249,6 +2266,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         _suppressNextClick = false;
         _clearSelectionOnClick = false;
         _pressedNode = null;
+        _clickedNode = null;
 
         TrackPointer(e);
         if (TryStartPinch()) return;
@@ -2567,11 +2585,23 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         _autoPanCts.Cancel();
         _autoPanCts.Dispose();
         _autoPanCts = null;
+
+        // The viewport has stopped where the auto-pan left it: the end of a move, as a pan's end is.
+        if (!_autoPanned) return;
+        _autoPanned = false;
+        if (!_disposed) _ = RaiseMoveEndAsync();
+
+        async Task RaiseMoveEndAsync()
+        {
+            await OnViewportChanged.InvokeAsync(_viewport);
+            await OnMoveEnd.InvokeAsync(_viewport);
+        }
     }
 
     private async Task RunAutoPanAsync(CancellationToken token)
     {
         using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(16));
+        var last = System.Diagnostics.Stopwatch.GetTimestamp();
         try
         {
             while (await timer.WaitForNextTickAsync(token))
@@ -2584,8 +2614,17 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
                         return;
                     }
 
+                    // AutoPanSpeed is per sixtieth of a second, and the timer's ticks are not: WebKit runs them at half
+                    // that rate, and a busy thread drops some. Scaled by the time that really passed - but never by more
+                    // than a few frames' worth, so a stall does not throw the view.
+                    var now = System.Diagnostics.Stopwatch.GetTimestamp();
+                    var frames = Math.Clamp(System.Diagnostics.Stopwatch.GetElapsedTime(last, now).TotalMilliseconds * 60 / 1000, 0, 4);
+                    last = now;
+
                     var (vx, vy) = _autoPanVector;
-                    _viewport = ClampViewport(_viewport with { X = _viewport.X + vx, Y = _viewport.Y + vy });
+                    if (!_autoPanned) _ = OnMoveStart.InvokeAsync(_viewport);
+                    _autoPanned = true;
+                    _viewport = ClampViewport(_viewport with { X = _viewport.X + vx * frames, Y = _viewport.Y + vy * frames });
 
                     // The pointer hasn't moved, but the world under it has: re-derive whatever
                     // the active gesture is tracking so the node/connection follows the pan.
@@ -2729,8 +2768,17 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     private EventCallback<MouseEventArgs> PaneMouseMoveHandler =>
         OnPaneMouseMove.HasDelegate ? OnPaneMouseMove : default;
 
-    private void OnPanePointerMove(PointerEventArgs e)
+    private async Task OnPanePointerMove(PointerEventArgs e)
     {
+        // A mouse moving with no button held while the pane still holds its press: the release never arrived - let go
+        // outside the window, or taken by the browser for a drag of its own - and the gesture would follow the pointer
+        // until the next click. It ends here, as the release would have ended it.
+        if (e.Buttons == 0 && e.PointerType == "mouse" && _capturedPointerId == e.PointerId)
+        {
+            await OnPanePointerUp(e);
+            return;
+        }
+
         // Pointer moves are the busiest event there is, and most of them change only what the canvas draws itself.
         // The render that follows the handler is scoped to that unless a branch below says otherwise.
         _pendingScope |= RenderScope.Overlay;
@@ -3203,6 +3251,16 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
     private async Task OnPaneDoubleClick(MouseEventArgs e)
     {
+        // The two presses of a double click on a node captured the pointer on the pane, so the browser reports the
+        // double click here rather than on the node: it is the node's, and does not zoom.
+        var clickedNode = _clickedNode;
+        _clickedNode = null;
+        if (clickedNode is not null)
+        {
+            if (OnNodeDoubleClick.HasDelegate) await OnNodeDoubleClick.InvokeAsync(new BlowNodeMouseEvent(clickedNode, e));
+            return;
+        }
+
         if (!ZoomOnDoubleClick) return;
         if (_paneRect is null) await RefreshPaneRectAsync();
         var px = e.ClientX - (_paneRect?.Left ?? 0);
@@ -3267,8 +3325,12 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
             if (ElementsSelectable && await ShouldHandleKeyAsync())
             {
+                var hadSelection = Nodes.Any(n => n.Selected) || Edges.Any(ed => ed.Selected);
                 ClearSelection();
                 await NotifySelectionChangedAsync();
+                // Selecting is announced, so is letting go of it: a screen reader would otherwise still be left with
+                // the last thing said, "... selected".
+                if (hadSelection && !string.IsNullOrEmpty(AriaLabels.SelectionCleared)) Announce(AriaLabels.SelectionCleared);
                 StateHasChanged();
             }
             return;
@@ -3313,29 +3375,49 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         // and Ctrl+C must copy the text rather than the node around it.
         if (!await ShouldHandleKeyAsync()) return;
 
-        switch (history)
+        try
         {
-            case HistoryCommand.Undo: await UndoAsync(); return;
-            case HistoryCommand.Redo: await RedoAsync(); return;
-        }
+            switch (history)
+            {
+                case HistoryCommand.Undo: await UndoAsync(); return;
+                case HistoryCommand.Redo: await RedoAsync(); return;
+            }
 
-        // The edits made from here are the user's. The origin is handed down rather than set for the duration: the
-        // app's handlers awaited along the way (OnPaste, NodesChanged, ...) are not the user, and nor is anything
-        // else that happens to run meanwhile.
-        switch (clipboard)
+            // The edits made from here are the user's. The origin is handed down rather than set for the duration: the
+            // app's handlers awaited along the way (OnPaste, NodesChanged, ...) are not the user, and nor is anything
+            // else that happens to run meanwhile.
+            switch (clipboard)
+            {
+                case ClipboardCommand.Copy: Copy(); return;
+                case ClipboardCommand.Cut: await CutAsync(BlowChangeOrigin.User); return;
+                case ClipboardCommand.Paste: await PasteAsync(_clipboard, null, "paste", BlowChangeOrigin.User); return;
+                case ClipboardCommand.Duplicate: await DuplicateSelectionAsync(BlowChangeOrigin.User); return;
+            }
+
+            if (isSelectAll) await SelectAllAsync();
+            else if (isDelete) await DeleteSelectionAsync("delete", BlowChangeOrigin.User);
+            else await MoveSelectedNodesAsync(e);
+        }
+        finally
         {
-            case ClipboardCommand.Copy: Copy(); return;
-            case ClipboardCommand.Cut: await CutAsync(BlowChangeOrigin.User); return;
-            case ClipboardCommand.Paste: await PasteAsync(_clipboard, null, "paste", BlowChangeOrigin.User); return;
-            case ClipboardCommand.Duplicate: await DuplicateSelectionAsync(BlowChangeOrigin.User); return;
+            // Each of these can remove the very node or edge that has focus, and the browser then hands focus to the
+            // page: the keys that follow would no longer reach the flow. The render after the edit - not one of those
+            // made along the way, while the element is still there - hands it back to the pane.
+            if (isDelete || history != HistoryCommand.None || clipboard == ClipboardCommand.Cut)
+            {
+                _keepFocusInPane = true;
+                StateHasChanged();
+            }
         }
-
-        if (isSelectAll) await SelectAllAsync();
-        else if (isDelete) await DeleteSelectionAsync("delete", BlowChangeOrigin.User);
-        else await MoveSelectedNodesAsync(e);
     }
 
     private enum ClipboardCommand { None, Copy, Cut, Paste, Duplicate }
+
+    /// <summary>
+    /// Set by a key that may delete the focused element; the render after it gives focus back to the pane if it fell to
+    /// the page.
+    /// </summary>
+    private bool _keepFocusInPane;
 
     private enum HistoryCommand { None, Undo, Redo }
 
@@ -3448,6 +3530,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         // the node: it is the node's click all the same.
         if (pressedNode is not null)
         {
+            _clickedNode = pressedNode;
             await OnNodeClick.InvokeAsync(pressedNode);
             return;
         }
@@ -3476,6 +3559,12 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     private BlowNode? _pressedNode;
 
     /// <summary>
+    /// The node whose click the pane heard last, until the next press: the double click that may follow it is reported
+    /// at the pane as well, for the same reason.
+    /// </summary>
+    private BlowNode? _clickedNode;
+
+    /// <summary>
     /// What a press of the pointer inside the canvas does before the gesture it starts, wherever it lands that keeps
     /// the press from the pane - a node, an edge, a handle, a resize control, the minimap: a connection being made
     /// from the keyboard ends, and says so, and the node an earlier press landed on is forgotten, since a click the
@@ -3485,6 +3574,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     private void OnPointerPress(BlowNode? node = null)
     {
         _pressedNode = node;
+        _clickedNode = null;
         AbandonKeyboardConnection();
     }
 
@@ -3540,6 +3630,14 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
     private void StartNodeDrag(BlowNode node, PointerEventArgs e)
     {
+        // A finger on a node is a finger of a pinch all the same: the pane, which tracks the pinch's pointers, never
+        // hears this press, so without this two fingers with one on a node panned instead of zooming.
+        if (e.PointerType == "touch")
+        {
+            TrackPointer(e);
+            if (TryStartPinch()) return;
+        }
+
         OnPointerPress(node);
         _suppressNextClick = false;
         SelectOnPointerDown(node, e);
@@ -3663,9 +3761,24 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
     private void ClearSelection()
     {
-        foreach (var n in Nodes) n.Selected = false;
-        foreach (var ed in Edges) ed.Selected = false;
+        foreach (var n in Nodes)
+        {
+            if (n.Selected) _deselected = true;
+            n.Selected = false;
+        }
+        foreach (var ed in Edges)
+        {
+            if (ed.Selected) _deselected = true;
+            ed.Selected = false;
+        }
     }
+
+    /// <summary>
+    /// Set when <see cref="ClearSelection"/> deselected something, so the next notification goes out even when the set
+    /// it leaves matches the last one told: a selection the app made itself (<c>Selected = true</c>) was never told, and
+    /// clearing it would otherwise compare equal to an empty last selection and go unreported.
+    /// </summary>
+    private bool _deselected;
 
     /// <summary>
     /// Keyboard activation of a focused node (Enter/Space). <paramref name="additive"/> is set
@@ -3709,7 +3822,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         ? EventCallback.Factory.Create<FocusEventArgs>(this, () => OnNodeFocused(node))
         : default;
 
-    private void OnNodeFocused(BlowNode node)
+    private async Task OnNodeFocused(BlowNode node)
     {
         // Moving focus is how a keyboard connection is aimed: the line follows it to the node, and the reader hears
         // whether Enter would connect there.
@@ -3717,6 +3830,19 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         {
             if (node.Id == _connSource.NodeId) ClearKeyboardTarget();
             else TargetKeyboardConnection(node, after: null);
+        }
+
+        // Only the keyboard's focus is followed. A press focuses the node too - one in a nodrag control, which starts
+        // no gesture, or on a control WebKit will not focus and hands the focus to the node instead - and moving the
+        // view under the pointer then would be the canvas jumping on a click.
+        if (!AutoPanOnNodeFocus || _paneRect is null || IsGesturing) return;
+        try
+        {
+            if (await _interop.IsPointerFocusAsync(_paneRef, node.Id)) return;
+        }
+        catch (Exception ex) when (IsInteropTeardown(ex))
+        {
+            return;
         }
 
         BringNodeIntoView(node);
@@ -4166,7 +4292,10 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         var nodes = Nodes.Where(n => n.Selected).ToList();
         var edges = Edges.Where(ed => ed.Selected).ToList();
 
-        if (_lastSelection.Count == nodes.Count + edges.Count
+        var deselected = _deselected;
+        _deselected = false;
+        if (!deselected
+            && _lastSelection.Count == nodes.Count + edges.Count
             && nodes.TrueForAll(n => _lastSelection.Contains(NodeKey(n.Id)))
             && edges.TrueForAll(e => _lastSelection.Contains(EdgeKey(e.Id))))
         {
@@ -6072,6 +6201,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// <summary>Returns the nodes overlapping the given flow-space rectangle.</summary>
     public IReadOnlyList<BlowNode> GetIntersectingNodes(BlowRect area, bool partially = true)
     {
+        ComputeLayout();
         var list = new List<BlowNode>();
         foreach (var n in Nodes)
         {
@@ -6084,6 +6214,9 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// <summary>Returns the nodes overlapping the given node's bounds (excluding itself).</summary>
     public IReadOnlyList<BlowNode> GetIntersectingNodes(BlowNode node, bool partially = true)
     {
+        // Brought up to date first: asked from OnNodeDrag, the dragged node has just been moved and the absolute
+        // positions the rectangles are read from are still the last render's - every answer one move behind.
+        ComputeLayout();
         var area = node.GetRect();
         var list = new List<BlowNode>();
         foreach (var n in Nodes)
@@ -6096,7 +6229,10 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
     /// <summary>True when the node overlaps (or is fully within) the given area.</summary>
     public bool IsNodeIntersecting(BlowNode node, BlowRect area, bool partially = true)
-        => NodeIntersects(node.GetRect(), area, partially);
+    {
+        ComputeLayout();
+        return NodeIntersects(node.GetRect(), area, partially);
+    }
 
     private static bool NodeIntersects(BlowRect node, BlowRect area, bool partially)
         => partially

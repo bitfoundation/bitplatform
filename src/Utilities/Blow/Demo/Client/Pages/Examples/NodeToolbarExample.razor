@@ -15,7 +15,8 @@
         </label>
     </Toolbar>
     <ChildContent>
-        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+        @* A wide margin: a toolbar on any side of a node at the graph's edge stays inside the pane. *@
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" FitViewOptions="new BlowFitViewOptions { Padding = 0.3 }">
             <NodeTemplate Context="node">
                 <BlowNodeToolbar Position="_position">
                     <button class="btn btn-secondary" @onclick="() => Recolor(node)">🎨</button>
@@ -59,7 +60,10 @@
     private void Recolor(BlowNode node)
     {
         var colors = new[] { "#3b82f6", "#22c55e", "#ef4444", "#eab308", "#a855f7" };
-        node.Style = Tint(colors[Random.Shared.Next(colors.Length)]);
+        // Never the colour it already has, so every click shows a change.
+        var next = node.Style;
+        while (next == node.Style) next = Tint(colors[Random.Shared.Next(colors.Length)]);
+        node.Style = next;
     }
 
     private void Remove(BlowNode node)

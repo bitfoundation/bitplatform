@@ -333,11 +333,16 @@ public sealed class GestureTests : BlowTest
         var page = await OpenAsync("/basic-flow");
         var pane = await PaneBoxAsync(page);
 
+        // Firefox and WebKit report a mouse event at whole pixels, and a minimap pixel is several on the canvas: the
+        // click aims at one, and the view has to centre on exactly the point that pixel stands for.
         var rect = await BoxAsync(page, ".bit-blow-minimap-node:nth-of-type(4)");
-        await page.Mouse.ClickAsync((float)rect.Centre.X, (float)rect.Centre.Y);
+        var scale = (await NodeBoxAsync(page, "4")).Width / rect.Width;
+        var at = rect.Centre.Snapped();
+        await page.Mouse.ClickAsync((float)at.X, (float)at.Y);
         await WaitForQuietAsync(page);
 
-        AssertNear(pane.Centre, (await NodeBoxAsync(page, "4")).Centre, 2, "centre of node 4");
+        var expected = pane.Centre.Offset((rect.Centre.X - at.X) * scale, (rect.Centre.Y - at.Y) * scale);
+        AssertNear(expected, (await NodeBoxAsync(page, "4")).Centre, 2, "centre of node 4");
     }
 
     [TestMethod]

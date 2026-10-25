@@ -48,10 +48,13 @@
         _nodes = [ new BlowNode { Id = "1", Type = "input", Label = "Node 1", Position = new(120, 40) } ];
     }
 
-    private void AddNode()
+    private async Task AddNode()
     {
+        if (_flow is null) return;
         _id++;
-        _flow?.AddNodes(new BlowNode { Id = _id.ToString(), Label = $"Node {_id}", Position = new(Random.Shared.Next(40, 360), Random.Shared.Next(60, 300)) });
+        _flow.AddNodes(new BlowNode { Id = _id.ToString(), Label = $"Node {_id}", Position = new(Random.Shared.Next(40, 360), Random.Shared.Next(60, 300)) });
+        // A random spot is more often than not off the view the first node was fitted to.
+        await _flow.FitViewAsync(300);
     }
 
     private void ConnectLast()

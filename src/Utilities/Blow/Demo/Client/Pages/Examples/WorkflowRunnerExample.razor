@@ -79,6 +79,8 @@
         Validate();
         if (!_validation.IsValid)
         {
+            // The badges of the last run would otherwise say how a graph that is no longer this one went.
+            _states.Clear();
             _status = $"Not run: {_validation.Issues.First(i => i.Severity == BlowValidationSeverity.Error).Message}";
             return;
         }

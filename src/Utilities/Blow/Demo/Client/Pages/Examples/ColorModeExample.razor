@@ -21,7 +21,8 @@
     </Toolbar>
     <ChildContent>
         <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" ColorMode="Mode"
-                    Class="@CanvasClass">
+                    Class="@CanvasClass"
+                    NodesDraggable="_interactive" NodesConnectable="_interactive" ElementsSelectable="_interactive">
             <NodeTemplate Context="node">
                 <BlowNodeToolbar Position="BlowPosition.Top">
                     <button @onclick="@(() => Rename(node))">Rename</button>
@@ -39,7 +40,8 @@
             </NodeTemplate>
             <ChildContent>
                 <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-                <BlowControls ShowInteractive="true" />
+                @* The lock only reports its state; what it locks is up to the page. *@
+                <BlowControls ShowInteractive="true" @bind-Interactive="_interactive" />
                 <BlowMiniMap />
                 <BlowPanel Anchor="BlowPanelPosition.TopRight">
                     <div class="hint">
@@ -60,6 +62,22 @@
         --bit-blow-edge-selected: #0d9488;
         --bit-blow-connection-stroke: #0d9488;
         --bit-blow-dark-accent: #2dd4bf;       /* the same three in dark mode */
+    }
+
+    /* Under a dark palette the three take the dark accent, as the library's own dark mode makes them do: the rule
+       above is exactly as specific as that one and comes later, so it has to be said again here. */
+    .bit-blow.teal-accent.bit-blow-dark {
+        --bit-blow-node-selected: var(--bit-blow-dark-accent);
+        --bit-blow-edge-selected: var(--bit-blow-dark-accent);
+        --bit-blow-connection-stroke: var(--bit-blow-dark-accent);
+    }
+
+    @@media (prefers-color-scheme: dark) {
+        .bit-blow.teal-accent.bit-blow-system {
+            --bit-blow-node-selected: var(--bit-blow-dark-accent);
+            --bit-blow-edge-selected: var(--bit-blow-dark-accent);
+            --bit-blow-connection-stroke: var(--bit-blow-dark-accent);
+        }
     }
 
     .note { margin-left: auto; font-size: 11px; color: var(--bb-text-soft); }
@@ -94,6 +112,7 @@
     private string CanvasClass => $"{(_choice == "Site" ? "" : "own-color-mode")} {(_teal ? "teal-accent" : "")}".Trim();
 
     private bool _teal;
+    private bool _interactive = true;
 
     protected override void OnInitialized()
     {

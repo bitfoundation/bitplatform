@@ -80,6 +80,17 @@ internal sealed class BlowInterop : IAsyncDisposable
     public async ValueTask<bool> FocusElementAsync(object pane, string kind, string id)
         => await (await _moduleTask.Value).InvokeAsync<bool>("focusElement", pane, kind, id);
 
+    /// <summary>
+    /// True when the pane's node <paramref name="nodeId"/> holds focus a pointer gave it rather than the keyboard
+    /// (it is not <c>:focus-visible</c>), or no longer holds focus at all.
+    /// </summary>
+    public async ValueTask<bool> IsPointerFocusAsync(object pane, string nodeId)
+        => await (await _moduleTask.Value).InvokeAsync<bool>("isPointerFocus", pane, nodeId);
+
+    /// <summary>Focuses the pane when focus has fallen to the page, as it does when the focused element is removed.</summary>
+    public async ValueTask KeepFocusAsync(object pane)
+        => await (await _moduleTask.Value).InvokeVoidAsync("keepFocus", pane);
+
     /// <summary>True when focus currently sits in a text input, textarea, select or contenteditable.</summary>
     public async ValueTask<bool> IsEditableFocusedAsync()
         => await (await _moduleTask.Value).InvokeAsync<bool>("isEditableFocused");
@@ -118,9 +129,13 @@ internal sealed class BlowInterop : IAsyncDisposable
 /// <param name="SelectAllKey">Whether Ctrl/Cmd+A selects the graph, and so must not also select the page's text.</param>
 /// <param name="ClipboardKeys">Whether Ctrl/Cmd+C, X, V and D are the flow's, and so must not also reach the browser (Ctrl+D bookmarks).</param>
 /// <param name="HistoryKeys">Whether Ctrl/Cmd+Z and Y undo and redo in the flow, and so must not also reach the browser.</param>
+/// <param name="DeleteKeys">
+/// The keys that delete the selection, one per line, or null when none does. They must not also reach the browser:
+/// Backspace goes back a page in some (WebKit among them), and the graph with it.
+/// </param>
 internal sealed record BlowInputPolicy(
     bool PreventScrolling, bool PanOnScroll, bool ZoomOnScroll, string? ZoomKey, string? PanKey, bool KeyboardA11y,
-    bool SelectAllKey, bool ClipboardKeys, bool HistoryKeys);
+    bool SelectAllKey, bool ClipboardKeys, bool HistoryKeys, string? DeleteKeys);
 
 /// <summary>Wrapper so we can pass an ElementReference without leaking the type around.</summary>
 internal readonly record struct BlowElementReferenceLike(object Reference);

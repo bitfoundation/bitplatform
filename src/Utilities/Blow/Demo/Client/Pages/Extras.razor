@@ -25,7 +25,7 @@
                     ConnectionMode="_loose ? BlowConnectionMode.Loose : BlowConnectionMode.Strict"
                     NodeOrigin="_centerOrigin ? new BlowXYPosition(0.5, 0.5) : new BlowXYPosition(0, 0)"
                     HideAttribution="_hideAttribution"
-                    OnNodeClick="n => _selected = n">
+                    OnSelectionChange="s => _selected = s.Nodes.Count == 1 ? s.Nodes[0] : null">
             <NodeTemplate Context="node">
                 @if (node.Type == "sized")
                 {
@@ -74,9 +74,10 @@
 
 <style>
     .portal-annotation {
-        position:absolute; transform:translate(440px, 40px);
+        /* Inside the graph's bounds - the fit only measures nodes, so anything outside them is cut off at the edge. */
+        position:absolute; transform:translate(430px, 92px); max-width:110px;
         background:rgba(13,148,136,0.12); border:1px dashed #0d9488; color:color-mix(in srgb, #0d9488 70%, var(--bit-blow-text));
-        padding:6px 10px; border-radius:6px; font-size:12px; white-space:nowrap; pointer-events:none;
+        padding:6px 10px; border-radius:6px; font-size:12px; pointer-events:none;
     }
     .toolbar { display:flex; flex-direction:column; gap:5px; padding:8px 10px; font-size:13px; color:var(--bit-blow-text); background:var(--bit-blow-surface-translucent); border:1px solid var(--bit-blow-border); border-radius:6px; }
     .toolbar label { display:flex; align-items:center; gap:6px; white-space:nowrap; }

@@ -3,8 +3,10 @@
 <PageTitle>Accessibility · Blow</PageTitle>
 
 <ExampleScaffold Title="Accessibility"
-                 Summary="Nodes are keyboard focusable with descriptive aria labels. Tab to a node, then use the arrow keys to move it (hold Shift for larger steps), C to start a connection from it, Delete to remove the selection. Tab on to an edge and C picks up its end to move it to another node. A selected node also gets move buttons, so it can be moved with single clicks instead of a drag (WCAG 2.5.7); the canvas's ConnectOnClick does the same for connections.">
-    <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" DisableKeyboardA11y="false">
+                 Summary="Nodes are keyboard focusable with descriptive aria labels. Tab to a node and press Enter to select it, then use the arrow keys to move it (hold Shift for larger steps), C to start a connection from it, Delete to remove the selection. Tab on to an edge and C picks up its end to move it to another node. A selected node also gets move buttons, so it can be moved with single clicks instead of a drag (WCAG 2.5.7); the canvas's ConnectOnClick does the same for connections.">
+    @* A wide margin, so the toolbar over the top node is inside the pane rather than cut off by its edge. *@
+    <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" DisableKeyboardA11y="false"
+                FitViewOptions="new BlowFitViewOptions { Padding = 0.3 }">
         <NodeTemplate Context="node">
             <BlowNodeToolbar Position="BlowPosition.Top">
                 <span class="a11y-move" role="group" aria-label="@($"Move {node.Label}")">

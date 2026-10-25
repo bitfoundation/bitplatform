@@ -16,7 +16,8 @@ public class RoundTwelveReviewTests : BunitContext
         JSInterop.Mode = JSRuntimeMode.Loose;
     }
 
-    private static PointerEventArgs At(double x, double y) => new() { Button = 0, PointerId = 1, PointerType = "mouse", ClientX = x, ClientY = y };
+    // Buttons as a browser reports them while the left button is held: a mouse moving with none held has lost its release.
+    private static PointerEventArgs At(double x, double y) => new() { Button = 0, Buttons = 1, PointerId = 1, PointerType = "mouse", ClientX = x, ClientY = y };
 
     private static AngleSharp.Dom.IElement Node(IRenderedComponent<BlowCanvas> cut, string id) => cut.Find($".bit-blow-node[data-id='{id}']");
 

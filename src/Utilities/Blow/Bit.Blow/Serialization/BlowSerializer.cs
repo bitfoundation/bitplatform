@@ -529,12 +529,38 @@ public static class BlowSerializer
                 MaxIssues = 1000,
             }.Validate(document.Nodes, document.Edges);
 
+            // A duplicate is reported at the element that repeats the id - one issue per repeat, in order - rather than at
+            // the first one to use it, which is the one that is fine.
+            var nodeRepeats = Repeats(document.Nodes.Select(n => n.Id));
+            var edgeRepeats = Repeats(document.Edges.Select(e => e.Id));
+
             foreach (var issue in result.Issues)
             {
-                var path = issue.EdgeId is { } e && edgeIndex.TryGetValue(e, out var ei) ? $"$.edges[{ei}]"
+                var path = issue.Code == BlowValidationCodes.DuplicateEdgeId && issue.EdgeId is { } de && edgeRepeats.TryGetValue(de, out var dei) && dei.Count > 0
+                        ? $"$.edges[{dei.Dequeue()}]"
+                    : issue.Code == BlowValidationCodes.DuplicateNodeId && issue.NodeId is { } dn && nodeRepeats.TryGetValue(dn, out var dni) && dni.Count > 0
+                        ? $"$.nodes[{dni.Dequeue()}]"
+                    : issue.EdgeId is { } e && edgeIndex.TryGetValue(e, out var ei) ? $"$.edges[{ei}]"
                     : issue.NodeId is { } n && nodeIndex.TryGetValue(n, out var ni) ? $"$.nodes[{ni}]"
                     : "$";
                 Issue(issue.Code, BlowValidationSeverity.Warning, path, issue.Message);
+            }
+
+            static Dictionary<string, Queue<int>> Repeats(IEnumerable<string> ids)
+            {
+                var seen = new HashSet<string>(StringComparer.Ordinal);
+                var repeats = new Dictionary<string, Queue<int>>(StringComparer.Ordinal);
+                var i = 0;
+                foreach (var id in ids)
+                {
+                    if (!seen.Add(id))
+                    {
+                        if (!repeats.TryGetValue(id, out var at)) repeats[id] = at = new Queue<int>();
+                        at.Enqueue(i);
+                    }
+                    i++;
+                }
+                return repeats;
             }
         }
 

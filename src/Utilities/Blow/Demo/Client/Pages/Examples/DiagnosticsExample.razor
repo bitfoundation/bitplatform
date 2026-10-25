@@ -13,7 +13,9 @@
     <ChildContent>
         @* The canvas reports each distinct problem once for its lifetime, so Reset mounts a new
            one: otherwise breaking the graph the same way again would go unreported. *@
-        <BlowCanvas @key="_generation" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" OnError="OnError">
+        @* Fitted at no more than full size, so the nodes the buttons add beside the two are in view too. *@
+        <BlowCanvas @key="_generation" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" OnError="OnError"
+                    FitViewOptions="new BlowFitViewOptions { MaxZoom = 1 }">
             <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
             <BlowControls />
             <BlowPanel Anchor="BlowPanelPosition.TopRight">

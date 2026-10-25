@@ -18,6 +18,7 @@
                     Nodes="_nodes"
                     Edges="_edges"
                     AriaLabels="Labels"
+                    AriaLabel="@PaneName"
                     DefaultViewport="new BlowViewport(40, 20, 0.9)"
                     dir="@(_language == "fa" ? "rtl" : "ltr")"
                     aria-roledescription="@RoleDescription">
@@ -99,6 +100,34 @@
             NodeMoved = (name, p) => $"{name} verschoben nach {p}",
             NodesMoved = count => $"{count} Knoten verschoben",
             Deleted = (n, e) => $"{n} Knoten und {e} Kanten gelöscht",
+            SelectionCleared = "Auswahl aufgehoben",
+            NodeCollapsed = (name, count) => $"{name} eingeklappt, {count} Knoten ausgeblendet",
+            NodeExpanded = (name, count) => $"{name} ausgeklappt, {count} Knoten eingeblendet",
+            Connected = (s, t) => $"{s} mit {t} verbunden",
+            Reconnected = (s, t) => $"Neu verbunden: {s} mit {t}",
+            ConnectionRejected = reason => reason switch
+            {
+                BlowConnectionRejection.NotConnectable => "Keine Verbindung möglich: Dieser Knoten nimmt keine Verbindungen an",
+                BlowConnectionRejection.SameHandleType => "Keine Verbindung möglich: Ein Ausgang muss mit einem Eingang verbunden werden",
+                BlowConnectionRejection.SelfConnection => "Ein Knoten kann nicht mit sich selbst verbunden werden",
+                BlowConnectionRejection.Duplicate => "Keine Verbindung möglich: Die beiden sind bereits verbunden",
+                BlowConnectionRejection.IncompatibleTypes => "Keine Verbindung möglich: Die Anschlüsse haben unverträgliche Typen",
+                BlowConnectionRejection.SourceFull => "Keine Verbindung möglich: Der Ausgang hat keine freien Verbindungen",
+                BlowConnectionRejection.TargetFull => "Keine Verbindung möglich: Der Eingang hat keine freien Verbindungen",
+                BlowConnectionRejection.Cycle => "Keine Verbindung möglich: Die Verbindung würde einen Zyklus bilden",
+                BlowConnectionRejection.MissingNode => "Keine Verbindung möglich: Der Knoten existiert nicht mehr",
+                _ => "Keine Verbindung möglich",
+            },
+            KeyboardConnectionStarted = (node, port, key) => $"Verbindung von {node}{(port is null ? "" : $", {port}")}. Zu einem anderen "
+                                                              + $"Knoten wechseln und mit Eingabe verbinden, {key} wählt einen anderen Anschluss, Escape bricht ab.",
+            KeyboardConnectionTarget = (node, port) => $"Eingabe verbindet mit {node}{(port is null ? "" : $", {port}")}.",
+            KeyboardConnectionCancelled = "Verbindung abgebrochen.",
+            KeyboardConnectionUnavailable = node => $"Von {node} kann keine Verbindung ausgehen.",
+            KeyboardReconnectionStarted = (edge, end, key) => $"Das Ende von {edge} an {end} wird verschoben. Zu einem anderen Knoten wechseln "
+                                                              + $"und mit Eingabe dort anhängen, {key} verschiebt stattdessen das andere Ende, Escape lässt die Kante, wie sie war.",
+            KeyboardReconnectionCancelled = "Verschieben abgebrochen. Die Kante ist unverändert.",
+            KeyboardReconnectionUnavailable = edge => $"{edge} kann nicht neu verbunden werden.",
+            KeyboardReconnectionInstructions = key => $"{key} verschiebt ihr Ende zu einem anderen Knoten.",
             PaneInstructions = "Mit der Tabulatortaste zwischen den Knoten und Kanten des Diagramms wechseln.",
             NodeInstructions = "Eingabe oder Leertaste wählt den Knoten aus, Umschalt mit Eingabe fügt ihn der Auswahl "
                                + "hinzu, die Pfeiltasten verschieben die Auswahl, Entf löscht sie, Escape hebt sie auf.",
@@ -122,6 +151,34 @@
             NodeMoved = (name, p) => $"{name} به {p} منتقل شد",
             NodesMoved = count => $"{count} گره منتقل شد",
             Deleted = (n, e) => $"{n} گره و {e} یال حذف شد",
+            SelectionCleared = "انتخاب لغو شد",
+            NodeCollapsed = (name, count) => $"{name} جمع شد، {count} گره پنهان شد",
+            NodeExpanded = (name, count) => $"{name} باز شد، {count} گره نمایان شد",
+            Connected = (s, t) => $"{s} به {t} وصل شد",
+            Reconnected = (s, t) => $"اتصال دوباره: {s} به {t}",
+            ConnectionRejected = reason => reason switch
+            {
+                BlowConnectionRejection.NotConnectable => "اتصال ممکن نیست: این گره اتصال نمی‌پذیرد",
+                BlowConnectionRejection.SameHandleType => "اتصال ممکن نیست: خروجی باید به ورودی وصل شود",
+                BlowConnectionRejection.SelfConnection => "گره را نمی‌توان به خودش وصل کرد",
+                BlowConnectionRejection.Duplicate => "اتصال ممکن نیست: این دو از پیش به هم وصل‌اند",
+                BlowConnectionRejection.IncompatibleTypes => "اتصال ممکن نیست: نوع داده‌ی دو درگاه با هم سازگار نیست",
+                BlowConnectionRejection.SourceFull => "اتصال ممکن نیست: خروجی اتصال آزادی ندارد",
+                BlowConnectionRejection.TargetFull => "اتصال ممکن نیست: ورودی اتصال آزادی ندارد",
+                BlowConnectionRejection.Cycle => "اتصال ممکن نیست: این اتصال یک چرخه می‌سازد",
+                BlowConnectionRejection.MissingNode => "اتصال ممکن نیست: گره دیگر وجود ندارد",
+                _ => "اتصال ممکن نیست",
+            },
+            KeyboardConnectionStarted = (node, port, key) => $"اتصال از {node}{(port is null ? "" : $"، {port}")}. به گره دیگری بروید و برای "
+                                                              + $"اتصال Enter را بزنید، {key} درگاه دیگری را برمی‌گزیند و Escape لغو می‌کند.",
+            KeyboardConnectionTarget = (node, port) => $"برای اتصال به {node}{(port is null ? "" : $"، {port}")} Enter را بزنید.",
+            KeyboardConnectionCancelled = "اتصال لغو شد.",
+            KeyboardConnectionUnavailable = node => $"از {node} هیچ اتصالی آغاز نمی‌شود.",
+            KeyboardReconnectionStarted = (edge, end, key) => $"جابه‌جایی سر {edge} در {end}. به گره دیگری بروید و برای وصل کردن آن Enter را "
+                                                              + $"بزنید، {key} سر دیگر را جابه‌جا می‌کند و Escape یال را دست‌نخورده می‌گذارد.",
+            KeyboardReconnectionCancelled = "جابه‌جایی لغو شد. یال تغییری نکرد.",
+            KeyboardReconnectionUnavailable = edge => $"{edge} را نمی‌توان دوباره وصل کرد.",
+            KeyboardReconnectionInstructions = key => $"{key} سر آن را به گره دیگری می‌برد.",
             PaneInstructions = "برای جابه‌جایی میان گره‌ها و یال‌های نمودار کلید Tab را بزنید.",
             NodeInstructions = "Enter یا فاصله گره را انتخاب می‌کند، Shift همراه Enter آن را به انتخاب می‌افزاید، "
                                + "کلیدهای جهت انتخاب را جابه‌جا می‌کنند، Delete آن را حذف و Escape انتخاب را لغو می‌کند.",
@@ -151,10 +208,32 @@
         NodeMoved = (name, p) => Show(labels.NodeMoved(name, p)),
         NodesMoved = count => Show(labels.NodesMoved(count)),
         Deleted = (n, e) => Show(labels.Deleted(n, e)),
+        SelectionCleared = labels.SelectionCleared,
+        NodeCollapsed = (name, count) => Show(labels.NodeCollapsed(name, count)),
+        NodeExpanded = (name, count) => Show(labels.NodeExpanded(name, count)),
+        Connected = (s, t) => Show(labels.Connected(s, t)),
+        Reconnected = (s, t) => Show(labels.Reconnected(s, t)),
+        ConnectionRejected = reason => Show(labels.ConnectionRejected(reason)),
+        KeyboardConnectionStarted = (node, port, key) => Show(labels.KeyboardConnectionStarted(node, port, key)),
+        KeyboardConnectionTarget = (node, port) => Show(labels.KeyboardConnectionTarget(node, port)),
+        KeyboardConnectionCancelled = labels.KeyboardConnectionCancelled,
+        KeyboardConnectionUnavailable = node => Show(labels.KeyboardConnectionUnavailable(node)),
+        KeyboardReconnectionStarted = (edge, end, key) => Show(labels.KeyboardReconnectionStarted(edge, end, key)),
+        KeyboardReconnectionCancelled = labels.KeyboardReconnectionCancelled,
+        KeyboardReconnectionUnavailable = edge => Show(labels.KeyboardReconnectionUnavailable(edge)),
+        KeyboardReconnectionInstructions = labels.KeyboardReconnectionInstructions,
         PaneInstructions = labels.PaneInstructions,
         NodeInstructions = labels.NodeInstructions,
         KeyboardConnectionInstructions = labels.KeyboardConnectionInstructions,
         EdgeInstructions = labels.EdgeInstructions,
+    };
+
+    // The canvas's own name, which it reads out when it takes focus: not one of AriaLabels, since it is the app's to give.
+    private string PaneName => _language switch
+    {
+        "de" => "Flussdiagramm",
+        "fa" => "نمودار جریان",
+        _ => "Flow diagram",
     };
 
     private (string Bar, string ZoomIn, string ZoomOut, string FitView) Controls => _language switch

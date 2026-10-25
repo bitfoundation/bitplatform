@@ -6,7 +6,9 @@
                  Summary="A custom edge that renders an interactive HTML button at its midpoint using the edge label layer (React Flow's EdgeLabelRenderer). Click the × to delete the edge.">
     <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" DefaultEdgeType="BlowEdgeType.Bezier">
         <EdgeLabelTemplate Context="ctx">
-            <button class="edge-button" title="Remove edge" @onclick="() => Remove(ctx.Edge)">×</button>
+            @* nodrag nopan, as in React Flow: a press on the label would otherwise start a pan, and the pan's pointer
+               capture would take the click away from the button. *@
+            <button class="edge-button nodrag nopan" title="Remove edge" @onclick="() => Remove(ctx.Edge)">×</button>
         </EdgeLabelTemplate>
         <ChildContent>
             <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />

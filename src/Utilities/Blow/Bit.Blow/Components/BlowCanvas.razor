@@ -60,11 +60,11 @@
                                 orient="auto-start-reverse">
                             @if (spec.Type == BlowMarkerType.ArrowClosed)
                             {
-                                <path d="M1,1 L9,6 L1,11 z" fill="@spec.Paint" stroke="@spec.Paint" stroke-width="1" />
+                                <path d="M1,1 L9,6 L1,11 z" fill="@spec.Paint" stroke="@spec.Paint" stroke-width="1" style="@spec.FallbackStyle" />
                             }
                             else
                             {
-                                <path d="M1,1 L9,6 L1,11" fill="none" stroke="@spec.Paint" stroke-width="1.5" />
+                                <path d="M1,1 L9,6 L1,11" fill="none" stroke="@spec.Paint" stroke-width="1.5" style="@spec.FallbackStyle" />
                             }
                         </marker>
                     }
@@ -95,7 +95,22 @@
                               style="@ConnectionLineStyle" />
                     }
                 }
+            </svg>
 
+            <BlowRenderGate Version="_layerVersion">
+            @foreach (var node in _renderNodes)
+            {
+                var ncb = CallbacksFor(node);
+                <BlowNodeRenderer @key="node.Id"
+                              Node="node"
+                              Settings="_nodeSettings"
+                              Callbacks="ncb" />
+            }
+            </BlowRenderGate>
+
+            @* Above the nodes, not in the edge layer under them: an edge ends on a handle, and the handle's hit area - at
+               least 12 screen pixels across - would cover the dot it is grabbed by. *@
+            <svg class="bit-blow-edge-reconnects" style="overflow:visible;">
                 @if (ElementsSelectable && EdgesReconnectable)
                 {
                     @* The visible dot stays small; a separate transparent circle of
@@ -119,17 +134,6 @@
                     }
                 }
             </svg>
-
-            <BlowRenderGate Version="_layerVersion">
-            @foreach (var node in _renderNodes)
-            {
-                var ncb = CallbacksFor(node);
-                <BlowNodeRenderer @key="node.Id"
-                              Node="node"
-                              Settings="_nodeSettings"
-                              Callbacks="ncb" />
-            }
-            </BlowRenderGate>
 
             @if (_selecting)
             {

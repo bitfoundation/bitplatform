@@ -16,16 +16,18 @@
 
 <div class="bb-demo blow-demo bb-page-wide">
     <div class="demo-canvas">
-        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" Class="recolor-edges"
                     ConnectionLineType="BlowEdgeType.SmoothStep"
                     DefaultEdgeType="BlowEdgeType.SmoothStep">
             <EdgeTemplate Context="ctx">
-                <BlowBaseEdge Path="@ctx.Geometry.Path"
-                          Stroke="@((ctx.Edge.Data as string) ?? "var(--bit-blow-edge-stroke)")"
-                          StrokeWidth="@(ctx.Edge.Selected ? 3 : 2)"
-                          Label="@ctx.Edge.Label"
-                          LabelX="@ctx.Geometry.LabelX"
-                          LabelY="@ctx.Geometry.LabelY" />
+                <g style="--edge-colour:@(EdgeColour(ctx.Edge))">
+                    <BlowBaseEdge Path="@ctx.Geometry.Path"
+                              Stroke="@(EdgeColour(ctx.Edge))"
+                              StrokeWidth="@(ctx.Edge.Selected ? 3 : 2)"
+                              Label="@ctx.Edge.Label"
+                              LabelX="@ctx.Geometry.LabelX"
+                              LabelY="@ctx.Geometry.LabelY" />
+                </g>
             </EdgeTemplate>
 
             <EdgeLabelTemplate Context="ctx">
@@ -48,6 +50,9 @@
 </div>
 
 <style>
+    /* Selection is shown by the width on this page: the selected edge keeps the colour it was given, instead of
+       taking the selection colour that would hide what the recolour button just did. */
+    .recolor-edges .bit-blow-edge.selected .bit-blow-edge-path { stroke: var(--edge-colour) !important; }
     /* Painted with the canvas's own --bit-blow-* colours, so the toolbar follows its colour mode. */
     .btn-mini { border:1px solid var(--bit-blow-border); background:var(--bit-blow-surface); color:var(--bit-blow-text); border-radius:4px; cursor:pointer; padding:1px 6px; font-size:13px; }
     .btn-mini:hover { background:var(--bit-blow-surface-hover); }
@@ -79,9 +84,12 @@
 
     private void Recolor(BlowEdge edge)
     {
+        // The next colour round, so every click shows a change.
         var colors = new[] { "#16a34a", "#dc2626", "#2563eb", "#9333ea", "#ea580c" };
-        edge.Data = colors[Random.Shared.Next(colors.Length)];
+        edge.Data = colors[(Array.IndexOf(colors, edge.Data as string) + 1) % colors.Length];
     }
 
     private void Remove(BlowEdge edge) => _edges.RemoveAll(e => e.Id == edge.Id);
+
+    private static string EdgeColour(BlowEdge edge) => (edge.Data as string) ?? "var(--bit-blow-edge-stroke)";
 }

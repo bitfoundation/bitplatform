@@ -35,7 +35,9 @@
             <EdgeLabelTemplate Context="ctx">
                 <div class="edge-label">
                     <span>@(ctx.Edge.Label ?? ctx.Edge.Id)</span>
-                    <button class="edge-label__btn" title="Delete edge" @onclick="() => RemoveEdge(ctx.Edge)">×</button>
+                    @* nodrag nopan: a press on the label would otherwise start a pan, and the pan's pointer capture
+                       would take the click away from the button. *@
+                    <button class="edge-label__btn nodrag nopan" title="Delete edge" @onclick="() => RemoveEdge(ctx.Edge)">×</button>
                 </div>
             </EdgeLabelTemplate>
 

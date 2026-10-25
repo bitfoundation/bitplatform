@@ -762,3 +762,88 @@ Final runs, from `src/Utilities/Blow`:
 - `dotnet test Tests/Bit.Blow.Tests.Mcp/Bit.Blow.Tests.Mcp.csproj`: 88 / 88.
 - `dotnet build Bit.Blow.slnx`: 0 warnings, 0 errors.
 - E2E not run this round.
+
+### Round 13 - every demo page in Chromium, Firefox and WebKit
+
+All 107 demo pages driven with Playwright in Chromium, Firefox and WebKit, on the demo published the way
+`blow.demo.cd.yml` publishes it: each page loaded, every button clicked, the console and the requests watched,
+screenshots compared across the engines in the light and dark site themes and at phone width (390 px), every node
+checked for an overlay covering it after the initial fit, and each page's promised behaviour exercised by hand-written
+scripts. The E2E suite gained `BLOW_E2E_BROWSER` and runs in all three engines; `bit.ci.Blow.e2e.yml` runs it once per
+engine.
+
+Library, found only outside Chromium:
+
+- WebKit has no `context-stroke`, so every arrowhead without a colour of its own was painted with no stroke at all -
+  invisible in Safari and every iOS browser. The marker path carries an inline fallback (`stroke:<colour>;
+  stroke:context-stroke`), the colour being the edge's own `Stroke` or the theme's (`BlowMarkerSpec.FallbackStyle`).
+- WebKit scrolls a focused `<svg>` into view by its content's bounds in user units, unscaled: tabbing to a steerable
+  minimap, or panning it with the arrow keys, scrolled the page by hundreds of pixels. The viewBox is now on an inner
+  `<svg class="bit-blow-minimap-graph">`; the focusable root has none.
+- WebKit gives a pressed range input no focus and hands it to the node instead, and `AutoPanOnNodeFocus` followed
+  any focus, so the view moved under the pointer (a press in any `nodrag` area did the same in every engine). Only
+  keyboard focus (`:focus-visible`) is followed now, as in React Flow.
+- WebKit (Playwright's build) goes back a page on Backspace: the delete keys are now in the input policy and their
+  default is cancelled on the pane, a node or an edge.
+- WebKit starts a native drag of selected text inside a node without the `pointercancel` the spec asks for, so the
+  release never arrived and the node followed the pointer with no button held. `dragstart` inside the pane is
+  cancelled (an element marked `draggable="true"` keeps it), and a mouse moving with no button held while the pane
+  holds its capture ends the gesture as its release would have.
+- Auto-pan moved `AutoPanSpeed` per timer tick; WebKit ticks at about half the rate, so it panned at half the speed.
+  It is scaled by the time that passed, and raises `OnMoveStart`, `OnViewportChanged` and `OnMoveEnd`, which it never
+  did (a readout fed by `OnViewportChanged` stayed where the drag started).
+- Chromium outlined a clicked edge's `<g>` with its UA focus ring, a dark box round the whole edge.
+
+Library, in every engine:
+
+- A double click on a node never raised `OnNodeDoubleClick` and zoomed instead: both presses captured the pointer on
+  the pane, so the browser reported the double click there. It is rerouted to the node clicked last, as the single
+  click already was.
+- Deleting, cutting, undoing or redoing from the keyboard could remove the focused node or edge; focus fell to the
+  page and the next key went nowhere. The render after such a key gives focus back to the pane when it fell.
+- In Loose mode an edge between two sources (or two targets) was drawn to the middle of the node's side: the
+  handle is now looked for among the other type too, as React Flow does.
+- The reconnect anchors were drawn in the edge layer, under the node whose handle the edge ends on - and the handle's
+  hit area, at least 12 screen pixels, covered the dot entirely. They have a layer of their own above the nodes.
+- The minimap's `NodeStrokeColorFunc`, `NodeStrokeWidth` and `NodeColorFunc` (for selected nodes) were overridden by
+  the stylesheet, which a presentation attribute always loses to. The stylesheet no longer paints minimap nodes; a
+  selected node takes the selection colour unless `NodeColorFunc` decides.
+- `GetIntersectingNodes` read the last render's positions, so asked from `OnNodeDrag` it was always one move behind.
+- Two fingers did not pinch when the first landed on a node.
+- Clearing a selection the app had made itself (`Selected = true`) raised no `OnSelectionChange`.
+- Escape clearing the selection was not announced (`BlowAriaLabels.SelectionCleared`).
+- An imported document's duplicate id was reported at the first element using it rather than the one repeating it.
+
+Demo (all engines): nodes hidden under the minimap, a panel or a growing log after the initial fit (basic, advanced,
+interactions, auto-pan, layouting, minimap, interactive-minimap, devtools, self-loop-edges, overlay-layout,
+connection-rules, selection-gestures, delete-protection, align-distribute, typed-ports, grouping - logs now go in a
+footer under the canvas, `ExampleScaffold.Footer`); minimaps hidden below 600 px except on the pages about them;
+nodes added or moved off-screen (provider, use-key-press, update-node, redux, broken-nodes, getting-started,
+multi-set-nodes, diagnostics, grouping, typed-ports); spawned nodes off the drop point (add-node-on-drop,
+add-node-on-edge-drop, drag-n-drop); buttons in HTML edge labels that lost their click to the pane (labels-handles,
+edge-renderer: `nodrag nopan`, now in the README); save-restore's links saving the page HTML until the first
+interaction; color-mode's lock that locked nothing and its dark accent; edge-types, edges and edge-path-options laid
+out so the path types and sliders actually show a difference; self-loop-edges' wrong description; state-machine's
+overlapping routes; localization's untranslated announcements; recolour buttons whose change the selection hid; and
+wording that no longer matched behaviour (broken-nodes, custom-edges, a11y, overlay-layout, responsive-canvas).
+
+Test harness: the E2E suite measured while the site's smooth scrolling was still moving the page (WebKit eases far
+longer than the 250 ms it waited) - scrolls are instant now; the minimap click test aimed between pixels Firefox and
+WebKit round to; the two context-menu-key tests and the accessibility-tree audit report Inconclusive outside
+Chromium (Playwright's Firefox and WebKit raise no `contextmenu` for a key, and only Chromium has the DevTools
+protocol).
+
+The MCP search test's "focus outline" question now accepts any focus rule as its first hit: the stylesheet's first
+one is the edge's `:focus` rule now, not a `:focus-visible` one.
+
+Not changed: a press on a node raises `OnNodeDragStart` and `OnNodeDragStop` even when it does not move (the drag
+threshold demo relies on it); a selected edge takes the selection colour over its own (`!important`), which the two
+recolour demos now override for themselves.
+
+Final runs, from `src/Utilities/Blow`:
+
+- `dotnet test Tests/Bit.Blow.Tests/Bit.Blow.Tests.csproj` (net8.0, net9.0, net10.0): 2,793 / 2,793.
+- `dotnet test Tests/Bit.Blow.Tests.Mcp/Bit.Blow.Tests.Mcp.csproj`: 88 / 88.
+- `Bit.Blow.Tests.E2E`, Release, against the published demo: Chromium 280 / 280; Firefox and WebKit 171 / 171 run, the
+  other 109 Inconclusive by design (107 accessibility-tree audits, 2 context-menu-key tests). In one Firefox run a
+  page's WebAssembly boot outlasted the 90 s wait on a loaded machine; the page sweep then passed 107 / 107 twice.

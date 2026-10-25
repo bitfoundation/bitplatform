@@ -3,7 +3,7 @@
 <PageTitle>Overlay Layout · Blow</PageTitle>
 
 <ExampleScaffold Title="Overlay Layout"
-                 Summary="Controls, the minimap, panels and the attribution badge can all be anchored to any corner, and the control bar can hide individual buttons or show a lock toggle that freezes the canvas.">
+                 Summary="Controls, the minimap, panels and the attribution badge can all be anchored to any corner, and the control bar can hide individual buttons or show a lock toggle that stops nodes being dragged, connected and selected (the view still pans and zooms, as in React Flow).">
     <Toolbar>
         <label>Controls
             <select @onchange="@(e => _controlsPosition = Parse(e.Value))">
@@ -22,12 +22,15 @@
             </select>
         </label>
         <label><input type="checkbox" checked="@_horizontal" @onchange="@(e => _horizontal = (bool)e.Value!)" /> Horizontal controls</label>
-        <span class="bb-muted">Interactive: @(_interactive ? "on" : "locked")</span>
+        @* The hint is up here rather than in a panel over the canvas: every corner and the bottom edge can be given to
+           the controls or the minimap above, and a panel there would sit on whichever chose it. *@
+        <span class="bb-muted">Interactive: @(_interactive ? "on" : "locked") · lock it with the padlock button</span>
     </Toolbar>
     <ChildContent>
         <BlowCanvas Nodes="_nodes"
                     Edges="_edges"
                     FitViewOnInit="true"
+                    FitViewOptions="_fit"
                     NodesDraggable="_interactive"
                     NodesConnectable="_interactive"
                     ElementsSelectable="_interactive"
@@ -37,23 +40,19 @@
                       Orientation="@(_horizontal ? BlowControlsOrientation.Horizontal : BlowControlsOrientation.Vertical)"
                       ShowInteractive="true"
                       @bind-Interactive="_interactive" />
-            <BlowMiniMap Position="_miniMapPosition" Zoomable="true" Pannable="true" />
-            <BlowPanel Anchor="BlowPanelPosition.BottomCenter">
-                <div class="overlay-hint">Lock the canvas with the padlock button</div>
-            </BlowPanel>
+            <BlowMiniMap Class="demo-minimap-keep" Position="_miniMapPosition" Zoomable="true" Pannable="true" />
         </BlowCanvas>
     </ChildContent>
 </ExampleScaffold>
-
-<style>
-    .overlay-hint { padding: 6px 12px; font-size: 12px; color: var(--bit-blow-text); background: var(--bit-blow-surface); border: 1px solid var(--bit-blow-border); border-radius: 999px; }
-</style>
 
 @code {
     private BlowPanelPosition _controlsPosition = BlowPanelPosition.BottomLeft;
     private BlowPanelPosition _miniMapPosition = BlowPanelPosition.BottomRight;
     private bool _horizontal;
     private bool _interactive = true;
+
+    // A wide margin: the overlays can be put in any corner and on the bottom edge, and the flow belongs in the middle.
+    private readonly BlowFitViewOptions _fit = new() { Padding = 0.3 };
 
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];

@@ -28,7 +28,8 @@ public class RoundElevenReviewTests : BunitContext
     private static int[] NodeRenders(IRenderedComponent<BlowCanvas> cut)
         => cut.FindComponents<BlowNodeRenderer>().Select(c => c.RenderCount).ToArray();
 
-    private static PointerEventArgs At(double x, double y) => new() { Button = 0, PointerId = 1, PointerType = "mouse", ClientX = x, ClientY = y };
+    // Buttons as a browser reports them while the left button is held: a mouse moving with none held has lost its release.
+    private static PointerEventArgs At(double x, double y) => new() { Button = 0, Buttons = 1, PointerId = 1, PointerType = "mouse", ClientX = x, ClientY = y };
 
     // ---- the drop and the click after it ----
 

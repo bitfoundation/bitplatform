@@ -30,7 +30,8 @@
                     AllowSelfConnections="true"
                     ConnectionRadius="30"
                     OnConnect="@(_ => ApplyStyle())"
-                    FitViewOnInit="true">
+                    FitViewOnInit="true"
+                    FitViewOptions="_fit">
             <NodeTemplate Context="node">
                 <BlowHandle Type="BlowHandleType.Target" Id="in-top" Position="BlowPosition.Top" />
                 <BlowHandle Type="BlowHandleType.Target" Id="in-left" Position="BlowPosition.Left" />
@@ -41,11 +42,12 @@
             <ChildContent>
                 <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="24" />
                 <BlowControls />
-                <BlowPanel Anchor="BlowPanelPosition.TopRight">
+                @* Bottom-right: Poll and its loop have the top-right corner. *@
+                <BlowPanel Anchor="BlowPanelPosition.BottomRight">
                     <div class="hint">
-                        <div><strong>Retry</strong> loops right-to-left, round the top.</div>
-                        <div><strong>Poll</strong> loops bottom-to-top, round the side.</div>
-                        <div><strong>Recurse</strong> loops right-to-left the long way.</div>
+                        <div><strong>Retry</strong> loops right-to-left, round the bottom.</div>
+                        <div><strong>Poll</strong> loops right-to-top, round the corner.</div>
+                        <div><strong>Recurse</strong> loops bottom-to-top, round the side.</div>
                     </div>
                 </BlowPanel>
             </ChildContent>
@@ -73,6 +75,10 @@
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
     private double _radius = 60;
+
+    // The fit only measures nodes, and the loops reach well past them: the wider margin keeps the loop under
+    // Recurse on screen.
+    private readonly BlowFitViewOptions _fit = new() { Padding = 0.35 };
     private BlowEdgeType _type = BlowEdgeType.Bezier;
     private bool _animated = true;
 
@@ -91,10 +97,12 @@
             // line laid across the middle of the node.
             Loop("retry", "out-right", "in-left", "retry"),
 
-            // Bottom back to top: the same degeneracy, on the other axis.
-            Loop("poll", "out-bottom", "in-top", "poll again"),
+            // Right back to the top: two handles round a corner rather than across the node. (Its left handle is
+            // where the edge from Retry comes in.)
+            Loop("poll", "out-right", "in-top", "poll again"),
 
-            Loop("recurse", "out-right", "in-left", "recurse"),
+            // Bottom back to top: the same degeneracy as Retry's, on the other axis.
+            Loop("recurse", "out-bottom", "in-top", "recurse"),
 
             new BlowEdge { Id = "retry-poll", Source = "retry", SourceHandle = "out-right", Target = "poll", TargetHandle = "in-left" },
             new BlowEdge { Id = "poll-recurse", Source = "poll", SourceHandle = "out-bottom", Target = "recurse", TargetHandle = "in-top" },

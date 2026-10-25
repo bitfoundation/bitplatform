@@ -40,39 +40,27 @@
                     FitViewOnInit="true">
             <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="20" />
             <BlowControls />
-            <BlowPanel Anchor="BlowPanelPosition.TopRight">
-                <div class="log">
-                    <div class="log-title">Events</div>
-                    @if (_log.Count == 0)
-                    {
-                        <div class="log-empty">
-                            Box-select a few nodes, then drag one of them - or right-click one.
-                        </div>
-                    }
-                    @foreach (var entry in _log)
-                    {
-                        <div class="log-row">@entry</div>
-                    }
-                </div>
-            </BlowPanel>
         </BlowCanvas>
     </ChildContent>
+    <Footer>
+        @* Under the canvas: a log over it grew across the nodes as the events came in. *@
+        <div class="log-title">Events</div>
+        @if (_log.Count == 0)
+        {
+            <div class="log-empty">
+                Box-select a few nodes, then drag one of them - or right-click one.
+            </div>
+        }
+        @foreach (var entry in _log)
+        {
+            <div class="log-row">@entry</div>
+        }
+    </Footer>
 </ExampleScaffold>
 
 <style>
-    .log {
-        width: 240px;
-        max-height: 260px;
-        overflow-y: auto;
-        padding: 8px 10px;
-        font-size: 11px;
-        background: var(--bit-blow-surface);
-        color: var(--bit-blow-text);
-        border: 1px solid var(--bit-blow-border);
-        border-radius: 6px;
-    }
     .log-title { font-weight: 600; margin-bottom: 4px; }
-    .log-empty { color: var(--bit-blow-text-muted); line-height: 1.45; }
+    .log-empty { color: var(--bb-text-soft); line-height: 1.45; }
     .log-row { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; padding: 1px 0; }
 </style>
 

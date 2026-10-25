@@ -89,7 +89,9 @@
     private async Task Arrange(IBlowLayout layout)
     {
         if (_flow is null) return;
-        await _flow.LayoutAsync(layout);
+        // The selection when it is more than one node, as the hint says; a single node clicked on is not a set to arrange,
+        // and handing it over would lay out that one node and nothing else.
+        await _flow.LayoutAsync(layout, _selected > 1 ? null : _nodes.Where(n => n.ParentId is null));
         _flow.UpdateNodeInternals();
         if (_selected <= 1) _flow.FitView();
     }

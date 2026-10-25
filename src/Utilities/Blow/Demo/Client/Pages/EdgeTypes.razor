@@ -28,16 +28,19 @@
 
     protected override void OnInitialized()
     {
+        // Left to right, each target a little lower than its source: between a bottom and a top handle on one level
+        // every path type has to double back on itself, and between two handles at the same height they would all
+        // be the same straight line.
         _nodes =
         [
-            new BlowNode { Id = "a1", Label = "A", Position = new(40, 40) },
-            new BlowNode { Id = "a2", Label = "B", Position = new(320, 40) },
-            new BlowNode { Id = "b1", Label = "C", Position = new(40, 160) },
-            new BlowNode { Id = "b2", Label = "D", Position = new(320, 160) },
-            new BlowNode { Id = "c1", Label = "E", Position = new(40, 280) },
-            new BlowNode { Id = "c2", Label = "F", Position = new(320, 280) },
-            new BlowNode { Id = "d1", Label = "G", Position = new(40, 400) },
-            new BlowNode { Id = "d2", Label = "H", Position = new(320, 400) },
+            Source("a1", "A", 40),
+            Target("a2", "B", 40),
+            Source("b1", "C", 170),
+            Target("b2", "D", 170),
+            Source("c1", "E", 300),
+            Target("c2", "F", 300),
+            Source("d1", "G", 430),
+            Target("d2", "H", 430),
         ];
 
         _edges =
@@ -48,4 +51,10 @@
             new BlowEdge { Id = "e-smoothstep", Source = "d1", Target = "d2", Type = BlowEdgeType.SmoothStep, Label = "double-ended", Animated = true, MarkerStart = true },
         ];
     }
+
+    private static BlowNode Source(string id, string label, double y) =>
+        new() { Id = id, Label = label, Position = new(40, y), SourcePosition = BlowPosition.Right, TargetPosition = BlowPosition.Left };
+
+    private static BlowNode Target(string id, string label, double y) =>
+        new() { Id = id, Label = label, Position = new(360, y + 60), SourcePosition = BlowPosition.Right, TargetPosition = BlowPosition.Left };
 }

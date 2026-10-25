@@ -6,13 +6,13 @@
 <ExampleScaffold Title="External Store"
                  Summary="Both the canvas and an external toolbar read and mutate a single shared store object (the Redux/Zustand pattern). Dispatching an action updates the store and re-renders the flow.">
     <Toolbar>
-        <button class="btn btn-primary" @onclick="@(() => _store.Dispatch(StoreAction.AddNode))">Add node</button>
+        <button class="btn btn-primary" @onclick="AddNode">Add node</button>
         <button class="btn btn-secondary" @onclick="@(() => _store.Dispatch(StoreAction.ConnectRandom))">Connect random</button>
         <button class="btn btn-secondary" @onclick="@(() => _store.Dispatch(StoreAction.Reset))">Reset</button>
         <span class="bb-muted">store: @_store.Nodes.Count nodes, @_store.Edges.Count edges</span>
     </Toolbar>
     <ChildContent>
-        <BlowCanvas Nodes="_store.Nodes" Edges="_store.Edges" FitViewOnInit="true"
+        <BlowCanvas @ref="_flow" Nodes="_store.Nodes" Edges="_store.Edges" FitViewOnInit="true"
                     NodesChanged="@(_ => _store.Notify())"
                     EdgesChanged="@(_ => _store.Notify())">
             <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
@@ -23,6 +23,14 @@
 
 @code {
     private readonly FlowStore _store = new();
+    private BlowCanvas? _flow;
+
+    private async Task AddNode()
+    {
+        _store.Dispatch(StoreAction.AddNode);
+        // A random spot is more often than not off the view the first node was fitted to.
+        if (_flow is not null) await _flow.FitViewAsync(300);
+    }
 
     protected override void OnInitialized()
     {

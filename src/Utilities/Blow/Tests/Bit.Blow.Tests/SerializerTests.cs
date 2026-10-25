@@ -320,7 +320,8 @@ public class SerializerTests : BunitContext
 
         Assert.IsTrue(result.Succeeded, "a graph the canvas can draw around is still loaded");
         var located = result.Issues.Select(i => $"{i.Code}@{i.Path}").ToArray();
-        CollectionAssert.Contains(located, "duplicate-node-id@$.nodes[0]");
+        // At the node that repeats the id; the first to use it is the one that is fine.
+        CollectionAssert.Contains(located, "duplicate-node-id@$.nodes[1]");
         CollectionAssert.Contains(located, "missing-edge-endpoint@$.edges[0]");
         CollectionAssert.Contains(located, "parent-cycle@$.nodes[2]");
         Assert.IsTrue(result.Issues.All(i => i.Severity == BlowValidationSeverity.Warning));

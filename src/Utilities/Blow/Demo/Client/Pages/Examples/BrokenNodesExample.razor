@@ -3,12 +3,12 @@
 <PageTitle>Broken Nodes · Blow</PageTitle>
 
 <ExampleScaffold Title="Broken Nodes"
-                 Summary="Edges that reference missing nodes or handles are simply skipped instead of throwing. Toggle the missing node to see its edges appear and disappear.">
+                 Summary="Edges that reference a missing node are simply skipped instead of throwing, and an edge naming a handle its node does not have is drawn to the middle of that node's side. Toggle the missing node to see its edges appear and disappear.">
     <Toolbar>
         <button class="btn btn-secondary" @onclick="ToggleGhost">@(_hasGhost ? "Remove" : "Add") node 3</button>
     </Toolbar>
     <ChildContent>
-        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
             <BlowBackground />
             <BlowControls />
         </BlowCanvas>
@@ -19,6 +19,7 @@
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
     private bool _hasGhost;
+    private BlowCanvas? _flow;
 
     protected override void OnInitialized() => Build();
 
@@ -41,9 +42,14 @@
         ];
     }
 
-    private void ToggleGhost()
+    private async Task ToggleGhost()
     {
         _hasGhost = !_hasGhost;
         Build();
+
+        // Node 3 sits to the right of the two the view was fitted to. The canvas has the new lists once this page has
+        // rendered, which it does at the first await.
+        await Task.Yield();
+        if (_flow is not null) await _flow.FitViewAsync(300);
     }
 }

@@ -47,5 +47,7 @@
         foreach (var n in _nodes)
             n.Label = $"{n.Id}·{Random.Shared.Next(100)}";
         _flow?.Refresh(remeasure: true);
+        // The row was fitted to the view; scattered, it no longer fits it.
+        _flow?.FitView();
     }
 }

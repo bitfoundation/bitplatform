@@ -35,12 +35,13 @@
             new BlowNode { Id = "3", Label = "Path B", Position = new(420, 160) },
             new BlowNode { Id = "4", Type = "output", Label = "End", Position = new(250, 310) },
         ];
+        // Smooth-step like the edges drawn later: DefaultEdgeType applies to new edges only.
         _edges =
         [
-            new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Label = "warm", Data = "#ef4444" },
-            new BlowEdge { Id = "e1-3", Source = "1", Target = "3", Label = "cool", Data = "#3b82f6" },
-            new BlowEdge { Id = "e2-4", Source = "2", Target = "4", Label = "ok", Data = "#22c55e" },
-            new BlowEdge { Id = "e3-4", Source = "3", Target = "4", Label = "ok", Data = "#22c55e" },
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Label = "warm", Type = BlowEdgeType.SmoothStep, Data = "#ef4444" },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3", Label = "cool", Type = BlowEdgeType.SmoothStep, Data = "#3b82f6" },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4", Label = "ok", Type = BlowEdgeType.SmoothStep, Data = "#22c55e" },
+            new BlowEdge { Id = "e3-4", Source = "3", Target = "4", Label = "ok", Type = BlowEdgeType.SmoothStep, Data = "#22c55e" },
         ];
     }
 

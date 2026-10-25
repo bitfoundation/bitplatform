@@ -7,7 +7,7 @@
     <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
         <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
         <BlowControls />
-        <BlowMiniMap Pannable="true" Zoomable="true" Width="240" Height="180" />
+        <BlowMiniMap Class="demo-minimap-keep" Pannable="true" Zoomable="true" Width="240" Height="180" />
     </BlowCanvas>
 </ExampleScaffold>
 
@@ -17,7 +17,8 @@
 
     protected override void OnInitialized()
     {
-        for (var i = 0; i < 12; i++)
+        // Eleven in a grid four wide, so the last row ends short and leaves its corner to the minimap.
+        for (var i = 0; i < 11; i++)
         {
             _nodes.Add(new BlowNode
             {

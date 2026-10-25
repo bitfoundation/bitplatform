@@ -55,24 +55,25 @@
             <ChildContent>
                 <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
                 <BlowControls />
-                <BlowPanel Anchor="BlowPanelPosition.TopRight">
-                    <div class="tp-panel">
-                        <strong>Last connection</strong>
-                        <div class="tp-last">@_lastConnection</div>
-                        <strong>Problems (@_validation.Issues.Count)</strong>
-                        @if (_validation.Issues.Count == 0)
-                        {
-                            <div class="tp-ok">The graph is complete.</div>
-                        }
-                        @foreach (var issue in _validation.Issues)
-                        {
-                            <button class="tp-issue" @onclick="@(() => GoTo(issue))">@issue.Message</button>
-                        }
-                    </div>
-                </BlowPanel>
             </ChildContent>
         </BlowCanvas>
     </ChildContent>
+    <Footer>
+        @* Under the canvas: as a panel in its corner the list of problems grew over the Display node. *@
+        <div class="tp-panel">
+            <strong>Last connection</strong>
+            <div class="tp-last">@_lastConnection</div>
+            <strong>Problems (@_validation.Issues.Count)</strong>
+            @if (_validation.Issues.Count == 0)
+            {
+                <div class="tp-ok">The graph is complete.</div>
+            }
+            @foreach (var issue in _validation.Issues)
+            {
+                <button class="tp-issue" @onclick="@(() => GoTo(issue))">@issue.Message</button>
+            }
+        </div>
+    </Footer>
 </ExampleScaffold>
 
 <style>
@@ -91,12 +92,9 @@
        canvas's valid and invalid colours still take over while a connection is dragged. */
     .typed-flow .bit-blow-handle[data-port-type="number"] { --bit-blow-handle-bg: #2563eb; }
     .typed-flow .bit-blow-handle[data-port-type="text"] { --bit-blow-handle-bg: #d97706; }
-    .tp-panel { width: 260px; max-height: 320px; overflow: auto; padding: 8px 10px; font-size: 12px;
-                display: flex; flex-direction: column; gap: 4px;
-                background: var(--bit-blow-surface); color: var(--bit-blow-text);
-                border: 1px solid var(--bit-blow-border); border-radius: 6px; }
-    .tp-last { color: var(--bit-blow-text-muted); margin-bottom: 6px; }
-    .tp-ok { color: var(--bit-blow-text-muted); }
+    .tp-panel { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+    .tp-last { color: var(--bb-text-soft); margin-bottom: 6px; }
+    .tp-ok { color: var(--bb-text-soft); }
     .tp-issue { text-align: left; border: none; background: none; padding: 2px 0; color: inherit; cursor: pointer;
                 text-decoration: underline dotted; font: inherit; }
 </style>
@@ -174,9 +172,19 @@
         Ports = [Input("text", "text", "text")],
     };
 
-    private void AddNumber() => _flow!.AddNodes(Number($"n-new-{_next++}", 1, new(0, 260 + _next * 20)));
+    private Task AddNumber() => Add(Number($"n-new-{_next++}", 1, FreeSpot(0)));
 
-    private void AddOperator(string kind) => _flow!.AddNodes(Operator($"op-new-{_next++}", kind, new(240, 260 + _next * 20)));
+    private Task AddOperator(string kind) => Add(Operator($"op-new-{_next++}", kind, FreeSpot(240)));
+
+    // Below everything already there, so a new node never lands on another and hides its handles.
+    private BlowXYPosition FreeSpot(double x) => new(x, _nodes.Count == 0 ? 0 : _nodes.Max(n => n.GetRect().Bottom) + 30);
+
+    // And brought into view, with focus on it: below the graph is past the bottom of the view.
+    private async Task Add(BlowNode node)
+    {
+        _flow!.AddNodes(node);
+        await _flow.FocusNodeAsync(node.Id, durationMs: 300);
+    }
 
     private void SetNumber(NumberData data, object? raw)
     {
@@ -189,9 +197,11 @@
     {
         _lastConnection = end.IsValid
             ? $"Connected from {end.Start.NodeId}."
-            : end.Rejection == BlowConnectionRejection.None
-                ? "Dropped on empty space."
-                : BlowAriaLabels.Default.ConnectionRejected(end.Rejection);
+            : end.Rejection != BlowConnectionRejection.None
+                ? BlowAriaLabels.Default.ConnectionRejected(end.Rejection)
+                : end.IsDropped
+                    ? "Dropped on empty space."
+                    : "Cancelled.";
     }
 
     /// <summary>

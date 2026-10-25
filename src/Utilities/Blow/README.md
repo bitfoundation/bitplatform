@@ -1103,7 +1103,9 @@ markup the canvas still draws the wide invisible click path and the focusable, s
 
 `EdgeLabelTemplate` renders HTML at each edge's label point in an overlay that is not zoomed, so the label keeps a
 constant size and can hold buttons and inputs. When it is set it replaces the built-in SVG labels.
-`BlowEdgeToolbar` is a styled container for exactly that, which keeps its clicks from reaching the pane:
+`BlowEdgeToolbar` is a styled container for exactly that, which keeps its clicks from reaching the pane. Anything else in
+the label that takes a click - a bare button, an input - needs the `nopan` class (and `nodrag`), as React Flow's own
+label content does: otherwise a press on it starts a pan, the pane captures the pointer, and the click never arrives.
 
 ```razor
 <EdgeLabelTemplate Context="ctx">
@@ -1798,7 +1800,7 @@ The zoom buttons disable themselves at the zoom limits. `BlowControlButton` is a
 | `Pannable` | `true` | Clicking or dragging on it moves the main view there. |
 | `Zoomable` | `false` | The wheel over it zooms the main view, by `ZoomStep` percent (10) per notch. |
 | `NodeColor`, `NodeStrokeColor`, `NodeStrokeWidth`, `BorderRadius` | theme, transparent, 2, 2 | How nodes are drawn. |
-| `NodeColorFunc`, `NodeStrokeColorFunc`, `NodeClassFunc` | `null` | Per-node colour, outline and class. |
+| `NodeColorFunc`, `NodeStrokeColorFunc`, `NodeClassFunc` | `null` | Per-node colour, outline and class. Without `NodeColorFunc` a selected node takes the selection colour. |
 | `NodeTemplate` | `null` | Your own SVG per node, translated to the node's position. |
 | `MaskColor`, `MaskStrokeColor`, `MaskStrokeWidth` | theme, transparent, 1 | The area outside the visible viewport. |
 | `BgColor` | stylesheet | Background of the map. |
@@ -2429,6 +2431,7 @@ so a flow can be translated without reimplementing its accessibility:
 | `EdgeLabel` | `"Edge from {source} to {target}"` |
 | `NodeSelected`, `NodeDeselected` | `"{name} selected"`, `"{name} deselected"` |
 | `EdgeSelected`, `EdgeDeselected` | `"Edge {source} to {target} selected"`, `"... deselected"` |
+| `SelectionCleared` | `"Selection cleared"`, when Escape clears the selection; empty stays silent |
 | `NodeMoved` | `"{name} moved to {position}"` |
 | `NodesMoved` | `"{count} nodes moved"` |
 | `Deleted` | `"Deleted {nodes} node(s) and {edges} edge(s)"` |

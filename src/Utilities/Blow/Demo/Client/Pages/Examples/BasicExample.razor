@@ -22,7 +22,8 @@
             new BlowNode { Id = "1", Type = "input",  Label = "Node 1", Position = new(250, 5) },
             new BlowNode { Id = "2",                  Label = "Node 2", Position = new(100, 100) },
             new BlowNode { Id = "3",                  Label = "Node 3", Position = new(400, 100) },
-            new BlowNode { Id = "4", Type = "output", Label = "Node 4", Position = new(400, 200) },
+            // Under the middle rather than under node 3: the bottom-right corner is the minimap's.
+            new BlowNode { Id = "4", Type = "output", Label = "Node 4", Position = new(250, 200) },
         ];
 
         _edges =

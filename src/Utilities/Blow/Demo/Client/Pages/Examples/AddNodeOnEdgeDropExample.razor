@@ -4,7 +4,7 @@
 
 <ExampleScaffold Title="Add Node on Edge Drop"
                  Summary="Drag a connection from a handle and release it on empty canvas. A new node is created where you dropped, already connected - downstream when you dragged from a source handle, upstream when you dragged from a target handle. Releasing on a handle connects normally; a click, Escape or a reconnect adds nothing.">
-    <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+    <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" FitViewOptions="new BlowFitViewOptions { MaxZoom = 1 }"
                 OnConnectEnd="OnConnectEnd">
         <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
         <BlowControls />
@@ -40,10 +40,14 @@
         // fed by it. Either way the new node's matching handle - its source at the bottom, or
         // its target at the top - is placed right where the connection was let go.
         var fromTarget = start.HandleType == BlowHandleType.Target;
+        // Sized explicitly, so the arithmetic above is where its handles really are: a default node is drawn only as
+        // wide as its label needs, not BlowNode.DefaultWidth.
         _nodes.Add(new BlowNode
         {
             Id = id,
             Label = $"Node {id}",
+            Width = BlowNode.DefaultWidth,
+            Height = BlowNode.DefaultHeight,
             Position = new(
                 info.FlowPosition.X - BlowNode.DefaultWidth / 2,
                 fromTarget ? info.FlowPosition.Y - BlowNode.DefaultHeight : info.FlowPosition.Y),

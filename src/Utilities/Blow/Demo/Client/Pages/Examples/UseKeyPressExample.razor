@@ -43,6 +43,8 @@
             _id++;
             _nodes.Add(new BlowNode { Id = _id.ToString(), Label = $"Node {_id}", Position = new(Random.Shared.Next(40, 420), Random.Shared.Next(40, 280)) });
             _flow?.Refresh(remeasure: true);
+            // A random spot is more often than not off the view the first node was fitted to.
+            if (_flow is not null) await _flow.FitViewAsync(300);
         }
         else if (e.Key is "Delete" or "Backspace")
         {

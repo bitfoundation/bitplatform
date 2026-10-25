@@ -118,6 +118,9 @@ public sealed class BlowAriaLabels
     public Func<string, string, string> EdgeDeselected { get; init; }
         = (source, target) => $"Edge {source} to {target} deselected";
 
+    /// <summary>Announced when Escape clears the selection. Empty to stay silent.</summary>
+    public string SelectionCleared { get; init; } = "Selection cleared";
+
     /// <summary>Announced when exactly one node was moved with the keyboard.</summary>
     public Func<string, BlowXYPosition, string> NodeMoved { get; init; }
         = (name, position) => $"{name} moved to {position}";

@@ -9,7 +9,8 @@
         <button class="btn btn-primary" @onclick="@(() => Resize(120))">Wider</button>
         <button class="btn btn-primary" @onclick="GrowNode">Grow node content</button>
         <button class="btn btn-primary" @onclick="Center">Recenter viewport</button>
-        <span class="bb-muted">Canvas width: @_width px</span>
+        @* Requested: the container is capped at the width of the column it sits in. *@
+        <span class="bb-muted">Requested width: @_width px</span>
     </Toolbar>
     <ChildContent>
         <div style="@($"width:{_width}px;max-width:100%;height:100%;")">

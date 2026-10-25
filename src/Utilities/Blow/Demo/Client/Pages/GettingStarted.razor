@@ -157,9 +157,11 @@ BlowSnapshot snapshot = _flow.ToObject();
         new BlowEdge { Id = "e2-3", Source = "2", Target = "3", Animated = true },
     ];
 
-    private void AddStep()
+    private async Task AddStep()
     {
+        if (_flow is null) return;
         var id = (_next++).ToString();
-        _flow?.AddNodes(new BlowNode { Id = id, Label = $"Step {id}", Position = new(220, (_next - 5) * 70) });
+        _flow.AddNodes(new BlowNode { Id = id, Label = $"Step {id}", Position = new(220, (_next - 5) * 70) });
+        await _flow.FitViewAsync(300);
     }
 }

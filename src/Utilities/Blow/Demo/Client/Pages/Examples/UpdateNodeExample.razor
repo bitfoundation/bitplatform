@@ -51,9 +51,11 @@
 
     private void SetColor(string? color) => _target.Style = $"background:{color};";
 
-    private void MoveRandom()
+    private async Task MoveRandom()
     {
         _target.Position = new(Random.Shared.Next(20, 450), Random.Shared.Next(20, 250));
         _flow?.Refresh(remeasure: true);
+        // Followed, so the node does not leave the view it was fitted to.
+        if (_flow is not null) await _flow.FitViewAsync(300);
     }
 }

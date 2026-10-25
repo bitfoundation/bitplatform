@@ -4,7 +4,9 @@
 
 <ExampleScaffold Title="DevTools"
                  Summary="Inspector panels in the spirit of React Flow's DevTools: a live viewport logger, a node inspector and a change log. Drag and select nodes to see updates.">
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+    @* Fitted at no more than full size: three nodes zoomed in to fill the pane would sit under the panels in its
+       corners. *@
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" FitViewOptions="new BlowFitViewOptions { MaxZoom = 1 }"
                 OnViewportChanged="v => { _vp = v; StateHasChanged(); }"
                 OnNodeDragStop="OnNodeDragStop"
                 OnSelectionChange="OnSelectionChange">

@@ -12,7 +12,9 @@
             <div class="dnd__item dnd__item--output" draggable="true" @ondragstart="@(() => _dragType = "output")">Output Node</div>
         </aside>
         <div class="dnd__canvas" @ondragover:preventDefault="true" @ondrop="OnDrop">
-            <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            @* Fitted at no more than full size: the one node there is to begin with, zoomed to fill the pane, leaves
+               no room to drop the others. *@
+            <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" FitViewOptions="new BlowFitViewOptions { MaxZoom = 1 }">
                 <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
                 <BlowControls />
             </BlowCanvas>
@@ -66,7 +68,10 @@
             Id = $"dnd-{_id}",
             Type = _dragType,
             Label = $"{char.ToUpper(_dragType[0])}{_dragType[1..]} {_id}",
-            Position = new(pos.X - 75, pos.Y - 20),
+            // Centred on the pointer: sized explicitly, since a default node is only as wide as its label needs.
+            Width = BlowNode.DefaultWidth,
+            Height = BlowNode.DefaultHeight,
+            Position = new(pos.X - BlowNode.DefaultWidth / 2, pos.Y - BlowNode.DefaultHeight / 2),
         });
         _flow.Refresh(remeasure: true);
     }

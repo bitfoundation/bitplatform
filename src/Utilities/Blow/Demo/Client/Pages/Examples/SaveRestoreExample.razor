@@ -20,8 +20,9 @@
     </Toolbar>
     <ChildContent>
         @* Handling the change events re-renders this page after every edit, so the download links always carry
-           the graph as it is now. *@
-        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+           the graph as it is now - and OnInit renders it once the canvas is there at all: before that the links had
+           no flow to read and saved the page instead. *@
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" OnInit="@(_ => { })"
                     NodesChanged="@(_ => { })" EdgesChanged="@(_ => { })" OnMoveEnd="@(_ => { })">
             <NodeTemplate Context="node">
                 @if (node.Data is TaskInfo task)
@@ -151,7 +152,7 @@
 
     private async Task Load(string json) => await Apply(BlowSerializer.Deserialize(json, Options), "local storage");
 
-    private async Task Apply(BlowImportResult result, string from)
+    private async Task Apply(BlowImportResult result, string from, bool blowDocument = true)
     {
         _issues = [.. result.Issues.Where(i => i.Severity != BlowValidationSeverity.Info)];
         if (!result.Succeeded || result.Document is not { } document || _flow is null)
@@ -162,7 +163,8 @@
 
         await _flow.RestoreAsync(document.ToSnapshot(), restoreViewport: document.Viewport is not null, detach: false);
         _id = _nodes.Select(n => int.TryParse(n.Id, out var id) ? id : 0).DefaultIfEmpty(0).Max();
-        _status = result.SourceVersion < Options.CurrentVersion
+        // A React Flow object has no version of this app's documents to upgrade from.
+        _status = blowDocument && result.SourceVersion < Options.CurrentVersion
             ? $"loaded {from}, upgraded from version {result.SourceVersion}"
             : $"loaded {from}";
     }
@@ -173,7 +175,7 @@
             {
               "nodes": [
                 { "id": "1", "type": "input", "position": { "x": 0, "y": 0 }, "data": { "label": "From React Flow" } },
-                { "id": "2", "position": { "x": 0, "y": 120 }, "data": { "label": "Still connected" }, "style": { "backgroundColor": "#fef3c7" } }
+                { "id": "2", "position": { "x": 0, "y": 120 }, "data": { "label": "Still connected" }, "style": { "backgroundColor": "#fef3c7", "color": "#1f2937" } }
               ],
               "edges": [ { "id": "e1-2", "source": "1", "target": "2", "animated": true, "markerEnd": { "type": "arrowclosed" } } ],
               "viewport": { "x": 120, "y": 60, "zoom": 1 }
@@ -181,7 +183,7 @@
             """;
 
         var result = BlowReactFlowFormat.Import(reactFlowObject, Options);
-        await Apply(result, "a React Flow object");
+        await Apply(result, "a React Flow object", blowDocument: false);
     }
 
     private string DownloadUrl() => DataUrl(_flow?.ToJson(Options));

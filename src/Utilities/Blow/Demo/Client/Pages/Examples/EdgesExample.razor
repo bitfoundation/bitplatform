@@ -16,16 +16,17 @@
 
     protected override void OnInitialized()
     {
+        // Each end a little to the right of its start: straight below it, every path type is the same vertical line.
         _nodes =
         [
             new BlowNode { Id = "b1", Label = "bezier", Position = new(20, 20) },
-            new BlowNode { Id = "b2", Label = "", Position = new(20, 180) },
-            new BlowNode { Id = "s1", Label = "straight", Position = new(220, 20) },
-            new BlowNode { Id = "s2", Label = "", Position = new(220, 180) },
-            new BlowNode { Id = "t1", Label = "step", Position = new(420, 20) },
-            new BlowNode { Id = "t2", Label = "", Position = new(420, 180) },
-            new BlowNode { Id = "ss1", Label = "smoothstep", Position = new(620, 20) },
-            new BlowNode { Id = "ss2", Label = "", Position = new(620, 180) },
+            new BlowNode { Id = "b2", Label = "end", Position = new(110, 180) },
+            new BlowNode { Id = "s1", Label = "straight", Position = new(240, 20) },
+            new BlowNode { Id = "s2", Label = "end", Position = new(330, 180) },
+            new BlowNode { Id = "t1", Label = "step", Position = new(460, 20) },
+            new BlowNode { Id = "t2", Label = "end", Position = new(550, 180) },
+            new BlowNode { Id = "ss1", Label = "smoothstep", Position = new(680, 20) },
+            new BlowNode { Id = "ss2", Label = "end", Position = new(770, 180) },
         ];
 
         _edges =

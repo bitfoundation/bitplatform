@@ -34,31 +34,20 @@
                     FitViewOnInit="true">
             <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="24" />
             <BlowControls />
-            <BlowPanel Anchor="BlowPanelPosition.TopRight">
-                <div class="hint">
-                    Distribute keeps the two outermost nodes where they are and evens out the gaps
-                    between everything else. Pack ignores the span and lays them out from the first
-                    node at a fixed gap.
-                </div>
-            </BlowPanel>
         </BlowCanvas>
     </ChildContent>
+    <Footer>
+        @* Under the canvas: as a panel in its corner it sat on the Transform node. *@
+        Distribute keeps the two outermost nodes where they are and evens out the gaps between everything else -
+        unless the nodes between them do not fit, when they are packed edge to edge from the first. Pack ignores the
+        span and lays them out from the first node at a fixed gap.
+    </Footer>
 </ExampleScaffold>
 
 <style>
     .group-label { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--bb-text-soft); margin-left: .75rem; }
     .group-label:first-child { margin-left: 0; }
     .selection-count { margin-left: auto; font-size: 12px; color: var(--bb-text-soft); }
-    .hint {
-        max-width: 240px;
-        padding: 6px 10px;
-        font-size: 11px;
-        line-height: 1.45;
-        background: var(--bit-blow-surface);
-        color: var(--bit-blow-text);
-        border: 1px solid var(--bit-blow-border);
-        border-radius: 6px;
-    }
 </style>
 
 @code {

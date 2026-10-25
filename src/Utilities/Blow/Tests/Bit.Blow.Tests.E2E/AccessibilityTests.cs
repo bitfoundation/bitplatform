@@ -69,6 +69,8 @@ public sealed class AccessibilityTests : BlowTest
     [TestMethod]
     public async Task The_keyboard_context_menu_key_reaches_a_focused_node()
     {
+        E2EEnvironment.RequireKeyboardContextMenu();
+
         var page = await OpenAsync("/interactions");
         var node = page.Locator(".bit-blow-node").First;
         var id = await node.GetAttributeAsync("data-id");
@@ -110,6 +112,8 @@ public sealed class AccessibilityTests : BlowTest
     [DynamicData(nameof(DemoRoutes))]
     public async Task Everything_a_keyboard_reaches_in_a_flow_has_a_role_and_a_name_for_a_screen_reader(string path)
     {
+        if (E2EEnvironment.IsChromium is false) Assert.Inconclusive("The accessibility tree is read through the DevTools protocol, which only Chromium has.");
+
         var page = await (await NewContextAsync()).NewPageAsync();
         await GotoAsync(page, path);
         await WaitForFlowAsync(page);

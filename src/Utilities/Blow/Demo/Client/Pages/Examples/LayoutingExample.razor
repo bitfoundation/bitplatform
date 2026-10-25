@@ -16,10 +16,11 @@
         <button class="btn btn-secondary" @onclick="Reset">Reset</button>
     </Toolbar>
     <ChildContent>
+        @* No minimap: every layout is fitted to the view, and whichever corner it took, some layout would put a
+           node under it. *@
         <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
             <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
             <BlowControls />
-            <BlowMiniMap />
         </BlowCanvas>
     </ChildContent>
 </ExampleScaffold>

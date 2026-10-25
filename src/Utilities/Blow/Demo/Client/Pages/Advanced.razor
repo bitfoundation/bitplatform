@@ -62,8 +62,8 @@
             new BlowNode { Id = "r1", Type = "resizable", Label = "Resize me", Position = new(400, 60),
                        Width = 160, Height = 80, Data = new NodeStyle("#3b82f6"), Style = Tint("#3b82f6") },
 
-            // The only valid connection target.
-            new BlowNode { Id = "sink", Type = "output", Label = "Sink", Position = new(440, 280) },
+            // The only valid connection target - under the group, clear of the minimap in the bottom-right corner.
+            new BlowNode { Id = "sink", Type = "output", Label = "Sink", Position = new(95, 280) },
         ];
 
         _edges =
@@ -84,7 +84,10 @@
     private void Recolor(BlowNode node)
     {
         var colors = new[] { "#3b82f6", "#22c55e", "#ef4444", "#eab308", "#a855f7" };
-        var next = colors[Random.Shared.Next(colors.Length)];
+        // Never the colour it already has, so every click shows a change.
+        var current = (node.Data as NodeStyle)?.Background;
+        var next = current;
+        while (next is null || next == current) next = colors[Random.Shared.Next(colors.Length)];
         node.Data = new NodeStyle(next);
         node.Style = Tint(next);
     }

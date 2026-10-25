@@ -22,7 +22,7 @@
         <span class="bb-muted">@_nodes.Count nodes · @_edges.Count edges · last drop: @_lastDrop</span>
     </div>
     <div class="demo-canvas">
-        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" FitViewOptions="new BlowFitViewOptions { MaxZoom = 1 }"
                     OnConnectEnd="OnConnectEnd">
             <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
             <BlowControls />
@@ -73,10 +73,14 @@
         // runs new -> start and the new node's source handle (bottom) lands on the drop point.
         // From a source handle it is downstream, with its target handle (top) there instead.
         var fromTarget = start.HandleType == BlowHandleType.Target;
+        // Sized explicitly, so the arithmetic above is where its handles really are: a default node is drawn only as
+        // wide as its label needs, not BlowNode.DefaultWidth.
         _nodes.Add(new BlowNode
         {
             Id = id,
             Label = $"Node {id}",
+            Width = BlowNode.DefaultWidth,
+            Height = BlowNode.DefaultHeight,
             Position = new(
                 info.FlowPosition.X - BlowNode.DefaultWidth / 2,
                 fromTarget ? info.FlowPosition.Y - BlowNode.DefaultHeight : info.FlowPosition.Y),

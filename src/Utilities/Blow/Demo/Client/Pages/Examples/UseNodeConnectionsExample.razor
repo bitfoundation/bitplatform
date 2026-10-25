@@ -4,21 +4,23 @@
 
 <ExampleScaffold Title="Use Node Connections"
                  Summary="Click a node to list the edges connected to it, along with its incoming and outgoing neighbours, computed with BlowGraphUtils.">
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" OnNodeClick="Select">
+    @* The change events re-render the page, so the panel follows edges added and nodes deleted, not only clicks. *@
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" OnNodeClick="Select"
+                NodesChanged="@(_ => { })" EdgesChanged="@(_ => { })">
         <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
         <BlowControls />
         <BlowPanel Position="top-right">
             <div class="conn-panel">
-                @if (_selected is null)
+                @if (Selected is null)
                 {
                     <span class="bb-muted">click a node</span>
                 }
                 else
                 {
-                    <div><strong>Node @_selected.Id</strong></div>
-                    <div>connected edges: @_connected.Count</div>
-                    <div>incomers: @string.Join(", ", _incomers.Select(n => n.Id))</div>
-                    <div>outgoers: @string.Join(", ", _outgoers.Select(n => n.Id))</div>
+                    <div><strong>Node @Selected.Id</strong></div>
+                    <div>connected edges: @BlowGraphUtils.GetConnectedEdges([Selected], _edges).Count</div>
+                    <div>incomers: @string.Join(", ", BlowGraphUtils.GetIncomers(Selected, _nodes, _edges).Select(n => n.Id))</div>
+                    <div>outgoers: @string.Join(", ", BlowGraphUtils.GetOutgoers(Selected, _nodes, _edges).Select(n => n.Id))</div>
                 }
             </div>
         </BlowPanel>
@@ -33,9 +35,9 @@
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
     private BlowNode? _selected;
-    private List<BlowEdge> _connected = [];
-    private List<BlowNode> _incomers = [];
-    private List<BlowNode> _outgoers = [];
+
+    // Worked out as the panel renders, from the graph as it is now: a deleted node is no longer described.
+    private BlowNode? Selected => _selected is not null && _nodes.Contains(_selected) ? _selected : null;
 
     protected override void OnInitialized()
     {
@@ -58,8 +60,5 @@
     private void Select(BlowNode node)
     {
         _selected = node;
-        _connected = BlowGraphUtils.GetConnectedEdges([node], _edges);
-        _incomers = BlowGraphUtils.GetIncomers(node, _nodes, _edges);
-        _outgoers = BlowGraphUtils.GetOutgoers(node, _nodes, _edges);
     }
 }

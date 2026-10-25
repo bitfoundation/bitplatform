@@ -28,7 +28,8 @@
                     OnViewportChanged="@(vp => _viewport = vp)">
             <BlowBackground Variant="BlowBackgroundVariant.Lines" Gap="40" Color="var(--bit-blow-border)" />
             <BlowControls />
-            <BlowMiniMap Pannable="true" Zoomable="true" />
+            @* Top-right: node 3 has the bottom-right corner. *@
+            <BlowMiniMap Pannable="true" Zoomable="true" Position="BlowPanelPosition.TopRight" />
             <BlowPanel Anchor="BlowPanelPosition.TopLeft">
                 <div class="pan-readout">
                     x @_viewport.X.ToString("0") · y @_viewport.Y.ToString("0") · zoom @_viewport.Zoom.ToString("0.00")

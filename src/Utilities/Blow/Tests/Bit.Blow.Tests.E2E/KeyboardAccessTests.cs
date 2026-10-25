@@ -135,6 +135,8 @@ public sealed class KeyboardAccessTests : BlowTest
     [TestMethod]
     public async Task The_context_menu_key_on_a_focused_node_opens_its_menu()
     {
+        E2EEnvironment.RequireKeyboardContextMenu();
+
         var page = await OpenAsync("/interactions");
         await WaitForFlowAsync(page);
         var id = (await IdsAsync(page))[0];
