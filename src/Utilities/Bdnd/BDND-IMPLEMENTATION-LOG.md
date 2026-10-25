@@ -676,3 +676,44 @@ The new tests were checked against the code without each fix: they fail there.
 | MCP | `dotnet test --project Tests/Bit.Bdnd.Tests.Mcp/Bit.Bdnd.Tests.Mcp.csproj` | 101 passed. |
 | E2E Chromium | `dotnet test` in `Tests/Bit.Bdnd.Tests.E2E` | 145 passed, including the 8 Blazor Hybrid tests. |
 
+## Round 12 - every demo page in every engine
+
+Every demo page was driven by hand-written Playwright scripts in Chromium, Firefox and WebKit, beyond what the suite
+asserts: each page at desktop and phone width, light and dark, for console errors, failed requests, horizontal
+overflow and the error banner (none on any of the 270 loads); mouse drags through every page's own scenario, with
+screenshots of the hover states; a keyboard drag on every page; touch drags (Chromium) on fifteen pages at phone
+width; the site's search palette, theme toggle, docs drawer and "View code". Seven problems turned up, three of them
+in the library.
+
+| Finding | Where | Fix | Regression test |
+| --- | --- | --- | --- |
+| Firefox: a target kept its hover - and its insertion line - after the drag had left it, so two lines showed (the source's own slot kept one for the whole drag). Gecko rebuilds an element's box when its line, a pseudo-element, appears, and then raises no `dragleave` for it: the next element is entered "from nowhere". Every edge demo showed it. | Library | A drag event captured on the document leaves every hovered target that is not on the event's path. | `Only_the_target_under_the_pointer_shows_an_edge` (fails on Firefox without the fix) |
+| WebKit: the first press after a native drag raises no `pointerdown` - the drag swallowed the release, so WebKit still counts the button as down and reports the press as a `pointermove` whose button changed. A `PointerDrag="All"` source did not drag on that press, a press in a text field inside a draggable dragged the box instead of selecting text, a no-drag region went by the previous press, and the press did not cancel a keyboard drag. | Library | Such a `pointermove` (primary button changed, no other held) is taken as the press by the sources and the keyboard session. | `A_press_in_a_text_field_right_after_a_drag_still_selects_text_and_drags_nothing`, `A_pointer_drag_right_after_a_native_drag_drops` (fail on WebKit without the fix) |
+| Every engine: text selected in a text field inside a draggable and dragged out of it was tagged as the source's drag - dropped on the bin, it dropped the box. | Library | A `dragstart` raised inside a form field is left to the field: a native text drag. | `Text_selected_in_a_text_field_drags_as_text_and_not_as_the_box` (fails on every engine without the fix) |
+| Copy or move: the bin had a fixed height; from the seventh drop on, the list spilled out of it, the count above the bin in white on the light page. | Demo | The bin grows with its list. | `The_dustbin_grows_with_the_list_of_what_it_took` |
+| Dustbin stress test: a bin's types broke inside a word ("knight/card/dr" "ag"). | Demo | Spaced separators, so a long list wraps between the types. | - |
+| Drag around: a box dropped near the board's edge was drawn over the page beyond it. | Demo | The board clips; the point the box was held by is always on the board (the board is the target), so it can be picked up again. | - |
+| Page builder: the bin's two-line "Release to remove" touched its left edge. | Demo | Padding, centred text. | - |
+
+### Engine notes found on the way
+
+- Firefox logs a warning on every page that the WebAssembly `try` instruction is deprecated: it comes from the .NET
+  runtime's `dotnet.native.wasm`, not from the library or the demo.
+- Only Chromium's driver drags through the browser's drag controller, which scrolls a container held at its edge;
+  the scripted drags of Firefox and WebKit do not (the suite already treats it as Chromium-only).
+- With the three engines' suites running side by side, four failures over two such runs came from the load alone: a
+  WebKit browser crash, the tray's auto-scroll (once on WebKit before these fixes, once on Chromium after them) and an
+  aborted WebAssembly download in the sidebar sweep. Each test passed on its own, the Chromium ones three times in a
+  row.
+
+### Validation
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Build | `dotnet build Bit.Bdnd.slnx` | Succeeded; the only warning is the hybrid harness's known MSB3277. |
+| Unit | `dotnet test --project Tests/Bit.Bdnd.Tests/Bit.Bdnd.Tests.csproj` | 393 passed on each of net8.0, net9.0, net10.0 (1179). |
+| MCP | `dotnet test --project Tests/Bit.Bdnd.Tests.Mcp/Bit.Bdnd.Tests.Mcp.csproj` | 101 passed. |
+| E2E Chromium | `dotnet test` in `Tests/Bit.Bdnd.Tests.E2E` | 148 of 150 passed in the run beside the other engines, including the 8 Blazor Hybrid tests; the 2 that failed on load passed three times in a row on their own. |
+| E2E Firefox | `BDND_E2E_BROWSER=firefox dotnet test` | 136 passed, 14 skipped (Chromium-only and hybrid). |
+| E2E WebKit | `BDND_E2E_BROWSER=webkit dotnet test` | 136 passed, 14 skipped. |
+

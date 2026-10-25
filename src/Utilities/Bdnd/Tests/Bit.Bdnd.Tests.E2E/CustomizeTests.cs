@@ -88,6 +88,49 @@ public sealed partial class CustomizeTests : BdndTest
     }
 
     [TestMethod]
+    public async Task A_press_in_a_text_field_right_after_a_drag_still_selects_text_and_drags_nothing()
+    {
+        // WebKit raises no pointerdown for the first press after a native drag - the drag swallowed the release, so the
+        // button still counts as down - and reports the press as a pointermove instead
+        var page = await OpenAsync("/customize/handles");
+        var field = page.Locator(".handles-note__field");
+        var bin = page.Locator(".dustbin");
+        await DragAsync(page, page.GetByText("Drag me from anywhere"), bin);
+        await Expect(bin).ToHaveTextAsync("Dropped: whole");
+        var drags = (await DragStartsAsync(page.MainFrame)).Length;
+        var box = await BoxAsync(field);
+
+        await page.Mouse.MoveAsync((float)(box.X + 4), (float)box.Centre.Y);
+        await page.Mouse.DownAsync();
+        await MoveAsync(page, new Point(box.Right - 4, box.Centre.Y), steps: 10);
+        await page.Mouse.UpAsync();
+        await WaitForQuietAsync(page);
+
+        Assert.AreEqual(drags, (await DragStartsAsync(page.MainFrame)).Length, "a press in the field started a drag");
+        Assert.IsGreaterThan(5, await field.EvaluateAsync<int>("f => f.selectionEnd - f.selectionStart"), "the press selected the field's text");
+        await Expect(bin).ToHaveTextAsync("Dropped: whole");
+    }
+
+    [TestMethod]
+    public async Task Text_selected_in_a_text_field_drags_as_text_and_not_as_the_box()
+    {
+        var page = await OpenAsync("/customize/handles");
+        var field = page.Locator(".handles-note__field");
+        var bin = page.Locator(".dustbin");
+        await field.SelectTextAsync();
+        var box = await BoxAsync(field);
+
+        // pressed on the selection: the browser drags the text, which is the field's and not the box's
+        await StartDragAsync(page, new Point(box.X + box.Width * 0.3, box.Centre.Y));
+        await DragToAsync(page, (await BoxAsync(bin)).Centre);
+
+        var start = (await DragStartsAsync(page.MainFrame)).Single();
+        Assert.IsNull(start.Tag, "the drag of the field's text was tagged as the box's");
+        await Expect(bin).ToHaveTextAsync("Drop a box here");
+        await Expect(page.Locator(".handles-note")).ToHaveCSSAsync("opacity", "1");
+    }
+
+    [TestMethod]
     public async Task A_drag_is_tagged_with_its_source_and_carries_the_drop_effect_the_source_declares()
     {
         var page = await OpenAsync("/customize/drop-effects");

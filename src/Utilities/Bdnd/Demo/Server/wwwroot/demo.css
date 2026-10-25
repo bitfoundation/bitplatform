@@ -115,11 +115,14 @@
 
 /* ---------- Drag around ---------- */
 
-/* The board the boxes are positioned on: a recessed area, like the kit's .bb-stage. */
+/* The board the boxes are positioned on: a recessed area, like the kit's .bb-stage. A box dropped
+   near its edge is cut off there rather than drawn over the page around it; the point it was held
+   by is always on the board (the board is the drop target), so it can be picked up again. */
 .drag-around-container {
     position: relative;
     width: 100%;
     height: 420px;
+    overflow: hidden;
     background: var(--bb-bg);
     border: 1px solid var(--bb-border);
     border-radius: var(--bb-radius-lg);
@@ -960,9 +963,11 @@ html.bdnd-framed .bb-demo {
     justify-content: center;
     width: 8rem;
     height: 6rem;
+    padding: .5rem;
     border: 2px dashed var(--bb-border-strong);
     border-radius: var(--bb-radius-lg);
     color: var(--bb-text-muted);
+    text-align: center;
 }
 
 .builder-bin[data-bit-bdnd-can-drop] {

@@ -19,7 +19,8 @@
     <BdndProvider>
         <BdndDropTarget TItem="DragBox" Accept="@ItemTypes.Box" Context="t"
                         style="display:contents" OnDrop="HandleDrop">
-            <div class="dustbin" style="@($"background-color:{(t.IsOver ? "darkgreen" : "#333")};width:14rem;height:11rem;")">
+            @* the bin grows with the list of what it took, rather than spilling it out of its fill *@
+            <div class="dustbin" style="@($"background-color:{(t.IsOver ? "darkgreen" : "#333")};width:14rem;height:auto;min-height:11rem;")">
                 <div>
                     <div>Dropped @_dropped.Count item(s)</div>
                     @foreach (var name in _dropped)

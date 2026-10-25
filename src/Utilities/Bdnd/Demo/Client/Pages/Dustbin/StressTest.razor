@@ -29,7 +29,8 @@
                                 OnDrop="@(e => OnDrop(bin, e))">
                     <div class="dustbin" style="@BinStyle(bin, t)">
                         <div>
-                            <div>@string.Join("/", bin.Accepts.Select(ShortName))</div>
+                            @* spaced, so a long list wraps between the types rather than inside one *@
+                            <div>@string.Join(" / ", bin.Accepts.Select(ShortName))</div>
                             <div style="font-size:0.8rem;">@bin.Count dropped</div>
                         </div>
                     </div>

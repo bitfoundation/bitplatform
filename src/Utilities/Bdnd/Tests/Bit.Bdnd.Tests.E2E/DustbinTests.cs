@@ -254,6 +254,26 @@ public sealed class DustbinTests : BdndTest
     }
 
     [TestMethod]
+    public async Task The_dustbin_grows_with_the_list_of_what_it_took()
+    {
+        var page = await OpenAsync("/dustbin/copy-or-move");
+        var bin = page.Locator(".dustbin");
+        var keep = page.Locator(".box", new() { HasText = "Glass (keep)" });
+
+        // more names than the bin's resting height holds
+        for (var dropped = 1; dropped <= 8; dropped++)
+        {
+            await DragAsync(page, keep, bin);
+            await Expect(bin).ToContainTextAsync($"Dropped {dropped} item(s)");
+        }
+
+        // every line inside the bin's fill, the count at its top included
+        Assert.IsTrue(await bin.EvaluateAsync<bool>("el => el.scrollHeight <= el.clientHeight"), "the list spills out of the bin");
+        var count = await BoxAsync(bin.Locator(":scope > div > div").First);
+        Assert.IsGreaterThanOrEqualTo((await BoxAsync(bin)).Y, count.Y, "the count is drawn above the bin");
+    }
+
+    [TestMethod]
     public async Task Boxes_dropped_outside_the_dustbin_both_stay_in_the_palette()
     {
         var page = await OpenAsync("/dustbin/copy-or-move");

@@ -998,7 +998,9 @@ on a handle and the mouse (`PointerDrag="All"`), which start once they have move
 default), so a click stays a click. A press on a form field inside a source (an input, a text area, a select, an
 editable element) or inside an element marked `data-bit-bdnd-no-drag` never starts one - and a native drag never
 starts from either: while such a press lasts the source is not draggable, so a field selects its text as any field
-does (Firefox selects none inside a draggable element otherwise) and a button only clicks:
+does (Firefox selects none inside a draggable element otherwise) and a button only clicks. Text selected in a field
+and then dragged out of it is the field's own native drag, not the source's: it carries the text to wherever it is
+dropped, and the source stays where it is:
 
 ```razor
 <BdndDraggable TItem="Card" Type="card" Item="card">

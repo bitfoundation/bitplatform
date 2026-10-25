@@ -101,6 +101,8 @@ interface DropTarget {
     entered: Set<EventTarget>;
     over: boolean;
     reset: () => void;
+    /** Forgets the hover of a drag the pointer has left the target with, unseen: reported like a dragleave. */
+    leave: (dataTransfer: DataTransfer | null) => void;
 }
 
 /** The in-app drag in progress, started by one of this document's sources. */
@@ -154,6 +156,7 @@ interface KeyboardSession {
     onFocusIn: (e: FocusEvent) => void;
     onFocusOut: (e: FocusEvent) => void;
     onPointerDown: () => void;
+    onPointerMove: (e: PointerEvent) => void;
 }
 
 /** A pointer drag: a press on a source, and - once the press qualifies - the drag it starts. */
@@ -417,6 +420,10 @@ export function registerDragSource(element: HTMLElement | null, dotNetRef: DotNe
             e.preventDefault();
             return;
         }
+        // text selected in a form field inside the source, dragged out of it: the field's own drag, which carries the
+        // text wherever it is dropped and leaves the source where it is
+        const from = e.target instanceof Node ? (e.target instanceof Element ? e.target : e.target.parentElement) : null;
+        if (from && pressesAField(from, element)) return;
 
         const o = source.options;
         const dataTransfer = e.dataTransfer;
@@ -489,6 +496,10 @@ export function registerDragSource(element: HTMLElement | null, dotNetRef: DotNe
         startPointerPress(source, e, !!handle);
     };
 
+    const onPointerMove = (e: PointerEvent) => {
+        if (isPressAsMove(e)) onPointerDown(e);
+    };
+
     // WebKit decides at touchstart whether the moves of a touch may be cancelled, from the listeners there are at that
     // moment: one has to be on the source before its press, or the touch scrolls the page once the drag starts. It
     // only cancels the moves of this source's own drag, so other touches scroll as usual.
@@ -504,6 +515,7 @@ export function registerDragSource(element: HTMLElement | null, dotNetRef: DotNe
     element.addEventListener('dragend', onDragEnd);
     element.addEventListener('keydown', onKeyDown);
     element.addEventListener('pointerdown', onPointerDown);
+    element.addEventListener('pointermove', onPointerMove);
     element.addEventListener('touchmove', onTouchMove, { passive: false });
 
     return {
@@ -523,6 +535,7 @@ export function registerDragSource(element: HTMLElement | null, dotNetRef: DotNe
             element.removeEventListener('dragend', onDragEnd);
             element.removeEventListener('keydown', onKeyDown);
             element.removeEventListener('pointerdown', onPointerDown);
+            element.removeEventListener('pointermove', onPointerMove);
             element.removeEventListener('touchmove', onTouchMove);
             if (session && session.source === source) endSession(false);
             // a pointer drag goes on: it reports to .NET through the source's object, which outlives the registration
@@ -662,6 +675,22 @@ function defaultDropEffect(effectAllowed: DataTransfer['effectAllowed']): DataTr
     }
 }
 
+// Gecko raises no dragleave for an element whose frame it rebuilt while a drag was over it - one that just started
+// showing an edge through a pseudo-element, say - and enters the next element as if the drag came from nowhere: the
+// target would stay hovered, with its edge, wherever the drag went. A drag event is raised at the element under the
+// pointer, so a target off the event's path has been left. Captured on the document, before any target hears it.
+function leaveTargetsNotUnder(e: DragEvent): void {
+    let path: EventTarget[] | null = null;
+    for (const target of targets) {
+        if (!target.over) continue;
+        path = path || e.composedPath();
+        if (!path.includes(target.element)) target.leave(e.dataTransfer);
+    }
+}
+
+document.addEventListener('dragenter', leaveTargetsNotUnder, true);
+document.addEventListener('dragover', leaveTargetsNotUnder, true);
+
 export function registerDropTarget(element: HTMLElement | null, dotNetRef: DotNetObject, options: DropTargetOptions | null) {
     if (!element) return null;
     const target: DropTarget = {
@@ -677,6 +706,10 @@ export function registerDropTarget(element: HTMLElement | null, dotNetRef: DotNe
             target.entered.clear();
             target.over = false;
             target.edge = null;
+        },
+        leave: (dataTransfer) => {
+            target.entered.clear();
+            refresh(dataTransfer);
         },
     };
 
@@ -1054,6 +1087,13 @@ document.addEventListener('dragstart', (e) => {
 
 // Pointer events a drag has handled already: the document and the pressed element both listen (see startPointerPress).
 const handledPointerEvents = new WeakSet<Event>();
+
+// WebKit raises no pointerdown for the first press after a native drag: the drag swallowed the button's release, so
+// the engine still counts the button as down and reports the press as a pointermove whose button changed - the way it
+// reports a chorded press. With no other button held, that move is the press.
+function isPressAsMove(e: PointerEvent): boolean {
+    return e.button === 0 && e.buttons === 1;
+}
 
 // Form fields take their own presses (selecting text, opening a list).
 function pressesAField(target: Element, root: Element): boolean {
@@ -1769,6 +1809,9 @@ function startKeyboardSession(source: DragSource, activator: HTMLElement): void 
             if (e.target === s.activator) setTimeout(() => checkKeyboardFocus(s), 0);
         },
         onPointerDown: () => cancelKeyboardSession(s),
+        onPointerMove: (e) => {
+            if (isPressAsMove(e)) cancelKeyboardSession(s);
+        },
     };
     keyboardSession = s;
     lastKeyboardSession = s;
@@ -1777,6 +1820,7 @@ function startKeyboardSession(source: DragSource, activator: HTMLElement): void 
     document.addEventListener('focusin', s.onFocusIn, true);
     document.addEventListener('focusout', s.onFocusOut, true);
     document.addEventListener('pointerdown', s.onPointerDown, true);
+    document.addEventListener('pointermove', s.onPointerMove, true);
     // a re-render that moves the focused element drops its focus without any event
     if (typeof MutationObserver !== 'undefined') {
         s.observer = new MutationObserver(() => keepKeyboardFocus(s));
@@ -1887,6 +1931,7 @@ function endKeyboardSession(s: KeyboardSession): void {
     document.removeEventListener('focusin', s.onFocusIn, true);
     document.removeEventListener('focusout', s.onFocusOut, true);
     document.removeEventListener('pointerdown', s.onPointerDown, true);
+    document.removeEventListener('pointermove', s.onPointerMove, true);
     // the focus stays on (or goes back to) the item - also through the re-render its drop is about to cause
     keepKeyboardFocus(s);
     dragQueue.then(() => setTimeout(() => {

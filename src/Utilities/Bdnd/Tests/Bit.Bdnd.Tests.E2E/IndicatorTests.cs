@@ -67,6 +67,26 @@ public sealed class IndicatorTests : BdndTest
     }
 
     [TestMethod]
+    public async Task Only_the_target_under_the_pointer_shows_an_edge()
+    {
+        // The drag starts over its own label, whose line appears at once. Firefox rebuilds the label's box for the line
+        // (a pseudo-element) and then raises no dragleave as the drag moves on: every label the drag crosses would keep
+        // its line and its hover unless the next drag event tells the module the drag has left them.
+        var page = await OpenAsync("/sortable/indicators");
+        var ui = await BoxAsync(page.Locator(".indicator-chip", new() { HasText = "ui" }));
+        var uiSlot = page.Locator(".indicator-chip-slot", new() { Has = page.Locator(".indicator-chip", new() { HasText = "ui" }) });
+
+        await StartDragAsync(page, page.Locator(".indicator-chip", new() { HasText = "bug" }));
+        await MoveAsync(page, new Point(ui.X + ui.Width * 0.8, ui.Centre.Y));
+        await Expect(uiSlot).ToHaveAttributeAsync("data-bit-bdnd-edge", "right");
+        await WaitForQuietAsync(page);
+
+        await Expect(page.Locator("[data-bit-bdnd-edge]")).ToHaveCountAsync(1);
+        await Expect(page.Locator("[data-bit-bdnd-over]")).ToHaveCountAsync(1);
+        await page.Mouse.UpAsync();
+    }
+
+    [TestMethod]
     public async Task The_keyboard_steps_through_the_places_between_the_cards()
     {
         var page = await OpenAsync("/sortable/indicators");

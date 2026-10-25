@@ -71,6 +71,27 @@ public sealed class ServerHostingTests : BdndTest
     }
 
     [TestMethod]
+    public async Task A_pointer_drag_right_after_a_native_drag_drops()
+    {
+        // WebKit raises no pointerdown for the first press after a native drag - the drag swallowed the release, so the
+        // button still counts as down - and reports the press as a pointermove instead
+        var page = await OpenServerPageAsync();
+        await DragAsync(page, page.Locator(".server-check-box", new() { HasText = "Glass" }), Bin(page),
+            () => Expect(Bin(page)).ToHaveTextAsync("Release"));
+        await Expect(Bin(page)).ToHaveTextAsync("Dropped: Glass (Native)");
+        var from = (await BoxAsync(page.Locator(".server-check-pointer:not([data-bit-bdnd-preview])"))).Centre;
+        var to = (await BoxAsync(Bin(page))).Centre;
+
+        await page.Mouse.MoveAsync((float)from.X, (float)from.Y);
+        await page.Mouse.DownAsync();
+        await MoveAsync(page, to);
+        await Expect(Bin(page)).ToHaveTextAsync("Release");
+        await page.Mouse.UpAsync();
+
+        await Expect(Bin(page)).ToHaveTextAsync("Dropped: Pointer (Pointer)");
+    }
+
+    [TestMethod]
     public async Task A_touch_drag_drops_over_the_circuit()
     {
         RequireChromium("touches are synthesized through the DevTools protocol");
