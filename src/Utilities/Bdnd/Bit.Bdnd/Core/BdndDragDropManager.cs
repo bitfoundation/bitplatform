@@ -77,6 +77,26 @@ public sealed class BdndDragDropManager : IBdndMonitor
     private BdndAnnouncements _announcements = BdndAnnouncements.Default;
 
     /// <summary>
+    /// Whether the keyboard can drag the sources of this manager - each one that allows it itself
+    /// (<see cref="BdndDraggable{TItem}.AllowKeyboard"/>). False takes every source out of keyboard dragging at once:
+    /// none is made focusable or picks up on Space and Enter. Defaults to true. A <see cref="BdndProvider"/> given
+    /// <see cref="BdndProvider.AllowKeyboard"/> sets it.
+    /// </summary>
+    public bool AllowKeyboard
+    {
+        get => _allowKeyboard;
+        set
+        {
+            if (value == _allowKeyboard) return;
+            _allowKeyboard = value;
+            // the sources render their tabindex and aria-describedby from it
+            NotifyStateChanged();
+        }
+    }
+
+    private bool _allowKeyboard = true;
+
+    /// <summary>
     /// The id of the (hidden) element holding <see cref="BdndAnnouncements.Instructions"/>, which keyboard-draggable
     /// sources reference through <c>aria-describedby</c>. Derived from the text, so providers with the same
     /// instructions share one element.
@@ -571,7 +591,8 @@ public sealed class BdndDragDropManager : IBdndMonitor
 
     private const long FocusRequestLifetimeMs = 1500;
 
-    private sealed record FocusRequest(object? Item, string Type, string SourceId, long ExpiresAt);
+    // TakenBy: the draggable that took the focus over during the drag, which need not take it again
+    private sealed record FocusRequest(object? Item, string Type, string SourceId, long ExpiresAt, string? TakenBy = null);
 
     /// <summary>
     /// Asks the draggable that shows <paramref name="item"/> to take the focus over should the source's element lose
@@ -590,13 +611,18 @@ public sealed class BdndDragDropManager : IBdndMonitor
             return false;
         }
         // an item that is null names nothing: every draggable of the type without an item would match
-        return item is not null && request.SourceId != handlerId && request.Type == type && Equals(request.Item, item);
+        return item is not null && request.SourceId != handlerId && request.TakenBy != handlerId && request.Type == type
+            && Equals(request.Item, item);
     }
 
-    /// <summary>A draggable took the focus over; once the drag is over nothing else needs to.</summary>
-    internal void FocusTaken()
+    /// <summary>
+    /// Draggable <paramref name="handlerId"/> took the focus over: once the drag is over nothing else needs to, and
+    /// during it that draggable need not again - the module keeps the focus on it.
+    /// </summary>
+    internal void FocusTaken(string handlerId)
     {
         if (_isDragging is false) _focusRequest = null;
+        else if (_focusRequest is { } request) _focusRequest = request with { TakenBy = handlerId };
     }
 
     // ---- exceptions ----------------------------------------------------------------
@@ -630,6 +656,28 @@ public sealed class BdndDragDropManager : IBdndMonitor
             }
         }
         Console.Error.WriteLine($"Bit.Bdnd: an exception was thrown by a drag-and-drop callback whose component is gone: {exception}");
+    }
+
+    /// <summary>
+    /// Hands an exception of an application callback to the renderer through the component that ran the callback -
+    /// <paramref name="dispatch"/> is its <c>DispatchExceptionAsync</c>, null once it is disposed - and, should that
+    /// fail (it was disposed meanwhile), through a provider of this manager.
+    /// </summary>
+    internal async Task ReportExceptionAsync(Exception exception, Func<Exception, Task>? dispatch)
+    {
+        if (dispatch is not null)
+        {
+            try
+            {
+                await dispatch(exception);
+                return;
+            }
+            catch (Exception)
+            {
+                // disposed meanwhile: the renderer no longer knows the component
+            }
+        }
+        await ReportExceptionAsync(exception);
     }
 
     private void NotifyStateChanged() => StateChanged?.Invoke();

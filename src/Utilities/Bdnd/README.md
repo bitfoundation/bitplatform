@@ -1103,7 +1103,8 @@ The focus stays on the dragged source throughout - Bdnd puts it back when a re-r
 when a hover or the drop re-renders the item as another draggable (a card moved to another column is a new
 component there), the draggable that shows the same `Item` takes the focus over.
 
-`AllowKeyboard="false"` takes a draggable out of all of this: it is not made focusable and ignores the keys. A
+`AllowKeyboard="false"` takes a draggable out of all of this: it is not made focusable and ignores the keys; on the
+`BdndProvider` it takes every draggable of the provider out (the manager's `AllowKeyboard`). A
 host that is interactive by itself - a `Tag` of `a`, `button`, `input`, `select`, `textarea` or `summary` - keeps
 its own Space and Enter and is not picked up from them; give it a `BdndDragHandle` to drag it with the keyboard. A
 handle that wraps a button of its own works too: the keyboard picks the source up from that button (give the
@@ -1252,7 +1253,7 @@ and start working once the page becomes interactive. No browser API is called wh
 | `OnEnd` reports `DidDrop = false` after dropping between two items | The drop landed on no target; see the gaps row above. |
 | The arrow keys skip a target during a keyboard drag | It cannot take the item (type or `CanDropPredicate`), or it is inside the dragged source. |
 | Screen readers announce "drop target 2 of 3" | Give the drop targets a `Label`. |
-| A draggable became a tab stop | Keyboard dragging makes every draggable that can drag focusable; set `AllowKeyboard="false"` where another control does the same. |
+| A draggable became a tab stop | Keyboard dragging makes every draggable that can drag focusable; set `AllowKeyboard="false"` where another control does the same, or on the `BdndProvider` for all of its draggables. |
 | A touch on a draggable scrolls instead of dragging | Touch drags start after the finger rests for `TouchDelay` ms; move sooner and the page scrolls. Use a `BdndDragHandle` (or `TouchDelay="0"` with your own `touch-action: none`) to drag at once. |
 | A button inside a draggable starts a drag | Mark it (or a region around it) with `data-bit-bdnd-no-drag`. |
 | The pointer drag's copy looks unstyled | It is inserted next to the source; selectors that depend on the source's position among its siblings (`:nth-child`, `+`) do not match it. Style `[data-bit-bdnd-preview]`, or use a drag layer. |
@@ -1360,6 +1361,7 @@ instead of arriving in `drop`.
 | --- | --- | --- | --- |
 | `Manager` | `BdndDragDropManager?` | `null` | An externally-owned manager. When omitted, one is created for the subtree. Cannot change once set. |
 | `Announcements` | `BdndAnnouncements?` | `null` | The keyboard instructions and screen-reader announcements; sets the manager's (`BdndAnnouncements.Default` otherwise). |
+| `AllowKeyboard` | `bool?` | `null` | `false` takes every draggable of the context out of keyboard dragging; sets the manager's (`true` otherwise). |
 | `OnDragStart` | `EventCallback<BdndDragEventArgs>` | | Any drag of the context began (right before its source's `OnBegin`). |
 | `OnDragEnd` | `EventCallback<BdndDragEventArgs>` | | Any drag of the context ended, with `DidDrop` and the drop result. |
 | `ChildContent` | `RenderFragment?` | | The drag-and-drop content. |
@@ -1447,8 +1449,14 @@ do:
 - Drop target hosts carry `data-bit-bdnd-can-drop`, `data-bit-bdnd-over` and `data-bit-bdnd-over-shallow` while a
   drag is in progress, and dragged hosts `data-bit-bdnd-dragging`.
 
-Set `AllowKeyboard="false"` on the draggables that should not take part - where another control already performs
-the same operation, for instance - to get the previous markup and behavior back for them.
+A host that handles Space or Enter itself (an `@onkeydown` opening the item, say) now also picks the item up on
+them. Set `AllowKeyboard="false"` on the draggables that should not take part - where another control already
+performs the same operation, for instance - to get the previous markup and behavior back for them, or on the
+`BdndProvider` to get it back for all of its draggables at once:
+
+```razor
+<BdndProvider AllowKeyboard="false">...</BdndProvider>
+```
 
 ### Touch drags by default
 

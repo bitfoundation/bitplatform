@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace Bit.Bdnd;
@@ -34,6 +35,7 @@ public sealed class BdndInterop : IAsyncDisposable
         return await module.InvokeAsync<BdndDomRect?>("getBoundingClientRect", element);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BdndDragSourceOptions))]
     internal async ValueTask<IJSObjectReference?> RegisterDragSourceAsync(
         ElementReference element, object dotNetRef, BdndDragSourceOptions options)
     {
@@ -42,6 +44,7 @@ public sealed class BdndInterop : IAsyncDisposable
             "registerDragSource", element, dotNetRef, options);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BdndDropTargetOptions))]
     internal async ValueTask<IJSObjectReference?> RegisterDropTargetAsync(
         ElementReference element, object dotNetRef, BdndDropTargetOptions options)
     {
@@ -58,6 +61,9 @@ public sealed class BdndInterop : IAsyncDisposable
     /// targets around the source, by which the place the item already has is told apart. The target landed on is
     /// scrolled into view. Null when no candidate is in the document.
     /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BdndKeyboardCandidate))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BdndKeyboardTarget))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BdndDomRect))]
     internal async ValueTask<BdndKeyboardTarget?> KeyboardNavigateAsync(IJSObjectReference registration,
         BdndKeyboardCandidate[] candidates, string[] sourceTargets, string? currentId, string? currentEdge, string command, bool waiting = false)
         => await registration.InvokeAsync<BdndKeyboardTarget?>("keyboardNavigate", candidates, sourceTargets, currentId, currentEdge, command, waiting);
@@ -73,6 +79,7 @@ public sealed class BdndInterop : IAsyncDisposable
     }
 
     /// <summary>The descriptions of the files of native drop <paramref name="dropId"/> from <paramref name="offset"/> on, one page.</summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BdndNativeFile))]
     internal async ValueTask<BdndNativeFile[]> GetNativeDropFilesAsync(string dropId, int offset, int count)
     {
         var module = await GetModuleAsync();

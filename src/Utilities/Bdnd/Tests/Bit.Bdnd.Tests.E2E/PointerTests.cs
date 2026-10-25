@@ -247,6 +247,44 @@ public sealed class PointerTests : BdndTest
     }
 
     [TestMethod]
+    public async Task The_next_click_still_clicks_after_a_drag_the_window_cancelled_and_whose_release_went_unseen()
+    {
+        var page = await OpenAsync("/customize/pointer");
+        var glass = page.Locator(".pointer-box:not([data-bit-bdnd-preview])", new() { HasText = "Glass" });
+        var info = page.GetByRole(AriaRole.Button, new() { Name = "About Glass" });
+        var from = (await BoxAsync(glass)).Centre;
+
+        await page.Mouse.MoveAsync((float)from.X, (float)from.Y);
+        await page.Mouse.DownAsync();
+        await MoveAsync(page, (await BoxAsync(Slot(page, 1))).Centre);
+        await Expect(page.Locator(Preview)).ToHaveCountAsync(1);
+        // The window loses the focus and the button comes up outside it: the page sees neither the release nor a
+        // click of it. Listeners on the window that run before the module's stand in for that.
+        await page.EvaluateAsync(
+            """
+            () => {
+              window.unseen = (e) => e.stopImmediatePropagation();
+              window.addEventListener('pointerup', window.unseen, true);
+              window.addEventListener('click', window.unseen, true);
+              window.dispatchEvent(new Event('blur'));
+            }
+            """);
+        await Expect(page.Locator(Preview)).ToHaveCountAsync(0);
+        await page.Mouse.UpAsync();
+        await page.EvaluateAsync(
+            """
+            () => {
+              window.removeEventListener('pointerup', window.unseen, true);
+              window.removeEventListener('click', window.unseen, true);
+            }
+            """);
+        await WaitForQuietAsync(page);
+
+        await info.ClickAsync();
+        await Expect(page.Locator(".pointer-status")).ToHaveTextAsync("Glass is a box.");
+    }
+
+    [TestMethod]
     public async Task A_press_in_a_no_drag_region_drags_nothing_and_its_button_still_clicks()
     {
         var page = await OpenAsync("/customize/pointer");

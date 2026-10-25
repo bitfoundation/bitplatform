@@ -388,14 +388,15 @@ public abstract class BdndTest
         return (drops[0], drops[1]);
     }
 
-    /// <summary>
-    /// A <c>DataTransfer</c> created in the page, standing in for one the operating system would hand over: a drag
-    /// from outside the browser cannot be started with the mouse.
-    /// </summary>
     // Touch, through the DevTools protocol: Chromium turns the touches into pointer events of type touch.
 
+    /// <summary>A DevTools session on <paramref name="page"/>, through which <see cref="TouchAsync"/> touches it.</summary>
     protected static async Task<ICDPSession> TouchScreenAsync(IPage page) => await page.Context.NewCDPSessionAsync(page);
 
+    /// <summary>
+    /// Raises a touch event of <paramref name="type"/> (<c>touchStart</c>, <c>touchMove</c>, <c>touchEnd</c>,
+    /// <c>touchCancel</c>), with one finger at <paramref name="at"/> - or none, for an end or a cancel.
+    /// </summary>
     protected static Task TouchAsync(ICDPSession cdp, string type, Point? at = null) =>
         cdp.SendAsync("Input.dispatchTouchEvent", new Dictionary<string, object>
         {
@@ -405,6 +406,7 @@ public abstract class BdndTest
                 : Array.Empty<object>(),
         });
 
+    /// <summary>Moves a finger from <paramref name="from"/> to <paramref name="to"/> in <paramref name="steps"/> touch moves.</summary>
     protected static async Task TouchMoveAsync(ICDPSession cdp, Point from, Point to, int steps = 8)
     {
         for (var i = 1; i <= steps; i++)
@@ -413,6 +415,10 @@ public abstract class BdndTest
         }
     }
 
+    /// <summary>
+    /// A <c>DataTransfer</c> created in the page, standing in for one the operating system would hand over: a drag
+    /// from outside the browser cannot be started with the mouse.
+    /// </summary>
     protected static Task<IJSHandle> NativeDataTransferAsync(IPage page, string fill) =>
         page.EvaluateHandleAsync($"() => {{ const dt = new DataTransfer(); {fill}; return dt; }}");
 

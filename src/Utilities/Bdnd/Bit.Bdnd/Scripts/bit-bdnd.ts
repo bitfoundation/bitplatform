@@ -81,6 +81,11 @@ interface DragSource {
     rect: Rect | null;
     /** Where the last press on the source began, for a native drag to tell whether it began in a no-drag region. */
     pressTarget: EventTarget | null;
+    /**
+     * The source's last keyboard drag - also once it ended here: the keys pressed before its drop or cancel still
+     * reach .NET after it, and move from where that drag's item is.
+     */
+    keyboard: KeyboardSession | null;
 }
 
 interface DropTarget {
@@ -135,6 +140,11 @@ interface KeyboardSession {
     position: number;
     /** Ended here: a drop or a cancel was pressed (or the focus left), and the keys are the page's again. */
     ended: boolean;
+    /**
+     * Ended here by a drop: the keys pressed before it, still on their way to .NET, move the drag as they would have
+     * had they been handled first - waiting for the rows of a virtualized list too.
+     */
+    dropPressed: boolean;
     /** Ended in .NET: it answered that the drag is over (or never began). */
     dotNetDone: boolean;
     /** When the current key started waiting for the rows of a virtualized list (0: not waiting). */
@@ -242,6 +252,8 @@ let emptyImage: HTMLImageElement | null = null;
 let session: Session | null = null;
 let cancelRequested = false;
 let keyboardSession: KeyboardSession | null = null;
+// the last keyboard drag, which keys pressed before its drop may still be moving once it ended here
+let lastKeyboardSession: KeyboardSession | null = null;
 let liveRegion: HTMLElement | null = null;
 // keys whose keyup must not reach the page (it would click a button the key picked up or dropped), with the time
 // the keydown was taken
@@ -379,7 +391,7 @@ function findHandle(node: Node | null, root: Element): Element | null {
 
 export function registerDragSource(element: HTMLElement | null, dotNetRef: DotNetObject, options: DragSourceOptions | null) {
     if (!element) return null;
-    const source: DragSource = { element, dotNetRef, options: {}, rect: null, pressTarget: null };
+    const source: DragSource = { element, dotNetRef, options: {}, rect: null, pressTarget: null, keyboard: null };
 
     const configure = (o: DragSourceOptions | null) => {
         source.options = o || {};
@@ -398,9 +410,10 @@ export function registerDragSource(element: HTMLElement | null, dotNetRef: DotNe
         if (claimedEvents.has(e)) return;
         claimedEvents.add(e);
 
-        // a pointer drag runs (a platform's own long-press drag of a touched source), or the press began in a region
-        // no drag starts from: no native drag
-        if (pointerSession || isNoDragPress(source.pressTarget, element)) {
+        // a pointer drag runs (a platform's own long-press drag of a touched source), the press began in a region no
+        // drag starts from, or the drag was refused already (the document's listener refuses the one a platform lifts
+        // right after a touch press): no native drag, and no session for it
+        if (e.defaultPrevented || pointerSession || isNoDragPress(source.pressTarget, element)) {
             e.preventDefault();
             return;
         }
@@ -861,8 +874,8 @@ interface FolderWalk {
 }
 
 // The files of the dropped folders, walked recursively, each with its path inside the folder. An entry that cannot
-// be read (no permission) is skipped and marks the walk incomplete; so does stopping early, at the target's file
-// limit or after MAX_FOLDER_ENTRIES entries.
+// be read (no permission) is skipped and marks the walk incomplete; so does stopping early, at a file past the
+// target's file limit or after MAX_FOLDER_ENTRIES entries.
 async function expandFolders(dropped: DroppedFile[], patterns: string[], max: number): Promise<FolderWalk> {
     const walk: FolderWalk = { kept: [], patterns, max, seen: 0, entries: 0, incomplete: false, stopped: false };
     for (const d of dropped) {
@@ -870,20 +883,23 @@ async function expandFolders(dropped: DroppedFile[], patterns: string[], max: nu
         if (d.directory && d.entry) {
             await walkFolder(d.entry as FileSystemDirectoryEntry, walk);
         } else if (!d.directory) {
-            walk.seen++;
             keepWalked(walk, d);
         }
     }
     return walk;
 }
 
+// Counts a file the walk saw, and keeps it if it is of the target's types. The walk stops at such a file past the
+// target's limit - not at the last one it keeps, which may be the last file there is.
 function keepWalked(walk: FolderWalk, d: DroppedFile): void {
-    if (!fileMatches(walk.patterns, d.file.name, d.file.type)) return;
-    walk.kept.push(d);
-    if (walk.max > 0 && walk.kept.length >= walk.max) {
+    const matches = fileMatches(walk.patterns, d.file.name, d.file.type);
+    if (matches && walk.max > 0 && walk.kept.length >= walk.max) {
         walk.stopped = true;
-        walk.incomplete = true; // the rest is not counted
+        walk.incomplete = true; // the rest, this file included, is not counted
+        return;
     }
+    walk.seen++;
+    if (matches) walk.kept.push(d);
 }
 
 async function walkFolder(folder: FileSystemDirectoryEntry, walk: FolderWalk): Promise<void> {
@@ -921,7 +937,6 @@ async function walkFolder(folder: FileSystemDirectoryEntry, walk: FolderWalk): P
                     walk.incomplete = true;
                     continue;
                 }
-                walk.seen++;
                 keepWalked(walk, { file, path: entry.fullPath.replace(/^\//, ''), directory: false });
             }
         }
@@ -1030,8 +1045,9 @@ const TOUCH_TOLERANCE = 4; // how far a touch may wander during its delay even w
 const NATIVE_DRAG_GRACE_MS = 600;
 let nativeDragRefusedUntil = 0;
 
-// Native drags never start while a pointer drag runs, or right after a touch press - not from a source (handled in
-// its dragstart listener), and not from an image, a link or any other draggable element either.
+// Native drags never start while a pointer drag runs, or right after a touch press - not from a source, and not from
+// an image, a link or any other draggable element either. A capture listener on the document runs before a source's
+// own, which leaves a drag refused here alone.
 document.addEventListener('dragstart', (e) => {
     if (pointerSession || performance.now() < nativeDragRefusedUntil) e.preventDefault();
 }, true);
@@ -1140,7 +1156,7 @@ function startPointerPress(source: DragSource, e: PointerEvent, onHandle: boolea
         },
         // another press while a drag runs: the release of this one went unseen (its element was removed, say)
         onAnotherPress: (ev) => {
-            if (ev.pointerId !== p.pointerId) endPointerSession(p, false);
+            if (ev.pointerId !== p.pointerId) endPointerSession(p, false, true);
         },
         onBlur: () => endPointerSession(p, false),
         onVisibility: () => {
@@ -1325,7 +1341,8 @@ function targetsAt(x: number, y: number): DropTarget[] {
     return chain;
 }
 
-function updatePointerHover(p: PointerSession): void {
+// dropping: the hover at the release point, before the drop - whose edge the drop carries
+function updatePointerHover(p: PointerSession, dropping = false): void {
     const chain = targetsAt(p.x, p.y);
     const previous = p.hovered;
     p.hovered = chain;
@@ -1343,7 +1360,10 @@ function updatePointerHover(p: PointerSession): void {
         changed = true;
     }
     for (const target of chain) {
-        if (!target.options.edges) continue;
+        // Only a target that can take the item shows an edge: one that refuses it, or a target of another provider,
+        // would discard each report - on Blazor Server a message over the circuit. Its canDrop may lag right after
+        // the drag began (it comes with the target's next render), so the drop reports the edges of every target.
+        if (!target.options.edges || (!target.options.canDrop && !dropping)) continue;
         const edge = closestEdge(target.element, p.x, p.y, target.options.edges);
         if (edge === target.edge) continue;
         target.edge = edge;
@@ -1379,13 +1399,15 @@ function reportPointerHover(p: PointerSession, targets: DropTarget[]): void {
     });
 }
 
-function endPointerSession(p: PointerSession, drop: boolean): void {
+// releaseUnseen: the drag's pointer was released where the page did not see it - another press tells - so no click
+// of its release is still to come.
+function endPointerSession(p: PointerSession, drop: boolean, releaseUnseen = false): void {
     if (p.ended) return;
     // the release point is the drop point: the hover and OnHover there come first (the last move may not have
     // reached a frame yet)
     if (drop && p.dragging) {
         try {
-            updatePointerHover(p);
+            updatePointerHover(p, true);
         } catch {
             /* ignore */
         }
@@ -1430,7 +1452,7 @@ function endPointerSession(p: PointerSession, drop: boolean): void {
 
     // the release raises a click on the element under it, which a drag must not trigger - also a release still to
     // come, after an Escape or a cancel
-    suppressClick(p);
+    if (!releaseUnseen) suppressClick(p);
     const chain = drop ? targetsAt(p.x, p.y) : [];
     const x = p.x, y = p.y;
     enqueueDrag(async () => {
@@ -1445,7 +1467,8 @@ function endPointerSession(p: PointerSession, drop: boolean): void {
 }
 
 // Swallows the click of the drag's release: right after it, or - when the drag ended before the pointer was
-// released - after that pointer's release.
+// released - after that pointer's release. A release the page never sees (the window lost the focus, or was hidden,
+// and the button came up elsewhere) leaves nothing to swallow: the next press is a new one, whose click is the page's.
 function suppressClick(p: PointerSession): void {
     const stop = (e: Event) => {
         e.preventDefault();
@@ -1456,6 +1479,7 @@ function suppressClick(p: PointerSession): void {
     const done = () => {
         window.removeEventListener('click', stop, true);
         document.removeEventListener('pointerup', onRelease, true);
+        document.removeEventListener('pointerdown', done, true);
         clearTimeout(timer);
     };
     const onRelease = (e: PointerEvent) => {
@@ -1464,8 +1488,12 @@ function suppressClick(p: PointerSession): void {
         timer = window.setTimeout(done, CLICK_SUPPRESSION_MS);
     };
     window.addEventListener('click', stop, true);
-    if (p.released) timer = window.setTimeout(done, CLICK_SUPPRESSION_MS);
-    else document.addEventListener('pointerup', onRelease, true);
+    if (p.released) {
+        timer = window.setTimeout(done, CLICK_SUPPRESSION_MS);
+    } else {
+        document.addEventListener('pointerup', onRelease, true);
+        document.addEventListener('pointerdown', done, true);
+    }
 }
 
 // The properties a popover's user-agent style sets, which the copy takes from the source instead.
@@ -1726,6 +1754,7 @@ function startKeyboardSession(source: DragSource, activator: HTMLElement): void 
         element: source.element,
         position: -1,
         ended: false,
+        dropPressed: false,
         dotNetDone: false,
         pendingSince: 0,
         observer: null,
@@ -1742,6 +1771,8 @@ function startKeyboardSession(source: DragSource, activator: HTMLElement): void 
         onPointerDown: () => cancelKeyboardSession(s),
     };
     keyboardSession = s;
+    lastKeyboardSession = s;
+    source.keyboard = s;
     document.addEventListener('keydown', s.onKeyDown, true);
     document.addEventListener('focusin', s.onFocusIn, true);
     document.addEventListener('focusout', s.onFocusOut, true);
@@ -1836,6 +1867,7 @@ function sendKeyboardCommand(s: KeyboardSession, command: string): void {
     // A drop or a cancel ends the drag here at once: the keys pressed from now on are the page's again - another
     // pickup, say - even before .NET has handled this one. Ended after the call is queued, so the focus is watched
     // until .NET has handled it (and re-rendered what the drop changed).
+    if (command === 'drop' && !s.ended) s.dropPressed = true;
     if (command === 'drop' || command === 'cancel') endKeyboardSession(s);
 }
 
@@ -1890,8 +1922,10 @@ function checkKeyboardFocus(s: KeyboardSession): void {
 function adoptFocus(source: DragSource): boolean {
     const activator = activatorOf(source);
     if (!activator || !activator.isConnected) return false;
-    const s = keyboardSession;
-    if (s && !s.ended) {
+    // the drag in progress - or the one whose drop was pressed while keys before it are still moving it in .NET
+    const last = lastKeyboardSession;
+    const s = keyboardSession || (last && last.dropPressed && !last.dotNetDone ? last : null);
+    if (s) {
         if (s.activator !== activator && s.activator.isConnected) return false;
         s.activator = activator;
         s.element = source.element;
@@ -1977,9 +2011,12 @@ function areNeighbours(a: { element: HTMLElement; parentId: string | null }, b: 
 // rowPlace), and 'first', 'last', or 'stay' only count them. The target landed on is scrolled into view.
 function keyboardNavigate(source: DragSource, candidates: KeyboardCandidate[], sourceTargets: string[],
     currentId: string | null, currentEdge: string | null, command: string, waiting = false): KeyboardPlace | null {
-    const s = keyboardSession && keyboardSession.source === source ? keyboardSession : null;
-    // asked again for rows that were coming in, after the drag was cancelled or dropped in the browser: no move
-    if (waiting && (!s || s.ended)) return { id: '', edge: null, before: null, rect: null, label: null, position: 0, count: 0, moved: false, pending: false };
+    // the source's drag - ended here already when a drop or cancel was pressed right after this key
+    const s = source.keyboard;
+    // whether this key still moves the drag as it would have: a cancel since makes moving on pointless
+    const going = !!s && (!s.ended || s.dropPressed);
+    // asked again for rows that were coming in, after the drag was cancelled in the browser: no move
+    if (waiting && !going) return { id: '', edge: null, before: null, rect: null, label: null, position: 0, count: 0, moved: false, pending: false };
     const element = s ? s.element : source.element;
     const all: { id: string; element: HTMLElement; parentId: string | null; edges: number }[] = [];
     for (const candidate of candidates) {
@@ -2094,7 +2131,7 @@ function keyboardNavigate(source: DragSource, candidates: KeyboardCandidate[], s
     const reference = !fromElement && index >= 0 ? { element: places[index].element, parentId: places[index].parentId }
         : connected ? { element: slot, parentId: containerId } : null;
     if (!waiting && s) s.pendingSince = 0;
-    if (stepping && s && !s.ended && reference && (next < 0 || next === index || !sameListAs(reference)(places[next]))
+    if (stepping && s && going && reference && (next < 0 || next === index || !sameListAs(reference)(places[next]))
         && !(waiting && s.pendingSince > 0 && performance.now() - s.pendingSince > PENDING_ROWS_LIMIT)) {
         const spacer = unrenderedRows(places, reference, command === 'next' || command === 'down');
         if (spacer) {

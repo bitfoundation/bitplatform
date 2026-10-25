@@ -126,4 +126,19 @@ public sealed class FolderDropTests : BdndTest
         await Expect(Rows(page).Nth(99).Locator("td").First).ToHaveTextAsync("big/f100.txt");
         await Expect(page.Locator(".native-incomplete")).ToBeVisibleAsync();
     }
+
+    [TestMethod]
+    public async Task A_folder_of_exactly_the_file_limit_is_listed_complete()
+    {
+        var page = await OpenAsync("/other/native-files");
+        var files = Enumerable.Range(1, 100).ToDictionary(i => $"f{i:000}.txt", i => (object)new { content = $"{i}", type = "text/plain" });
+        var tree = new Dictionary<string, object> { ["full"] = new { children = files } };
+
+        await DropAsync(page, tree, "dt.items.add(new File([], 'full'))");
+
+        // the last file the limit lets in is the last there is: every file was walked
+        await Expect(page.GetByRole(AriaRole.Heading, new() { Name = "Dropped files (100)" })).ToBeVisibleAsync();
+        await Expect(Rows(page)).ToHaveCountAsync(100);
+        await Expect(page.Locator(".native-incomplete")).ToHaveCountAsync(0);
+    }
 }

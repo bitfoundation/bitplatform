@@ -234,6 +234,52 @@ public class BdndNativeDataTests : BdndComponentTestBase
     }
 
     [TestMethod]
+    public async Task ADropOutdatedByANewerOneWhileItsFilesWereListedIsDropped()
+    {
+        var cut = RenderTarget();
+        var page = Module.Setup<BdndNativeFile[]>("nativeDropFiles", i => (string)i.Arguments[0]! == "1");
+        var first = cut.InvokeAsync(() => cut.Instance.HandleNativeDrop(new BdndNativeDropPayload
+        {
+            Types = ["Files"],
+            Files = [new BdndNativeFile { Name = "a" }],
+            FileCount = 2,
+            DropId = "1",
+            TotalFiles = 2,
+        }));
+
+        await DropFilesAsync(cut, "2", 1, new BdndNativeFile { Name = "newer.txt", Size = 1 });
+        page.SetResult([new BdndNativeFile { Name = "b" }]);
+        await first;
+
+        var drop = Assert.ContainsSingle(_drops);
+        Assert.AreEqual("newer.txt", drop.Files[0].Name);
+        Assert.IsTrue(drop.Files[0].CanRead, "the target keeps the newer drop's files");
+        await DropFilesAsync(cut, "3", 1, new BdndNativeFile { Name = "next.txt", Size = 1 });
+        Assert.IsFalse(drop.Files[0].CanRead, "and lets them go with the next drop");
+    }
+
+    [TestMethod]
+    public async Task ATargetDisposedWhileTheFilesOfADropWereListedHandsNoDrop()
+    {
+        var cut = RenderTarget();
+        var page = Module.Setup<BdndNativeFile[]>("nativeDropFiles", i => (string)i.Arguments[0]! == "1");
+        var drop = cut.InvokeAsync(() => cut.Instance.HandleNativeDrop(new BdndNativeDropPayload
+        {
+            Types = ["Files"],
+            Files = [new BdndNativeFile { Name = "a" }],
+            FileCount = 2,
+            DropId = "1",
+            TotalFiles = 2,
+        }));
+
+        await cut.InvokeAsync(() => cut.Instance.DisposeAsync().AsTask());
+        page.SetResult([new BdndNativeFile { Name = "b" }]);
+        await drop;
+
+        Assert.IsEmpty(_drops);
+    }
+
+    [TestMethod]
     public async Task DisposingTheStreamReleasesTheModulesReference()
     {
         var cut = RenderTarget();

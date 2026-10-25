@@ -36,10 +36,8 @@
 
     protected override void OnParametersSet()
     {
-        var types = new List<string>();
-        if (string.IsNullOrEmpty(Accept) is false) types.Add(Accept);
-        if (AcceptTypes is not null) types.AddRange(AcceptTypes.Where(t => string.IsNullOrEmpty(t) is false));
-        var accepted = types.Count == 0 ? null : types.Distinct(StringComparer.Ordinal).ToArray();
+        var types = BdndAcceptTypes.Of(Accept, AcceptTypes);
+        string[]? accepted = types.Length == 0 ? null : types;
         if (_following is not null && (accepted ?? []).SequenceEqual(_types ?? [])) return;
         _following?.Dispose();
         _types = accepted;

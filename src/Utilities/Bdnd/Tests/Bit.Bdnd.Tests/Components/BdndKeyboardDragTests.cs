@@ -521,6 +521,34 @@ public class BdndKeyboardDragTests : BdndComponentTestBase
     }
 
     [TestMethod]
+    public void AProviderTakesEveryDraggableOutOfKeyboardDraggingAndBack()
+    {
+        var cut = RenderDustbin();
+        cut.Render(p => p.Add(x => x.AllowKeyboard, false));
+
+        var host = HostOf(Source(cut));
+        Assert.IsFalse(Manager.AllowKeyboard);
+        Assert.IsNull(host.GetAttribute("tabindex"));
+        Assert.IsNull(host.GetAttribute("aria-describedby"));
+        Assert.IsFalse(SourceUpdates.Last().Keyboard);
+
+        cut.Render(p => p.Add(x => x.AllowKeyboard, true));
+
+        Assert.AreEqual("0", HostOf(Source(cut)).GetAttribute("tabindex"));
+        Assert.IsTrue(SourceUpdates.Last().Keyboard);
+    }
+
+    [TestMethod]
+    public async Task ADraggableOfAProviderThatTurnsTheKeyboardOffIsNotPickedUp()
+    {
+        var cut = RenderDustbin();
+        cut.Render(p => p.Add(x => x.AllowKeyboard, false));
+
+        Assert.IsFalse(await Source(cut).InvokeAsync(() => Source(cut).Instance.HandleKeyboardDragStart(SourceRect, "crate")));
+        Assert.IsFalse(Manager.IsDragging());
+    }
+
+    [TestMethod]
     [DataRow(false, true)]
     [DataRow(true, false)]
     public void ASourceTheKeyboardCannotDragIsNeitherFocusableNorDescribed(bool allowKeyboard, bool canDrag)

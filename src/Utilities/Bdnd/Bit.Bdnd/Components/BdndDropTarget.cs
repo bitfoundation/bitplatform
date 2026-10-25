@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
@@ -115,6 +116,8 @@ public sealed class BdndDropTarget<TItem> : ComponentBase, IHandleEvent, IAsyncD
     private string[] _nativeTokens = [];
     private string[] _fileTypes = [];
     private BdndNativeDropFiles? _lastDrop;
+    private int _nativeDropSerial; // counts the native drops, so that one still reading its files knows it is outdated
+    private BdndEdge? _nativeLeaveEdge; // the edge a native drop would have carried when the last native hover ended
     private ElementReference _element;
     private BdndJsRegistration<BdndDropTargetOptions>? _registration;
     private DotNetObjectReference<BdndDropTarget<TItem>>? _selfRef;
@@ -141,10 +144,7 @@ public sealed class BdndDropTarget<TItem> : ComponentBase, IHandleEvent, IAsyncD
 
     protected override void OnParametersSet()
     {
-        var list = new List<string>();
-        if (Disabled is false && string.IsNullOrEmpty(Accept) is false) list.Add(Accept);
-        if (Disabled is false && AcceptTypes is not null) list.AddRange(AcceptTypes.Where(t => string.IsNullOrEmpty(t) is false));
-        _accept = list.Distinct().ToArray();
+        _accept = Disabled ? [] : BdndAcceptTypes.Of(Accept, AcceptTypes);
         _nativeAccepts = _accept
             .Where(BdndNativeTypes.IsNative)
             .Select(t => (BdndNativeTypes.ToDataTransferType(t), t))
@@ -386,9 +386,15 @@ public sealed class BdndDropTarget<TItem> : ComponentBase, IHandleEvent, IAsyncD
             manager.SetTargetOver(_handlerId, isOver && Accepts());
             return;
         }
-        // external/native drag
+        // External/native drag. The module reports the end of the hover before the drop when it walks dropped folders
+        // first: the edge the drop carries is the one the leave forgets.
+        _nativeLeaveEdge = isOver ? null : NativeDropEdge(manager);
         SetNativeItemType(isOver && IsInAppDrag(types) is false ? MatchNative(types) : null);
     }
+
+    // the edge a native drop on the target carries: the innermost hovered target's, as in-app drops do
+    private BdndEdge? NativeDropEdge(BdndDragDropManager manager) =>
+        manager.IsNativeOver(_handlerId, shallow: true) ? manager.GetTargetEdge(_handlerId) : null;
 
     /// <summary>
     /// Invoked from JS when the edge a drag over this target is closest to changes (only when the target has
@@ -431,22 +437,31 @@ public sealed class BdndDropTarget<TItem> : ComponentBase, IHandleEvent, IAsyncD
 
     /// <summary>Invoked from JS when a native OS drop occurs on this target.</summary>
     [JSInvokable, EditorBrowsable(EditorBrowsableState.Never)]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BdndNativeDropPayload))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BdndNativeFile))]
     public async Task HandleNativeDrop(BdndNativeDropPayload payload)
     {
         if (_disposed) return;
-        var edge = Manager!.IsNativeOver(_handlerId, shallow: true) ? Manager.GetTargetEdge(_handlerId) : null;
+        var manager = Manager!;
+        var edge = manager.IsNativeOver(_handlerId) ? NativeDropEdge(manager) : _nativeLeaveEdge;
+        _nativeLeaveEdge = null;
         SetNativeItemType(null);
-        if (Manager!.IsDragging() || IsInAppDrag(payload.Types)) return;
+        if (manager.IsDragging() || IsInAppDrag(payload.Types)) return;
         var nativeType = MatchNative(payload.Types);
         if (nativeType is null) return;
 
         // the files of the previous drop are no longer kept
         _lastDrop?.Release();
         _lastDrop = null;
+        var serial = ++_nativeDropSerial;
         var files = payload.Files ?? [];
         if (payload.DropId is { } dropId)
         {
             files = await ReadAllFilesAsync(dropId, files, payload.FileCount);
+            // A newer drop came while the descriptions were being read (the module keeps the newer one's files in
+            // place of these), or the target went away: this drop is outdated, as the module drops a folder walk that
+            // ends after a newer drop.
+            if (_disposed || serial != _nativeDropSerial) return;
             _lastDrop = new BdndNativeDropFiles(Interop, dropId);
             for (var i = 0; i < files.Length; i++) files[i].Source = new BdndNativeFileSource(_lastDrop, i);
         }
@@ -510,22 +525,8 @@ public sealed class BdndDropTarget<TItem> : ComponentBase, IHandleEvent, IAsyncD
     }
 
     // Through this component, or once it is disposed (a drop re-rendered it away), through its provider.
-    private async Task ReportAsync(Exception exception)
-    {
-        if (_disposed is false)
-        {
-            try
-            {
-                await DispatchExceptionAsync(exception);
-                return;
-            }
-            catch (Exception)
-            {
-                // disposed meanwhile: the renderer no longer knows the component
-            }
-        }
-        await Manager!.ReportExceptionAsync(exception);
-    }
+    private Task ReportAsync(Exception exception) =>
+        Manager!.ReportExceptionAsync(exception, _disposed ? null : DispatchExceptionAsync);
 
     private sealed class Handler(BdndDropTarget<TItem> owner) : IBdndDropTargetHandler
     {

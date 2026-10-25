@@ -251,6 +251,36 @@ public class BdndEdgeTests : BdndComponentTestBase
     }
 
     [TestMethod]
+    public async Task ANativeDropWhoseHoverEndedBeforeItStillCarriesTheEdge()
+    {
+        var cut = RenderList();
+        await HoverAsync(Target(cut), true, "Files");
+        await EdgeAsync(Target(cut), "bottom");
+        // the module reports the leave first while it walks dropped folders
+        await HoverAsync(Target(cut), false, "Files");
+        Assert.IsNull(_states.Last.ClosestEdge, "no longer shown");
+
+        await Target(cut).InvokeAsync(() => Target(cut).Instance.HandleNativeDrop(new BdndNativeDropPayload { Types = ["Files"] }));
+
+        Assert.AreSequenceEqual(new[] { "native:Bottom" }, _log);
+    }
+
+    [TestMethod]
+    public async Task ANativeDropCarriesNoEdgeAHoverBeforeItLeftBehind()
+    {
+        var cut = RenderList();
+        await HoverAsync(Target(cut), true, "Files");
+        await EdgeAsync(Target(cut), "bottom");
+        await HoverAsync(Target(cut), false, "Files");
+        // back over the target, with no edge reported yet
+        await HoverAsync(Target(cut), true, "Files");
+
+        await Target(cut).InvokeAsync(() => Target(cut).Instance.HandleNativeDrop(new BdndNativeDropPayload { Types = ["Files"] }));
+
+        Assert.AreSequenceEqual(new[] { "native:" }, _log);
+    }
+
+    [TestMethod]
     public async Task AKeyboardDragLandsOnAnEdgeAndDropsThere()
     {
         var cut = RenderList();

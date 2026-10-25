@@ -404,6 +404,63 @@ public class BdndDragLifecycleTests : BdndComponentTestBase
     }
 
     [TestMethod]
+    public async Task ADragOfTheSourceBeginningWhileItsLastDragEndsHandsEachOnEndItsOwnItem()
+    {
+        var gate = new TaskCompletionSource();
+        var produced = 0;
+        var cut = RenderDustbin(
+            source: d => d.Add(x => x.ItemFactory, () => $"crate-{++produced}"),
+            onDrop: async e =>
+            {
+                await gate.Task;
+                e.Result = "late";
+            });
+        await StartDragAsync(Source(cut));
+        var drop = DropAsync(Bin(cut));
+        // the end waits for the async OnDrop, so the drag is still in progress as the source is dragged again
+        var end = EndDragAsync(Source(cut));
+
+        await StartDragAsync(Source(cut));
+
+        Assert.AreSequenceEqual(new[] { "begin:crate-1", "end:crate-1:True:", "begin:crate-2" }, _log);
+        gate.SetResult();
+        await drop.WaitAsync(WaitLimit);
+        await end.WaitAsync(WaitLimit);
+        await EndDragAsync(Source(cut));
+        Assert.AreEqual("end:crate-2:False:", _log[^1]);
+    }
+
+    [TestMethod]
+    public async Task ADraggableRemovedWhileADragStateChangeIsNotifiedNoLongerRunsItsPredicates()
+    {
+        var show = true;
+        var callsSinceRemoval = 0;
+        IRenderedComponent<BdndProvider>? cut = null;
+        // subscribed before the draggable is: the notification removes the draggable before its own handler runs
+        Manager.StateChanged += () =>
+        {
+            if (show is false || Manager.IsDragging() is false) return;
+            show = false;
+            cut!.Render();
+        };
+        cut = RenderProvider(p => p.Add(x => x.ChildContent, (RenderFragment)(b => b.AddContent(0, show
+            ? Fragment<BdndDraggable<string>>(
+                (nameof(BdndDraggable<string>.Type), "box"),
+                (nameof(BdndDraggable<string>.Item), "crate"),
+                (nameof(BdndDraggable<string>.CanDragPredicate), (Func<bool>)(() =>
+                {
+                    if (show is false) callsSinceRemoval++;
+                    return true;
+                })))
+            : null))));
+
+        await StartDragAsync(cut.FindComponent<BdndDraggable<string>>());
+
+        Assert.IsFalse(show, "the drag's start removed the draggable");
+        Assert.AreEqual(0, callsSinceRemoval);
+    }
+
+    [TestMethod]
     public async Task AnOuterResultStillWinsOverTheResultAnInnerAsyncOnDropSetsLater()
     {
         var gate = new TaskCompletionSource();

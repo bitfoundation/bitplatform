@@ -17,6 +17,13 @@
     [Parameter] public BdndAnnouncements? Announcements { get; set; }
 
     /// <summary>
+    /// Whether the keyboard can drag the draggables of this context: false takes them all out of keyboard dragging at
+    /// once, as <c>AllowKeyboard="false"</c> on each of them would. When omitted the manager keeps its own setting
+    /// (true unless it was given another).
+    /// </summary>
+    [Parameter] public bool? AllowKeyboard { get; set; }
+
+    /// <summary>
     /// Called when any drag of this context begins - right after it is published and its source's <c>OnBegin</c>
     /// started - for what watches every drag rather than one source.
     /// </summary>
@@ -71,6 +78,7 @@
                 $"The {nameof(Manager)} of a {nameof(BdndProvider)} cannot be changed after it has been set.");
         _manager = manager;
         if (Announcements is not null) manager.Announcements = Announcements;
+        if (AllowKeyboard is { } allowKeyboard) manager.AllowKeyboard = allowKeyboard;
         if (_subscribed is false)
         {
             _subscribed = true;

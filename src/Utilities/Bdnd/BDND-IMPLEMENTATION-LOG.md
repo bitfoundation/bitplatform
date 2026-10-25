@@ -643,3 +643,36 @@ a Windows job object for a test-only harness was judged not worth its P/Invoke.
 The matrix has no row left Partial, Untested or Missing. What the suite cannot do - listen to screen readers, touch
 real devices - has a checklist in the E2E README, to be run and recorded here before a release.
 
+## Round 11 - code review of the branch
+
+A review of the whole branch found fifteen issues; all were taken.
+
+| Finding | Severity | Fix | Regression test |
+| --- | --- | --- | --- |
+| A source dragged again while its last drag still ended (an async `OnDrop` awaiting) ended that drag through `AbortAsync` with the new item, and the new drag's `OnEnd` got none: the item lived in a field the next drag overwrote before `BeginDrag`. | High | `OnEnd` reads the item from the manager; the field is gone. | `ADragOfTheSourceBeginningWhileItsLastDragEndsHandsEachOnEndItsOwnItem` |
+| During the grace period after a touch press the source's `dragstart` listener still tagged the refused native drag and began a session: a spurious `OnBegin`/`OnEnd`, and any pointer drag aborted. | High | The listener leaves a drag the document's capture listener refused (`defaultPrevented`) alone. | Reasoned (the platform's long-press drag cannot be synthesized). |
+| A folder-expanding drop reported the leave before the drop, which forgot the edge: `OnNativeDrop` always got `ClosestEdge` null. | Medium | The target keeps the edge a native drop would carry when the leave comes, for the drop that follows. | `ANativeDropWhoseHoverEndedBeforeItStillCarriesTheEdge`, `ANativeDropCarriesNoEdgeAHoverBeforeItLeftBehind` |
+| A pointer drag ended by the window losing the focus (or the page hidden) left the click suppression waiting for a release that never came: the next click was swallowed. A press of another pointer that ended a drag swallowed its own click. | Medium | The next press ends the suppression; a drag a new press ended suppresses nothing. | `The_next_click_still_clicks_after_a_drag_the_window_cancelled_and_whose_release_went_unseen` |
+| Arrow keys still on their way to .NET when Enter (or Space) dropped navigated without the session: from the source's original element, without the reorder check or the wait for a virtualized list's rows. | Medium | Each source keeps its last keyboard session; keys pressed before a drop move from where its item is - waiting for rows too - and a draggable adopting the item updates it. A cancel still stops them. | Reasoned (key timing over the circuit). |
+| A folder walk reaching `MaxFiles` on its last file reported the list incomplete. | Low | The walk stops at a matching file past the limit, which is not counted. | `A_folder_of_exactly_the_file_limit_is_listed_complete` |
+| A native drop whose files were still being listed when a newer drop (or the target's disposal) came took `_lastDrop` from the newer one: stale `CanRead`/`Released` flags. | Medium | An outdated drop is dropped, as an outdated folder walk is. | `ADropOutdatedByANewerOneWhileItsFilesWereListedIsDropped`, `ATargetDisposedWhileTheFilesOfADropWereListedHandsNoDrop` |
+| A draggable removed inline during a state-change notification still ran its predicates from the delegate snapshot. | Low | `OnStateChanged` returns once disposed, as the drop target's does. | `ADraggableRemovedWhileADragStateChangeIsNotifiedNoLongerRunsItsPredicates` |
+| Keyboard dragging on by default made every draggable a tab stop, with an opt-out per draggable only. | Medium | `BdndProvider.AllowKeyboard` (the manager's `AllowKeyboard`) turns it off for a whole provider; the upgrade note says so, and names hosts that handle Space or Enter themselves. | `AProviderTakesEveryDraggableOutOfKeyboardDraggingAndBack`, `ADraggableOfAProviderThatTurnsTheKeyboardOffIsNotPickedUp`, `TurningTheKeyboardOffOrOnNotifiesTheSources` |
+| `EndAsync` and `AbortAsync` repeated the `OnEnd` block. | Low | One `StartOnEnd`. | Existing lifecycle tests |
+| `ReportAsync` was copied in the draggable and the drop target; the accept list was built in the drop target and the drag layer. | Low | `BdndDragDropManager.ReportExceptionAsync(exception, dispatch)`; `BdndAcceptTypes.Of`. | Existing tests |
+| A draggable that took the focus over during a drag was asked to again on every render (one interop call each). | Low | The manager records who took it; that draggable is not asked again during the drag. | `ADraggableThatTookTheFocusOverDuringADragIsNotAskedToAgain`, `TheFocusTakenAfterADragIsTakenForGood` |
+| A pointer drag reported edge changes to targets that refuse the item, or belong to another provider - a circuit message each, discarded. | Low | Only targets that can drop get them while hovering; the drop reports every edge (`canDrop` may lag right after the drag began). | Existing indicator tests |
+| Interop types lacked `[DynamicDependency(All)]` at their call sites (`KeyboardNavigateAsync`, `GetNativeDropFilesAsync`, the `[JSInvokable]` methods taking `BdndDomRect` and `BdndNativeDropPayload`, the registrations). | Low | Added, besides the central roots. | `BdndTrimmingTests` |
+| The touch helpers sat between `NativeDataTransferAsync`'s summary and the method. | Low | Each helper has its own summary. | - |
+
+The new tests were checked against the code without each fix: they fail there.
+
+### Validation
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Build | `dotnet build Bit.Bdnd.slnx` | Succeeded; the only warning is the hybrid harness's known MSB3277. |
+| Unit | `dotnet test --project Tests/Bit.Bdnd.Tests/Bit.Bdnd.Tests.csproj` | 393 passed on each of net8.0, net9.0, net10.0 (1179). |
+| MCP | `dotnet test --project Tests/Bit.Bdnd.Tests.Mcp/Bit.Bdnd.Tests.Mcp.csproj` | 101 passed. |
+| E2E Chromium | `dotnet test` in `Tests/Bit.Bdnd.Tests.E2E` | 145 passed, including the 8 Blazor Hybrid tests. |
+

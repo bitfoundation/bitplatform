@@ -53,7 +53,7 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
     /// cancels. Defaults to true, which makes the source (or its handle) focusable while it can drag. A host that is
     /// interactive by itself (<see cref="Tag"/> <c>a</c>, <c>button</c>, <c>input</c>, <c>select</c>,
     /// <c>textarea</c>, <c>summary</c>) keeps its own keys: give it a <see cref="BdndDragHandle"/> to drag it with
-    /// the keyboard.
+    /// the keyboard. <see cref="BdndProvider.AllowKeyboard"/> turns keyboard dragging off for a whole provider.
     /// </summary>
     [Parameter] public bool AllowKeyboard { get; set; } = true;
 
@@ -144,7 +144,6 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
     private ElementReference _element;
     private Collected _collected;
     private bool _canDrag;
-    private TItem? _draggingItem;
     private string _keyboardLabel = "";
     private string? _keyboardTargetLabel;
     private BdndEdge? _keyboardTargetEdge;
@@ -172,8 +171,11 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
     // whether the mouse drags through the browser's native drag and drop
     private bool NativeDrag => PointerDrag != BdndPointerDrag.All;
 
+    // the keyboard may drag the source: the source and its provider allow it
+    private bool KeyboardAllowed => AllowKeyboard && Manager!.AllowKeyboard;
+
     // the keyboard can pick the source up (from the host, or from a handle)
-    private bool KeyboardEnabled => AllowKeyboard && _canDrag && (UseHandle || IsInteractiveTag(Tag) is false);
+    private bool KeyboardEnabled => KeyboardAllowed && _canDrag && (UseHandle || IsInteractiveTag(Tag) is false);
 
     // hosts whose Space and Enter already do something (follow a link, click, type, open)
     private static bool IsInteractiveTag(string? tag) => tag?.ToLowerInvariant() is "a" or "button" or "input" or "select" or "textarea" or "summary";
@@ -182,6 +184,8 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
     // state it changed - and every draggable when a drag begins or ends - not each one on every hover.
     private void OnStateChanged()
     {
+        // a callback run inline in the manager's notification may have removed this draggable already
+        if (_disposed) return;
         if (Collect() != _collected) InvokeAsync(StateHasChanged);
     }
 
@@ -196,7 +200,8 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
             monitor.IsDragging(),
             IsDraggingOverride?.Invoke(monitor) ?? monitor.IsDragging(_handlerId),
             EffectiveCanDrag,
-            Manager.InstructionsId);
+            Manager.InstructionsId,
+            Manager.AllowKeyboard);
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -352,7 +357,6 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
             ? new BdndXYCoord(rect.Left, rect.Top)
             : new BdndXYCoord(e.ClientX - e.OffsetX, e.ClientY - e.OffsetY);
 
-        _draggingItem = item;
         manager.BeginDrag(_handlerId, item, Type, new BdndXYCoord(e.ClientX, e.ClientY), sourceOffset,
             () => OnBegin.InvokeAsync(item), source: this);
 
@@ -429,29 +433,37 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
         await manager.WhenDropsCompletedAsync();
         if (manager.IsDragging(_handlerId) is false || manager.DragId != dragId) return;
 
+        var onEnd = StartOnEnd();
+        if (onEnd.IsCompleted) await GuardAsync(onEnd);
+        else _ = GuardAsync(onEnd);
+    }
+
+    // Ends the drag in progress, which the caller made sure is this source's: OnEnd runs with what the drag has - its
+    // item, and the drops recorded so far - and the drag state is cleared right after OnEnd's synchronous part. The
+    // item is the manager's, not one this component keeps: the next drag of this source, beginning, ends this one
+    // through AbortAsync, by when such a field would hold that drag's item already. The task is OnEnd's.
+    private Task StartOnEnd()
+    {
+        var manager = Manager!;
         var context = new BdndDragEndContext<TItem>
         {
             Monitor = manager.Monitor,
-            Item = _draggingItem,
+            Item = manager.GetItem<TItem>(),
             DidDrop = manager.DidDrop(),
             DropResult = manager.GetDropResult(),
         };
-        _draggingItem = default;
-        Task onEnd;
         try
         {
-            onEnd = OnEnd.HasDelegate ? OnEnd.InvokeAsync(context) : Task.CompletedTask;
+            return OnEnd.HasDelegate ? OnEnd.InvokeAsync(context) : Task.CompletedTask;
         }
         catch (Exception exception)
         {
-            onEnd = Task.FromException(exception);
+            return Task.FromException(exception);
         }
         finally
         {
             manager.EndDrag();
         }
-        if (onEnd.IsCompleted) await GuardAsync(onEnd);
-        else _ = GuardAsync(onEnd);
     }
 
     private async Task GuardAsync(Task callback)
@@ -468,22 +480,8 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
 
     // Hands an application callback's exception to the renderer - through this component, or, once it is disposed
     // (a drop re-rendered it away while its OnEnd ran), through its provider.
-    private async Task ReportAsync(Exception exception)
-    {
-        if (_disposed is false)
-        {
-            try
-            {
-                await DispatchExceptionAsync(exception);
-                return;
-            }
-            catch (Exception)
-            {
-                // disposed meanwhile: the renderer no longer knows the component
-            }
-        }
-        await Manager!.ReportExceptionAsync(exception);
-    }
+    private Task ReportAsync(Exception exception) =>
+        Manager!.ReportExceptionAsync(exception, _disposed ? null : DispatchExceptionAsync);
 
     // Ends drag dragId at once, for the manager (a new drag began while this one was in progress), without waiting for
     // the async OnDrop handlers of its drop.
@@ -493,28 +491,7 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
         if (manager.IsDragging(_handlerId) is false || manager.DragId != dragId) return Task.CompletedTask;
         // what the drag has so far: a drop already recorded counts, a result an async OnDrop has yet to publish does
         // not - the same answer the manager's DragEnded gives
-        var context = new BdndDragEndContext<TItem>
-        {
-            Monitor = manager.Monitor,
-            Item = _draggingItem,
-            DidDrop = manager.DidDrop(),
-            DropResult = manager.GetDropResult(),
-        };
-        _draggingItem = default;
-        Task onEnd;
-        try
-        {
-            onEnd = OnEnd.HasDelegate ? OnEnd.InvokeAsync(context) : Task.CompletedTask;
-        }
-        catch (Exception exception)
-        {
-            onEnd = Task.FromException(exception);
-        }
-        finally
-        {
-            manager.EndDrag();
-        }
-        return CompleteAbortAsync(onEnd);
+        return CompleteAbortAsync(StartOnEnd());
     }
 
     private async Task CompleteAbortAsync(Task onEnd)
@@ -531,13 +508,13 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
     /// <summary>Invoked from JS when a pointer drag of this source starts, with the press point and the source's rectangle.</summary>
     /// <returns>Whether the drag began.</returns>
     [JSInvokable, EditorBrowsable(EditorBrowsableState.Never)]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BdndDomRect))]
     public async Task<bool> HandlePointerDragStart(double clientX, double clientY, BdndDomRect rect)
     {
         var manager = Manager!;
         if (_disposed || _canDrag is false || PointerDrag == BdndPointerDrag.None || await TryProduceItemGuardedAsync() is not (true, var item))
             return false;
 
-        _draggingItem = item;
         manager.BeginDrag(_handlerId, item, Type, new BdndXYCoord(clientX, clientY), new BdndXYCoord(rect.Left, rect.Top),
             () => OnBegin.InvokeAsync(item), BdndDragInput.Pointer, this);
         var dragId = manager.DragId;
@@ -564,12 +541,12 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
     /// <summary>Invoked from JS when Space or Enter is pressed on the source (or its handle).</summary>
     /// <returns>Whether the keyboard drag began.</returns>
     [JSInvokable, EditorBrowsable(EditorBrowsableState.Never)]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BdndDomRect))]
     public async Task<bool> HandleKeyboardDragStart(BdndDomRect rect, string? text)
     {
         var manager = Manager!;
         if (_disposed || KeyboardEnabled is false || await TryProduceItemGuardedAsync() is not (true, var item)) return false;
 
-        _draggingItem = item;
         _keyboardTargetLabel = null;
         _keyboardTargetEdge = null;
         _keyboardTargetBefore = null;
@@ -741,7 +718,7 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
         BdndEdge? edge = null, bool? before = null)
     {
         var manager = Manager!;
-        var item = _draggingItem;
+        var item = manager.GetItem();
         var type = Type;
         await EndAsync(dragId);
         // a drop that re-rendered the item as another draggable hands that one the focus
@@ -821,11 +798,11 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
     private async Task AdoptFocusAsync()
     {
         var manager = Manager!;
-        if (AllowKeyboard is false || _registration?.Reference is not { } registration || manager.WantsFocus(Item, Type, _handlerId) is false)
+        if (KeyboardAllowed is false || _registration?.Reference is not { } registration || manager.WantsFocus(Item, Type, _handlerId) is false)
             return;
         try
         {
-            if (await registration.InvokeAsync<bool>("adoptFocus")) manager.FocusTaken();
+            if (await registration.InvokeAsync<bool>("adoptFocus")) manager.FocusTaken(_handlerId);
         }
         catch (Exception exception) when (exception is JSException or JSDisconnectedException or TaskCanceledException) { }
     }
@@ -865,6 +842,9 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
         public bool PointerDragEnabled => _owner.PointerDrag != BdndPointerDrag.None;
     }
 
-    /// <summary>The state a render hands the content, besides the monitor - and the instructions it is described by.</summary>
-    private readonly record struct Collected(bool AnyDragging, bool IsDragging, bool CanDrag, string InstructionsId);
+    /// <summary>
+    /// The state a render hands the content, besides the monitor - and the instructions it is described by, and whether
+    /// its provider lets the keyboard drag.
+    /// </summary>
+    private readonly record struct Collected(bool AnyDragging, bool IsDragging, bool CanDrag, string InstructionsId, bool KeyboardAllowed);
 }
