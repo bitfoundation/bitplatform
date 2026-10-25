@@ -45,6 +45,9 @@ public interface IBonboardingTourSession
     /// <summary>True when the engine is waiting for a target element or a route.</summary>
     bool IsWaiting { get; }
 
+    /// <summary>What the session is waiting for while <see cref="IsWaiting"/> is true.</summary>
+    BonboardingWaitReason WaitReason => IsWaiting ? BonboardingWaitReason.Target : BonboardingWaitReason.None;
+
     /// <summary>True when no earlier step is reachable.</summary>
     bool IsFirstStep { get; }
 
@@ -62,6 +65,12 @@ public interface IBonboardingTourSession
 
     /// <summary>The failure that stopped the tour, if any.</summary>
     Exception? Error { get; }
+
+    /// <summary>
+    /// Why the user is held on the current step, after <see cref="BonboardingStepDefinition.CanAdvance"/> said no and
+    /// gave a reason; <see langword="null"/> otherwise. Cleared when the step changes.
+    /// </summary>
+    string? ValidationMessage => null;
 
     /// <summary>True while the session is on screen and interactive.</summary>
     bool IsActive { get; }
@@ -103,6 +112,13 @@ public interface IBonboardingTourSession
     /// resume later. This is what happens when another tour takes over.
     /// </summary>
     Task CancelAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Ends the tour as "remind me later": progress is kept, and automatic starts (<c>StartOnceAsync</c>, a
+    /// declarative <c>AutoStart</c>) pass the tour over until <paramref name="duration"/> has gone by. A start the
+    /// user asks for still runs it, from where they left off.
+    /// </summary>
+    Task SnoozeAsync(TimeSpan duration, CancellationToken cancellationToken = default) => CancelAsync(cancellationToken);
 
     /// <summary>Hides the UI and stops observing, keeping the current position.</summary>
     Task PauseAsync(CancellationToken cancellationToken = default);

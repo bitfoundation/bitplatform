@@ -6,19 +6,35 @@
 <div class="bb-intro">
     <h1>Theming &amp; RTL</h1>
     <p class="bb-subtitle">
-        Every value in the default look is a CSS custom property under <code>.bit-bonboarding-root</code>. Restyling the
-        library is a matter of overriding variables in your own stylesheet, with no selector fights and no framework
-        to install.
+        Every value in the default look is a CSS custom property under <code>.bit-bonboarding-root</code> (the tour layer)
+        and <code>.bit-bonboarding-themed</code> (the beacons, checklists and tour lists on the page). Restyling the library
+        is a matter of overriding variables in your own stylesheet, with no selector fights and no framework to install.
     </p>
 </div>
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
     <p>
-        Pick a theme, a direction, a progress style and a skin, then run the tour over the product below. With the
-        theme left to the site, its last step points at the header's light/dark switch - press it while the card is
-        up.
+        Pick a theme, a direction, a progress style, an animation speed and a skin, then run the tour over the product
+        below. With the theme left to the site, its last step points at the header's light/dark switch - press it while
+        the card is up.
     </p>
+    <ul class="bb-detail-list">
+        <li><strong>Theme</strong>: <code>Light</code> and <code>Dark</code> force a palette; <code>System</code> follows the operating system, or your stylesheet.</li>
+        <li>
+            <strong>Direction</strong>: <code>Auto</code> follows the page's <code>dir</code>; <code>RightToLeft</code> mirrors the
+            card, its alignment and the arrow keys.
+        </li>
+        <li>
+            <strong>Progress</strong>: <code>Dots</code> (the default), <code>Bar</code> (a <code>progressbar</code> a screen reader
+            reads as "2 of 4"), <code>Text</code>, or <code>None</code>.
+        </li>
+        <li>
+            <strong>Animation</strong>: <code>AnimationDuration</code> times the fades and the spotlight's move between steps;
+            under reduced motion it is zero whatever you set, unless <code>RespectReducedMotion = false</code>.
+        </li>
+        <li><strong>Skin</strong>: a <code>PopoverClass</code> that re-points the variables for one tour.</li>
+    </ul>
 
     <div class="bb-demo">
         <div class="bb-demo-bar">
@@ -59,6 +75,15 @@
             </label>
 
             <label class="bb-field">
+                Animation
+                <select @bind="_animationMs">
+                    <option value="220">Default (220 ms)</option>
+                    <option value="600">Slow (600 ms)</option>
+                    <option value="0">None (0 ms)</option>
+                </select>
+            </label>
+
+            <label class="bb-field">
                 Skin
                 <select @bind="_skin">
                     <option value="">Fluent 2 (this site)</option>
@@ -79,8 +104,10 @@
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Localisation</h3>
     <p>
-        Button text comes from an <code>BonboardingLabels</code> instance, set globally or per tour. For resource files
-        or a translation service, register your own <code>IBonboardingLocalizer</code> instead.
+        Every string the default card renders comes from a <code>BonboardingLabels</code> instance - set globally, per tour
+        (replacing the global set wholesale; <code>Clone()</code> one to change a few strings), or per step with
+        <code>NextLabel</code>, <code>PreviousLabel</code>, <code>SkipLabel</code> and <code>DoneLabel</code>. Each button
+        below runs the tour with a translated label set; the Arabic one is also right-to-left.
     </p>
 
     <div class="bb-try">
@@ -90,9 +117,32 @@
     </div>
 
     <p>
-        Direction affects more than text alignment: in a right-to-left tour the arrow keys swap, and
-        <code>Start</code> and <code>End</code> alignments mirror.
+        Translate the labels a screen reader hears, too: <code>DialogLabel</code>, <code>StepAnnouncementFormat</code>,
+        <code>WaitingAnnouncement</code> and <code>ProgressLabel</code> are never shown, and they are all a screen reader user
+        gets. For resource files or a translation service, register your own <code>IBonboardingLocalizer</code>: it supplies
+        the labels, and its <code>Localize</code> lets step titles and descriptions be resource keys. Progress numbers are
+        formatted in the current culture; the CSS the library writes always uses the invariant one.
     </p>
+
+    <pre class="bb-code">@LabelsExample</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Right-to-left</h3>
+    <p>
+        <code>Direction = Auto</code> (the default) follows the document: set <code>dir="rtl"</code> on <code>&lt;html&gt;</code>
+        as you already would, and tours follow. Set <code>LeftToRight</code> or <code>RightToLeft</code> on a tour for a page
+        of one direction with a tour of the other. Direction changes more than text alignment:
+    </p>
+    <ul class="bb-detail-list">
+        <li><code>Start</code> and <code>End</code> alignments mirror: <code>BottomStart</code> aligns to the target's right edge.</li>
+        <li>
+            <code>InlineStart</code> and <code>InlineEnd</code> are logical sides: <code>InlineEnd</code> is on the right in
+            English and on the left in Arabic, so one placement serves both. <code>Left</code> and <code>Right</code> stay physical.
+        </li>
+        <li>The arrow keys swap: Left advances and Right goes back, in reading order.</li>
+        <li>Padding, margins and the footer's button order flip, and the root carries <code>dir</code>, so a template inherits it.</li>
+    </ul>
 </section>
 
 <section class="bb-card">
@@ -104,15 +154,69 @@
         overridden.
     </p>
 
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Theme variables">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Group</th><th>Variables</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="bb-table-key">Colour</td>
+                    <td>
+                        <code>--bit-bonboarding-surface</code>, <code>-surface-subtle</code>, <code>-text</code>, <code>-text-muted</code>,
+                        <code>-border</code>, <code>-border-strong</code>, <code>-accent</code> (with <code>-hover</code>, <code>-active</code>,
+                        <code>-text</code>, <code>-soft</code>), <code>-danger</code>, <code>-overlay</code> (an <code>R, G, B</code> triple),
+                        <code>-spotlight-ring</code>, <code>-spotlight-glow</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Shape and depth</td>
+                    <td><code>--bit-bonboarding-radius</code>, <code>-radius-sm</code>, <code>-radius-pill</code>, <code>-shadow</code>, <code>-focus-ring</code></td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Typography</td>
+                    <td><code>--bit-bonboarding-font</code>, <code>-font-size</code>, <code>-font-size-sm</code>, <code>-title-size</code>, <code>-title-weight</code>, <code>-line-height</code></td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Metrics and motion</td>
+                    <td><code>--bit-bonboarding-popover-width</code>, <code>-popover-max-height</code>, <code>-space</code>, <code>-ease</code></td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Beacons</td>
+                    <td><code>--bit-bonboarding-beacon-size</code>, <code>-beacon-dot</code>, <code>-beacon-color</code></td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Set by the engine</td>
+                    <td>
+                        <code>--bit-bonboarding-z</code>, <code>-duration</code>, <code>-overlay-opacity</code> and <code>-arrow</code> are written
+                        inline from <code>ZIndex</code>, <code>AnimationDuration</code>, <code>OverlayOpacity</code> and <code>ArrowSize</code>,
+                        so a stylesheet cannot override them: change the option instead.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>
+        Every variable with its light and dark default is one request away:
+        <a href="/api/mcp/GetBonboardingThemeVariables" target="_blank" rel="noopener">GetBonboardingThemeVariables</a>.
+    </p>
+
     <pre class="bb-code">@ThemeExample</pre>
 </section>
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Following your own theme switch</h3>
     <p>
-        A tour that leaves its theme unset is drawn with <code>data-bonboarding-theme="system"</code>, and the library's
-        stylesheet gives that the light palette. Map it to your application's dark theme in CSS, as this site does - or
-        bind the switch to the host instead, which overrides the tour and the global setting alike.
+        A tour that leaves its theme unset is drawn with <code>data-bonboarding-theme="system"</code>. Out of the box the
+        library's stylesheet gives that the dark palette while the operating system asks for a dark scheme, and the light
+        one otherwise, following a change of the system setting at once. An application with a theme switch of its own maps
+        <code>system</code> to that switch in CSS, as this site does - or binds the switch to the host, whose
+        <code>Theme</code> overrides the tour's and the global one alike.
+    </p>
+    <p>
+        An explicit <code>Light</code> or <code>Dark</code> also sets <code>color-scheme</code> on the card, so native controls
+        in a custom step body match it; <code>System</code> inherits the page's.
     </p>
 
     <pre class="bb-code">@FollowExample</pre>
@@ -122,6 +226,7 @@
     private BonboardingTheme? _theme;
     private BonboardingDirection _direction = BonboardingDirection.Auto;
     private BonboardingProgressStyle _progress = BonboardingProgressStyle.Dots;
+    private int _animationMs = 220;
     private string _skin = string.Empty;
 
     private Task StartAsync() => BonboardingService.StartAsync(BuildTour(
@@ -174,6 +279,7 @@
         Theme = _theme,
         Direction = direction,
         Progress = _progress,
+        AnimationDuration = TimeSpan.FromMilliseconds(_animationMs),
         Labels = labels,
         PopoverClass = string.IsNullOrEmpty(_skin) ? null : _skin,
         Steps =
@@ -219,23 +325,54 @@
     };
 
     private const string ThemeExample = """
-        /* Your stylesheet, loaded after the library's. */
-        .bit-bonboarding-root {
+        /* Your stylesheet, loaded after the library's. The second selector reaches the beacons,
+           checklists and tour lists, which render on the page rather than in the tour layer. */
+        .bit-bonboarding-root,
+        .bit-bonboarding-themed {
             --bit-bonboarding-accent: #f59e0b;
             --bit-bonboarding-accent-text: #1f1300;
             --bit-bonboarding-surface: #101828;
             --bit-bonboarding-text: #f9fafb;
             --bit-bonboarding-radius: 6px;
-            --bit-bonboarding-duration: 160ms;
+            --bit-bonboarding-overlay: 15, 23, 42;   /* dim with a brand colour rather than black */
         }
 
-        /* Or scope it to one tour with PopoverClass. */
+        /* Scope it to one tour with PopoverClass - it lands on the card. To restyle the overlay and
+           the spotlight as well, put the class on the host: <BonboardingRoot Class="checkout-theme" />. */
         .checkout-tour { --bit-bonboarding-accent: #16a34a; }
+
+        /* A wider card for a step with a form: PopoverClass = "wide-step" on that step. */
+        .wide-step { --bit-bonboarding-popover-width: 32rem; }
+
+        // Motion, stacking and dimming are options, not variables:
+        new BonboardingTourDefinition { AnimationDuration = TimeSpan.FromMilliseconds(160), ZIndex = 9000, OverlayOpacity = 0.4 }
+        """;
+
+    private const string LabelsExample = """
+        // Globally:
+        builder.Services.AddBitBonboardingServices(options =>
+        {
+            options.Labels.Next = "Weiter";
+            options.Labels.Done = "Fertig";
+        });
+
+        // Per tour - a whole set; Clone() the default to change a few strings:
+        var labels = BonboardingLabels.Default.Clone();
+        labels.Next = "Weiter";
+        labels.StepAnnouncementFormat = "Schritt {0} von {1}. {2}";   // read by screen readers
+        new BonboardingTourDefinition { Id = "welcome", Labels = labels, Direction = BonboardingDirection.Auto };
+
+        // Per step:
+        new BonboardingStepDefinition { NextLabel = "Show me", DoneLabel = "Finish setup" };
+
+        // From resource files:
+        builder.Services.AddBitBonboardingLocalizer<ResourceOnboardingLocalizer>();
         """;
 
     private const string FollowExample = """
-        /* This site: a tour with no theme of its own goes dark with the page. */
-        :root[bit-theme="dark"] .bit-bonboarding-root[data-bonboarding-theme="system"] {
+        /* This site: a tour with no theme of its own goes dark with the page's own switch. */
+        :root[bit-theme="dark"] .bit-bonboarding-root[data-bonboarding-theme="system"],
+        :root[bit-theme="dark"] .bit-bonboarding-themed[data-bonboarding-theme="system"] {
             --bit-bonboarding-surface: #15191E;
             --bit-bonboarding-text: #E6ECF2;
             --bit-bonboarding-accent: #4FA3F4;

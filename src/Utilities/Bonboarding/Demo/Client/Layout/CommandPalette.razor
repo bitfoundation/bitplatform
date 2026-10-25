@@ -14,7 +14,8 @@
    turns that half off with SiteInfo.PaletteCtrlK. *@
 
 <button type="button" class="bb-search-trigger" @ref="_trigger" @onclick="Open"
-        aria-label="Search documentation" title="@(SiteInfo.PaletteCtrlK ? $"Search documentation ({(_isApple ? "⌘K" : "Ctrl+K")})" : "Search documentation (/)")">
+        aria-label="@SearchLabel" aria-keyshortcuts="@(SiteInfo.PaletteCtrlK ? (_isApple ? "Meta+K" : "Control+K") : "/")"
+        title="@(SiteInfo.PaletteCtrlK ? $"Search documentation ({(_isApple ? "⌘K" : "Ctrl+K")})" : "Search documentation (/)")">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
     </svg>
@@ -22,7 +23,7 @@
     <span class="bb-search-trigger-keys" aria-hidden="true">
         @if (SiteInfo.PaletteCtrlK)
         {
-            <kbd>@(_isApple ? "⌘" : "Ctrl")</kbd><kbd>K</kbd>
+            <kbd>@(_isApple ? "⌘" : "Ctrl")</kbd> <kbd>K</kbd>
         }
         else
         {
@@ -137,6 +138,10 @@
 
     private bool _open;
     private bool _isApple;
+
+    // The visible label and the key hints, in the order they appear: someone using speech input says what they see
+    // (WCAG 2.5.3), and a screen reader still hears the name when a narrow screen hides both.
+    private string SearchLabel => SiteInfo.PaletteCtrlK ? $"Search docs {(_isApple ? "⌘" : "Ctrl")} K" : "Search docs /";
     private bool _focusPending;
     private bool _restorePending;
     private bool _revealPending;

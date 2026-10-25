@@ -1,0 +1,66 @@
+﻿@namespace Bit.Bonboarding
+
+@* A list of tours the user can start, resume or replay: the entry point of a help menu or a resource centre.
+   Each button's accessible name includes its tour's title, so a screen reader moving from button to button
+   hears "Start Welcome tour", not five times "Start". *@
+
+@if (_items is not null)
+{
+    <section class="@BonboardingCss.Classes("bit-bonboarding-tour-list", "bit-bonboarding-themed", Class)"
+             data-bonboarding-theme="@ThemeAttribute"
+             aria-labelledby="@(_title is null ? null : _headingId)">
+
+        @if (_title is not null)
+        {
+            <div class="bit-bonboarding-tour-list-title" id="@_headingId" role="heading" aria-level="@HeadingLevel">@_title</div>
+        }
+
+        @if (_items.Count == 0)
+        {
+            @if (EmptyContent is not null)
+            {
+                @EmptyContent
+            }
+        }
+        else
+        {
+            <ul class="bit-bonboarding-tour-list-items">
+                @for (var index = 0; index < _items.Count; index++)
+                {
+                    var item = _items[index];
+
+                    // By position rather than by tour id: an id with a space in it would split an aria-labelledby list.
+                    var key = $"{_headingId}-{index}";
+
+                    <li class="bit-bonboarding-tour-list-item"
+                        data-bonboarding-tour="@item.Tour.Id"
+                        data-bonboarding-progress="@ProgressName(item.Progress)">
+                        @if (ItemTemplate is not null)
+                        {
+                            @ItemTemplate(item)
+                        }
+                        else
+                        {
+                            <div class="bit-bonboarding-tour-list-text">
+                                <span class="bit-bonboarding-tour-list-name" id="@($"{key}-title")">@(Localizer.Localize(item.Tour.Title) ?? item.Tour.Id)</span>
+                                @if (item.Tour.Description is not null)
+                                {
+                                    <span class="bit-bonboarding-tour-list-description">@Localizer.Localize(item.Tour.Description)</span>
+                                }
+                            </div>
+
+                            <span class="bit-bonboarding-tour-list-state" data-bonboarding-progress="@ProgressName(item.Progress)">@StateLabel(item.Progress)</span>
+
+                            <button type="button"
+                                    class="bit-bonboarding-button bit-bonboarding-button-secondary"
+                                    id="@($"{key}-start")"
+                                    aria-labelledby="@($"{key}-start {key}-title")"
+                                    disabled="@item.IsRunning"
+                                    @onclick="item.StartAsync">@ActionLabel(item.Progress)</button>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+}

@@ -32,4 +32,10 @@ public sealed record BonboardingStepGeometry
     /// whatever the theme sets. <see langword="null"/> when unknown.
     /// </summary>
     public double? PopoverRadius { get; init; }
+
+    /// <summary>
+    /// A target selector the browser could not parse, reported with the first measurement of the step instead
+    /// of being waited on. <see langword="null"/> when every selector is valid.
+    /// </summary>
+    public string? InvalidSelector { get; init; }
 }

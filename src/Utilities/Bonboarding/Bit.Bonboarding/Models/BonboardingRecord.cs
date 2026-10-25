@@ -34,7 +34,15 @@ public sealed record BonboardingRecord
 
     public DateTimeOffset UpdatedAt { get; init; } = DateTimeOffset.UtcNow;
 
+    /// <summary>When the tour was most recently completed, if it ever was.</summary>
     public DateTimeOffset? CompletedAt { get; init; }
+
+    /// <summary>
+    /// Until when the user asked not to be shown the tour again ("remind me later"). Automatic starts
+    /// (<c>StartOnceAsync</c>, a declarative <c>AutoStart</c>) pass it over until then; a start the user asks for does
+    /// not. Progress is kept, so the tour resumes where it was snoozed.
+    /// </summary>
+    public DateTimeOffset? SnoozedUntil { get; init; }
 
     /// <summary>
     /// Application-defined values round-tripped with the record. Write them through your
@@ -45,4 +53,7 @@ public sealed record BonboardingRecord
     /// <summary>True when the tour is finished with, however it ended.</summary>
     [JsonIgnore]
     public bool IsClosed => Completed || Dismissed;
+
+    /// <summary>True while the snooze the user asked for is still running at <paramref name="now"/>.</summary>
+    public bool IsSnoozedAt(DateTimeOffset now) => SnoozedUntil is { } until && until > now;
 }
