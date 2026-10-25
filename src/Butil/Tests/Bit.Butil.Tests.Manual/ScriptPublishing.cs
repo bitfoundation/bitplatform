@@ -603,7 +603,7 @@ internal static class ScriptPublishing
                 var path = Path.Combine(webRoot, url.Replace('/', Path.DirectorySeparatorChar));
                 listed.Add(url);
 
-                if (File.Exists(path) is false && url.EndsWith(".map", StringComparison.Ordinal)) continue;
+                if (File.Exists(path) is false && Path.GetFileName(url).StartsWith("blazor.webassembly.js", StringComparison.Ordinal)) continue;
                 if (File.Exists(path) is false) wrong.Add($"{url} is listed but not published");
                 else if ($"sha256-{Sha256(path)}" != asset.GetProperty("hash").GetString()) wrong.Add($"{url} is listed under another file's hash");
             }

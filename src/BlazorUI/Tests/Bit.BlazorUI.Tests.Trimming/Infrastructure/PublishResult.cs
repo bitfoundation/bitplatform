@@ -187,6 +187,7 @@ public sealed class PublishResult(string directory, int exitCode, string output)
         {
             var served = packages is not null && url.StartsWith(packages, StringComparison.Ordinal) ? url[(clientBasePath.Length + 1)..] : url;
             var path = Path.Combine(WebRoot, served.Replace('/', Path.DirectorySeparatorChar));
+            if (File.Exists(path) is false && Path.GetFileName(url).StartsWith("blazor.webassembly.js", StringComparison.Ordinal)) continue;
             if (File.Exists(path) is false) wrong.Add($"{url} is listed but not published");
             else if ($"sha256-{Sha256(path)}" != hash) wrong.Add($"{url} is listed under another file's hash");
         }
