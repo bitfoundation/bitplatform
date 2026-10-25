@@ -40,7 +40,11 @@ internal sealed class BortableService(IJSRuntime js, IEnumerable<BortableConfigu
     /// A key for an item, unique across every list of the scope: the browser layer names an item by it, so it never
     /// depends on an index the page may have moved on from.
     /// </summary>
-    internal string NextKey() => (++_lastKey).ToString(System.Globalization.CultureInfo.InvariantCulture);
+    internal string NextKey() => _keyPrefix + (++_lastKey).ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    // Tells this scope's keys from another's on the same page (a Server island next to a WebAssembly one): both count
+    // from 1, and the browser layer looks an item up by its key across every list it knows.
+    private readonly string _keyPrefix = Guid.NewGuid().ToString("N")[..8] + "-";
 
     private int _lastDrag;
 

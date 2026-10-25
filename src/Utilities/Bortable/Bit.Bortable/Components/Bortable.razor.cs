@@ -337,12 +337,13 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     /// <inheritdoc />
     public override Task SetParametersAsync(ParameterView parameters)
     {
-        // The app-wide defaults, for every parameter the page does not set itself. Only the first time: a parameter
-        // left out later keeps its value, as any Blazor parameter does.
+        // The app-wide defaults, for every parameter the page does not set itself: the parameters it does set are
+        // assigned right after, over them. Only the first time: a parameter left out later keeps its value, as any
+        // Blazor parameter does.
         if (!_defaultsApplied)
         {
             _defaultsApplied = true;
-            Service.Options.ApplyTo(this, parameters);
+            Service.Options.ApplyTo(this);
         }
         return base.SetParametersAsync(parameters);
     }
@@ -485,7 +486,13 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     private string? KeyOf(TItem item)
     {
         if (item is null) return null;
-        if (_keyOf.TryGetValue(item, out var key)) return key;
+        if (_keyOf.TryGetValue(item, out var key))
+        {
+            // The page may have replaced the item with an equal one (an entity compared by its id, say): a drag of
+            // this key must move the instance the list holds now, never the one it first rendered.
+            _itemOf[key] = item;
+            return key;
+        }
         key = Service.NextKey();
         _keyOf[item] = key;
         _itemOf[key] = item;
@@ -637,6 +644,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         List = zone.Label,
         OldPosition = ctx.OldIndex + 1,
         FromList = ctx.Source.Label,
+        Returned = ReferenceEquals(zone, ctx.Source) && zone.IndexOf(item) == ctx.OldIndex,
         Target = target
     };
 
@@ -729,9 +737,12 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             }
             else
             {
-                int outcome = ReferenceEquals(target, current) && ReferenceEquals(current, ctx.Source)
+                bool withinHome = ReferenceEquals(target, current) && ReferenceEquals(current, ctx.Source);
+                int outcome = withinHome
                     ? current.ApplyOver(ctx, index > current.IndexOf(ctx.Item) ? index + 1 : index, out change)
                     : MoveByKey(ctx, target, index, out change);
+                // A list that cannot be sorted keeps its order: said, as any other position refused.
+                if (withinHome && outcome == Unchanged && !current.AllowSort) outcome = Refused;
                 announce = outcome switch
                 {
                     Changed => messages.Moved(Announcement(ctx, ctx.CurrentZone, ctx.Item)),
@@ -781,13 +792,17 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
         // Where it ends up. Within the list it is in, the browser layer names an item's index; into another list, a
         // gap among its items. Back home with a clone, that gap counts the original, which is still there and moves
-        // too: past it, the original lands one place earlier.
+        // too: past it, the original lands one place earlier. Back home to a list that cannot be sorted (Sort="false",
+        // a read-only palette), the item returns to where it was picked up, as it does under a pointer, and a clone's
+        // original stays where it is.
+        bool revert = home && !target.AllowSort;
         int there = home && clone ? target.IndexOf(ctx.OriginalItem) : -1;
-        if (ReferenceEquals(target, current)) index = Math.Clamp(index, 0, target.Count - 1);
+        if (revert) index = there >= 0 ? there : Math.Min(ctx.OldIndex, target.Count);
+        else if (ReferenceEquals(target, current)) index = Math.Clamp(index, 0, target.Count - 1);
         else if (there >= 0) index = Math.Clamp(index > there ? index - 1 : index, 0, target.Count - 1);
         else index = Math.Clamp(index, 0, target.Count);
         if (ReferenceEquals(target, current) && target.IndexOf(ctx.Item) == index) return Unchanged;
-        if (!target.AllowsDropAt(ctx, index)) return Refused;
+        if (!revert && !target.AllowsDropAt(ctx, index)) return Refused;
 
         item ??= source.CloneItem(ctx.OriginalItem);
         if (!ReferenceEquals(item, ctx.Item) && !ReferenceEquals(target, current) && target.IndexOf(item) >= 0 && !home) return Refused; // a copy equal to an item there
@@ -803,11 +818,15 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             }
         }
 
-        // Into the target: a clone's original is still at home, so coming back moves it there instead.
+        // Into the target: a clone's original is still at home, so coming back moves it there instead - unless it is
+        // there already, which leaves the home list (possibly a read-only one) untouched.
         there = target.IndexOf(item);
-        ctx.Touch(target);
-        if (there >= 0) target.RemoveAt(there);
-        target.Insert(Math.Min(index, target.Count), item);
+        if (there != index)
+        {
+            ctx.Touch(target);
+            if (there >= 0) target.RemoveAt(there);
+            target.Insert(Math.Min(index, target.Count), item);
+        }
 
         // A swap highlighted in a swap list on the way no longer applies.
         ClearSwapTarget(ctx);
@@ -1314,7 +1333,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     /// <summary>
     /// Moves <paramref name="item"/> from this list into the list whose <see cref="Id"/> is <paramref name="listId"/>,
     /// at <paramref name="newIndex"/>, as a drag would: the lists must exchange items (<see cref="Group"/>,
-    /// <see cref="Pull"/>, <see cref="Put"/>, <see cref="MaxItems"/>, the item type), the destination's
+    /// <see cref="Pull"/>, <see cref="Put"/>, <see cref="Disabled"/>, <see cref="MaxItems"/>, the item type), the destination's
     /// <see cref="CanDrop"/> and <see cref="ConfirmDrop"/> are asked, a <see cref="BortablePull.Clone"/> source puts
     /// a copy there, and the drag's events follow with <see cref="BortableEventArgs{TItem}.Input"/> set to
     /// <see cref="BortableInput.Api"/>. Into a swap-mode list the item trades places with the one at
@@ -1332,7 +1351,8 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     /// <summary>A whole drag in one call: picked up, put at <paramref name="newIndex"/> of <paramref name="target"/>, dropped.</summary>
     private async Task<bool> MoveCoreAsync(TItem item, IBortableZone target, int newIndex)
     {
-        if (_disposed || Items is null || Service.Context is not null || Service.Confirming > 0) return false;
+        // A disabled list takes part in no drag, nor in a move made by code (its items cannot be dragged out).
+        if (_disposed || Disabled || Items is null || Service.Context is not null || Service.Confirming > 0) return false;
 
         bool within = ReferenceEquals(target, this);
         int from = Items.IndexOf(item);

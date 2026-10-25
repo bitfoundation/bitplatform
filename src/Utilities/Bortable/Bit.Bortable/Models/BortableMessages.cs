@@ -40,7 +40,7 @@ public class BortableMessages
 
     /// <summary>An item was dropped.</summary>
     public Func<BortableAnnouncement, string> Dropped { get; init; } =
-        a => a.Position == a.OldPosition && a.List == a.FromList
+        a => a.Returned
             ? $"Dropped {a.Item}. It is back at position {a.Position} of {a.Count}{In(a.List)}."
             : $"Dropped {a.Item} at position {a.Position} of {a.Count}{In(a.List)}.";
 
@@ -87,6 +87,12 @@ public sealed class BortableAnnouncement
 
     /// <summary>The list it was picked up from, as its <see cref="Bortable{TItem}.AriaLabel"/> names it.</summary>
     public string? FromList { get; init; }
+
+    /// <summary>
+    /// Whether it is back where it was picked up: in the same list (not merely one with the same name, or none), at the
+    /// same position.
+    /// </summary>
+    public bool Returned { get; init; }
 
     /// <summary>In swap mode, the item it will trade places with; otherwise <c>null</c>.</summary>
     public string? Target { get; init; }

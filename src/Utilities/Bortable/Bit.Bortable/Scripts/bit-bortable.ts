@@ -306,7 +306,7 @@ document.addEventListener('pointerdown', (e: PointerEvent) => {
 
     // A press anywhere ends a keyboard drag where the item is, leaving the focus to the press.
     const s = session;
-    if (s && s.mode === 'keyboard' && s.state === 'active') void keyStep(s, { action: 'drop', list: null, index: -1, refocus: false });
+    if (s && s.mode === 'keyboard' && (s.state === 'active' || s.state === 'starting')) void keyStep(s, { action: 'drop', list: null, index: -1, refocus: false });
 
     const target = e.target instanceof Element ? e.target : null;
     if (!target) return;
@@ -743,26 +743,29 @@ function stopAtTarget(e: Event): void {
 
 // --- The session -----------------------------------------------------------------------------------------
 
-function begin(home: ListState, itemEl: HTMLElement, dragNode: EventTarget | null, key: string, input: string,
-    mode: 'native' | 'pointer' = 'native', pointerId = -1): Session {
+/** What makes one drag different from another when it starts: everything else starts out the same. */
+type SessionStart = Pick<Session, 'mode' | 'pointerId' | 'home' | 'itemEl' | 'dragNode' | 'key' | 'input'>;
+
+/** Makes a new drag the one in progress, ending the one before it, whose end was lost (.NET ends it at the next start). */
+function startSession(start: SessionStart): Session {
     resetHitState();
     const previous = session;
     if (previous && previous.state !== 'ended') {
-        previous.state = 'ended'; // its end was lost; .NET ends it at the next start
+        previous.state = 'ended';
         previous.cleanup?.();
         clearMarks(previous);
     }
 
     const s: Session = {
-        mode, dragId: 0, pointerId, cleanup: null, onMove: null, clone: false, marked: new Set(), overEl: null,
-        home, itemEl, dragNode, input,
-        listId: home.opts.id, key, swapKey: null, swapListId: null,
+        ...start,
+        dragId: 0, cleanup: null, onMove: null, clone: false, marked: new Set(), overEl: null,
+        listId: start.home.opts.id, swapKey: null, swapListId: null,
         state: 'starting',
         accepting: new Set(),
         x: 0, y: 0,
         target: null,
         refused: null,
-        touched: new Set([home]),
+        touched: new Set([start.home]),
         busy: null,
         dirty: false,
         sent: null,
@@ -770,6 +773,23 @@ function begin(home: ListState, itemEl: HTMLElement, dragNode: EventTarget | nul
         lastOver: performance.now(),
     };
     session = s;
+    return s;
+}
+
+/**
+ * .NET will not start the drag (the item cannot be dragged now, or a handler of the start failed): whatever the drag
+ * set up in the page goes - the preview, and the press it came of, so that the next pointer move does not start it
+ * all over again. It ends for good when it is released.
+ */
+function refuse(s: Session): void {
+    s.state = 'refused';
+    s.cleanup?.();
+    s.cleanup = null;
+}
+
+function begin(home: ListState, itemEl: HTMLElement, dragNode: EventTarget | null, key: string, input: string,
+    mode: 'native' | 'pointer' = 'native', pointerId = -1): Session {
+    const s = startSession({ mode, pointerId, home, itemEl, dragNode, key, input });
 
     stats.starts++;
     // Started once the end of the previous drag has reached .NET - a drop just made must not be taken for a lost drag
@@ -779,7 +799,7 @@ function begin(home: ListState, itemEl: HTMLElement, dragNode: EventTarget | nul
         .then(() => home.ref.invokeMethodAsync<StartResult | null>('Start', key, input))
         .then(result => {
             if (!result) {
-                if (s.state === 'starting') s.state = 'refused';
+                if (s.state === 'starting') refuse(s);
                 return;
             }
             announce(result.announce);
@@ -794,7 +814,7 @@ function begin(home: ListState, itemEl: HTMLElement, dragNode: EventTarget | nul
             markOver(s, s.target);
             pump(s);
         }, () => {
-            if (s.state === 'starting') s.state = 'refused';
+            if (s.state === 'starting') refuse(s);
         });
     return s;
 }
@@ -1114,7 +1134,8 @@ document.addEventListener('keydown', (e: KeyboardEvent) => {
 
     if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
-        void pickUp(list, item);
+        // A held key repeats: the press that dropped the item must not pick it up again at once.
+        if (!e.repeat) void pickUp(list, item);
         return;
     }
 
@@ -1147,31 +1168,7 @@ async function pickUp(list: ListState, item: HTMLElement): Promise<void> {
     const key = item.getAttribute(KEY);
     if (!key) return;
 
-    resetHitState();
-    const previous = session;
-    if (previous && previous.state !== 'ended') {
-        previous.state = 'ended';
-        previous.cleanup?.();
-        clearMarks(previous);
-    }
-
-    const s: Session = {
-        mode: 'keyboard', dragId: 0, pointerId: -1, cleanup: null, onMove: null, clone: false, marked: new Set(), overEl: null,
-        home: list, itemEl: item, dragNode: null, input: 'keyboard',
-        listId: list.opts.id, key, swapKey: null, swapListId: null,
-        state: 'starting',
-        accepting: new Set(),
-        x: 0, y: 0,
-        target: null,
-        refused: null,
-        touched: new Set([list]),
-        busy: null,
-        dirty: false,
-        sent: null,
-        started: Promise.resolve(),
-        lastOver: performance.now(),
-    };
-    session = s;
+    const s = startSession({ mode: 'keyboard', pointerId: -1, home: list, itemEl: item, dragNode: null, key, input: 'keyboard' });
 
     let result: KeyResult | undefined;
     try {
@@ -1184,6 +1181,7 @@ async function pickUp(list: ListState, item: HTMLElement): Promise<void> {
     if (session !== s) return;
     announce(result?.announce);
     if (!result?.dragging || s.state !== 'starting') {
+        pendingSteps.delete(s);
         s.state = 'ended';
         session = null;
         return;
@@ -1193,6 +1191,12 @@ async function pickUp(list: ListState, item: HTMLElement): Promise<void> {
     s.accepting = new Set(result.lists ?? []);
     markAccepting(s);
     follow(s, result, true);
+
+    // A key pressed before .NET had answered the pick waited for its id: without it, .NET would take a drop for one
+    // about no drag at all, and this drag would never end.
+    const waiting = pendingSteps.get(s);
+    pendingSteps.delete(s);
+    if (waiting) void keyStep(s, waiting);
 }
 
 // The step a keyboard drag waits to take once the one in flight returns: the latest arrow, or the end.
@@ -1203,6 +1207,11 @@ function keyDuringDrag(s: Session, e: KeyboardEvent): void {
     switch (e.key) {
         case ' ':
         case 'Enter':
+            // A held key repeats: the press that picked the item up must not drop it again at once.
+            if (e.repeat) {
+                e.preventDefault();
+                return;
+            }
             step = { action: 'drop', list: null, index: -1 };
             break;
         case 'Escape':
@@ -1294,8 +1303,9 @@ function insertionIndex(list: ListState, items: HTMLElement[], from: DOMRect): n
 
 /** Takes one step of a keyboard drag, or, while one is in flight, keeps it for when that one returns. */
 async function keyStep(s: Session, step: KeyStep): Promise<void> {
-    if (s.busy) {
-        // The latest arrow replaces a waiting one; a drop or a cancel is never replaced by an arrow.
+    if (s.busy || s.state === 'starting') {
+        // The latest arrow replaces a waiting one; a drop or a cancel is never replaced by an arrow. Until the pick has
+        // been answered (and the drag has its id) every step waits, as it would behind any other step in flight.
         const waiting = pendingSteps.get(s);
         if (!waiting || waiting.action === 'to' || step.action !== 'to') pendingSteps.set(s, step);
         return;

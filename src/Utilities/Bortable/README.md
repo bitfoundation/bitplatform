@@ -713,8 +713,9 @@ public static readonly BortableMessages German = new()
 | `SelectionInstructions` | Added to `Instructions` in a `MultiDrag` list. |
 | `Selected` / `Deselected` | Shift+Space selects or deselects an item of a `MultiDrag` list. |
 
-Each takes a `BortableAnnouncement`: `Item`, `Position` and `Count` (from 1), `List`, `OldPosition`, `FromList`, in
-swap mode `Target`, and for a selection `Selected`, the number of items selected.
+Each takes a `BortableAnnouncement`: `Item`, `Position` and `Count` (from 1), `List`, `OldPosition`, `FromList`,
+`Returned` (back in the list and at the position it was picked up from), in swap mode `Target`, and for a selection
+`Selected`, the number of items selected.
 
 A list's `ChildContent` - an empty-state message, say - is rendered inside the `list`, where only items belong: give
 it `role="listitem"` (it is then read as part of the list), or render it next to the list. The drop placeholder and

@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Components;
-
 namespace Bit.Bortable;
 
 /// <summary>
@@ -61,29 +59,29 @@ public sealed class BortableOptions
     /// <summary>The default of <see cref="Bortable{TItem}.SelectedClass"/>.</summary>
     public string? SelectedClass { get; set; }
 
-    /// <summary>Gives <paramref name="list"/> every default set here whose parameter it was not given.</summary>
-    internal void ApplyTo<TItem>(Bortable<TItem> list, in ParameterView parameters)
+    /// <summary>
+    /// Gives <paramref name="list"/> every default set here, in place of its parameters' own defaults. Called before
+    /// the list's first parameters are assigned, so a parameter the page sets overwrites it and keeps its own value.
+    /// </summary>
+    internal void ApplyTo<TItem>(Bortable<TItem> list)
     {
-        var given = parameters;
-        bool Unset(string name) => !given.TryGetValue<object>(name, out _);
-
-        if (Animation is { } animation && Unset(nameof(Bortable<TItem>.Animation))) list.Animation = animation;
-        if (SwapThreshold is { } swapThreshold && Unset(nameof(Bortable<TItem>.SwapThreshold))) list.SwapThreshold = swapThreshold;
-        if (Delay is { } delay && Unset(nameof(Bortable<TItem>.Delay))) list.Delay = delay;
-        if (TouchDelay is { } touchDelay && Unset(nameof(Bortable<TItem>.TouchDelay))) list.TouchDelay = touchDelay;
-        if (DelayTolerance is { } delayTolerance && Unset(nameof(Bortable<TItem>.DelayTolerance))) list.DelayTolerance = delayTolerance;
-        if (ForceFallback is { } forceFallback && Unset(nameof(Bortable<TItem>.ForceFallback))) list.ForceFallback = forceFallback;
-        if (Scroll is { } scroll && Unset(nameof(Bortable<TItem>.Scroll))) list.Scroll = scroll;
-        if (ScrollSensitivity is { } sensitivity && Unset(nameof(Bortable<TItem>.ScrollSensitivity))) list.ScrollSensitivity = sensitivity;
-        if (ScrollSpeed is { } speed && Unset(nameof(Bortable<TItem>.ScrollSpeed))) list.ScrollSpeed = speed;
-        if (Keyboard is { } keyboard && Unset(nameof(Bortable<TItem>.Keyboard))) list.Keyboard = keyboard;
-        if (RevertOnSpill is { } revert && Unset(nameof(Bortable<TItem>.RevertOnSpill))) list.RevertOnSpill = revert;
-        if (Messages is { } messages && Unset(nameof(Bortable<TItem>.Messages))) list.Messages = messages;
-        if (GhostClass is { } ghost && Unset(nameof(Bortable<TItem>.GhostClass))) list.GhostClass = ghost;
-        if (ChosenClass is { } chosen && Unset(nameof(Bortable<TItem>.ChosenClass))) list.ChosenClass = chosen;
-        if (DragClass is { } drag && Unset(nameof(Bortable<TItem>.DragClass))) list.DragClass = drag;
-        if (SwapClass is { } swap && Unset(nameof(Bortable<TItem>.SwapClass))) list.SwapClass = swap;
-        if (SelectedClass is { } selected && Unset(nameof(Bortable<TItem>.SelectedClass))) list.SelectedClass = selected;
+        if (Animation is { } animation) list.Animation = animation;
+        if (SwapThreshold is { } swapThreshold) list.SwapThreshold = swapThreshold;
+        if (Delay is { } delay) list.Delay = delay;
+        if (TouchDelay is { } touchDelay) list.TouchDelay = touchDelay;
+        if (DelayTolerance is { } delayTolerance) list.DelayTolerance = delayTolerance;
+        if (ForceFallback is { } forceFallback) list.ForceFallback = forceFallback;
+        if (Scroll is { } scroll) list.Scroll = scroll;
+        if (ScrollSensitivity is { } sensitivity) list.ScrollSensitivity = sensitivity;
+        if (ScrollSpeed is { } speed) list.ScrollSpeed = speed;
+        if (Keyboard is { } keyboard) list.Keyboard = keyboard;
+        if (RevertOnSpill is { } revert) list.RevertOnSpill = revert;
+        if (Messages is { } messages) list.Messages = messages;
+        if (GhostClass is { } ghost) list.GhostClass = ghost;
+        if (ChosenClass is { } chosen) list.ChosenClass = chosen;
+        if (DragClass is { } drag) list.DragClass = drag;
+        if (SwapClass is { } swap) list.SwapClass = swap;
+        if (SelectedClass is { } selected) list.SelectedClass = selected;
     }
 }
 
