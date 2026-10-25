@@ -163,16 +163,20 @@ public sealed class BinkRasterSurface
     /// <param name="blend">Blend mode.</param>
     /// <param name="clip">Region to composite.</param>
     public void Composite(BinkRasterSurface source, float opacity, BinkBlendMode blend, BinkRect clip)
+        => Composite(source, opacity, blend, BinkPixelRegion.Covering(clip));
+
+    /// <summary>Composites the pixels of <paramref name="region"/> from another surface of the same size onto this one.</summary>
+    internal void Composite(BinkRasterSurface source, float opacity, BinkBlendMode blend, BinkPixelRegion region)
     {
         ArgumentNullException.ThrowIfNull(source);
         if (source.Width != Width || source.Height != Height) throw new ArgumentException("Surfaces must have the same size to be composited.", nameof(source));
         opacity = Math.Clamp(opacity, 0f, 1f);
         if (opacity <= 0) return;
 
-        int x0 = Math.Max((int)MathF.Floor(clip.Left), 0);
-        int y0 = Math.Max((int)MathF.Floor(clip.Top), 0);
-        int x1 = Math.Min((int)MathF.Ceiling(clip.Right), Width);
-        int y1 = Math.Min((int)MathF.Ceiling(clip.Bottom), Height);
+        int x0 = Math.Max(region.X0, 0);
+        int y0 = Math.Max(region.Y0, 0);
+        int x1 = Math.Min(region.X1, Width);
+        int y1 = Math.Min(region.Y1, Height);
 
         for (int y = y0; y < y1; y++)
         {
@@ -226,6 +230,18 @@ public sealed class BinkRasterSurface
         }
     }
 
+    /// <summary>Makes the pixels of a region fully transparent.</summary>
+    internal void Clear(BinkPixelRegion region)
+    {
+        int x0 = Math.Max(region.X0, 0);
+        int x1 = Math.Min(region.X1, Width);
+        if (x1 <= x0) return;
+        for (int y = Math.Max(region.Y0, 0), y1 = Math.Min(region.Y1, Height); y < y1; y++)
+        {
+            _pixels.AsSpan((y * Width + x0) * 4, (x1 - x0) * 4).Clear();
+        }
+    }
+
     /// <summary>Returns the pixels as straight-alpha RGBA bytes, the layout PNG expects.</summary>
     public byte[] ToRgba32()
     {
@@ -263,4 +279,39 @@ public sealed class BinkRasterSurface
     }
 
     private static byte ToByte(float value) => (byte)Math.Clamp(MathF.Round(value * 255f), 0, 255);
+}
+
+/// <summary>
+/// A rectangle of whole pixels, [X0, X1) by [Y0, Y1). Kept in integers because a float cannot hold every column
+/// of a very wide surface exactly.
+/// </summary>
+internal readonly record struct BinkPixelRegion(int X0, int Y0, int X1, int Y1)
+{
+    /// <summary>No pixels.</summary>
+    public static readonly BinkPixelRegion Empty = new(0, 0, 0, 0);
+
+    /// <summary>True when the region holds no pixel.</summary>
+    public bool IsEmpty => X1 <= X0 || Y1 <= Y0;
+
+    /// <summary>The pixels a device-space rectangle touches, rounded outwards as the rasterizer rounds its clip.</summary>
+    public static BinkPixelRegion Covering(BinkRect rect)
+        => new(ToPixel(MathF.Floor(rect.Left)), ToPixel(MathF.Floor(rect.Top)), ToPixel(MathF.Ceiling(rect.Right)), ToPixel(MathF.Ceiling(rect.Bottom)));
+
+    /// <summary>The smallest region holding both.</summary>
+    public BinkPixelRegion Union(BinkPixelRegion other)
+    {
+        if (IsEmpty) return other;
+        if (other.IsEmpty) return this;
+        return new BinkPixelRegion(Math.Min(X0, other.X0), Math.Min(Y0, other.Y0), Math.Max(X1, other.X1), Math.Max(Y1, other.Y1));
+    }
+
+    /// <summary>The pixels in both, or <see cref="Empty"/>.</summary>
+    public BinkPixelRegion Intersect(BinkPixelRegion other)
+    {
+        var result = new BinkPixelRegion(Math.Max(X0, other.X0), Math.Max(Y0, other.Y0), Math.Min(X1, other.X1), Math.Min(Y1, other.Y1));
+        return result.IsEmpty ? Empty : result;
+    }
+
+    // A clip can lie far outside the surface; saturating keeps it from wrapping round when converted.
+    private static int ToPixel(float value) => float.IsNaN(value) ? 0 : (int)Math.Clamp(value, int.MinValue / 2f, int.MaxValue / 2f);
 }

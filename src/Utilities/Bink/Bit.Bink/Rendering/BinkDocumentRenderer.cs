@@ -54,8 +54,10 @@ public static class BinkDocumentRenderer
         options = WithIndexedFilter(options ?? BinkRenderOptions.Default);
         if (layer.Count == 0) return 0;
 
-        bool isolate = layer.Opacity < 1f || LayerHasEraser(layer);
-        if (isolate) context.PushGroup(layer.Opacity, BinkBlendMode.Normal);
+        // A layer is composited as one unit when its opacity or blend mode applies to it as a whole, and when it
+        // erases, so its erasers cannot reach the layers below.
+        bool isolate = layer.Opacity < 1f || layer.BlendMode != BinkBlendMode.Normal || LayerHasEraser(layer);
+        if (isolate) context.PushGroup(layer.Opacity, layer.BlendMode);
 
         int drawn = 0;
         BinkRect clip = options.ClipBounds;

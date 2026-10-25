@@ -127,4 +127,6 @@ public partial class ClientAppMessages
     /// acted on them has to act again.
     /// </summary>
     public const string CONSENT_CHANGED = nameof(CONSENT_CHANGED);
+
+    public const string LOCAL_STORAGE_CHANGED = nameof(LOCAL_STORAGE_CHANGED);
 }

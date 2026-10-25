@@ -47,19 +47,23 @@ internal static class Warp
     public static void Run(ImageBuffer source, ImageBuffer output, Func<Vector2, Vector2> inverse, WarpSampling sampling, Rgba32 background, OperationContext context)
     {
         int sw = source.Width, sh = source.Height;
-        var src = source.Pixels;
         var bg = Premultiplied(background);
 
-        for (var y = 0; y < output.Height; y++)
+        // Every output pixel is mapped and sampled on its own, so bands of rows run side by side.
+        ParallelRows.For(context, 0, output.Height, output.Width * 4L, (start, end, band) =>
         {
-            if ((y & 15) == 0) { context.ThrowIfCancellationRequested(); context.ReportProgress(y / (double)output.Height); }
-            var dst = output.GetRow(y);
-            for (var x = 0; x < output.Width; x++)
+            var src = source.Pixels;
+            for (var y = start; y < end; y++)
             {
-                var p = inverse(new Vector2(x + 0.5f, y + 0.5f));
-                dst[x] = Store(Sample(src, sw, sh, p.X - 0.5f, p.Y - 0.5f, bg, sampling));
+                if (((y - start) & 15) == 0) { band.ThrowIfCancellationRequested(); band.ReportProgress(y / (double)output.Height); }
+                var dst = output.GetRow(y);
+                for (var x = 0; x < output.Width; x++)
+                {
+                    var p = inverse(new Vector2(x + 0.5f, y + 0.5f));
+                    dst[x] = Store(Sample(src, sw, sh, p.X - 0.5f, p.Y - 0.5f, bg, sampling));
+                }
             }
-        }
+        });
         context.ReportProgress(1);
     }
 
@@ -83,28 +87,31 @@ internal static class Warp
             return;
         }
         int sw = source.Width, sh = source.Height;
-        var src = source.Pixels;
         var bg = Premultiplied(background);
         // Derivative of the mapped position with respect to the destination column.
         var stepX = inverse.M11;
         var stepY = inverse.M12;
         var width = output.Width;
 
-        for (var y = 0; y < output.Height; y++)
+        ParallelRows.For(context, 0, output.Height, width, (start, end, band) =>
         {
-            if ((y & 15) == 0) { context.ThrowIfCancellationRequested(); context.ReportProgress(y / (double)output.Height); }
-            var dst = output.GetRow(y);
-            // Recomputed per row rather than accumulated, so a long row cannot drift.
-            var origin = Vector2.Transform(new Vector2(0.5f, y + 0.5f), inverse);
-            var baseX = origin.X - 0.5f;
-            var baseY = origin.Y - 0.5f;
-            for (var x = 0; x < width; x++)
+            var src = source.Pixels;
+            for (var y = start; y < end; y++)
             {
-                var ix = (int)MathF.Floor(baseX + x * stepX + 0.5f);
-                var iy = (int)MathF.Floor(baseY + x * stepY + 0.5f);
-                dst[x] = Store((uint)ix < (uint)sw && (uint)iy < (uint)sh ? Load(src[iy * sw + ix]) : bg);
+                if (((y - start) & 15) == 0) { band.ThrowIfCancellationRequested(); band.ReportProgress(y / (double)output.Height); }
+                var dst = output.GetRow(y);
+                // Recomputed per row rather than accumulated, so a long row cannot drift.
+                var origin = Vector2.Transform(new Vector2(0.5f, y + 0.5f), inverse);
+                var baseX = origin.X - 0.5f;
+                var baseY = origin.Y - 0.5f;
+                for (var x = 0; x < width; x++)
+                {
+                    var ix = (int)MathF.Floor(baseX + x * stepX + 0.5f);
+                    var iy = (int)MathF.Floor(baseY + x * stepY + 0.5f);
+                    dst[x] = Store((uint)ix < (uint)sw && (uint)iy < (uint)sh ? Load(src[iy * sw + ix]) : bg);
+                }
             }
-        }
+        });
         context.ReportProgress(1);
     }
 
@@ -119,6 +126,17 @@ internal static class Warp
     /// </summary>
     private static void RunAffineTiled(ImageBuffer source, ImageBuffer output, Matrix3x2 inverse, WarpSampling sampling, Rgba32 background, OperationContext context)
     {
+        var height = output.Height;
+        // Bands of whole rows of tiles: each tile reads the source and writes only its own pixels.
+        var tileRows = (height + Tile - 1) / Tile;
+        ParallelRows.For(context, 0, tileRows, (long)output.Width * Tile, (start, end, band) =>
+            RunAffineTileRows(source, output, inverse, sampling, background, start, end, band));
+        context.ReportProgress(1);
+    }
+
+    /// <summary>Warps the output tiles in rows of tiles <paramref name="start"/> to <paramref name="end"/>.</summary>
+    private static void RunAffineTileRows(ImageBuffer source, ImageBuffer output, Matrix3x2 inverse, WarpSampling sampling, Rgba32 background, int start, int end, OperationContext context)
+    {
         int sw = source.Width, sh = source.Height;
         var bg = Premultiplied(background);
         var stepX = inverse.M11;
@@ -131,7 +149,7 @@ internal static class Warp
         var origins = new Vector2[Tile];
         try
         {
-            for (var ty = 0; ty < height; ty += Tile)
+            for (var ty = start * Tile; ty < Math.Min(height, end * Tile); ty += Tile)
             {
                 context.ThrowIfCancellationRequested();
                 context.ReportProgress(ty / (double)height);
@@ -199,7 +217,6 @@ internal static class Warp
                     }
                 }
             }
-            context.ReportProgress(1);
         }
         finally
         {
@@ -599,6 +616,12 @@ public sealed class PerspectiveTransformOperation : ImageOperation, IGeometricOp
     }
 
     private bool _straighten;
+
+    /// <summary>
+    /// True for a transform made by <see cref="Straighten"/>, whose corners are a quadrilateral of the source to straighten
+    /// rather than where the source's corners go.
+    /// </summary>
+    public bool IsStraightening => _straighten;
 
     public IReadOnlyList<PointF> DestinationCorners => _corners;
     public Size? OutputSize { get; }

@@ -28,6 +28,13 @@ public static class E2EEnvironment
     public static bool SkipBuild { get; } = Read("BMAGE_E2E_SKIP_BUILD") == "1";
 
     /// <summary>
+    /// <c>BMAGE_E2E_MAUI_DEBUGGING_PORT</c>: the WebView2 debugging port the MAUI sample was given from outside - by the
+    /// machine-wide <c>AdditionalBrowserArguments</c> policy, as CI sets it. Needed when the suite runs elevated: WebView2
+    /// then ignores <c>WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS</c>, which is how the suite opens a free port otherwise.
+    /// </summary>
+    public static int? MauiDebuggingPort { get; } = int.TryParse(Read("BMAGE_E2E_MAUI_DEBUGGING_PORT"), out var port) ? port : null;
+
+    /// <summary>
     /// <c>BMAGE_E2E_CHANNEL</c>: e.g. chrome / msedge, to use an installed browser. When unset the suite
     /// tries Playwright's bundled Chromium first and then an installed Chrome and Edge, and reports the
     /// run as inconclusive if none of them launches.
@@ -39,6 +46,22 @@ public static class E2EEnvironment
 
     /// <summary><c>BMAGE_E2E_HEADED=1</c>: show the browser.</summary>
     public static bool Headed { get; } = Read("BMAGE_E2E_HEADED") == "1";
+
+    /// <summary>
+    /// <c>BMAGE_E2E_BROWSER</c>: <c>chromium</c> (the default), <c>firefox</c> or <c>webkit</c>, Playwright's builds of
+    /// the three engines, so the suite checks Firefox and Safari's engine as well as Chrome's. A channel or an
+    /// executable applies to Chromium only.
+    /// </summary>
+    public static string Browser { get; } = Read("BMAGE_E2E_BROWSER")?.ToLowerInvariant() ?? "chromium";
+
+    /// <summary>
+    /// <c>BMAGE_E2E_MEASURE=1</c>: run <see cref="PerformanceMeasurements"/>, which measures rather than checks and is
+    /// only worth running against a Release publish of the demo (<see cref="HostUrl"/>).
+    /// </summary>
+    public static bool Measure { get; } = Read("BMAGE_E2E_MEASURE") == "1";
+
+    /// <summary><c>BMAGE_E2E_MEASURE_OUT</c>: the file the measurements are written to, tab separated; a temporary file by default.</summary>
+    public static string MeasureOutput { get; } = Read("BMAGE_E2E_MEASURE_OUT") ?? Path.Combine(Path.GetTempPath(), "bmage-measurements.tsv");
 
     private static string? Read(string name)
     {

@@ -188,12 +188,25 @@ public sealed class BinkSvgRenderContext : IBinkRenderContext, IBinkRenderContex
         ArgumentNullException.ThrowIfNull(image);
         if (destination.IsEmpty || opacity <= 0 || image.IsOmitted) return;
 
-        // A crop is expressed as an oversized image behind a clip rectangle, which keeps the pixels untouched.
-        if (sourceRect is { } crop && crop.Width > 0 && crop.Height > 0 && image.Width > 0 && image.Height > 0)
+        if (sourceRect is not { } crop)
         {
+            WriteImageTag(image, destination, opacity);
+            return;
+        }
+
+        // The canvas draws nothing from a source rectangle with no area, and neither does the rasterizer.
+        if (!(crop.Width > 0 && crop.Height > 0)) return;
+
+        // A natural size the source does not carry is read from the file itself when that is an embedded PNG,
+        // which is what a pasted picture or a screenshot is.
+        int width = image.Width, height = image.Height;
+        if (!(width > 0 && height > 0) && image.TryGetBytes(out byte[] bytes)) BinkPngCodec.TryReadSize(bytes, out width, out height);
+        if (width > 0 && height > 0)
+        {
+            // A crop is expressed as an oversized image behind a clip rectangle, which keeps the pixels untouched.
             float scaleX = destination.Width / crop.Width;
             float scaleY = destination.Height / crop.Height;
-            var full = new BinkRect(destination.X - crop.X * scaleX, destination.Y - crop.Y * scaleY, image.Width * scaleX, image.Height * scaleY);
+            var full = new BinkRect(destination.X - crop.X * scaleX, destination.Y - crop.Y * scaleY, width * scaleX, height * scaleY);
 
             // The clip needs a scope of its own. Without the Save, the matching Restore would close whatever
             // scope the caller had open, and every later element would fall outside its layer group.
@@ -203,7 +216,32 @@ public sealed class BinkSvgRenderContext : IBinkRenderContext, IBinkRenderContex
             Restore();
             return;
         }
-        WriteImageTag(image, destination, opacity);
+
+        // Without the natural size the oversized image cannot be placed. A nested viewport whose view box is the
+        // crop, in image pixels, does the same job: the image takes its own size inside it, the viewport maps the
+        // crop onto the destination and clips the rest. Squeezing the whole image into the destination instead
+        // would show something the canvas does not. An image that takes its own size is SVG 2; a renderer that
+        // only knows SVG 1.1 treats the missing size as zero and draws nothing here, which is the lesser wrong.
+        _writer.Write("<svg x=\"");
+        WriteNumber(destination.X, _decimals);
+        _writer.Write("\" y=\"");
+        WriteNumber(destination.Y, _decimals);
+        _writer.Write("\" width=\"");
+        WriteNumber(destination.Width, _decimals);
+        _writer.Write("\" height=\"");
+        WriteNumber(destination.Height, _decimals);
+        _writer.Write("\" viewBox=\"");
+        WriteNumber(crop.X, _decimals);
+        _writer.Write(' ');
+        WriteNumber(crop.Y, _decimals);
+        _writer.Write(' ');
+        WriteNumber(crop.Width, _decimals);
+        _writer.Write(' ');
+        WriteNumber(crop.Height, _decimals);
+        _writer.Write("\" preserveAspectRatio=\"none\" overflow=\"hidden\"><image");
+        WriteOpacity("opacity", opacity);
+        WriteHref(image);
+        _writer.Write("/></svg>");
     }
 
     private void WriteImageTag(BinkImageSource image, BinkRect rect, float opacity)
@@ -218,10 +256,30 @@ public sealed class BinkSvgRenderContext : IBinkRenderContext, IBinkRenderContex
         WriteNumber(MathF.Max(rect.Height, 0), _decimals);
         _writer.Write("\" preserveAspectRatio=\"none\"");
         WriteOpacity("opacity", opacity);
-        _writer.Write(" href=\"");
-        BinkSvgText.WriteEscaped(_writer, image.Uri);
-        _writer.Write("\"/>");
+        WriteHref(image);
+        _writer.Write("/>");
     }
+
+    /// <summary>
+    /// Writes the image reference twice: <c>href</c> for SVG 2 and <c>xlink:href</c> for SVG 1.1 consumers, which
+    /// is the version the exported file declares. When no enclosing document declares the xlink prefix, the
+    /// declaration goes on the element itself, so a fragment written on its own is still well formed.
+    /// </summary>
+    private void WriteHref(BinkImageSource image)
+    {
+        if (!XlinkDeclared) _writer.Write(" xmlns:xlink=\"http://www.w3.org/1999/xlink\"");
+        _writer.Write(" xlink:href=\"");
+        BinkSvgText.WriteEscaped(_writer, image.Uri);
+        _writer.Write("\" href=\"");
+        BinkSvgText.WriteEscaped(_writer, image.Uri);
+        _writer.Write('"');
+    }
+
+    /// <summary>
+    /// True when the enclosing document declares the <c>xlink</c> prefix on its root, as the document exporter
+    /// does, so images need not declare it themselves.
+    /// </summary>
+    internal bool XlinkDeclared { get; init; }
 
     /// <inheritdoc />
     public void DrawText(string text, Vector2 origin, in BinkTextStyle style, float opacity)
@@ -246,17 +304,28 @@ public sealed class BinkSvgRenderContext : IBinkRenderContext, IBinkRenderContex
         if (style.Align != BinkTextAlign.Left) _writer.Write(style.Align == BinkTextAlign.Center ? " text-anchor=\"middle\"" : " text-anchor=\"end\"");
         _writer.Write(" xml:space=\"preserve\">");
 
-        int line = 0;
-        foreach (ReadOnlySpan<char> segment in text.AsSpan().EnumerateLines())
+        // Lines break only at '\n', as on canvas and in the size estimate, and each line is placed at its own
+        // baseline. A relative offset would depend on the line before it being drawn, and viewers drop an empty
+        // tspan, so a blank line used to pull every line after it up by one.
+        ReadOnlySpan<char> remaining = text;
+        float firstBaseline = origin.Y + style.FontSize * 0.82f;
+        for (int index = 0; ; index++)
         {
-            _writer.Write("<tspan x=\"");
-            WriteNumber(origin.X, _decimals);
-            _writer.Write("\" dy=\"");
-            WriteNumber(line == 0 ? 0 : lineHeight, _decimals);
-            _writer.Write("\">");
-            BinkSvgText.WriteEscaped(_writer, segment);
-            _writer.Write("</tspan>");
-            line++;
+            int newline = remaining.IndexOf('\n');
+            ReadOnlySpan<char> line = newline < 0 ? remaining : remaining[..newline];
+            if (!line.IsEmpty && line[^1] == '\r') line = line[..^1];
+            if (!line.IsEmpty)
+            {
+                _writer.Write("<tspan x=\"");
+                WriteNumber(origin.X, _decimals);
+                _writer.Write("\" y=\"");
+                WriteNumber(firstBaseline + index * lineHeight, _decimals);
+                _writer.Write("\">");
+                BinkSvgText.WriteEscaped(_writer, line);
+                _writer.Write("</tspan>");
+            }
+            if (newline < 0) break;
+            remaining = remaining[(newline + 1)..];
         }
         _writer.Write("</text>");
     }

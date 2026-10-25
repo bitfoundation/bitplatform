@@ -46,13 +46,20 @@ Pick what pointer input does with `Tool` (`BinkDrawTool`, `BinkEraserTool`, `Bin
 
 - Pressure-aware, variable-width ink with smoothing, simulated pressure, tilt and twist capture.
 - Stroke, segment and pixel erasers.
-- Selection, move, resize and rotate through transforms; layers with visibility, lock and opacity.
+- Selection, lasso, move, resize and rotate through transforms, snapping to a grid and to other elements; layers
+  with visibility, lock and opacity.
+- Copy, cut and paste through the system clipboard (images and text included), duplicate, Alt-drag copies and
+  bring-to-front, each with its usual shortcut and one undo step.
 - Shapes, arrows, highlights, callouts, text with a real HTML editor, and images.
-- Undo and redo built on inverse operations, never snapshots.
+- Undo and redo built on inverse operations, never snapshots, with long drags compacted to one step per element.
 - A versioned, compact JSON format with binary stroke points, hardened against untrusted input.
-- SVG and PNG export that match the screen, including a pure .NET PNG path for servers and tests.
+- SVG, PNG, JPEG and WebP export that match the screen, including a pure .NET PNG path for servers and tests.
+- Ink measurements (length, stroke count, duration) for validating signatures.
 - Real-time collaboration over any transport, with presence and offline queueing.
-- Palm rejection, pinch zoom, coalesced samples and high-DPI, low-latency canvases.
+- Palm rejection, pinch zoom, mouse wheel and trackpad pan and zoom, coalesced samples and high-DPI, low-latency
+  canvases.
+- Retained rendering: the browser keeps every path it has drawn, so redrawing a large page costs a few numbers per
+  element, over WebAssembly and over a Blazor Server circuit alike.
 - A labelled, keyboard-operable canvas with a live text summary for screen readers.
 - Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid on .NET 8, 9 and 10.
 

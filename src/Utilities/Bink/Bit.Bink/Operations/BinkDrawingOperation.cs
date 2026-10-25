@@ -215,6 +215,11 @@ public sealed record BinkBatchOperation(IReadOnlyList<BinkDrawingOperation> Oper
     public bool IsEmpty => Operations.Count == 0;
 
     /// <inheritdoc />
+    /// <remarks>
+    /// Only the first operation is checked: the later ones depend on what the earlier ones change, so whether they
+    /// apply is only known by applying them, and a batch that fails part way is rolled back. A collaboration session
+    /// therefore applies a remote batch one operation at a time instead, skipping the ones that no longer apply.
+    /// </remarks>
     public override bool CanApply(BinkDocument document) => Operations.Count == 0 || Operations[0].CanApply(document);
 
     internal override BinkDrawingOperation ApplyCore(BinkDocument document)

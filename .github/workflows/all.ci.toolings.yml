@@ -1,0 +1,128 @@
+name: All Toolings CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      nuget_packages:
+        description: NuGet packages
+        type: boolean
+        default: true
+  workflow_call:
+    inputs:
+      nuget_packages:
+        type: boolean
+        default: true
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
+permissions:
+  contents: read
+
+jobs:
+
+  build_nuget_packages:
+    name: build toolings nuget packages locally
+    if: ${{ inputs.nuget_packages }}
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    - name: Generate ES2019 based blazor.*.js files for .NET 9
+      run: |
+        git clone https://github.com/dotnet/aspnetcore.git
+        cd aspnetcore
+        git switch release/9.0
+        git submodule update --init --recursive
+        sed -i 's/"target": "ES2022"/"target": "ES2019"/' src/Components/Shared.JS/tsconfig.json
+        npm install
+        npm run-script build
+        cd src/Components/Web.JS
+        npm install
+        npm run-script build:production
+        cd ../../../../
+        mkdir -p src/Toolings/BlazorES2019/wwwroot.net9/
+        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/Toolings/BlazorES2019/wwwroot.net9/
+        rm -rf aspnetcore
+
+    - name: Generate ES2019 based blazor.*.js files for .NET 10
+      run: |
+        git clone https://github.com/dotnet/aspnetcore.git
+        cd aspnetcore
+        git switch release/10.0
+        git submodule update --init --recursive
+        sed -i 's/"target": "ES2024"/"target": "ES2019"/' src/Components/Shared.JS/tsconfig.json
+        npm install
+        npm run-script build
+        cd src/Components/Web.JS
+        npm install
+        npm run-script build:production
+        cd ../../../../
+        mkdir -p src/Toolings/BlazorES2019/wwwroot.net10/
+        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/Toolings/BlazorES2019/wwwroot.net10/
+        rm -rf aspnetcore
+
+    - name: Build and pack BlazorES2019
+      run: |
+        dotnet build src/Toolings/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Toolings/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj --output ./packages --configuration Release
+
+    - name: Build and pack CodeAnalyzers
+      run: |
+        dotnet build src/Toolings/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Toolings/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj --output ./packages --configuration Release
+
+    - name: Build SourceGenerators
+      run: dotnet build src/Toolings/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj --configuration Release
+
+    - name: Build and pack Minifier
+      run: |
+        dotnet build src/Toolings/Minifier/Bit.Minifier/Bit.Minifier.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Toolings/Minifier/Bit.Minifier/Bit.Minifier.csproj --output ./packages --configuration Release
+
+    - name: Build and pack bit CLI
+      run: |
+        dotnet build src/Toolings/Cli/Bit.Cli/Bit.Cli.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Toolings/Cli/Bit.Cli/Bit.Cli.csproj --output ./packages --configuration Release
+
+    - name: Upload NuGet packages artifact
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: toolings-nuget-packages
+        path: ./packages/*.nupkg
+        retention-days: 30
+
+
+
+  blazores2019:
+    name: blazores2019
+    uses: ./.github/workflows/bit.ci.BlazorES2019.yml
+
+  cli:
+    name: cli
+    uses: ./.github/workflows/bit.ci.Cli.yml
+
+  codeanalyzers:
+    name: codeanalyzers
+    uses: ./.github/workflows/bit.ci.CodeAnalyzers.yml
+
+  minifier:
+    name: minifier
+    uses: ./.github/workflows/bit.ci.Minifier.yml
+
+  sourcegenerators:
+    name: sourcegenerators
+    uses: ./.github/workflows/bit.ci.SourceGenerators.yml

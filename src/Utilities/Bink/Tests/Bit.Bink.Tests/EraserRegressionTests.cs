@@ -148,4 +148,21 @@ public class EraserRegressionTests(TestContext output)
         Assert.AreEqual(1, context.Document.ElementCount);
         Assert.AreSame(mask, context.Document.GetElement(mask.Id));
     }
+
+    [TestMethod]
+    public void A_fast_swipe_of_the_stroke_eraser_does_not_step_over_a_thin_stroke()
+    {
+        // The stroke eraser sampled at most 32 points along each swept segment, so one long, fast mouse movement
+        // with a small eraser stepped right over a thin stroke lying between two samples.
+        using var context = new TestToolContext();
+        BinkStroke thin = TestData.Stroke(new Vector2(2017, 0), new Vector2(2017, 100), new BinkPenBrush { Width = 1 }, 2);
+        context.Document.AddElement(thin);
+        var eraser = new BinkEraserTool { Mode = BinkEraserMode.Stroke, Radius = 2f };
+        context.Viewport = BinkViewport.Identity;
+        context.ViewSize = new Vector2(5000, 600);
+
+        context.Gesture(eraser, BinkPointerKind.Mouse, (0, 50, 0.5f), (4000, 50, 0.5f), (4000, 50, 0.5f));
+
+        Assert.IsFalse(context.Document.ContainsElement(thin.Id));
+    }
 }

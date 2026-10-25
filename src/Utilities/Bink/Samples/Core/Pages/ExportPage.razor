@@ -1,0 +1,147 @@
+﻿@page "/export"
+
+<PageTitle>Export - Bink samples</PageTitle>
+
+<h1>Export</h1>
+
+<p>
+    Draw something, then export it every way Bink can. SVG and the managed PNG are produced in .NET wherever .NET
+    runs in this host; PNG, JPEG and WebP from the canvas are encoded by the browser and handed back. The JSON round
+    trip saves the document and loads the copy into the read-only canvas below.
+</p>
+
+<div class="toolbar">
+    <button disabled="@(_canvas?.History.CanUndo is not true)" @onclick="() => _canvas?.Undo()">Undo</button>
+    <button disabled="@_document.IsEmpty" @onclick="() => _canvas?.Clear()">Clear</button>
+    <button @onclick="ImportSvg">Import an SVG</button>
+</div>
+
+<div class="surface">
+    <BinkCanvas @ref="_canvas"
+                Document="_document"
+                Height="320px"
+                AriaLabel="Drawing to export"
+                Brush="_brush"
+                EnableTouchGestures="true"
+                DocumentChanged="() => StateHasChanged()"
+                Ready="() => StateHasChanged()"
+                HistoryChanged="() => StateHasChanged()" />
+</div>
+
+<CanvasStatus Canvas="_canvas" />
+
+<div class="toolbar">
+    <button disabled="@_document.IsEmpty" @onclick="ExportSvg">SVG</button>
+    <button disabled="@_document.IsEmpty" @onclick="() => ExportFromBrowserAsync(BinkImageFormat.Png)">PNG (browser)</button>
+    <button disabled="@_document.IsEmpty" @onclick="() => ExportFromBrowserAsync(BinkImageFormat.Jpeg)">JPEG (browser)</button>
+    <button disabled="@_document.IsEmpty" @onclick="() => ExportFromBrowserAsync(BinkImageFormat.Webp)">WebP (browser)</button>
+    <button disabled="@_document.IsEmpty" @onclick="ExportManagedPng">PNG (.NET)</button>
+    <button disabled="@_document.IsEmpty" @onclick="RoundTrip">JSON round trip</button>
+</div>
+
+@if (_result is not null)
+{
+    <section>
+        <h2>@_result</h2>
+        @if (_svg is not null)
+        {
+            <div class="preview">@((MarkupString)_svg)</div>
+        }
+        else if (_image is not null)
+        {
+            <img class="preview" src="@_image" alt="@_result" />
+        }
+    </section>
+}
+
+<section>
+    <h2>Loaded from JSON</h2>
+    <div class="surface">
+        <BinkCanvas @ref="_copy" Height="320px" AriaLabel="Copy loaded from JSON" ReadOnly="true" />
+    </div>
+</section>
+
+@code {
+    private const string SampleSvg =
+        """
+        <svg xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120">
+          <rect x="10" y="10" width="80" height="60" rx="8" fill="#fde047" stroke="#a16207" stroke-width="3" />
+          <circle cx="140" cy="60" r="40" fill="none" stroke="#7c3aed" stroke-width="4" />
+          <path d="M 20 100 C 60 70, 120 130, 180 100" fill="none" stroke="#db2777" stroke-width="3" />
+        </svg>
+        """;
+
+    private BinkCanvas? _canvas;
+    private BinkCanvas? _copy;
+    private readonly BinkDocument _document = new(new BinkDocumentSettings { Width = 900, Height = 500, Background = BinkColor.White });
+    private readonly BinkBrush _brush = new BinkPenBrush { Width = 5f, Color = BinkColor.Parse("#2563eb") };
+    private string? _result;
+    private string? _svg;
+    private string? _image;
+
+    private static readonly BinkPngExportOptions ImageOptions = new() { Region = BinkExportRegion.Content, Padding = 16f, Scale = 2f };
+
+    private void ImportSvg()
+    {
+        BinkSvgImportResult? imported = _canvas?.ImportSvg(SampleSvg);
+        Show(imported is null ? "The SVG was not imported" : $"Imported {imported.Elements.Count} elements from SVG", null, null);
+    }
+
+    private void ExportSvg()
+    {
+        if (_canvas is null) return;
+        string svg = _canvas.ExportSvg(new BinkSvgExportOptions { Region = BinkExportRegion.Content, Padding = 16f });
+        Show($"SVG - {svg.Length:N0} characters", svg, null);
+    }
+
+    private async Task ExportFromBrowserAsync(BinkImageFormat format)
+    {
+        if (_canvas is null) return;
+        try
+        {
+            byte[] bytes = await _canvas.ExportImageAsync(format, ImageOptions);
+            (string name, string mediaType) = Describe(format);
+            Show($"{name} from the browser - {bytes.Length:N0} bytes", null, $"data:{mediaType};base64,{Convert.ToBase64String(bytes)}");
+        }
+        catch (Exception ex) when (ex is NotSupportedException or InvalidOperationException)
+        {
+            // Safari has no WebP encoder, and JPEG and WebP need the browser layer to be attached.
+            Show($"{Describe(format).Name} is not available here: {ex.Message}", null, null);
+        }
+    }
+
+    private static (string Name, string MediaType) Describe(BinkImageFormat format) => format switch
+    {
+        BinkImageFormat.Jpeg => ("JPEG", "image/jpeg"),
+        BinkImageFormat.Webp => ("WebP", "image/webp"),
+        _ => ("PNG", "image/png"),
+    };
+
+    private void ExportManagedPng()
+    {
+        BinkPngExportResult png = BinkPngExporter.ExportWithDetails(_document, ImageOptions);
+        string note = png.IsComplete ? string.Empty : $" ({png.SkippedTextElements} text and {png.SkippedImages} image elements need the browser)";
+        Show($"PNG from .NET - {png.Width}x{png.Height}, {png.Bytes.Length:N0} bytes{note}", null, "data:image/png;base64," + Convert.ToBase64String(png.Bytes));
+    }
+
+    private void RoundTrip()
+    {
+        byte[] json = BinkSerializer.SerializeToUtf8Bytes(_document);
+        if (BinkSerializer.TryDeserialize(json, out BinkDocument? copy, out string? error))
+        {
+            _copy?.LoadDocument(copy!);
+            Show($"Saved {json.Length:N0} bytes of JSON and loaded {copy!.ElementCount} elements back", null, null);
+        }
+        else
+        {
+            Show("The saved JSON could not be read back: " + error, null, null);
+        }
+    }
+
+    private void Show(string result, string? svg, string? image)
+    {
+        _result = result;
+        _svg = svg;
+        _image = image;
+    }
+}

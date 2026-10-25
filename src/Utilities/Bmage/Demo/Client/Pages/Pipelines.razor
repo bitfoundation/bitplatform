@@ -113,7 +113,17 @@
 
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Building and inspecting</h3>
+    <p>
+        A pipeline knows its output size, the transform it applies to coordinates and the memory it
+        will need, all without touching a pixel - which is how the playground above prints its output
+        size before anything runs, and how the editor keeps annotations on what they mark.
+    </p>
     <CodeSnippet Code="@InspectSnippet" Language="C#" Expanded="true" />
+    <p>
+        It is also an <code>IReadOnlyList&lt;IImageOperation&gt;</code>, edited the way an immutable list
+        is - every call returns a new pipeline:
+    </p>
+    <CodeSnippet Code="@ComposeSnippet" Language="C#" Expanded="true" />
 </div>
 
 <div class="bb-card">
@@ -136,6 +146,7 @@
                 <tr><th scope="row"><code>CancellationToken</code></th><td>Checked between operations and periodically inside them, typically every few rows.</td></tr>
                 <tr><th scope="row"><code>Progress</code></th><td>Receives 0 to 1 across the whole run, with each operation's own progress mapped into its slice.</td></tr>
                 <tr><th scope="row"><code>Optimize</code></th><td>Run the optimiser first. Default true.</td></tr>
+                <tr><th scope="row"><code>MaxDegreeOfParallelism</code></th><td>Threads each operation may spread its rows over. One by default; the pixels are identical at any number. See <a href="/performance#threads-workers-and-memory">Performance</a>.</td></tr>
                 <tr><th scope="row"><code>YieldBetweenOperations</code></th><td>Yield to the scheduler between steps. Default true.</td></tr>
                 <tr><th scope="row"><code>YieldCallback</code></th><td>How to yield, if the default <code>Task.Yield</code> is not right for your host.</td></tr>
             </tbody>
@@ -158,6 +169,29 @@
         appear sideways on a canvas unless it is applied. The browser decoder applies it during
         decoding; <code>AutoOrient</code> handles the cases where it has not been.
     </p>
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Geometric operations">
+        <table class="bb-table">
+            <thead>
+                <tr><th scope="col">Operation</th><th scope="col">What it does</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row"><code>Crop</code>, <code>CropToAspect</code>, <code>SmartCrop</code></th><td>A rectangle you give, the largest one of an aspect ratio at an anchor, or the one around the subject.</td></tr>
+                <tr><th scope="row"><code>Resize</code>, <code>MaxSize</code>, <code>Cover</code></th><td>Scale in one of the six modes below, with the resampling filter of your choice.</td></tr>
+                <tr><th scope="row"><code>Orient</code>, <code>FlipHorizontal</code>, <code>FlipVertical</code></th><td>The eight lossless orientations: pixels move, nothing is resampled.</td></tr>
+                <tr><th scope="row"><code>Rotate</code></th><td>Any angle. The canvas grows to hold the corners, filled with <code>background</code>, unless <code>expandCanvas: false</code> keeps the original size.</td></tr>
+                <tr><th scope="row"><code>Straighten</code></th><td>Levels a tilt of up to 45&deg; and crops to the largest rectangle of the image's aspect ratio the turned image covers, so no corner is left empty.</td></tr>
+                <tr><th scope="row"><code>CanvasSize</code>, <code>Pad</code></th><td>Grows or shrinks the canvas without scaling the image: an exact size with an anchor, or margins on each side (negative ones cut in). A border, a square canvas for a product shot, room for a caption.</td></tr>
+                <tr><th scope="row"><code>Skew</code>, <code>AffineTransformOperation</code>, <code>PerspectiveTransformOperation</code></th><td>Shear by angles, any 2D matrix, or a four-corner warp - <code>PerspectiveTransformOperation.Straighten</code> turns a photographed document or screen into a rectangle.</td></tr>
+                <tr><th scope="row"><code>ContentBounds.Find</code></th><td>Not an operation but the measurement behind a trim: the rectangle inside transparent or uniform borders, to hand to <code>Crop</code>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        Trimming is an analysis rather than an operation on purpose: an operation must know its output
+        size without seeing the pixels, which is what lets documents, memory estimates and annotation
+        placement work before anything runs.
+    </p>
+    <CodeSnippet Code="@CanvasSnippet" Language="C#" Expanded="true" />
     <h4>The six resize modes</h4>
     <p>For a 1000 &times; 500 source asked to fit 400 &times; 400:</p>
     <div class="bb-scroll" tabindex="0" role="region" aria-label="Resize modes">
@@ -224,11 +258,36 @@
         darkest and brightest 0.5% by default, so one hot pixel cannot define the white point, and it
         leaves a flat histogram alone rather than amplifying it into noise.
     </p>
+    <h4>Colour and tone</h4>
+    <p>
+        The tools a photo editor's develop panel has: white balance picked from something neutral or
+        found automatically, the whites and blacks points, one colour range at a time, and the mixers
+        behind black and white conversions and duotones.
+    </p>
+    <CodeSnippet Code="@ColorSnippet" Language="C#" Expanded="true" />
+    <h4>Everything there is</h4>
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Adjustments and filters">
+        <table class="bb-table">
+            <thead>
+                <tr><th scope="col">Group</th><th scope="col">Builder calls</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row">Light</th><td><code>Brightness</code>, <code>Contrast</code>, <code>Exposure</code> (stops), <code>Gamma</code>, <code>ShadowsHighlights</code>, <code>WhitesBlacks</code>, <code>AutoLevels</code>, <code>AutoContrast</code>; levels and curves through <code>LevelsAdjustment</code> and <code>CurveOperation</code></td></tr>
+                <tr><th scope="row">Colour</th><td><code>Saturation</code>, <code>Vibrance</code>, <code>Hue</code> (degrees), <code>Temperature</code>, <code>Tint</code>, <code>WhiteBalance</code>, <code>AutoWhiteBalance</code>, <code>Hsl</code> (one of eight hue bands), <code>ChannelMixer</code>, <code>Colorize</code>, <code>ColorMatrix</code>, <code>Opacity</code></td></tr>
+                <tr><th scope="row">Looks</th><td><code>Grayscale</code>, <code>BlackAndWhite</code> (a channel mix), <code>Sepia</code>, <code>Invert</code>, <code>Posterize</code>, <code>Threshold</code>, <code>Duotone</code> and any <code>GradientMapOperation</code>, <code>Vignette</code></td></tr>
+                <tr><th scope="row">Detail</th><td><code>Blur</code>, <code>MotionBlur</code> (a distance and an angle), <code>Sharpen</code> (unsharp mask), <code>HighPass</code>, <code>DenoiseMedian</code>, <code>Noise</code>, <code>Pixelate</code>; any kernel through <code>ConvolutionFilter</code>, with <code>Emboss</code> and <code>EdgeDetect</code> built in</td></tr>
+                <tr><th scope="row">Selective</th><td><code>Masked</code> runs any of the above through a mask, <code>ApplyMask</code> cuts the alpha to one, and <code>RemoveBackground</code> clears a plain backdrop - see <a href="/layers-and-masks">Layers and masks</a> and <a href="/retouch">Retouching</a></td></tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The optimiser</h3>
-    <p>It runs by default, and every rewrite is exact.</p>
+    <p>
+        It runs by default. Every rewrite keeps the framing and the output size exactly; all but one keep
+        the pixels too, or make them more accurate.
+    </p>
     <div class="bb-scroll" tabindex="0" role="region" aria-label="Optimiser rules">
         <table class="bb-table">
             <thead>
@@ -238,6 +297,7 @@
                 <tr><th scope="row">Drop identities</th><td><code>Brightness(0)</code> and friends disappear.</td></tr>
                 <tr><th scope="row">Merge crops</th><td>Two crops become one.</td></tr>
                 <tr><th scope="row">Merge orientations</th><td>Rotate 90 twice becomes rotate 180; two horizontal flips vanish entirely.</td></tr>
+                <tr><th scope="row">Drop a superseded resize</th><td>A resize whose result the next resize entirely replaces is skipped, so the survivor resamples from the original pixels - sharper, and the one rule whose pixels differ from an unoptimised run.</td></tr>
                 <tr><th scope="row">Fuse resize with a following crop</th><td>One resample that computes only the surviving region, 2.4&times; faster.</td></tr>
                 <tr><th scope="row">Fuse per-pixel runs</th><td>One pass over the pixels instead of one per adjustment.</td></tr>
             </tbody>
@@ -268,7 +328,9 @@
     <p>
         Implement <code>IImageOperation</code>, or derive from <code>PointOperation</code> if your
         operation maps each pixel independently - then it joins the single-pass run with the
-        adjustments around it for free.
+        adjustments around it for free. Override <code>CanProcessRowsConcurrently</code> when
+        <code>ProcessRow</code> only reads its own fields, so it can spread over threads too, and give
+        it a JSON codec so documents that use it save and replay.
     </p>
     <CodeSnippet Code="@CustomSnippet" Language="C#" />
 </div>
@@ -276,16 +338,21 @@
 @code {
     private sealed record Step(string Id, string Label, Func<ImagePipeline, ImagePipeline> Apply);
 
-    private static readonly string[] GeometryOptions = ["None", "MaxSize 600", "Cover 400×400", "SmartCrop 1:1", "Rotate 12°", "Flip"];
+    private static readonly string[] GeometryOptions = ["None", "MaxSize 600", "Cover 400×400", "SmartCrop 1:1", "Rotate 12°", "Straighten 6°", "Pad 40px", "Flip"];
 
     private static readonly Step[] Steps =
     [
         new("levels", "Auto levels", p => p.AutoLevels()),
+        new("balance", "Auto white balance", p => p.AutoWhiteBalance()),
         new("vibrance", "Vibrance +0.4", p => p.Vibrance(0.4f)),
         new("contrast", "Contrast +0.2", p => p.Contrast(0.2f)),
+        new("hsl", "Deeper blues (HSL)", p => p.Hsl(HueBand.Blues, saturation: 0.4f, lightness: -0.15f)),
         new("sepia", "Sepia", p => p.Sepia(0.8f)),
         new("grayscale", "Grayscale", p => p.Grayscale()),
+        new("bw", "Black and white mix", p => p.BlackAndWhite(0.6f, 0.3f, 0.1f)),
+        new("duotone", "Duotone", p => p.Duotone(new Rgba32(24, 32, 88), new Rgba32(250, 214, 140))),
         new("blur", "Blur 3px", p => p.Blur(3f)),
+        new("motion", "Motion blur 12px", p => p.MotionBlur(12f)),
         new("sharpen", "Sharpen", p => p.Sharpen(0.4f)),
         new("vignette", "Vignette", p => p.Vignette(0.4f)),
     ];
@@ -319,6 +386,8 @@
                 "Cover 400×400" => pipeline.Cover(400, 400),
                 "SmartCrop 1:1" => pipeline.SmartCrop(AspectRatio.Square).MaxSize(400, 400),
                 "Rotate 12°" => pipeline.MaxSize(600, 600).Rotate(12, Rgba32.Transparent),
+                "Straighten 6°" => pipeline.MaxSize(600, 600).Straighten(6),
+                "Pad 40px" => pipeline.MaxSize(600, 600).Pad(40, Rgba32.White),
                 "Flip" => pipeline.MaxSize(600, 600).FlipHorizontal(),
                 _ => pipeline,
             };
@@ -352,6 +421,29 @@
 
         Console.WriteLine(pipeline.GetOutputSize(new Size(4000, 3000)));
         // {Width=1920, Height=1440}   ← computed without touching a single pixel
+
+        // TryGetOutputSize answers false, rather than throwing, for steps that need the pixels.
+        if (pipeline.TryGetOutputSize(size, out var output)) { /* ... */ }
+
+        // Where a point of the source ends up, for geometric pipelines: overlays follow with it.
+        if (pipeline.TryGetTransform(size, out var matrix)) { var moved = Vector2.Transform(point, matrix); }
+
+        // The memory a run will hold at its peak, before it runs.
+        var estimate = pipeline.EstimateMemory(new Size(6000, 4000));
+        Console.WriteLine($"{estimate.PeakBytes / 1048576} MB at the peak, {estimate.OutputBytes / 1048576} MB of result");
+        """;
+
+    private const string ComposeSnippet = """
+        var edit = ImagePipeline.Create().AutoOrient().Brightness(0.1f).Sharpen(0.3f);
+
+        edit = edit.Replace(1, new BrightnessAdjustment(0.2f));   // change a step without redoing the rest
+        edit = edit.Insert(1, new ContrastAdjustment(0.1f));
+        edit = edit.RemoveAt(edit.Count - 1);
+
+        var look = ImagePipeline.Create().Sepia(0.6f).Vignette(0.4f);
+        var final = edit.Concat(look);                             // two pipelines, one run
+
+        var fromList = ImagePipeline.From(savedOperations);         // any IEnumerable<IImageOperation>
         """;
 
     private const string ExecuteSnippet = """
@@ -370,9 +462,27 @@
                 .MaxSize(1920, 1080)                // shrink to fit, never enlarge
                 .Cover(512, 512, Anchor.Top)        // fill exactly, cropping the overflow
                 .Rotate(12.5, background)           // arbitrary angle, canvas expands
+                .Rotate(12.5, expandCanvas: false)  // ...or keeps its size, corners cut off
+                .Straighten(-3.5)                   // level a tilt and crop the empty corners
                 .Orient(Orientation.Rotate90)       // lossless, no resampling
                 .FlipHorizontal()
-                .Skew(10, 0);
+                .FlipVertical()
+                .Skew(10, 0)
+                .CanvasSize(1200, 1200, Anchor.Top, Rgba32.White)
+                .Pad(40, Rgba32.White);             // a 40 pixel border
+        """;
+
+    private const string CanvasSnippet = """
+        // Margins one side at a time; a negative margin cuts into the image.
+        pipeline.Pad(left: 0, top: 120, right: 0, bottom: 0, background: Rgba32.Black);
+
+        // Any 2D matrix, and a four-corner warp: a photographed page made rectangular.
+        pipeline.Apply(new AffineTransformOperation(Matrix3x2.CreateRotation(0.1f) * Matrix3x2.CreateScale(1.2f)));
+        pipeline.Apply(PerspectiveTransformOperation.Straighten(pageCorners, new Size(1240, 1754)));
+
+        // Trim: measure the borders, then crop to what is inside them.
+        var content = ContentBounds.Find(image, new TrimOptions { Mode = TrimMode.Transparent, Padding = 8 });
+        if (content is { } bounds) pipeline = pipeline.Crop(bounds);
         """;
 
     private const string SmartCropSnippet = """
@@ -398,6 +508,36 @@
 
         // A region confines a filter - this is how redaction works.
         pipeline.Pixelate(14, new Rectangle(40, 120, 300, 40));
+
+        // Movement and texture.
+        pipeline.MotionBlur(distance: 24, angle: -15).HighPass(radius: 3);
+        pipeline.Apply(ConvolutionFilter.Emboss());
+        pipeline.Apply(new ConvolutionFilter([0, -1, 0, -1, 5, -1, 0, -1, 0], 3, 3));   // any kernel
+        """;
+
+    private const string ColorSnippet = """
+        // White balance: from a pixel that should be neutral, or found automatically.
+        var grey = ColorSampler.Sample(image, new Point(120, 80), radius: 3);   // the eyedropper
+        pipeline.WhiteBalance(grey);
+        pipeline.AutoWhiteBalance(strength: 0.8f);
+
+        // The ends of the tonal range, and the whole curve.
+        pipeline.WhitesBlacks(whites: 0.2f, blacks: -0.15f);
+        pipeline.Apply(new LevelsAdjustment(inputBlack: 0.05f, inputWhite: 0.95f, gamma: 1.1f));
+        pipeline.Apply(CurveOperation.FromFunction(x => x * x * (3 - 2 * x), name: "S-curve"));
+
+        // One colour range at a time: bluer, richer skies; calmer greens.
+        pipeline.Hsl(HueBand.Blues, hue: -8, saturation: 0.3f, lightness: -0.2f)
+                .Hsl(HueBand.Greens, saturation: -0.25f);
+
+        // Channel mixers, black and white from chosen channels, and tinting.
+        pipeline.ChannelMixer(red: new(1.1f, -0.1f, 0), green: new(0, 1, 0), blue: new(0, 0.1f, 0.9f));
+        pipeline.BlackAndWhite(red: 0.6f, green: 0.3f, blue: 0.1f);   // a red filter on black and white film
+        pipeline.Colorize(hue: 30, saturation: 0.35f);
+
+        // Map luminance onto colours: two of them, or any gradient.
+        pipeline.Duotone(shadows: new Rgba32(24, 32, 88), highlights: new Rgba32(250, 214, 140));
+        pipeline.Apply(new GradientMapOperation([(0f, Rgba32.Black), (0.5f, new Rgba32(200, 40, 90)), (1f, new Rgba32(255, 230, 120))]));
         """;
 
     private const string OptimizerSnippet = """
@@ -413,32 +553,36 @@
         """;
 
     private const string CustomSnippet = """
-        public sealed class DuotoneOperation : PointOperation
+        // Solarize: the darkroom effect of re-exposing a print, inverting every channel above a threshold.
+        public sealed class SolarizeOperation(float threshold = 0.5f) : PointOperation
         {
-            private readonly Vector4 _shadow;
-            private readonly Vector4 _highlight;
+            public float Threshold { get; } = threshold;
 
-            public DuotoneOperation(Rgba32 shadow, Rgba32 highlight)
-            {
-                _shadow = new Vector4(shadow.R, shadow.G, shadow.B, 0) / 255f;
-                _highlight = new Vector4(highlight.R, highlight.G, highlight.B, 0) / 255f;
-            }
+            public override string Name => "Solarize";
 
-            public override string Name => "Duotone";
+            // ProcessRow reads nothing but Threshold, so rows may run on several threads at once.
+            public override bool CanProcessRowsConcurrently => true;
 
             public override void ProcessRow(Span<Vector4> pixels)
             {
-                var weights = new Vector4(0.2126f, 0.7152f, 0.0722f, 0f);
                 for (var i = 0; i < pixels.Length; i++)
                 {
-                    var alpha = pixels[i].W;
-                    var luminance = Math.Clamp(Vector4.Dot(pixels[i], weights), 0f, 1f);
-                    pixels[i] = Vector4.Lerp(_shadow, _highlight, luminance) with { W = alpha };
+                    var p = pixels[i];
+                    pixels[i] = new Vector4(
+                        p.X > Threshold ? 1 - p.X : p.X,
+                        p.Y > Threshold ? 1 - p.Y : p.Y,
+                        p.Z > Threshold ? 1 - p.Z : p.Z,
+                        p.W);
                 }
             }
         }
 
-        pipeline.Apply(new DuotoneOperation(navy, cream));
+        pipeline.Apply(new SolarizeOperation(0.6f));
+
+        // So documents that use it can be saved as JSON and replayed:
+        var json = new BmageJsonOptions().Add<SolarizeOperation>("acme.solarize",
+            (writer, solarize) => writer.Write("threshold", solarize.Threshold),
+            reader => new SolarizeOperation(reader.GetSingle("threshold")));
         """;
 
     private async Task StartAsync()

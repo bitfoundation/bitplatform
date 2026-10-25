@@ -253,6 +253,11 @@
         // Every tag stays reachable, typed accessor or not.
         var artist = exif.Primary.Get(ExifTag.Artist)?.GetString();
         var custom = exif.Exif.Get(0x9C9B)?.GetString();
+
+        // The colour profile and the XMP packet come as their raw bytes.
+        var metadata = image.Metadata;
+        if (metadata is { IccProfile.IsEmpty: false }) Console.WriteLine($"ICC profile, {metadata.IccProfile.Length} bytes");
+        if (metadata is { Xmp.IsEmpty: false }) Console.WriteLine(Encoding.UTF8.GetString(metadata.Xmp.Span));
         """;
 
     private const string WriteSnippet = """

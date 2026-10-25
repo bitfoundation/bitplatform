@@ -38,7 +38,7 @@ public sealed class ImageLoader
     {
         ArgumentNullException.ThrowIfNull(source);
         var processor = await _processors.GetAsync(cancellationToken).ConfigureAwait(false);
-        options ??= new DecodeOptions();
+        options ??= new DecodeOptions { Limits = processor.Limits };
         if (options.FileName is null && source.FileName is not null) options = options with { FileName = source.FileName };
 
         if (source.IsRemote)
@@ -108,7 +108,7 @@ public sealed class ImageLoader
         {
             using var result = await _interop.InvokeForBytesAsync<ClipboardInfo>("readClipboardImage", cancellationToken).ConfigureAwait(false);
             if (!result.HasValue || result.Bytes.Length == 0) return null;
-            return await processor.DecodeAsync(result.Bytes.Memory, options ?? new DecodeOptions(), cancellationToken).ConfigureAwait(false);
+            return await processor.DecodeAsync(result.Bytes.Memory, options ?? new DecodeOptions { Limits = processor.Limits }, cancellationToken).ConfigureAwait(false);
         }
         catch (JSException ex)
         {
@@ -397,7 +397,7 @@ public sealed class ImageProcessorFactory
                 var encodable = capabilities.EncodableFormats.Where(f => f != ImageFormat.Bmp && !registry.CanEncode(f)).ToArray();
                 if (encodable.Length > 0) registry.AddEncoder(new BrowserImageEncoder(_interop, encodable));
             }
-            var processor = new ImageProcessor(registry, _options.Allocator ?? PooledPixelAllocator.Shared, _options.Limits);
+            var processor = new ImageProcessor(registry, _options.Allocator ?? PooledPixelAllocator.Shared, _options.Limits) { MaxDegreeOfParallelism = _options.MaxDegreeOfParallelism };
             // Only cache once a real browser answered; a prerender pass must not pin the managed-only registry.
             if (capabilities.Environment != ImageEnvironment.Prerendering) _processor = processor;
             return processor;

@@ -4,7 +4,7 @@
          Lead="One package, one DI call per store, and one component wrapped around your router.">
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Packages</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Packages</h2>
         <p>
             Reference <code>Bit.Blex</code>. It carries the runtime, the source generator that turns your
             <code>[BlexStore]</code> classes into reactive stores, and the Blazor integration (the
@@ -31,7 +31,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Register the services</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Register the services</h2>
         <p>
             <code>AddBitBlexServices</code> registers the manager and the middleware pipeline;
             <code>AddBitBlexStore&lt;T&gt;</code> registers each store as a scoped service exposed both as
@@ -43,10 +43,69 @@
         <CodeBlock Code="@ProgramSample" FileName="Program.cs" />
 
         <ApiTable Title="Registration APIs" Rows="@RegistrationRows" MemberHeader="Call" />
+
+        <p>
+            Every call takes a <code>lifetime</code>, <code>Scoped</code> by default - one manager, one set of stores
+            per Blazor Server circuit, per WebAssembly app, per test scope. Give them all the same one: a host with no
+            scopes registers <code>Singleton</code> throughout, which is what the <a href="maui">.NET MAUI</a>
+            builder extensions do for you.
+        </p>
+
+        <ApiTable Title="BlexOptions - what AddBitBlexServices configures" Rows="@OptionRows" MemberHeader="Option" />
+    </div>
+
+    <div class="bb-card" id="hosting">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Hosting models</h2>
+        <p>
+            The store code is the same everywhere; what differs is which DI container registers Blex and where
+            <code>&lt;BlexProvider&gt;</code> goes.
+        </p>
+        <div class="bb-scroll" tabindex="0" role="region" aria-label="Blex setup per hosting model">
+            <table class="bb-table bb-compare demo-key-wide">
+                <thead><tr><th>Host</th><th>Register Blex in, and what is worth knowing</th></tr></thead>
+                <tbody>
+                    <tr>
+                        <td>Blazor Server<br /><span class="bb-muted">InteractiveServer</span></td>
+                        <td>The server's <code>Program.cs</code>. Every circuit is a scope, so each user gets their own manager and stores. Browser storage is unreachable while prerendering; <code>&lt;BlexProvider&gt;</code> hydrates on the first interactive render instead. Set <code>EnableDevTools="false"</code> unless you want the state tree streamed over the circuit.</td>
+                    </tr>
+                    <tr>
+                        <td>Blazor Web App<br /><span class="bb-muted">InteractiveWebAssembly, prerendered</span></td>
+                        <td><strong>Both</strong> <code>Program.cs</code> files, through one shared extension method. The server prerenders the same components the browser then runs, so both containers must resolve every store. Prerendered state is handed over through <code>PersistentComponentState</code>. This site is wired exactly this way.</td>
+                    </tr>
+                    <tr>
+                        <td>Blazor Web App<br /><span class="bb-muted">InteractiveAuto</span></td>
+                        <td>Both, as above. A first visit runs on the server, a later one in WebAssembly, and a store starts over when the runtime changes: mark what must survive the switch <code>Persist = true</code>.</td>
+                    </tr>
+                    <tr>
+                        <td>Static server rendering</td>
+                        <td>The server's <code>Program.cs</code>. <code>&lt;BlexProvider&gt;</code> renders its content and the stores render their state; nothing that needs JS interop - browser storage, the DevTools bridge - is attempted, and nothing fails for want of it. Persistence and DevTools need the provider inside an interactive boundary.</td>
+                    </tr>
+                    <tr>
+                        <td>Standalone Blazor WebAssembly</td>
+                        <td><code>Program.cs</code>. One container, no prerendering - the samples above, as written.</td>
+                    </tr>
+                    <tr>
+                        <td>.NET MAUI Blazor Hybrid</td>
+                        <td><code>MauiProgram.cs</code>, scoped as in Blazor: the <code>BlazorWebView</code> creates the scope. No browser extension exists in a WebView, so set <code>EnableDevTools="false"</code>. Persist to the WebView's <code>localStorage</code> or to OS-native <code>Preferences</code>. See <a href="maui">.NET MAUI</a>.</td>
+                    </tr>
+                    <tr>
+                        <td>.NET MAUI<br /><span class="bb-muted">native XAML</span></td>
+                        <td><code>MauiProgram.cs</code>, through <code>builder.UseBitBlex()</code>. No scopes and no <code>&lt;BlexProvider&gt;</code>: the <code>Bit.Blex.Maui</code> builder extensions register singletons and do the provider's startup work at <code>MauiApp.Build()</code>. XAML binds to stores directly. See <a href="maui">.NET MAUI</a>.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <Callout Kind="Callout.CalloutKind.Tip" Title="Ask the MCP server for a working project">
+            <p>
+                <a href="mcp"><code>GetBlexSetupGuide</code></a> returns the checklist and the real files of a
+                working project for each of these hosts - <code>server</code>, <code>wasm</code>, <code>auto</code>,
+                <code>standalone-wasm</code>, <code>maui-hybrid</code> and <code>maui</code>.
+            </p>
+        </Callout>
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Add the provider</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Add the provider</h2>
         <p>
             <code>&lt;BlexProvider&gt;</code> goes once, near the root of the app, wrapping the router.
             On initialization it registers every <code>IBlexStore</code> with the manager, restores
@@ -69,7 +128,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Without Blazor</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Without Blazor</h2>
         <p>
             Stores, the manager and persistence never touch Blazor or JavaScript - only the
             <code>Bit.Blex.Blazor</code> namespace does. In a console app, worker or test, resolve
@@ -82,7 +141,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Trimming and AOT</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Trimming and AOT</h2>
         <p>
             Snapshots - <code>SerializeState</code>, persistence, the DevTools payload - go through
             <code>System.Text.Json</code>. By default that is the reflection-based serializer, whose
@@ -103,7 +162,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Requirements</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Requirements</h2>
         <ul class="bb-detail-list">
             <li><strong>.NET 8, 9 or 10</strong> for <code>Bit.Blex</code>, <code>Bit.Blex.Maui</code> and <code>Bit.Blex.Testing</code> - each ships <code>net8.0</code>, <code>net9.0</code> and <code>net10.0</code> builds.</li>
             <li><strong>netstandard2.0</strong> for the generator, as Roslyn analyzers require.</li>
@@ -116,12 +175,28 @@
 @code {
     private static readonly IReadOnlyList<ApiTable.Row> RegistrationRows =
     [
-        new("AddBitBlexServices(Action&lt;BlexOptions&gt;?)", "Registers <code>BlexManager</code> (scoped) and the middleware pipeline. The options object configures the DevTools name, sanitizers, middleware and the error sink."),
-        new("AddBitBlexStore&lt;TStore&gt;()", "Registers a store as scoped, resolvable both as <code>TStore</code> and as <code>IBlexStore</code>. Constructor dependencies are injected, so a store can take an <code>HttpClient</code> like any other service."),
-        new("AddBitBlexPersistence(Action&lt;BlexPersistenceOptions&gt;?)", "Enables durable persistence for stores marked <code>Persist = true</code>. Requires an <code>IBlexStorage</code> registration."),
+        new("AddBitBlexServices(Action&lt;BlexOptions&gt;?, ServiceLifetime = Scoped)", "Registers <code>BlexManager</code> and the middleware pipeline. The options object configures the DevTools name, sanitizers, middleware, logging, the clock and the error sinks - every option is listed below."),
+        new("AddBitBlexStore&lt;TStore&gt;(ServiceLifetime = Scoped)", "Registers a store, resolvable both as <code>TStore</code> and as <code>IBlexStore</code>. Constructor dependencies are injected, so a store can take an <code>HttpClient</code> like any other service. A <a href=\"scoped-stores\">scoped store</a> is not registered here."),
+        new("AddBitBlexPersistence(Action&lt;BlexPersistenceOptions&gt;?, ServiceLifetime = Scoped)", "Enables durable persistence for stores marked <code>Persist = true</code>. Requires an <code>IBlexStorage</code> registration. See <a href=\"persistence\">Persistence</a>."),
         new("AddBitBlexLocalStoragePersistence(…)", "Blazor: registers <code>BlexBrowserStorage</code> over <code>window.localStorage</code> and calls <code>AddBitBlexPersistence</code>."),
         new("AddBitBlexSessionStoragePersistence(…)", "Blazor: the same, over <code>window.sessionStorage</code> - cleared when the tab closes."),
-        new("AddBitBlexHistory(int maxEntries = 100)", "Registers <code>BlexHistory</code> for in-app undo/redo. <code>&lt;BlexProvider&gt;</code> starts recording once rehydration completes."),
+        new("AddBitBlexQueries(Action&lt;BlexQueryClientOptions&gt;?, ServiceLifetime = Scoped)", "Registers <code>BlexQueryClient</code>, the server-state cache behind <code>UseQuery</code> and <code>&lt;BlexQueryView&gt;</code>. See <a href=\"queries\">Server state &amp; queries</a>."),
+        new("AddBitBlexHistory(int maxEntries = 100, lifetime, filter?, groupBy?)", "Registers <code>BlexHistory</code> for in-app undo/redo. <code>&lt;BlexProvider&gt;</code> starts recording once rehydration completes. An overload takes a <code>scope</code> over the stores it covers. See <a href=\"history\">Undo &amp; redo</a>."),
+        new("AddBitBlexHistory&lt;TStore&gt;(int maxEntries = 100, lifetime, filter?, groupBy?)", "Registers <code>BlexHistory&lt;TStore&gt;</code>: an undo stack over one store type, beside or instead of the app-wide one."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> OptionRows =
+    [
+        new("string DevToolsName", "The instance name in the Redux DevTools dropdown. Default <code>\"Blex\"</code>. See <a href=\"devtools\">DevTools</a>."),
+        new("RedactDevToolsKeys(params string[]) / DevToolsStateSanitizer / DevToolsActionSanitizer", "What the DevTools monitor is shown - redacted keys, a rewritten tree, rewritten action labels."),
+        new("UseMiddleware&lt;T&gt;() / UseMiddleware(instance) / UseMiddleware(Action&lt;BlexActionContext&gt;)", "Middleware that observes every action, run in registration order. See <a href=\"middleware\">Middleware</a>."),
+        new("UseFilter(predicate) / UseFilter(BlexAction&lt;…&gt;, predicate)", "Veto filters - for every action, or for one action by its typed descriptor."),
+        new("UseLogging(LogLevel actionLevel = Debug)", "Every action, action failure and isolated failure to the host's <code>ILogger</code>. See <a href=\"errors#observability\">Logging and tracing</a>."),
+        new("Action&lt;BlexError&gt;? OnError", "The sink for every failure Blex isolates from the pipeline. Without one they go to <code>Console.Error</code>. See <a href=\"errors\">Error isolation</a>."),
+        new("Action&lt;BlexActionErrorContext&gt;? OnActionError", "Hears every action body that throws - an effect's captured failure included. The exception still propagates."),
+        new("TimeProvider? TimeProvider", "The clock for timestamps, debounces, retries and the query cache. Unset: one registered in the container, else the system clock. See <a href=\"testing#time\">Deterministic time</a>."),
+        new("bool ReportOffDispatcherChanges", "Report a store changed off the renderer's dispatcher (source <code>\"dispatcher\"</code>). Default <code>true</code>. See <a href=\"stores#dispatcher\">Threads and the dispatcher</a>."),
+        new("bool DetectInPlaceMutations", "Development aid: report an action that changed state without assigning a property (source <code>\"mutation\"</code>). Default <code>false</code>. See <a href=\"stores#change-detection\">Change detection</a>."),
     ];
 
     private static readonly IReadOnlyList<ApiTable.Row> ProviderRows =
@@ -134,13 +209,16 @@
     private const string Install = """
         dotnet add package Bit.Blex
 
+        # .NET MAUI: XAML-bindable stores, the startup initializer, Preferences persistence
+        dotnet add package Bit.Blex.Maui
+
         # optional, for unit tests
         dotnet add package Bit.Blex.Testing
         """;
 
     private const string CsprojSample = """
         <ItemGroup>
-          <PackageReference Include="Bit.Blex" Version="10.7.0-pre-03" />
+          <PackageReference Include="Bit.Blex" Version="10.7.0-pre-04" />
         </ItemGroup>
         """;
 
@@ -168,7 +246,10 @@
         """;
 
     private const string AppSample = """
-        <BlexProvider EnableDevTools="@builder.HostEnvironment.IsDevelopment()">
+        @using Microsoft.AspNetCore.Components.WebAssembly.Hosting
+        @inject IWebAssemblyHostEnvironment HostEnvironment
+
+        <BlexProvider EnableDevTools="@HostEnvironment.IsDevelopment()">
             <Router AppAssembly="@typeof(App).Assembly">
                 <Found Context="routeData">
                     <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />

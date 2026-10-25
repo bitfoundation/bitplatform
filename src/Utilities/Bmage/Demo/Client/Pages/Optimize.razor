@@ -154,11 +154,11 @@
                     <label class="demo-field-label" for="sharpen">Sharpen after downscaling</label>
                 </div>
 
-                <div class="demo-field">
-                    <label class="demo-field-label" for="concurrency">Concurrency <span class="demo-field-value">@_concurrency</span></label>
-                    <input id="concurrency" type="range" min="1" max="8" step="1" value="@_concurrency" @oninput="e => Set(ref _concurrency, e)" aria-describedby="concurrency-hint" />
-                    <span class="bb-field-hint" id="concurrency-hint">The batch API's MaxConcurrency, as in the snippet below; this page itself decodes one file at a time to keep memory flat. Higher is faster but holds more decoded images at once - two is a safe default on phones. <a href="/batch">Batch processing</a> runs it for real.</span>
-                </div>
+                <span class="bb-field-hint">
+                    Files are processed one at a time, so a large drop never holds more than one decoded
+                    image. To run several at once, with a memory budget, see
+                    <a href="/batch">Batch processing</a>.
+                </span>
             </div>
         </div>
     </div>
@@ -170,9 +170,14 @@
         One pipeline, built once and reused for every file: nothing runs until it is executed, so it
         is safe to keep in a field. <code>MaxSize</code> only ever shrinks - a small image passes
         through untouched instead of being blown up - and the sharpen afterwards recovers the bite
-        that downscaling takes away.
+        that downscaling takes away. One file at a time, as this page works:
     </p>
     <CodeSnippet Code="@Snippet" Language="C#" Expanded="true" />
+    <p>
+        For many files at once, the batch API runs the same pipeline with bounded concurrency and a
+        result per file:
+    </p>
+    <CodeSnippet Code="@BatchSnippet" Language="C#" />
 </div>
 
 <div class="bb-card">
@@ -181,6 +186,8 @@
         <li><strong>1920 on the long edge</strong> covers a full-width hero on most screens; product thumbnails and avatars want far less.</li>
         <li><strong>WebP at 0.8</strong> is typically 25 to 35% smaller than JPEG at similar quality. Where this browser cannot write it, the format list above simply does not offer it - the list is the capability probe's answer.</li>
         <li><strong>Re-encoding can grow a file.</strong> A small or already heavily compressed upload may come out larger; the table says so in red rather than claiming a saving. A real pipeline would keep the original in that case.</li>
+        <li><strong>Decode smaller to begin with.</strong> <code>DecodeOptions.MaxSize</code> lets a decoder that can do it cheaply - the browser's, or the JPEG decoder's DCT scaling - hand back a smaller image straight away, which saves memory and time on a 48 megapixel photo; the pipeline's <code>MaxSize</code> still makes the result exact.</li>
+        <li><strong>Check before decoding on a server.</strong> <code>ImageProcessor.Identify</code> reads the dimensions from the header, so an oversized upload is refused before a byte of pixels is allocated - see <a href="/headless">the headless API</a>.</li>
     </ul>
 </div>
 
@@ -196,7 +203,6 @@
     private double _quality = 0.82;
     private MetadataPolicy _metadata = MetadataPolicy.Remove;
     private bool _sharpen = true;
-    private int _concurrency = 2;
     private bool _running;
     private int _completed;
     private int _total;
@@ -215,12 +221,33 @@
         : new[] { ImageFormat.WebP, ImageFormat.Avif, ImageFormat.Jpeg, ImageFormat.Png }.Where(_capabilities.CanEncode);
 
     private const string Snippet = """
-        // One pipeline, reused for every file. Nothing runs until ProcessBatchAsync executes it.
+        // One pipeline, reused for every file. Nothing runs until it is executed.
         var pipeline = ImagePipeline.Create()
             .AutoOrient()                       // honour the phone's rotation sensor
             .MaxSize(maxEdge, maxEdge)          // never enlarge, only cap
             .Sharpen(0.3f);                     // recover the bite lost to downscaling
 
+        foreach (var file in files)
+        {
+            using var source = await loader.LoadAsync(file, new DecodeOptions
+            {
+                FileName = file.Name,
+                MaxSize  = new Size(maxEdge, maxEdge),   // a hint: decode smaller where that is cheap
+            });
+            using var processed = await pipeline.ExecuteAsync(source);
+
+            var encoded = await exporter.EncodeAsync(processed, new ImageExportOptions
+            {
+                Format   = ImageFormat.WebP,             // offered only where the probe found it
+                Quality  = 0.82,
+                Metadata = MetadataPolicy.Remove,
+            });
+            if (encoded.Length < file.Size) await UploadAsync(file.Name, encoded.Data);
+            else await UploadOriginalAsync(file);        // re-encoding did not help: keep the original
+        }
+        """;
+
+    private const string BatchSnippet = """
         var processor = await processorFactory.GetAsync();
         var result = await processor.ProcessBatchAsync(items, pipeline, new BatchOptions
         {

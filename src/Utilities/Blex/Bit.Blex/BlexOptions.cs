@@ -51,6 +51,29 @@ public sealed class BlexOptions
     public Action<BlexActionErrorContext>? OnActionError { get; set; }
 
     /// <summary>
+    /// The clock the manager reads time from (<see cref="BlexManager.TimeProvider"/>): action
+    /// timestamps, debounced effects and debounced persistence. When unset, a
+    /// <see cref="System.TimeProvider"/> registered in the service collection is used, and
+    /// <see cref="System.TimeProvider.System"/> otherwise.
+    /// </summary>
+    public TimeProvider? TimeProvider { get; set; }
+
+    /// <summary>
+    /// Whether a store changing outside the manager's bound <see cref="BlexManager.Dispatcher"/> (in
+    /// Blazor, the renderer's) is reported through <see cref="OnError"/>. Defaults to <c>true</c>. Wired
+    /// onto <see cref="BlexManager.ReportOffDispatcherChanges"/>.
+    /// </summary>
+    public bool ReportOffDispatcherChanges { get; set; } = true;
+
+    /// <summary>
+    /// Development aid: reports an action that changed state in place without assigning a state property
+    /// (<c>Items.Add(item)</c>), which nothing would otherwise notice. Serializes stores around every action,
+    /// so bind it to the development environment. Defaults to <c>false</c>. Wired onto
+    /// <see cref="BlexManager.DetectInPlaceMutations"/>.
+    /// </summary>
+    public bool DetectInPlaceMutations { get; set; }
+
+    /// <summary>
     /// Convenience: redacts the named keys (recursively, anywhere in the tree -- including inside
     /// arrays and action payloads) from the state sent to DevTools, replacing their values with
     /// <c>"&lt;redacted&gt;"</c>.
@@ -146,6 +169,23 @@ public sealed class BlexOptions
         return this;
     }
 
+    /// <summary>
+    /// Logs through the host's <c>ILogger</c> (category <c>Bit.Blex</c>): every action at
+    /// <paramref name="actionLevel"/>, every action failure as an error, and every failure Blex isolates from
+    /// the pipeline as a warning -- instead of <see cref="Console.Error"/> -- before <see cref="OnError"/>, if
+    /// set, sees it too. Runs in registration order, like any middleware.
+    /// </summary>
+    /// <param name="actionLevel">The level actions are logged at. <c>LogLevel.None</c> logs failures only.</param>
+    /// <remarks>
+    /// Names only: action arguments and state never reach the log. Without an <c>ILoggerFactory</c> in the
+    /// container (a bare <c>ServiceCollection</c>), nothing is logged and <see cref="OnError"/> behaves as before.
+    /// </remarks>
+    public BlexOptions UseLogging(Microsoft.Extensions.Logging.LogLevel actionLevel = Microsoft.Extensions.Logging.LogLevel.Debug)
+    {
+        MiddlewareEntries.Add(new BlexLoggingRegistration(actionLevel));
+        return this;
+    }
+
     /// <summary>Registers a delegate-based middleware (handy for quick logging).</summary>
     public BlexOptions UseMiddleware(Action<BlexActionContext> handler)
         => UseMiddleware(new BlexDelegateMiddleware(handler));
@@ -156,4 +196,32 @@ public sealed class BlexOptions
     /// </summary>
     public BlexOptions UseFilter(Func<BlexPreActionContext, bool> filter)
         => UseMiddleware(new BlexFilterMiddleware(filter));
+
+    /// <summary>
+    /// Registers a veto filter for one parameterless action, named by its generated descriptor
+    /// (<c>CartStore.Actions.Checkout</c>). Return <c>false</c> to cancel it; every other action passes.
+    /// </summary>
+    public BlexOptions UseFilter<TStore>(BlexAction<TStore> action, Func<TStore, bool> filter)
+        where TStore : class, IBlexStore
+    {
+        ArgumentNullException.ThrowIfNull(action);
+        ArgumentNullException.ThrowIfNull(filter);
+        return UseFilter(ctx => !action.Matches(ctx) || filter((TStore)ctx.Store));
+    }
+
+    /// <summary>
+    /// Registers a veto filter for one action, named by its generated descriptor
+    /// (<c>CounterStore.Actions.Add</c>), that receives the action's payload as the type the action
+    /// takes. Return <c>false</c> to cancel it; every other action passes.
+    /// </summary>
+    /// <example><code>
+    /// options.UseFilter(CounterStore.Actions.Add, (counter, amount) => amount is > 0 and &lt;= 100);
+    /// </code></example>
+    public BlexOptions UseFilter<TStore, TPayload>(BlexAction<TStore, TPayload> action, Func<TStore, TPayload, bool> filter)
+        where TStore : class, IBlexStore
+    {
+        ArgumentNullException.ThrowIfNull(action);
+        ArgumentNullException.ThrowIfNull(filter);
+        return UseFilter(ctx => !action.Matches(ctx) || filter((TStore)ctx.Store, action.GetPayload(ctx)));
+    }
 }

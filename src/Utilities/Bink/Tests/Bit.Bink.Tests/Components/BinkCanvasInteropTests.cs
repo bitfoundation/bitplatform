@@ -108,7 +108,7 @@ public class BinkCanvasInteropTests : BunitContext
         // The managed exporter treats an empty selection as "no filter", but the browser path handed the empty
         // selection to the renderer as a filter, so the same options produced a blank image once attached.
         BunitJSModuleInterop module = SetupAttachedModule();
-        module.Setup<byte[]>("renderToImage", _ => true).SetResult([0x89, (byte)'P', (byte)'N', (byte)'G']);
+        module.Setup<IJSStreamReference>("renderToImage", _ => true).SetResult(new TestStreamReference([0x89, (byte)'P', (byte)'N', (byte)'G']));
         IRenderedComponent<BinkCanvas> canvas = Render<BinkCanvas>();
         canvas.Instance.CurrentDocument.AddElement(new BinkStroke(BinkStrokePoints.FromPositions([new Vector2(10, 10), new Vector2(90, 60)]), new BinkPenBrush()));
         // The first document draw only happens once the surface is attached, which is when the browser path is taken.

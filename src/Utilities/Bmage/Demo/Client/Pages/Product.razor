@@ -145,6 +145,15 @@
         that were decoded once, which is the expensive part.
     </p>
     <CodeSnippet Code="@Snippet" Language="C#" Expanded="true" />
+    <h4>Or all in one pipeline</h4>
+    <p>
+        <code>CanvasSize</code> grows the canvas around the fitted product without scaling it, so the
+        margin can be a step of the pipeline itself - one value to store, reuse on a server, or save as
+        JSON. It fills only the area it adds: a product cut out on transparency stays transparent in WebP
+        or PNG, which is why this page composites onto a canvas instead, so the background shows through
+        the product's own transparent pixels too. For opaque photos the two are the same.
+    </p>
+    <CodeSnippet Code="@CanvasSnippet" Language="C#" Expanded="true" />
 </div>
 
 @code {
@@ -199,6 +208,18 @@
             using var variant = canvas.Snapshot();
             results.Add(await exporter.EncodeAsync(variant, exportOptions));
         }
+        """;
+
+    private const string CanvasSnippet = """
+        // Fit inside the padded area, then grow the canvas to the full size around it.
+        var tile = ImagePipeline.Create()
+            .AutoOrient()
+            .Resize(inner, inner, ResizeMode.Fit)
+            .Sharpen(0.25f)
+            .CanvasSize(size, size, Anchor.Center, catalogueBackground);
+
+        // Or a fixed border on every side, whatever the size.
+        var framed = ImagePipeline.Create().MaxSize(1000, 1000).Pad(40, catalogueBackground);
         """;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

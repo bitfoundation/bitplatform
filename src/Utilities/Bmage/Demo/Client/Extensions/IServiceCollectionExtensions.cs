@@ -33,6 +33,9 @@ public static class IServiceCollectionExtensions
             ? new HttpClient()
             : new HttpClient { BaseAddress = new Uri(baseAddress) });
 
+        // The editor pages' font, fetched once one of them is open (see Shared/DemoFonts.cs).
+        services.AddScoped<Bit.Bmage.Demo.Client.Shared.DemoFonts>();
+
         return services;
     }
 }

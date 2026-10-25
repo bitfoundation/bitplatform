@@ -175,6 +175,16 @@ public class DiagnosticTests
     }
 
     [TestMethod]
+    public void GenericComputedMethod_ReportsBLEX014_InsteadOfBrokenGeneratedCode()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute] public partial class S { [BlexComputedAttribute] private T ComputeFirst<T>() => default!; }
+            """);
+        Assert.IsTrue(result.HasDiagnostic("BLEX014"));
+        Assert.IsEmpty(result.CompileErrors());
+    }
+
+    [TestMethod]
     public void RecordStore_ReportsBLEX015()
     {
         var result = GeneratorTestHelper.Run(Usings + """
@@ -319,6 +329,114 @@ public class DiagnosticTests
     }
 
     [TestMethod]
+    public void TwoActionsUnderOneLabel_ReportsBLEX021()
+    {
+        // Different wrappers (SaveDraft, SaveFinal), so BLEX005 has nothing to say -- but both are
+        // dispatched, subscribed to and replayed as "Save it".
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute] public partial class S
+            {
+                [BlexStateAttribute] private int _x;
+                [BlexActionAttribute(Name = "Save it")] private void OnSaveDraft() { }
+                [BlexEffectAttribute(Name = "Save it")] private Task OnSaveFinal(int v) => Task.CompletedTask;
+            }
+            """);
+        Assert.IsTrue(result.HasDiagnostic("BLEX021"));
+    }
+
+    [TestMethod]
+    public void AnActionLabelledLikeADirectAssignment_ReportsBLEX021()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute] public partial class S
+            {
+                [BlexStateAttribute] private int _count;
+                [BlexActionAttribute(Name = "Set Count")] private void OnChangeCount(int v) => Count = v;
+            }
+            """);
+        Assert.IsTrue(result.HasDiagnostic("BLEX021"));
+    }
+
+    [TestMethod]
+    public void DistinctLabels_AndAStoreThatRecordsNoAssignments_ReportNothing()
+    {
+        // EnforceActions: no direct assignment is ever recorded, so "Set Count" is free.
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute(EnforceActions = true)] public partial class S
+            {
+                [BlexStateAttribute] private int _count;
+                [BlexActionAttribute(Name = "Set Count")] private void OnChangeCount(int v) => Count = v;
+                [BlexActionAttribute(Name = "Save it")] private void OnSaveDraft() { }
+                [BlexActionAttribute(Name = "Save it for good")] private void OnSaveFinal() { }
+            }
+            """);
+        Assert.IsFalse(result.HasDiagnostic("BLEX021"));
+        Assert.IsEmpty(result.CompileErrors());
+    }
+
+    [TestMethod]
+    [DataRow("RetryCount = -1")]
+    [DataRow("RetryCount = 1, RetryDelayMilliseconds = -5")]
+    [DataRow("TimeoutMilliseconds = -1")]
+    public void NegativeRetryOrTimeout_ReportsBLEX022(string arguments)
+    {
+        var result = GeneratorTestHelper.Run(Usings + $$"""
+            [BlexStoreAttribute] public partial class S
+            {
+                [BlexStateAttribute] private int _x;
+                [BlexEffectAttribute({{arguments}})] private Task OnLoad(CancellationToken ct) => Task.CompletedTask;
+            }
+            """);
+        Assert.IsTrue(result.HasDiagnostic("BLEX022"));
+    }
+
+    [TestMethod]
+    public void TimeoutWithoutAToken_ReportsBLEX023()
+    {
+        // The attempt could not be stopped: it would carry on, and change state, after its run had failed.
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute] public partial class S
+            {
+                [BlexStateAttribute] private int _x;
+                [BlexEffectAttribute(TimeoutMilliseconds = 500)] private Task OnLoad() => Task.CompletedTask;
+            }
+            """);
+        Assert.IsTrue(result.HasDiagnostic("BLEX023"));
+    }
+
+    [TestMethod]
+    public void RetryWithoutAToken_IsFine()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute] public partial class S
+            {
+                [BlexStateAttribute] private int _x;
+                [BlexEffectAttribute(RetryCount = 3)] private Task OnLoad(int id) => Task.CompletedTask;
+                [BlexEffectAttribute(RetryCount = 2, TimeoutMilliseconds = 100)] private ValueTask OnSave(string text, CancellationToken ct) => default;
+            }
+            """);
+        Assert.IsFalse(result.HasDiagnostic("BLEX022"));
+        Assert.IsFalse(result.HasDiagnostic("BLEX023"));
+        Assert.IsEmpty(result.CompileErrors());
+        Assert.Contains("base.RunEffectAttemptsAsync(__blexAttemptCt => OnLoad(id), default, 3, 1000, 0)", result.SingleGenerated);
+        Assert.Contains("base.RunEffectAttemptsAsync(__blexAttemptCt => OnSave(text, __blexAttemptCt).AsTask(), __blexCt, 2, 1000, 100)", result.SingleGenerated);
+    }
+
+    [TestMethod]
+    public void NoRetryOrTimeout_EmitsTheDirectCall()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute] public partial class S
+            {
+                [BlexStateAttribute] private int _x;
+                [BlexEffectAttribute] private Task OnLoad(CancellationToken ct) => Task.CompletedTask;
+            }
+            """);
+        Assert.IsEmpty(result.CompileErrors());
+        Assert.DoesNotContain("RunEffectAttemptsAsync", result.SingleGenerated);
+    }
+
+    [TestMethod]
     public void ZeroDebounce_IsTheDefaultAndReportsNothing()
     {
         var result = GeneratorTestHelper.Run(Usings + """
@@ -331,7 +449,7 @@ public class DiagnosticTests
             """);
         Assert.IsFalse(result.HasDiagnostic("BLEX019"));
         Assert.IsEmpty(result.CompileErrors());
-        Assert.DoesNotContain("Task.Delay", result.SingleGenerated);
+        Assert.DoesNotContain("DebounceEffectAsync", result.SingleGenerated);
     }
 
     [TestMethod]
@@ -347,11 +465,13 @@ public class DiagnosticTests
 
         Assert.IsEmpty(result.CompileErrors());
         var generated = result.SingleGenerated;
-        Assert.Contains("Task.Delay(250", generated);
+        // Through the base class, which waits on the manager's clock (so a test can advance a fake
+        // TimeProvider through the quiet period) and skips the wait while a log is replayed.
+        Assert.Contains("await base.DebounceEffectAsync(250, __blexDebounceCts.Token);", generated);
 
         // The gate must precede BeginAction: a superseded invocation is never offered to
         // middleware and records nothing.
-        Assert.IsTrue(generated.IndexOf("Task.Delay(250") < generated.IndexOf("BeginAction(\"Search\""));
+        Assert.IsTrue(generated.IndexOf("DebounceEffectAsync(250") < generated.IndexOf("BeginAction(\"Search\""));
     }
 
     [TestMethod]

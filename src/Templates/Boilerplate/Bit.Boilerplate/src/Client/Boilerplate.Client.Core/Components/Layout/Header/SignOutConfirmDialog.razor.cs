@@ -3,11 +3,14 @@ namespace Boilerplate.Client.Core.Components.Layout.Header;
 public partial class SignOutConfirmDialog
 {
     private bool isSigningOut;
+    private bool signOutOfAllAccounts;
 
 
     [Parameter] public bool IsOpen { get; set; }
 
     [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+
+    [Parameter] public bool CanSignOutOfAllAccounts { get; set; }
 
 
     private async Task CloseModal()
@@ -26,7 +29,14 @@ public partial class SignOutConfirmDialog
         {
             isSigningOut = true;
 
-            await AuthManager.SignOut(CurrentCancellationToken);
+            if (CanSignOutOfAllAccounts && signOutOfAllAccounts)
+            {
+                await AuthManager.SignOutAll(CurrentCancellationToken);
+            }
+            else
+            {
+                await AuthManager.SignOut(CurrentCancellationToken);
+            }
         }
         finally
         {

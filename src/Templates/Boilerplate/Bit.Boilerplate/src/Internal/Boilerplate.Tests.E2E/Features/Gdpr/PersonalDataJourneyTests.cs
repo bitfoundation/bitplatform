@@ -226,12 +226,12 @@ public partial class PersonalDataJourneyTests
                                 exported.Select(attachment => attachment!["kind"]!.GetValue<string>()),
                                 "The profile picture's two kinds are not both in the export.");
 
-        // The small one is re-encoded to WebP; the original keeps the format it arrived in. GetFilePath gives only the
-        // resized kinds an extension (See AttachmentController.GetFilePath), so the original's is read back from the
-        // stored bytes - a file the subject has to guess the format of is a poor answer to an Article 20 request.
+        // Both are stored as WebP, the small one resized and the original at full size, so both are named .webp (See
+        // AttachmentsPersonalDataSource.BuildFileName) - a file the subject has to guess the format of is a poor answer to
+        // an Article 20 request.
         var files = section["files"]!.AsArray().Select(file => file!.GetValue<string>()).ToArray();
 
-        Assert.AreSequenceEqual(new[] { "files/attachments/UserProfileImageOriginal.png", "files/attachments/UserProfileImageSmall.webp" }, files.Order(),
+        Assert.AreSequenceEqual(new[] { "files/attachments/UserProfileImageOriginal.webp", "files/attachments/UserProfileImageSmall.webp" }, files.Order(),
                                 "The files the attachments section names are not the ones the profile picture is stored as.");
 
         foreach (var file in files)
@@ -246,8 +246,9 @@ public partial class PersonalDataJourneyTests
         Assert.AreSequenceEqual("RIFF"u8.ToArray(), small[..4], "The small profile image is not the WebP the resize produces.");
         Assert.AreSequenceEqual("WEBP"u8.ToArray(), small[8..12], "The small profile image is not the WebP the resize produces.");
 
-        var original = await ReadEntryBytes(archive, "files/attachments/UserProfileImageOriginal.png");
-        Assert.AreSequenceEqual(new byte[] { 0x89, (byte)'P', (byte)'N', (byte)'G' }, original[..4], "The original profile image did not keep the format it was uploaded in.");
+        var original = await ReadEntryBytes(archive, "files/attachments/UserProfileImageOriginal.webp");
+        Assert.AreSequenceEqual("RIFF"u8.ToArray(), original[..4], "The original profile image is not the WebP it is stored as.");
+        Assert.AreSequenceEqual("WEBP"u8.ToArray(), original[8..12], "The original profile image is not the WebP it is stored as.");
     }
 
     /// <summary>The devices the account can be pushed to - without the keys that would let anyone push to them.</summary>

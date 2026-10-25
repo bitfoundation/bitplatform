@@ -34,11 +34,11 @@ public static class BmagePipelineSpec
 
     /// <summary>
     /// Builder methods that take something a spec cannot spell: an operation object, another
-    /// pipeline, a matrix. They are named in the error rather than silently missing.
+    /// pipeline, a mask, a matrix. They are named in the error rather than silently missing.
     /// </summary>
     private static readonly HashSet<string> _unsupported = new(StringComparer.OrdinalIgnoreCase)
     {
-        "Add", "AddRange", "Insert", "RemoveAt", "Replace", "Concat", "Apply", "ColorMatrix", "From",
+        "Add", "AddRange", "Insert", "RemoveAt", "Replace", "Concat", "Apply", "ColorMatrix", "From", "Masked", "ApplyMask",
     };
 
     /// <summary>Calls that run or rewrite the pipeline rather than add to it. The tool does both itself.</summary>
@@ -99,7 +99,7 @@ public static class BmagePipelineSpec
                 if (_unsupported.Contains(call.Name))
                 {
                     return new Result(null, string.Empty, [.. warnings],
-                        $"'{call.Name}' takes an operation object, a pipeline or a matrix, which a text spec cannot construct. " +
+                        $"'{call.Name}' takes an operation object, a pipeline, a mask or a matrix, which a text spec cannot construct. " +
                         $"The builder methods this tool can run are: {string.Join(", ", BuilderNames)}.");
                 }
 

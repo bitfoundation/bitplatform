@@ -13,7 +13,8 @@ public enum Density
 /// <summary>
 /// A persisted store: <c>Persist = true</c> plus a registered <see cref="IBlexStorage"/> means
 /// the state is rehydrated on startup and written back after every action. <c>Token</c> exists to
-/// demonstrate DevTools redaction -- it is replaced with <c>&lt;redacted&gt;</c> in the monitor.
+/// demonstrate DevTools redaction -- it is replaced with <c>&lt;redacted&gt;</c> in the monitor -- and,
+/// being a secret, it is also kept out of <c>localStorage</c> with <c>Persist = false</c>.
 /// </summary>
 [BlexStoreAttribute(Name = "settings", Persist = true)]
 public partial class SettingsStore
@@ -21,7 +22,7 @@ public partial class SettingsStore
     [BlexStateAttribute] private string _accent = "violet";
     [BlexStateAttribute] private Density _density = Density.Comfortable;
     [BlexStateAttribute] private bool _showLineNumbers = true;
-    [BlexStateAttribute] private string _token = "sk-live-51H8xQ2eZvKYlo";
+    [BlexStateAttribute(Persist = false)] private string _token = "sk-live-51H8xQ2eZvKYlo";
 
     [BlexComputedAttribute] private string ComputeSummary() => $"{Accent} / {Density} / {(ShowLineNumbers ? "numbered" : "plain")}";
 

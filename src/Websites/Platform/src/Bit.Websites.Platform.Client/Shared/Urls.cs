@@ -38,6 +38,12 @@ public static class Urls
     public const string Blex = "https://blex.bitplatform.dev/";
     public const string Belemetry = "https://belemetry.bitplatform.dev/";
 
+    public const string Cli = "/toolings/cli";
+    public const string Minifier = "/toolings/minifier";
+    public const string BlazorES2019 = "/toolings/blazor-es2019";
+    public const string CodeAnalyzers = "/toolings/code-analyzers";
+    public const string SourceGenerators = "/toolings/source-generators";
+
     public const string PlatformPwa = "https://bitplatform.dev/";
     public const string PlatformPageSpeed = "https://pagespeed.web.dev/analysis/https-bitplatform-dev/qa9agr7isx?form_factor=mobile";
 

@@ -6,7 +6,7 @@
          Lead="Normalized, immutable collections with generated CRUD - the same idea as Redux Toolkit's createEntityAdapter.">
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Why normalize</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Why normalize</h2>
         <p>
             Keeping a collection as a flat <code>List&lt;T&gt;</code> means every update is a scan, every
             lookup by id is a scan, and every mutation risks being done in place - which
@@ -20,7 +20,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Declaring one</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Declaring one</h2>
         <p>
             The adapter holds the id selector, so it is not serializable - keep it as a
             <code>static readonly</code> field. The <code>[BlexState]</code> field holds the state itself.
@@ -30,7 +30,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Sorting</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Sorting</h2>
         <p>
             Pass an <code>IComparer&lt;TEntity&gt;</code> and the adapter re-sorts <code>Ids</code> after
             every operation, so iteration order is always correct without sorting in the view. Without
@@ -41,15 +41,18 @@
         <DemoCard Title="Normalized contacts"
                   Description="Every button below is one adapter call inside one action. The list is kept sorted by name automatically."
                   Source="@StoreSource">
+            @* Enter in the name field adds the contact. A key handler rather than a <form>: a form renders its
+               action from the NavigationManager, which the MCP server's renderer of this page does not have, and
+               before the page is interactive it would submit a real GET. *@
             <div class="bb-toolbar">
-                <input type="text" placeholder="Name" value="@_name" @oninput="OnNameInput" class="demo-input-name" />
-                <select value="@_team" @onchange="OnTeamChange">
+                <input type="text" placeholder="Name" aria-label="Name" value="@_name" @oninput="OnNameInput" @onkeydown="OnNameKeyDown" class="demo-input-name" />
+                <select aria-label="Team" value="@_team" @onchange="OnTeamChange">
                     <option value="Research">Research</option>
                     <option value="Compilers">Compilers</option>
                     <option value="Languages">Languages</option>
                     <option value="Runtime">Runtime</option>
                 </select>
-                <button class="btn btn-primary" @onclick="Add" disabled="@string.IsNullOrWhiteSpace(_name)">AddOne</button>
+                <button type="button" class="btn btn-primary" @onclick="Add" disabled="@string.IsNullOrWhiteSpace(_name)">AddOne</button>
             </div>
 
             <div class="bb-toolbar">
@@ -85,12 +88,14 @@
                     var id = contact.Id;
                     <li>
                         <button type="button" class="demo-star @(contact.Starred ? "demo-star--on" : null)"
-                                title="UpdateOne" @onclick="() => Contacts.ToggleStar(id)">
+                                title="UpdateOne" aria-label="@($"Star {contact.Name}")"
+                                aria-pressed="@(contact.Starred ? "true" : "false")" @onclick="() => Contacts.ToggleStar(id)">
                             @(contact.Starred ? "★" : "☆")
                         </button>
                         <span class="demo-list-name">@contact.Name</span>
                         <span class="demo-list-meta">@contact.Team · id @contact.Id</span>
-                        <button class="btn demo-btn-danger" title="RemoveOne" @onclick="() => Contacts.Remove(id)">Remove</button>
+                        <button type="button" class="btn demo-btn-danger" title="RemoveOne" aria-label="@($"Remove {contact.Name}")"
+                                @onclick="() => Contacts.Remove(id)">Remove</button>
                     </li>
                 }
             </ul>
@@ -100,18 +105,35 @@
             }
 
             <div class="bb-toolbar">
+                <button class="btn btn-secondary" @onclick="() => Run(Contacts.AddPair, AddPairNote)">AddMany - add two</button>
+                <button class="btn btn-secondary" @onclick='() => Run(() => Contacts.StarTeam("Research"), StarTeamNote)'>UpdateMany - star Research</button>
                 <button class="btn btn-secondary" @onclick="Contacts.StarAll">Map - star everyone</button>
                 <button class="btn btn-secondary" @onclick="Contacts.RemoveUnstarred">RemoveMany - drop unstarred</button>
                 <button class="btn demo-btn-danger" @onclick="Contacts.RemoveAll">RemoveAll</button>
                 <button class="btn btn-secondary" @onclick="Contacts.Reseed">SetAll - reseed</button>
             </div>
 
+            <p class="bb-card-desc">
+                A late response for a row the user may have removed: remove a contact above, or try id 99 - which was
+                never there - and compare the two answers.
+            </p>
             <div class="bb-toolbar">
-                <button class="btn btn-secondary" title="SetOne with an id that exists" @onclick="() => LateSave(1)">
+                <button class="btn btn-secondary" title="SetOne with an id that exists" @onclick="() => LateSave(1, upsert: false)">
                     SetOne - late save for id 1
                 </button>
-                <button class="btn btn-secondary" title="SetOne with an id that does not exist" @onclick="() => LateSave(99)">
+                <button class="btn btn-secondary" title="SetOne with an id that does not exist" @onclick="() => LateSave(99, upsert: false)">
                     SetOne - late save for id 99
+                </button>
+                <button class="btn btn-secondary" title="UpsertOne with an id that does not exist" @onclick="() => LateSave(99, upsert: true)">
+                    UpsertOne - late save for id 99
+                </button>
+            </div>
+            <div class="bb-toolbar">
+                <button class="btn btn-secondary" title="SetMany with ids 1 and 99" @onclick="() => LateBatch(upsert: false)">
+                    SetMany - late batch for ids 1 and 99
+                </button>
+                <button class="btn btn-secondary" title="UpsertMany with ids 1 and 99" @onclick="() => LateBatch(upsert: true)">
+                    UpsertMany - late batch for ids 1 and 99
                 </button>
                 <button class="btn btn-secondary" @onclick="ReseedIdentical">SetAll - identical payload</button>
             </div>
@@ -123,12 +145,12 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> BlexEntityState members</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> BlexEntityState members</h2>
         <ApiTable Rows="@StateRows" />
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> BlexEntityAdapter operations</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> BlexEntityAdapter operations</h2>
         <p>
             Every operation takes the current state and returns the next one. Assign the result back to
             the <code>[BlexState]</code> property - that assignment is what makes the change visible.
@@ -146,7 +168,7 @@
             </p>
         </Callout>
 
-        <h4>Set vs Upsert</h4>
+        <h3>Set vs Upsert</h3>
         <p>
             <code>UpsertOne</code> inserts an unknown id; <code>SetOne</code> refuses to. That is the
             difference between "save this, wherever it came from" and "apply this update to a row I
@@ -157,7 +179,7 @@
         </p>
         <CodeBlock Code="@SetVsUpsert" Title="A late response must not resurrect a deleted row" />
 
-        <h4>Writing the same value twice costs nothing</h4>
+        <h3>Writing the same value twice costs nothing</h3>
         <p>
             Every write operation compares before it commits. Re-applying a value that is already there -
             <code>SetAll</code> with an unchanged server response, <code>UpsertMany</code> where only one
@@ -167,7 +189,7 @@
         </p>
         <CodeBlock Code="@NoOpIdentity" Title="Idempotent reseeding" />
 
-        <h4>Changing an entity's id</h4>
+        <h3>Changing an entity's id</h3>
         <p>
             <code>UpdateOne</code> handles an update function that changes the id: the entity moves to
             the new key and keeps its position in the order. If the new id already belongs to another
@@ -177,7 +199,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Serialization</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Serialization</h2>
         <p>
             <code>BlexEntityState</code> round-trips through JSON as <code>{ "ids": [...], "entities":
             { ... } }</code>, so a normalized collection persists and time-travels like any other state.
@@ -195,7 +217,7 @@
     </div>
 
     <div class="bb-card">
-        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Deriving views</h3>
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Deriving views</h2>
         <p>
             Pair the adapter with <a href="computed"><code>[BlexComputed]</code></a> to project filtered or
             aggregated views. They are memoized, so a filtered list is rebuilt once per change rather
@@ -210,29 +232,88 @@
     private string _name = "";
     private string _team = "Research";
 
-    protected override void OnInitialized() => Subscribe(Contacts);
+    protected override void OnInitialized()
+    {
+        Subscribe(Contacts);
+
+        // The note explains the last SetOne/SetAll press; once the collection changes for any other
+        // reason, it would describe a state that is no longer on screen.
+        OwnsSubscription(Contacts.Subscribe(() => Contacts.Contacts, _ => _setNote = ""));
+    }
 
     private void OnNameInput(ChangeEventArgs e) => _name = e.Value?.ToString() ?? "";
 
     private void OnTeamChange(ChangeEventArgs e) => _team = e.Value?.ToString() ?? "Research";
 
+    private void OnNameKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            Add();
+    }
+
     private void Add()
     {
+        // Reached from Enter as well as from the button, so the button's disabled state is not the only guard.
+        if (string.IsNullOrWhiteSpace(_name))
+            return;
+
         Contacts.Add(_name, _team);
         _name = "";
     }
 
     private string _setNote = "";
 
-    private void LateSave(int id)
+    private void LateSave(int id, bool upsert)
+    {
+        // The same instance back means "nothing to do" for two reasons - an absent id, or a present one
+        // that already holds exactly this value - so ask which before the call.
+        var present = Contacts.Contacts.Contains(id);
+        var before = Contacts.Contacts;
+        if (upsert)
+            Contacts.LateUpsertResponse(id);
+        else
+            Contacts.LateSaveResponse(id);
+
+        var op = upsert ? "UpsertOne" : "SetOne";
+        _setNote = ReferenceEquals(before, Contacts.Contacts)
+            ? present
+                ? $"id {id} already holds exactly this value - {op} returned the same state instance, so nothing was notified or recorded."
+                : $"id {id} is not in the collection - {op} returned the same state instance, so nothing was notified or recorded."
+            : present
+                ? $"id {id} was present, so {op} replaced it in place."
+                : $"id {id} was not there, and {op} inserted it - a removed row is back. That is the response SetOne refuses.";
+    }
+
+    private void LateBatch(bool upsert)
     {
         var before = Contacts.Contacts;
-        Contacts.LateSaveResponse(id);
+        var had99 = before.Contains(99);
+        if (upsert)
+            Contacts.LateBatchUpsertMany();
+        else
+            Contacts.LateBatchSetMany();
 
+        var op = upsert ? "UpsertMany" : "SetMany";
         _setNote = ReferenceEquals(before, Contacts.Contacts)
-            ? $"id {id} is not in the collection - SetOne returned the same state instance, so nothing was notified or recorded."
-            : $"id {id} was present, so it was replaced in place.";
+            ? $"Nothing to apply - {op} returned the same state instance: no notification, no action, no undo step."
+            : upsert && !had99
+                ? $"{op} replaced id 1 where it was and inserted id 99, which was not."
+                : $"{op} replaced what it found among ids 1 and 99, and ignored the rest.";
     }
+
+    /// <summary>Runs one adapter action and notes whether it changed the collection at all.</summary>
+    private void Run(Action act, string changed)
+    {
+        var before = Contacts.Contacts;
+        act();
+        _setNote = ReferenceEquals(before, Contacts.Contacts)
+            ? "Nothing to change - the adapter returned the same state instance, so nothing was notified or recorded."
+            : changed;
+    }
+
+    private const string AddPairNote = "AddMany appended two contacts in one action; the comparer kept Ids sorted by name.";
+
+    private const string StarTeamNote = "UpdateMany applied one transform to every Research id, in one action.";
 
     private void ReseedIdentical()
     {
@@ -315,6 +396,10 @@
             [BlexState] private BlexEntityState<Contact, int> _contacts = Adapter.GetInitialState([...]);
             [BlexState] private string _teamFilter = "All";
 
+            // Derived from the state, not counted in a field: an undo or a reset restores the collection but
+            // not such a field, which would then hand out an id that exists - and AddOne ignores those.
+            private int NextId => Contacts.Count == 0 ? 1 : Contacts.Ids.Max() + 1;
+
             [BlexComputed] private int ComputeTotal()   => Contacts.Count;
             [BlexComputed] private int ComputeStarred() => Contacts.All.Count(c => c.Starred);
 
@@ -324,8 +409,13 @@
                     ? [.. Contacts.All]
                     : [.. Contacts.All.Where(c => c.Team == TeamFilter)];
 
+            // The selected team stays listed after its last contact is removed, so it can be switched off.
+            [BlexComputed]
+            private IReadOnlyList<string> ComputeTeams()
+                => ["All", .. Contacts.All.Select(c => c.Team).Append(TeamFilter).Where(t => t != "All").Distinct().Order()];
+
             [BlexAction] private void OnAdd(string name, string team)
-                => Contacts = Adapter.AddOne(Contacts, new Contact(_nextId++, name, team, false));
+                => Contacts = Adapter.AddOne(Contacts, new Contact(NextId, name, team, false));
 
             [BlexAction] private void OnToggleStar(int id)
                 => Contacts = Adapter.UpdateOne(Contacts, id, c => c with { Starred = !c.Starred });
@@ -336,6 +426,23 @@
             [BlexAction] private void OnRemoveUnstarred()
                 => Contacts = Adapter.RemoveMany(Contacts,
                        [.. Contacts.All.Where(c => !c.Starred).Select(c => c.Id)]);
+
+            [BlexAction] private void OnAddPair()
+                => Contacts = Adapter.AddMany(Contacts,
+                       [new(NextId, "Edsger Dijkstra", "Languages", false), new(NextId + 1, "Frances Allen", "Compilers", false)]);
+
+            [BlexAction] private void OnStarTeam(string team)
+                => Contacts = Adapter.UpdateMany(Contacts,
+                       [.. Contacts.All.Where(c => c.Team == team).Select(c => c.Id)],
+                       c => c with { Starred = true });
+
+            // A late save response: SetOne ignores an id that is gone, UpsertOne puts it back.
+            [BlexAction] private void OnLateSaveResponse(int id)   => Contacts = Adapter.SetOne(Contacts, Saved(id));
+            [BlexAction] private void OnLateUpsertResponse(int id) => Contacts = Adapter.UpsertOne(Contacts, Saved(id));
+
+            // The same for a batch of ids 1 and 99.
+            [BlexAction] private void OnLateBatchSetMany()    => Contacts = Adapter.SetMany(Contacts, [Saved(1), Saved(99)]);
+            [BlexAction] private void OnLateBatchUpsertMany() => Contacts = Adapter.UpsertMany(Contacts, [Saved(1), Saved(99)]);
         }
         """;
 
@@ -360,7 +467,7 @@
         """;
 
     private const string NoOpIdentity = """
-        [BlexEffect(Mode = BlexEffectConcurrency.Drop)]
+        [BlexEffect(Concurrency = BlexEffectConcurrency.Drop)]
         private async Task OnPoll()
         {
             var fresh = await _api.GetTodosAsync();

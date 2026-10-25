@@ -23,7 +23,6 @@ public partial class Initial : Migration
                 Id = table.Column<Guid>(type: "TEXT", nullable: false),
                 Kind = table.Column<int>(type: "INTEGER", nullable: false),
                 Path = table.Column<string>(type: "TEXT", nullable: true),
-                ContentType = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
                 CreatedOn = table.Column<long>(type: "INTEGER", nullable: false)
             },
             constraints: table =>
@@ -976,8 +975,7 @@ public partial class Initial : Migration
         migrationBuilder.CreateIndex(
             name: "IX_PushNotificationSubscriptions_DeviceId",
             table: "PushNotificationSubscriptions",
-            column: "DeviceId",
-            unique: true);
+            column: "DeviceId");
 
         migrationBuilder.CreateIndex(
             name: "IX_PushNotificationSubscriptions_ExpirationTime",

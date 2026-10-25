@@ -3,7 +3,7 @@
 /// <summary>
 /// A memoized derived value over the whole application state -- what
 /// <c>[BlexComputedAttribute]</c> is to a single store, lifted to the manager. Recomputes at most
-/// once per action (or restore), however many readers ask for it in between.
+/// once per state change, however many readers ask for it in between.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -15,8 +15,11 @@
 /// action rather than three, and an action nobody's readers care about costs nothing at all.
 /// </para>
 /// <para>
-/// Dispose it to detach from the manager. Selectors compose: one may read another, and each still
-/// computes at most once per action.
+/// It is stale the moment any registered store changes -- an action, a restore, an effect's
+/// <c>IsLoading</c>/<c>Error</c>, a mutation an async action makes while still running -- and that is
+/// known before the store's subscribers run, so a component re-rendering for the change never reads
+/// the value from before it. Selectors compose: one may read another, and each still computes at most
+/// once per change. Dispose it when done; it subscribes to nothing, so disposal only drops the memo.
 /// </para>
 /// </remarks>
 /// <example><code>
@@ -25,22 +28,19 @@
 /// </code></example>
 public sealed class BlexSelector<T> : IDisposable
 {
+    // Never a version the manager reports: StateVersion starts at zero and only increases.
+    private const long Stale = -1;
+
     private readonly BlexManager _manager;
     private readonly Func<T> _selector;
-    private readonly IDisposable _actions;
     private T _value = default!;
-    private bool _valid;
+    private long _version = Stale;
     private bool _disposed;
 
     internal BlexSelector(BlexManager manager, Func<T> selector)
     {
         _manager = manager;
         _selector = selector;
-
-        // Invalidation only; the value is recomputed on the next read, so an action nobody's
-        // readers care about costs a flag write.
-        _actions = manager.Subscribe(_ => Invalidate());
-        manager.StateRestored += Invalidate;
     }
 
     /// <summary>
@@ -53,16 +53,17 @@ public sealed class BlexSelector<T> : IDisposable
     /// would be worse than the throw. A failed computation is not cached, so a later read retries.
     /// </para>
     /// <para>
-    /// Reading a disposed selector still works, but memoization stops: without a subscription there
-    /// is nothing left to invalidate the cache, and a value frozen at the moment of disposal is the
-    /// one failure mode a memo must not have. It degrades to a plain call of the projection.
+    /// Reading a disposed selector still works, but memoization stops: it degrades to a plain call of
+    /// the projection, and holds on to none of its results.
     /// </para>
     /// </remarks>
     public T Value
     {
         get
         {
-            if (_valid && !_disposed)
+            // Read before computing: a projection that itself changes state leaves the memo stale.
+            var version = _manager.StateVersion;
+            if (_version == version && !_disposed)
                 return _value;
 
             var value = _selector();
@@ -70,13 +71,13 @@ public sealed class BlexSelector<T> : IDisposable
                 return value;
 
             _value = value;
-            _valid = true;
+            _version = version;
             return _value;
         }
     }
 
     /// <summary>Whether the memoized value is current (i.e. a read would not recompute).</summary>
-    public bool IsValid => _valid;
+    public bool IsValid => !_disposed && _version == _manager.StateVersion;
 
     /// <summary>
     /// Discards the memoized value so the next read recomputes. Call it when the projection depends
@@ -84,19 +85,14 @@ public sealed class BlexSelector<T> : IDisposable
     /// </summary>
     public void Invalidate()
     {
-        _valid = false;
+        _version = Stale;
         _value = default!;
     }
 
-    /// <summary>Detaches from the manager. Idempotent.</summary>
+    /// <summary>Stops memoizing and releases the memoized value. Idempotent.</summary>
     public void Dispose()
     {
-        if (_disposed)
-            return;
-
         _disposed = true;
-        _manager.StateRestored -= Invalidate;
-        _actions.Dispose();
         Invalidate();
     }
 }

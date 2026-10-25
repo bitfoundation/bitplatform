@@ -35,6 +35,8 @@ public static class DemoHost
             return new Instance(external, null);
         }
 
+        await DemoBuild.EnsureBuiltAsync();
+
         // Reserved up front and passed explicitly, rather than taking the launch profile's port: other
         // checkouts and other demos on the same machine routinely hold the common ones.
         var baseUrl = $"http://127.0.0.1:{ChildProcess.FreePort()}";

@@ -1,0 +1,174 @@
+﻿/* Minimal styling for the Bmage samples - just enough to keep the pages readable. */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    line-height: 1.5;
+    color: #1b1b1f;
+    background: #fff;
+}
+
+a {
+    color: #2f5bea;
+}
+
+code {
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: .9em;
+    background: #f2f3f5;
+    border-radius: 3px;
+    padding: .1em .3em;
+}
+
+.topbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+    padding: .75rem 1.5rem;
+    border-bottom: 1px solid #e3e4e8;
+}
+
+    .topbar a {
+        text-decoration: none;
+    }
+
+        .topbar a.active {
+            text-decoration: underline;
+        }
+
+    .topbar .brand {
+        font-weight: 600;
+        color: inherit;
+    }
+
+    .topbar .renderer {
+        margin-inline-start: auto;
+        font-size: .85rem;
+        color: #5b5d66;
+    }
+
+main {
+    max-width: 64rem;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+h1 {
+    font-size: 1.5rem;
+    margin: 0 0 1rem;
+}
+
+    h1:focus {
+        outline: none;
+    }
+
+h2 {
+    font-size: 1.1rem;
+    margin: 0 0 .75rem;
+}
+
+dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: .25rem 1rem;
+    margin: 0;
+}
+
+dt {
+    font-weight: 600;
+}
+
+dd {
+    margin: 0;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+th, td {
+    text-align: start;
+    padding: .25rem 1rem .25rem 0;
+}
+
+.card {
+    border: 1px solid #e3e4e8;
+    border-radius: 6px;
+    padding: 1rem;
+    margin: 0 0 1rem;
+}
+
+    .card.error {
+        border-color: #e5484d;
+        color: #b4232a;
+        background: #fff5f5;
+    }
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .75rem;
+    margin: 0 0 1rem;
+}
+
+.btn {
+    display: inline-block;
+    padding: .4rem .9rem;
+    border: 1px solid #c9cbd3;
+    border-radius: 4px;
+    background: #f7f7f9;
+    color: inherit;
+    font: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+    .btn:disabled {
+        opacity: .5;
+        cursor: default;
+    }
+
+    .btn[aria-pressed="true"] {
+        border-color: #2f5bea;
+        background: #e8eefe;
+    }
+
+figure {
+    margin: 0 0 1rem;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+.preview {
+    display: block;
+    max-height: 24rem;
+    margin: 0 0 .75rem;
+}
+
+/* The editor fills its container, and a container with no height collapses to nothing. */
+.editor-frame {
+    height: 36rem;
+}
+
+#blazor-error-ui {
+    display: none;
+    position: fixed;
+    inset: auto 0 0 0;
+    padding: .75rem 1.5rem;
+    background: #fff5f5;
+    border-top: 1px solid #e5484d;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        float: right;
+    }

@@ -7,6 +7,9 @@
 /// <param name="Concurrency">0 = Parallel, 1 = Latest, 2 = Drop, 3 = Queue (mirrors Bit.Blex.BlexEffectConcurrency).</param>
 /// <param name="HasCancellationToken">True when the impl method's last parameter is a CancellationToken supplied by the wrapper.</param>
 /// <param name="DebounceMilliseconds">Quiet period before the body runs; 0 disables debouncing.</param>
+/// <param name="RetryCount">How many times a failed run is retried; 0 runs the body once.</param>
+/// <param name="RetryDelayMilliseconds">The wait before the first retry; doubles before each further one, up to 30 s.</param>
+/// <param name="TimeoutMilliseconds">How long one attempt may take before its token is cancelled; 0 sets no limit.</param>
 /// <param name="Parameters">The impl method's parameters, minus a trailing CancellationToken.</param>
 internal sealed record BlexEffectModel(
     string ImplName,
@@ -16,4 +19,7 @@ internal sealed record BlexEffectModel(
     int Concurrency,
     bool HasCancellationToken,
     int DebounceMilliseconds,
+    int RetryCount,
+    int RetryDelayMilliseconds,
+    int TimeoutMilliseconds,
     BlexEquatableArray<BlexParamModel> Parameters) : System.IEquatable<BlexEffectModel>;

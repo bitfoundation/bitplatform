@@ -1,0 +1,126 @@
+﻿@page "/autosave"
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<PageTitle>Autosave - Bink samples</PageTitle>
+
+<h1>Autosave</h1>
+
+<p>
+    <code>BinkAutosave</code> keeps a recovery copy of the drawing in the browser's IndexedDB through
+    <code>BinkBrowserDocumentStore</code>, a couple of seconds after each change. Draw, then reload: the next visit
+    offers the copy back. In MAUI the copy lives in the WebView's own storage.
+</p>
+
+@if (_recovered is not null)
+{
+    <div class="status" role="alert">
+        A drawing of @_recovered.ElementCount elements was kept from an earlier visit.
+        <button @onclick="RestoreAsync">Restore it</button>
+        <button @onclick="DiscardAsync">Discard it</button>
+    </div>
+}
+
+<div class="toolbar">
+    <button disabled="@(_canvas?.History.CanUndo is not true)" @onclick="() => _canvas?.Undo()">Undo</button>
+    <button disabled="@_document.IsEmpty" @onclick="() => _canvas?.Clear()">Clear</button>
+    <button disabled="@(_autosave is null)" @onclick="SaveNowAsync">Save now</button>
+    <button @onclick="Reload">Reload the page</button>
+</div>
+
+<div class="surface">
+    <BinkCanvas @ref="_canvas"
+                Document="_document"
+                Height="360px"
+                AriaLabel="Autosaved drawing"
+                EnableTouchGestures="true"
+                DocumentChanged="() => StateHasChanged()"
+                Ready="() => StateHasChanged()"
+                HistoryChanged="() => StateHasChanged()" />
+</div>
+
+<CanvasStatus Canvas="_canvas" />
+
+<p class="status" role="status">@_status</p>
+
+@code {
+    private const string Key = "bink-samples-autosave";
+
+    private BinkCanvas? _canvas;
+    private BinkDocument _document = new(new BinkDocumentSettings { Width = 800, Height = 500, Background = BinkColor.White });
+    private BinkBrowserDocumentStore? _store;
+    private BinkAutosave? _autosave;
+    private BinkDocument? _recovered;
+    private string _status = "Waiting for the page to become interactive.";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Only once the page runs interactively: there is no IndexedDB while prerendering.
+        if (firstRender is false) return;
+
+        _store = new BinkBrowserDocumentStore(JS);
+        try
+        {
+            BinkDocument? recovered = await BinkAutosave.RestoreAsync(_store, Key, onError: error => _status = error);
+            if (recovered is { IsEmpty: false }) _recovered = recovered;
+            _status = "Changes are kept on this device.";
+        }
+        catch (JSException ex)
+        {
+            // A private window, or a WebView without IndexedDB: the drawing is simply not kept.
+            _store = null;
+            _status = "This host cannot keep the drawing: " + ex.Message;
+        }
+
+        await StartAutosaveAsync();
+        StateHasChanged();
+    }
+
+    private async Task StartAutosaveAsync()
+    {
+        if (_autosave is not null) await _autosave.DisposeAsync();
+        _autosave = _store is null ? null : new BinkAutosave(_document, _store, Key);
+        if (_autosave is null) return;
+
+        // Both are raised on the thread that owns the document, the renderer's, so StateHasChanged is safe here.
+        _autosave.Saved += (_, _) =>
+        {
+            _status = $"Kept on this device at {DateTime.Now:T}.";
+            StateHasChanged();
+        };
+        _autosave.SaveFailed += (_, error) =>
+        {
+            _status = "Could not keep the drawing: " + error.Message;
+            StateHasChanged();
+        };
+    }
+
+    private async Task RestoreAsync()
+    {
+        if (_recovered is null) return;
+        _document = _recovered;
+        _recovered = null;
+        await StartAutosaveAsync();
+        _status = $"Restored {_document.ElementCount} elements.";
+    }
+
+    private async Task DiscardAsync()
+    {
+        _recovered = null;
+        if (_autosave is not null && _document.IsEmpty) await _autosave.DiscardAsync();
+    }
+
+    private async Task SaveNowAsync()
+    {
+        if (_autosave is not null) await _autosave.SaveNowAsync();
+    }
+
+    private void Reload() => Navigation.Refresh(forceReload: true);
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_autosave is not null) await _autosave.DisposeAsync();
+        if (_store is not null) await _store.DisposeAsync();
+    }
+}

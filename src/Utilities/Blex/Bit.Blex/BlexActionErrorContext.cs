@@ -15,13 +15,13 @@
 /// </remarks>
 public sealed class BlexActionErrorContext
 {
-    internal BlexActionErrorContext(IBlexStore store, string actionName, IReadOnlyList<BlexActionArg>? args, Exception exception)
+    internal BlexActionErrorContext(IBlexStore store, string actionName, IReadOnlyList<BlexActionArg>? args, Exception exception, DateTimeOffset timestamp)
     {
         Store = store;
         ActionName = actionName;
         Args = args ?? [];
         Exception = exception;
-        Timestamp = DateTimeOffset.UtcNow;
+        Timestamp = timestamp;
     }
 
     /// <summary>The store whose action failed.</summary>
@@ -36,7 +36,7 @@ public sealed class BlexActionErrorContext
     /// <summary>The exception the action body threw.</summary>
     public Exception Exception { get; }
 
-    /// <summary>When the failure was observed (UTC).</summary>
+    /// <summary>When the failure was observed (UTC), read from <see cref="BlexManager.TimeProvider"/>.</summary>
     public DateTimeOffset Timestamp { get; }
 
     private string? _qualifiedName;

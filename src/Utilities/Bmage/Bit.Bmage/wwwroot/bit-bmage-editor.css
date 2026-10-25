@@ -343,6 +343,32 @@
     pointer-events: none;
 }
 
+.bmg-selection-outline {
+    position: absolute;
+    overflow: visible;
+    pointer-events: none;
+}
+
+.bmg-selection-outline path {
+    fill: none;
+    stroke-width: 1px;
+    vector-effect: non-scaling-stroke;
+}
+
+.bmg-ants-under {
+    stroke: #ffffff;
+}
+
+.bmg-ants {
+    stroke: #000000;
+    stroke-dasharray: 4 4;
+    animation: bmg-ants 0.6s linear infinite;
+}
+
+@keyframes bmg-ants {
+    to { stroke-dashoffset: -8; }
+}
+
 /* ---- Panel ---- */
 
 .bmg-panel {
@@ -434,8 +460,129 @@
 
 .bmg-field-actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     margin-top: 4px;
+}
+
+.bmg-field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.bmg-number {
+    width: 100%;
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid var(--bmg-border);
+    border-radius: var(--bmg-radius-sm);
+    background: var(--bmg-bg);
+    color: var(--bmg-text);
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+}
+
+.bmg-number:focus-visible,
+.bmg-select:focus-visible,
+.bmg-color:focus-visible {
+    outline: var(--bmg-focus-ring);
+    outline-offset: 2px;
+}
+
+.bmg-textarea {
+    width: 100%;
+    min-height: 64px;
+    padding: 6px 8px;
+    border: 1px solid var(--bmg-border);
+    border-radius: var(--bmg-radius-sm);
+    background: var(--bmg-bg);
+    color: var(--bmg-text);
+    font: inherit;
+    resize: vertical;
+}
+
+.bmg-textarea:focus-visible {
+    outline: var(--bmg-focus-ring);
+    outline-offset: 2px;
+}
+
+.bmg-legend {
+    padding: 0;
+    margin-bottom: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--bmg-text-muted);
+}
+
+/* A file input laid transparently over a button-styled label, so the native control keeps keyboard and screen reader
+   behaviour and the button shows its focus. */
+.bmg-file-button {
+    position: relative;
+    display: inline-flex;
+}
+
+.bmg-file-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.bmg-file-input:disabled {
+    cursor: not-allowed;
+}
+
+.bmg-file-input:disabled + .bmg-button {
+    opacity: 0.5;
+}
+
+.bmg-file-input:focus-visible + .bmg-button {
+    outline: var(--bmg-focus-ring);
+    outline-offset: 2px;
+}
+
+.bmg-histogram {
+    margin: 0 0 12px;
+}
+
+.bmg-histogram svg {
+    display: block;
+    width: 100%;
+    height: 56px;
+    border-radius: var(--bmg-radius-sm);
+    background: var(--bmg-bg-sunken);
+}
+
+.bmg-histogram path {
+    fill: var(--bmg-text-muted);
+}
+
+.bmg-histogram figcaption {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--bmg-text-muted);
+    opacity: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.bmg-compare-badge {
+    position: absolute;
+    inset-block-start: 12px;
+    inset-inline-start: 50%;
+    transform: translateX(-50%);
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--bmg-bg);
+    border: 1px solid var(--bmg-border);
+    box-shadow: var(--bmg-shadow);
+    color: var(--bmg-text);
+    font-size: 12px;
+    pointer-events: none;
 }
 
 .bmg-slider {
@@ -541,6 +688,25 @@
     background: var(--bmg-accent-subtle);
 }
 
+/* A group's layers, under its row and set in from it. */
+.bmg-layer-children {
+    list-style: none;
+    margin: 2px 0 0;
+    margin-inline-start: 10px;
+    padding: 0;
+    padding-inline-start: 12px;
+    border-inline-start: 2px solid var(--bmg-border);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* A layer clipped to the one below it, marked as photo editors mark it; its button's pressed state says so in words. */
+.bmg-layer-clipped .bmg-layer-name::before {
+    content: "\21B3\00A0";
+    color: var(--bmg-text-muted);
+}
+
 .bmg-layer-name,
 .bmg-history-button {
     flex: 1 1 auto;
@@ -557,6 +723,26 @@
 .bmg-layer-name:hover,
 .bmg-history-button:hover {
     background: var(--bmg-bg-sunken);
+}
+
+/* A pixel layer's name is a label, not a button: layers are edited from code or a custom panel. */
+span.bmg-layer-name {
+    cursor: default;
+}
+
+span.bmg-layer-name:hover {
+    background: transparent;
+}
+
+.bmg-layer-hidden .bmg-layer-name {
+    opacity: 0.5;
+}
+
+/* Pixel layers above, annotations below. */
+.bmg-layer-list + .bmg-layer-list {
+    margin-block-start: 8px;
+    padding-block-start: 8px;
+    border-block-start: 1px solid var(--bmg-border);
 }
 
 .bmg-history-entry {
@@ -778,5 +964,13 @@
     .bmg-crop-frame,
     .bmg-selection {
         border-color: CanvasText;
+    }
+
+    .bmg-ants-under {
+        stroke: Canvas;
+    }
+
+    .bmg-ants {
+        stroke: CanvasText;
     }
 }

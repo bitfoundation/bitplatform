@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -37,11 +38,20 @@ public sealed class BlexGenerator : IIncrementalGenerator
     [
         "Name", "Persist", "StateChanged", "PropertyChanged", "SerializeState", "DeserializeState",
         "InvalidateComputed", "NotifyRestored", "SetState", "SetEffectState",
-        "BeginEffect", "EndEffect", "Dispatch", "DispatchAsync",
+        "BeginEffect", "EndEffect", "DebounceEffectAsync", "RunEffectAttemptsAsync", "Dispatch", "DispatchAsync",
         "BeginAction", "DispatchApprovedAsync",
         "Batch", "ResetState", "RestoreState", "IsRestoring", "IsObserved",
         "Dispose", "IsDisposed", "CancelEffects",
+        "InstanceKey", "WithInstanceKey", "TimeProvider",
+        "ActionDescriptors", "FindAction", "DescribeActions", "EnforcesActions", "TransientStateKeys",
+        "CaptureRollbackState", "ApplyRollbackState",
     ];
+
+    /// <summary>The nested class the typed action descriptors are generated into.</summary>
+    private const string ActionsClassName = "Actions";
+
+    /// <summary>Names C# rejects as tuple element names (CS8126), plus GetType, which would hide object's.</summary>
+    private static readonly string[] ReservedTupleNames = ["CompareTo", "Deconstruct", "Equals", "GetHashCode", "GetType", "Rest", "ToString"];
 
     private static readonly DiagnosticDescriptor NotPartial = new(
         "BLEX001",
@@ -149,8 +159,8 @@ public sealed class BlexGenerator : IIncrementalGenerator
 
     private static readonly DiagnosticDescriptor GenericMethodNotSupported = new(
         "BLEX014",
-        "Generic action/effect methods are not supported",
-        "Method '{0}' is generic; the generated wrapper cannot carry type parameters, so make the method non-generic",
+        "Generic action/effect/computed methods are not supported",
+        "Method '{0}' is generic; the generated member cannot carry type parameters, so make the method non-generic",
         "Bit.Blex.Generators",
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
@@ -183,6 +193,38 @@ public sealed class BlexGenerator : IIncrementalGenerator
         "BLEX019",
         "Effect debounce cannot be negative",
         "Effect '{0}' sets a negative DebounceMilliseconds; use 0 to disable debouncing",
+        "Bit.Blex.Generators",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor ActionsNameTaken = new(
+        "BLEX020",
+        "Typed action descriptors are not generated",
+        "Blex store '{0}' already has a member named 'Actions', so its typed action descriptors ({0}.Actions.Xxx) are not generated; rename that member to get them",
+        "Bit.Blex.Generators",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor DuplicateActionLabel = new(
+        "BLEX021",
+        "Action name is used more than once",
+        "Blex store '{0}' dispatches more than one action as '{1}'; the name identifies an action to subscribers, filters, DevTools and dispatch by name, so give each [BlexActionAttribute]/[BlexEffectAttribute] a Name of its own (a state property's direct assignment is dispatched as 'Set <Property>')",
+        "Bit.Blex.Generators",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor NegativeRetryOrTimeout = new(
+        "BLEX022",
+        "Effect retry and timeout values cannot be negative",
+        "Effect '{0}' sets a negative RetryCount, RetryDelayMilliseconds or TimeoutMilliseconds; use 0 to turn retries or the timeout off",
+        "Bit.Blex.Generators",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor TimeoutWithoutToken = new(
+        "BLEX023",
+        "Effect timeout needs a CancellationToken",
+        "Effect '{0}' sets TimeoutMilliseconds but has no CancellationToken parameter, so a timed-out attempt could not be stopped and would go on changing state; add a trailing CancellationToken parameter and pass it to the work it awaits",
         "Bit.Blex.Generators",
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
@@ -305,6 +347,8 @@ public sealed class BlexGenerator : IIncrementalGenerator
 
         var storeName = symbol.Name;
         var persist = false;
+        var enforceActions = false;
+        var rollbackOnError = false;
         var storeAttr = ctx.Attributes.FirstOrDefault();
         if (storeAttr is not null)
         {
@@ -315,6 +359,14 @@ public sealed class BlexGenerator : IIncrementalGenerator
             var persistArg = storeAttr.NamedArguments.FirstOrDefault(a => a.Key == "Persist").Value;
             if (persistArg.Value is bool b)
                 persist = b;
+
+            var enforceArg = storeAttr.NamedArguments.FirstOrDefault(a => a.Key == "EnforceActions").Value;
+            if (enforceArg.Value is bool e)
+                enforceActions = e;
+
+            var rollbackArg = storeAttr.NamedArguments.FirstOrDefault(a => a.Key == "RollbackOnError").Value;
+            if (rollbackArg.Value is bool rb)
+                rollbackOnError = rb;
         }
 
         var states = new List<BlexStateModel>();
@@ -341,10 +393,15 @@ public sealed class BlexGenerator : IIncrementalGenerator
                         break;
                     }
 
+                    // [BlexState(Persist = false)] keeps the field out of durable persistence.
+                    var stateAttr = field.GetAttributes().First(a => a.AttributeClass?.ToDisplayString() == BlexStateAttribute);
+                    var persistField = stateAttr.NamedArguments.FirstOrDefault(a => a.Key == "Persist").Value.Value is not false;
+
                     states.Add(new BlexStateModel(
                         field.Name,
                         propertyName,
-                        field.Type.ToDisplayString(TypeFormat)));
+                        field.Type.ToDisplayString(TypeFormat),
+                        persistField));
                     break;
                 }
 
@@ -359,6 +416,14 @@ public sealed class BlexGenerator : IIncrementalGenerator
                     if (cm.Parameters.Length > 0)
                     {
                         Report(ComputedHasParameters, cm.Locations.FirstOrDefault(), cm.Name);
+                        break;
+                    }
+
+                    // The memoized property cannot carry a type parameter: emitted anyway, it fails to compile in
+                    // generated code the user never wrote (CS0246 / CS0411).
+                    if (cm.IsGenericMethod)
+                    {
+                        Report(GenericMethodNotSupported, cm.Locations.FirstOrDefault(), cm.Name);
                         break;
                     }
 
@@ -490,6 +555,15 @@ public sealed class BlexGenerator : IIncrementalGenerator
                         break;
                     }
 
+                    var retryCount = attr.NamedArguments.FirstOrDefault(a => a.Key == "RetryCount").Value.Value is int r ? r : 0;
+                    var retryDelay = attr.NamedArguments.FirstOrDefault(a => a.Key == "RetryDelayMilliseconds").Value.Value is int rd ? rd : 1000;
+                    var timeout = attr.NamedArguments.FirstOrDefault(a => a.Key == "TimeoutMilliseconds").Value.Value is int t ? t : 0;
+                    if (retryCount < 0 || retryDelay < 0 || timeout < 0)
+                    {
+                        Report(NegativeRetryOrTimeout, em.Locations.FirstOrDefault(), em.Name);
+                        break;
+                    }
+
                     // A trailing CancellationToken parameter is supplied by the wrapper (it does
                     // not appear on the public method) and enables CancelXxx() / Latest semantics.
                     var parameters = em.Parameters;
@@ -500,6 +574,14 @@ public sealed class BlexGenerator : IIncrementalGenerator
 
                     if (concurrency == 1 && !hasToken)
                         Report(LatestWithoutToken, em.Locations.FirstOrDefault(), em.Name);
+
+                    // Without a token, a timeout could only stop waiting for the body, which would carry on
+                    // and change state after its run had already failed.
+                    if (timeout > 0 && !hasToken)
+                    {
+                        Report(TimeoutWithoutToken, em.Locations.FirstOrDefault(), em.Name);
+                        break;
+                    }
 
                     var label = string.IsNullOrWhiteSpace(explicitName) ? wrapper : explicitName!;
                     var isValueTaskEffect = returnName == "System.Threading.Tasks.ValueTask";
@@ -515,6 +597,9 @@ public sealed class BlexGenerator : IIncrementalGenerator
                         concurrency,
                         hasToken,
                         debounce,
+                        retryCount,
+                        retryDelay,
+                        timeout,
                         new BlexEquatableArray<BlexParamModel>(prms)));
                     break;
                 }
@@ -523,21 +608,257 @@ public sealed class BlexGenerator : IIncrementalGenerator
 
         // A name collision would emit uncompilable code; report BLEX005 and emit nothing.
         var beforeDuplicates = diagnostics.Count;
-        DetectDuplicates(storeName, states, computeds, actions, effects, symbol, Report);
+        var memberNames = DetectDuplicates(storeName, states, computeds, actions, effects, symbol, Report);
         if (diagnostics.Count > beforeDuplicates)
             return Fail();
+
+        DetectDuplicateLabels(storeName, states, actions, effects, enforceActions, symbol, Report);
+
+        // The typed descriptors live in a nested "Actions" class. A store that already uses the name --
+        // for one of its own members or one generated for it -- keeps compiling exactly as before; it
+        // only goes without the typed surface, and is told so.
+        var emitActions = actions.Count + effects.Count > 0;
+        if (emitActions && memberNames.Contains(ActionsClassName))
+        {
+            Report(ActionsNameTaken, classDecl.Identifier.GetLocation(), symbol.Name);
+            emitActions = false;
+        }
+
+        var tracked = TrackComputedReads(symbol, ctx.SemanticModel.Compilation, states, computeds);
 
         var model = new BlexStoreModel(
             ns,
             symbol.Name,
             storeName,
             persist,
+            enforceActions,
+            rollbackOnError,
+            emitActions,
             new BlexEquatableArray<BlexStateModel>(states.ToArray()),
-            new BlexEquatableArray<BlexComputedModel>(computeds.ToArray()),
+            new BlexEquatableArray<BlexComputedModel>(tracked),
             new BlexEquatableArray<BlexActionModel>(actions.ToArray()),
             new BlexEquatableArray<BlexEffectModel>(effects.ToArray()));
 
         return new BlexTransformOutput(model, new BlexEquatableArray<BlexDiagnosticInfo>(diagnostics.ToArray()));
+    }
+
+    /// <summary>
+    /// Finds which state properties each computed reads, so a write invalidates only the computeds that read it.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The state properties a computed reads (<c>Count</c>) are generated by this very generator, so the semantic model
+    /// cannot resolve them -- nor anything chained off them. Only the root names of expressions are looked at: a state
+    /// property or its backing field, or another computed, is a dependency; what is accessed off it (<c>Items.Sum</c>'s
+    /// <c>Sum</c>) says nothing about which state is read.
+    /// </para>
+    /// <para>
+    /// Anything else makes the computed read "everything" -- invalidated by every write, as all computeds were before:
+    /// an instance member that is not state (a helper method, a service field, a base class's member), an extension
+    /// called on the store, a primary-constructor parameter, <c>this</c> passed along, <c>base</c>, or a name nothing
+    /// resolves (an effect's generated flags). Only what cannot be store state is left out: locals, lambda and
+    /// local-function parameters, local functions, types, namespaces and static members.
+    /// </para>
+    /// </remarks>
+    private static BlexComputedModel[] TrackComputedReads(
+        INamedTypeSymbol store,
+        Compilation compilation,
+        List<BlexStateModel> states,
+        List<BlexComputedModel> computeds)
+    {
+        var stateByName = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var state in states)
+        {
+            stateByName[state.PropertyName] = state.PropertyName;
+            stateByName[state.FieldName] = state.PropertyName;
+        }
+
+        var computedByName = new Dictionary<string, int>(StringComparer.Ordinal);
+        for (var i = 0; i < computeds.Count; i++)
+        {
+            computedByName[computeds[i].PropertyName] = i;
+            computedByName[computeds[i].MethodName] = i;
+        }
+
+        var direct = new (HashSet<string> States, HashSet<int> Computeds, bool Everything)[computeds.Count];
+        for (var i = 0; i < computeds.Count; i++)
+        {
+            var method = store.GetMembers(computeds[i].MethodName).OfType<IMethodSymbol>().FirstOrDefault(m => m.Parameters.Length == 0);
+            direct[i] = method is null ? ([], [], true) : ReadsOf(method);
+        }
+
+        // Through the computeds a computed reads; a cycle (which would recurse forever at run time) reads everything.
+        var resolved = new (SortedSet<string> States, bool Everything)?[computeds.Count];
+        var visiting = new HashSet<int>();
+        var result = new BlexComputedModel[computeds.Count];
+        for (var i = 0; i < computeds.Count; i++)
+        {
+            var (reads, everything) = Resolve(i);
+            result[i] = computeds[i] with
+            {
+                Reads = new BlexEquatableArray<string>(everything ? [] : [.. reads]),
+                ReadsEverything = everything,
+            };
+        }
+
+        return result;
+
+        (SortedSet<string> States, bool Everything) Resolve(int index)
+        {
+            if (resolved[index] is { } done)
+                return done;
+
+            if (!visiting.Add(index))
+                return ([], true);
+
+            var (statesRead, computedsRead, everything) = direct[index];
+            var reads = new SortedSet<string>(statesRead, StringComparer.Ordinal);
+            foreach (var other in computedsRead)
+            {
+                if (other == index || everything)
+                    continue;
+
+                var (otherReads, otherEverything) = Resolve(other);
+                everything |= otherEverything;
+                reads.UnionWith(otherReads);
+            }
+
+            visiting.Remove(index);
+            var outcome = (reads, everything);
+            resolved[index] = outcome;
+            return outcome;
+        }
+
+        (HashSet<string> States, HashSet<int> Computeds, bool Everything) ReadsOf(IMethodSymbol method)
+        {
+            var statesRead = new HashSet<string>(StringComparer.Ordinal);
+            var computedsRead = new HashSet<int>();
+            var everything = false;
+
+            foreach (var reference in method.DeclaringSyntaxReferences)
+            {
+                if (reference.GetSyntax() is not MethodDeclarationSyntax declaration
+                    || ((SyntaxNode?)declaration.Body ?? declaration.ExpressionBody) is not { } body)
+                {
+                    everything = true;
+                    continue;
+                }
+
+                var semantic = compilation.GetSemanticModel(declaration.SyntaxTree);
+                foreach (var node in body.DescendantNodesAndSelf())
+                {
+                    switch (node)
+                    {
+                        case BaseExpressionSyntax:
+                        case ThisExpressionSyntax when node.Parent is not MemberAccessExpressionSyntax { Expression: ThisExpressionSyntax }:
+                            everything = true;
+                            break;
+
+                        case SimpleNameSyntax name when IsRootName(name):
+                            Classify(name, semantic);
+                            break;
+                    }
+
+                    if (everything)
+                        break;
+                }
+            }
+
+            return (statesRead, computedsRead, everything);
+
+            void Classify(SimpleNameSyntax name, SemanticModel semantic)
+            {
+                var text = name.Identifier.ValueText;
+                if (stateByName.TryGetValue(text, out var state))
+                {
+                    statesRead.Add(state);
+                    return;
+                }
+
+                if (computedByName.TryGetValue(text, out var computed))
+                {
+                    computedsRead.Add(computed);
+                    return;
+                }
+
+                switch (semantic.GetSymbolInfo(name).Symbol)
+                {
+                    case null:
+                        // Nothing resolves it: a member generated for the store (an effect's flags), whose reads
+                        // cannot be seen.
+                        everything = true;
+                        break;
+
+                    case ILocalSymbol or IRangeVariableSymbol or ITypeSymbol or INamespaceSymbol or ILabelSymbol or IAliasSymbol or IDiscardSymbol:
+                        break;
+
+                    case IParameterSymbol parameter:
+                        // A primary-constructor parameter is a field in all but name: whatever it holds is not tracked.
+                        if (parameter.ContainingSymbol is IMethodSymbol { MethodKind: MethodKind.Constructor } constructor
+                            && SymbolEqualityComparer.Default.Equals(constructor.ContainingType, store))
+                        {
+                            everything = true;
+                        }
+
+                        break;
+
+                    case IMethodSymbol { MethodKind: MethodKind.LocalFunction or MethodKind.AnonymousFunction }:
+                        break;
+
+                    // An extension called on the store (this.Total()) reads whatever it likes off it.
+                    case IMethodSymbol { MethodKind: MethodKind.ReducedExtension }:
+                    case IMethodSymbol { IsExtensionMethod: true }:
+                        everything = true;
+                        break;
+
+                    case { IsStatic: true }:
+                        break;
+
+                    // A member the computed only writes -- an evaluation counter it bumps, a value it stashes -- as a
+                    // statement of its own: whatever the member holds, the value the computed returns cannot depend on
+                    // it. Reading it back anywhere else in the body is classified like any other read.
+                    case IFieldSymbol or IPropertySymbol when IsDiscardedWrite(name):
+                        break;
+
+                    // Anything else -- an instance member of the store or a base class it declares, an extension member,
+                    // a member of another object named without one -- could read the store's state in ways not seen here.
+                    default:
+                        everything = true;
+                        break;
+                }
+            }
+        }
+
+        // The start of an expression -- not the member accessed off something (a.B, a?.B), the name of a named
+        // argument or a property pattern, or the right side of a qualified name. "this.B" counts: B is the store's.
+        static bool IsRootName(SimpleNameSyntax name) => name.Parent switch
+        {
+            MemberAccessExpressionSyntax access when access.Name == name => access.Expression is ThisExpressionSyntax,
+            MemberBindingExpressionSyntax => false,
+            NameColonSyntax => false,
+            QualifiedNameSyntax qualified when qualified.Right == name => false,
+            _ => true,
+        };
+
+        // X++, --X, X = ..., X += ... (or this.X ...) as an expression statement: the old value only feeds the
+        // new one, and the result of the expression is thrown away.
+        static bool IsDiscardedWrite(SimpleNameSyntax name)
+        {
+            ExpressionSyntax target = name.Parent is MemberAccessExpressionSyntax { Expression: ThisExpressionSyntax } access && access.Name == name
+                ? access
+                : name;
+
+            return target.Parent switch
+            {
+                PostfixUnaryExpressionSyntax { Parent: ExpressionStatementSyntax } postfix
+                    => postfix.IsKind(SyntaxKind.PostIncrementExpression) || postfix.IsKind(SyntaxKind.PostDecrementExpression),
+                PrefixUnaryExpressionSyntax { Parent: ExpressionStatementSyntax } prefix
+                    => prefix.IsKind(SyntaxKind.PreIncrementExpression) || prefix.IsKind(SyntaxKind.PreDecrementExpression),
+                AssignmentExpressionSyntax { Parent: ExpressionStatementSyntax } assignment
+                    => assignment.Left == target,
+                _ => false,
+            };
+        }
     }
 
     /// <summary>
@@ -625,7 +946,11 @@ public sealed class BlexGenerator : IIncrementalGenerator
             : true;
     }
 
-    private static void DetectDuplicates(
+    /// <summary>
+    /// Reports BLEX005 for every generated member that would collide, and returns the names of every
+    /// member the store ends up with: its own, the base class's and the generated ones.
+    /// </summary>
+    private static HashSet<string> DetectDuplicates(
         string storeName,
         List<BlexStateModel> states,
         List<BlexComputedModel> computeds,
@@ -671,11 +996,10 @@ public sealed class BlexGenerator : IIncrementalGenerator
             Check(e.WrapperName + "Error");
             Check($"__{e.WrapperName}Pending");
             Check($"__{e.WrapperName}Error");
-            if (e.HasCancellationToken)
-            {
+            if (e.HasCancellationToken || e.DebounceMilliseconds > 0)
                 Check("Cancel" + e.WrapperName);
+            if (e.HasCancellationToken)
                 Check($"__{e.WrapperName}Cts");
-            }
 
             if (e.Concurrency == 1)
                 Check($"__{e.WrapperName}Version");
@@ -683,6 +1007,42 @@ public sealed class BlexGenerator : IIncrementalGenerator
                 Check($"__{e.WrapperName}Queue");
             if (e.DebounceMilliseconds > 0)
                 Check($"__{e.WrapperName}Debounce");
+        }
+
+        // Private plumbing behind DescribeActions and TransientStateKeys.
+        Check("__blexActionDescriptors");
+        if (states.Any(s => !s.Persist))
+            Check("__blexTransientKeys");
+
+        return seen;
+    }
+
+    /// <summary>
+    /// Reports BLEX021 when two actions are dispatched under one name. The name is what identifies an
+    /// action to subscribers, filters, DevTools and dispatch by name, and wrapper names alone cannot
+    /// catch it: a display label (<c>Name = "Save it"</c>) is free text, and a state property's direct
+    /// assignment is recorded as <c>"Set X"</c> -- except in a store that enforces actions, which records none.
+    /// </summary>
+    private static void DetectDuplicateLabels(
+        string storeName,
+        List<BlexStateModel> states,
+        List<BlexActionModel> actions,
+        List<BlexEffectModel> effects,
+        bool enforceActions,
+        INamedTypeSymbol symbol,
+        System.Action<DiagnosticDescriptor, Location?, string[]> report)
+    {
+        var seen = new HashSet<string>(System.StringComparer.Ordinal);
+        if (!enforceActions)
+        {
+            foreach (var s in states)
+                seen.Add("Set " + s.PropertyName);
+        }
+
+        foreach (var label in actions.Select(a => a.ActionLabel).Concat(effects.Select(e => e.ActionLabel)))
+        {
+            if (!seen.Add(label))
+                report(DuplicateActionLabel, symbol.Locations.FirstOrDefault(), [storeName, label]);
         }
     }
 
@@ -812,6 +1172,181 @@ public sealed class BlexGenerator : IIncrementalGenerator
         return $"IsObserved ? new global::Bit.Blex.BlexActionArg[] {{ {items} }} : null";
     }
 
+    /// <summary>
+    /// Emits the nested <c>Actions</c> class -- one typed descriptor per action and effect -- and the
+    /// <c>DescribeActions</c> override that hands those, plus a <c>"Set X"</c> descriptor per assignable
+    /// state property, to the runtime for dispatch by name.
+    /// </summary>
+    private static void EmitActionDescriptors(StringBuilder sb, BlexStoreModel m, string body)
+    {
+        const string Descriptor = "global::Bit.Blex.BlexActionDescriptor";
+
+        var storeType = m.Namespace is null ? $"global::{m.ClassName}" : $"global::{m.Namespace}.{m.ClassName}";
+        var described = new List<(string Wrapper, string Label, string Type, string Arguments, string Signature)>();
+
+        foreach (var a in m.Actions)
+        {
+            var (type, arguments) = DescribeAction(storeType, a.ActionLabel, a.WrapperName, a.IsAsync, a.Parameters);
+            described.Add((a.WrapperName, a.ActionLabel, type, arguments, Signature(a.WrapperName, a.Parameters)));
+        }
+
+        foreach (var e in m.Effects)
+        {
+            var (type, arguments) = DescribeAction(storeType, e.ActionLabel, e.WrapperName, returnsTask: true, e.Parameters);
+            described.Add((e.WrapperName, e.ActionLabel, type, arguments, Signature(e.WrapperName, e.Parameters)));
+        }
+
+        var entries = new List<string>();
+        if (m.EmitActions)
+        {
+            sb.AppendLine($"{body}/// <summary>");
+            sb.AppendLine($"{body}/// Typed descriptors of this store's actions and effects: match them in subscribers, filters and");
+            sb.AppendLine($"{body}/// tests by descriptor rather than by name, read their payloads as the types they take, and");
+            sb.AppendLine($"{body}/// dispatch them as data.");
+            sb.AppendLine($"{body}/// </summary>");
+            sb.AppendLine($"{body}public static class {ActionsClassName}");
+            sb.AppendLine($"{body}{{");
+            foreach (var d in described)
+            {
+                sb.AppendLine($"{body}    /// <summary>The <c>{DocEscape(d.Label)}</c> action: <c>{DocEscape(d.Signature)}</c>.</summary>");
+                sb.AppendLine($"{body}    public static readonly {d.Type} {d.Wrapper} = new({d.Arguments});");
+                sb.AppendLine();
+            }
+
+            sb.AppendLine($"{body}}}");
+            sb.AppendLine();
+
+            entries.AddRange(described.Select(d => $"{ActionsClassName}.{d.Wrapper}"));
+        }
+        else
+        {
+            // The name "Actions" is taken (BLEX020): no typed surface, but the actions stay
+            // dispatchable by name.
+            entries.AddRange(described.Select(d => $"new {d.Type}({d.Arguments})"));
+        }
+
+        // A direct assignment records as "Set X", so it is replayable and dispatchable too -- except in
+        // a store that enforces actions, where no outside assignment can ever have been recorded.
+        if (!m.EnforceActions)
+        {
+            foreach (var s in m.States)
+            {
+                var label = Escape("Set " + s.PropertyName);
+                var name = Escape(s.PropertyName);
+                entries.Add(
+                    $"new global::Bit.Blex.BlexAction<{storeType}, {s.TypeFqn}>(\"{label}\", new string[] {{ \"{name}\" }}, " +
+                    $"static (__s, __p) => {{ __s.{s.PropertyName} = __p; return global::System.Threading.Tasks.Task.CompletedTask; }}, " +
+                    $"static __a => {Descriptor}.GetArg<{s.TypeFqn}>(__a, 0, \"{name}\"))");
+            }
+        }
+
+        if (entries.Count == 0)
+            return;
+
+        sb.AppendLine($"{body}private static {Descriptor}[]? __blexActionDescriptors;");
+        sb.AppendLine($"{body}/// <inheritdoc />");
+        sb.AppendLine($"{body}protected override global::System.Collections.Generic.IReadOnlyList<{Descriptor}> DescribeActions()");
+        sb.AppendLine($"{body}    => __blexActionDescriptors ??= new {Descriptor}[]");
+        sb.AppendLine($"{body}    {{");
+        foreach (var entry in entries)
+            sb.AppendLine($"{body}        {entry},");
+        sb.AppendLine($"{body}    }};");
+        sb.AppendLine();
+
+        static string Signature(string wrapper, BlexEquatableArray<BlexParamModel> parameters)
+            => $"{wrapper}({string.Join(", ", parameters.Select(p => $"{ShortType(p.TypeFqn)} {p.Name}"))})";
+
+        static string ShortType(string fqn) => fqn.Replace("global::", "");
+    }
+
+    /// <summary>
+    /// The descriptor type and constructor arguments for one action or effect: a
+    /// <c>BlexAction&lt;TStore&gt;</c> when it takes no arguments, otherwise a
+    /// <c>BlexAction&lt;TStore, TPayload&gt;</c> whose payload is the single parameter's type or a tuple
+    /// of all of them, named after the parameters.
+    /// </summary>
+    private static (string Type, string Arguments) DescribeAction(
+        string storeType,
+        string label,
+        string wrapper,
+        bool returnsTask,
+        BlexEquatableArray<BlexParamModel> parameters)
+    {
+        const string CompletedTask = "global::System.Threading.Tasks.Task.CompletedTask";
+
+        string Invoke(string lambdaParameters, string arguments)
+            => returnsTask
+                ? $"static {lambdaParameters} => __s.{wrapper}({arguments})"
+                : $"static {lambdaParameters} => {{ __s.{wrapper}({arguments}); return {CompletedTask}; }}";
+
+        if (parameters.Count == 0)
+            return ($"global::Bit.Blex.BlexAction<{storeType}>", $"\"{Escape(label)}\", {Invoke("__s", "")}");
+
+        // An optional parameter a payload leaves out takes its declared default, as in a direct call.
+        // A null default is forgiven: the generated file is #nullable enable, and the parameter may not be.
+        string Read(int i)
+        {
+            var p = parameters[i];
+            return p.DefaultLiteral is null
+                ? $"global::Bit.Blex.BlexActionDescriptor.GetArg<{p.TypeFqn}>(__a, {i}, \"{Escape(p.Name)}\")"
+                : $"global::Bit.Blex.BlexActionDescriptor.GetArgOrDefault<{p.TypeFqn}>(__a, {i}, \"{Escape(p.Name)}\", {(p.DefaultLiteral == "null" ? "null!" : p.DefaultLiteral)})";
+        }
+
+        string payloadType;
+        string arguments;
+        string read;
+        if (parameters.Count == 1)
+        {
+            payloadType = parameters[0].TypeFqn;
+            arguments = "__p";
+            read = Read(0);
+        }
+        else
+        {
+            var elements = TupleElementNames(parameters);
+            payloadType = "(" + string.Join(", ", parameters.Select((p, i) => elements is null ? p.TypeFqn : $"{p.TypeFqn} {elements[i]}")) + ")";
+            arguments = string.Join(", ", parameters.Select((_, i) => "__p." + (elements is null ? $"Item{i + 1}" : elements[i])));
+            read = "(" + string.Join(", ", parameters.Select((_, i) => Read(i))) + ")";
+        }
+
+        var names = string.Join(", ", parameters.Select(p => $"\"{Escape(p.Name)}\""));
+        return (
+            $"global::Bit.Blex.BlexAction<{storeType}, {payloadType}>",
+            $"\"{Escape(label)}\", new string[] {{ {names} }}, {Invoke("(__s, __p)", arguments)}, static __a => {read}");
+    }
+
+    /// <summary>
+    /// PascalCased parameter names for a payload tuple (<c>(string Name, int Quantity)</c>), or
+    /// <c>null</c> when one of them cannot name a tuple element -- a reserved name, an <c>ItemN</c> out
+    /// of position, two parameters that only differ in case -- and the tuple stays unnamed.
+    /// </summary>
+    private static string[]? TupleElementNames(BlexEquatableArray<BlexParamModel> parameters)
+    {
+        var names = new string[parameters.Count];
+        var seen = new HashSet<string>(System.StringComparer.Ordinal);
+        for (var i = 0; i < parameters.Count; i++)
+        {
+            var raw = parameters[i].Name;
+            var name = char.ToUpperInvariant(raw[0]) + raw.Substring(1);
+
+            if (ReservedTupleNames.Contains(name))
+                return null;
+
+            if (name.Length > 4 && name.StartsWith("Item", System.StringComparison.Ordinal)
+                && name.Substring(4).All(char.IsDigit) && name != $"Item{i + 1}")
+            {
+                return null;
+            }
+
+            if (!seen.Add(name))
+                return null;
+
+            names[i] = name;
+        }
+
+        return names;
+    }
+
     private static string Emit(BlexStoreModel m)
     {
         const string JsonObject = "global::System.Text.Json.Nodes.JsonObject";
@@ -835,9 +1370,10 @@ public sealed class BlexGenerator : IIncrementalGenerator
 
         var body = indent + "    ";
 
-        // Name
+        // Name. Base-qualified so a member of the same name on the store cannot capture the call;
+        // a scoped instance appends its key (see BlexManager.CreateScope).
         sb.AppendLine($"{body}/// <inheritdoc />");
-        sb.AppendLine($"{body}public override string Name => \"{Escape(m.StoreName)}\";");
+        sb.AppendLine($"{body}public override string Name => base.WithInstanceKey(\"{Escape(m.StoreName)}\");");
         sb.AppendLine();
 
         if (m.Persist)
@@ -847,17 +1383,37 @@ public sealed class BlexGenerator : IIncrementalGenerator
             sb.AppendLine();
         }
 
+        if (m.EnforceActions)
+        {
+            sb.AppendLine($"{body}/// <inheritdoc />");
+            sb.AppendLine($"{body}protected override bool EnforcesActions => true;");
+            sb.AppendLine();
+        }
+
         // State properties. Field accesses are `this.`-qualified and @-escaped so fields named
-        // like locals/keywords ("state", "value", "@lock") bind correctly.
+        // like locals/keywords ("state", "value", "@lock") bind correctly. EnforceActions makes the
+        // setter private: assigning state from outside the store becomes a compile error.
+        var setter = m.EnforceActions ? "private set" : "set";
         foreach (var s in m.States)
         {
             var field = "this." + Id(s.FieldName);
-            sb.AppendLine($"{body}/// <summary>Reactive state backed by <c>{DocEscape(s.FieldName)}</c>.</summary>");
+            var access = m.EnforceActions ? " Changed only by the store's own actions." : "";
+            sb.AppendLine($"{body}/// <summary>Reactive state backed by <c>{DocEscape(s.FieldName)}</c>.{access}</summary>");
             sb.AppendLine($"{body}public {s.TypeFqn} {s.PropertyName}");
             sb.AppendLine($"{body}{{");
             sb.AppendLine($"{body}    get => {field};");
-            sb.AppendLine($"{body}    set => SetState(ref {field}, value, \"{Escape(s.PropertyName)}\");");
+            sb.AppendLine($"{body}    {setter} => SetState(ref {field}, value, \"{Escape(s.PropertyName)}\");");
             sb.AppendLine($"{body}}}");
+            sb.AppendLine();
+        }
+
+        var transient = m.States.Where(s => !s.Persist).ToList();
+        if (transient.Count > 0)
+        {
+            var keys = string.Join(", ", transient.Select(s => $"\"{Escape(s.PropertyName)}\""));
+            sb.AppendLine($"{body}private static readonly string[] __blexTransientKeys = new string[] {{ {keys} }};");
+            sb.AppendLine($"{body}/// <inheritdoc />");
+            sb.AppendLine($"{body}protected override global::System.Collections.Generic.IReadOnlyCollection<string> TransientStateKeys => __blexTransientKeys;");
             sb.AppendLine();
         }
 
@@ -924,6 +1480,17 @@ public sealed class BlexGenerator : IIncrementalGenerator
                 ? (argList.Length == 0 ? "__blexCt" : $"{argList}, __blexCt")
                 : argList;
             var call = e.IsValueTask ? $"{e.ImplName}({implArgs}).AsTask()" : $"{e.ImplName}({implArgs})";
+            if (e.RetryCount > 0 || e.TimeoutMilliseconds > 0)
+            {
+                // The body runs once per attempt, inside the one recorded action; with a timeout, each
+                // attempt gets a token of its own, linked to the effect's.
+                var attemptArgs = e.HasCancellationToken
+                    ? (argList.Length == 0 ? "__blexAttemptCt" : $"{argList}, __blexAttemptCt")
+                    : argList;
+                var attempt = e.IsValueTask ? $"{e.ImplName}({attemptArgs}).AsTask()" : $"{e.ImplName}({attemptArgs})";
+                var token = e.HasCancellationToken ? "__blexCt" : "default";
+                call = $"base.RunEffectAttemptsAsync(__blexAttemptCt => {attempt}, {token}, {e.RetryCount}, {e.RetryDelayMilliseconds}, {e.TimeoutMilliseconds})";
+            }
             var label = Escape(e.ActionLabel);
             var argsExpr = ArgsExpression(e.Parameters);
             var isLatest = e.Concurrency == 1;
@@ -943,10 +1510,28 @@ public sealed class BlexGenerator : IIncrementalGenerator
             sb.AppendLine($"{body}public global::System.Exception? {e.WrapperName}Error => {errorField};");
 
             if (e.HasCancellationToken)
-            {
                 sb.AppendLine($"{body}private global::System.Threading.CancellationTokenSource? {ctsField};");
+
+            // A debounced invocation still waiting out its quiet period is as much "in flight" as a running one:
+            // a Clear button that cancels only the run would let the pending one start a request a moment later.
+            if (e.HasCancellationToken && isDebounced)
+            {
+                sb.AppendLine($"{body}/// <summary>Cancels the in-flight <c>{DocEscape(e.ActionLabel)}</c> run (the most recently started one, when runs overlap) and the invocation still waiting out its debounce, if any.</summary>");
+                sb.AppendLine($"{body}public void Cancel{e.WrapperName}()");
+                sb.AppendLine($"{body}{{");
+                sb.AppendLine($"{body}    {debounceField}?.Cancel();");
+                sb.AppendLine($"{body}    {ctsField}?.Cancel();");
+                sb.AppendLine($"{body}}}");
+            }
+            else if (e.HasCancellationToken)
+            {
                 sb.AppendLine($"{body}/// <summary>Cancels the in-flight <c>{DocEscape(e.ActionLabel)}</c> run (the most recently started one, when runs overlap).</summary>");
                 sb.AppendLine($"{body}public void Cancel{e.WrapperName}() => {ctsField}?.Cancel();");
+            }
+            else if (isDebounced)
+            {
+                sb.AppendLine($"{body}/// <summary>Cancels the <c>{DocEscape(e.ActionLabel)}</c> invocation still waiting out its debounce, if any. A run that already started is not cancellable: the effect takes no <c>CancellationToken</c>.</summary>");
+                sb.AppendLine($"{body}public void Cancel{e.WrapperName}() => {debounceField}?.Cancel();");
             }
 
             if (isLatest)
@@ -982,8 +1567,10 @@ public sealed class BlexGenerator : IIncrementalGenerator
                 sb.AppendLine($"{body}    try");
                 sb.AppendLine($"{body}    {{");
                 // No ConfigureAwait(false): resume on the dispatch context (the Blazor renderer)
-                // so the body mutates state on the thread every other action runs on.
-                sb.AppendLine($"{body}        await global::System.Threading.Tasks.Task.Delay({e.DebounceMilliseconds}, __blexDebounceCts.Token);");
+                // so the body mutates state on the thread every other action runs on. The wait runs
+                // on the manager's clock, so a test advances a fake TimeProvider instead of sleeping,
+                // and is skipped while a recorded log is replayed.
+                sb.AppendLine($"{body}        await base.DebounceEffectAsync({e.DebounceMilliseconds}, __blexDebounceCts.Token);");
                 sb.AppendLine($"{body}    }}");
                 sb.AppendLine($"{body}    catch (global::System.OperationCanceledException)");
                 sb.AppendLine($"{body}    {{");
@@ -1121,7 +1708,53 @@ public sealed class BlexGenerator : IIncrementalGenerator
                 sb.AppendLine($"{body}    __{c.PropertyName}Valid = false;");
             sb.AppendLine($"{body}}}");
             sb.AppendLine();
+
+            // A write invalidates the computeds that read the property written -- and those whose reads could not be
+            // told apart, which every write invalidates. Anything else (a hand-written SetState) invalidates them all.
+            sb.AppendLine($"{body}/// <inheritdoc />");
+            sb.AppendLine($"{body}protected override void InvalidateComputed(string? propertyName)");
+            sb.AppendLine($"{body}{{");
+            sb.AppendLine($"{body}    switch (propertyName)");
+            sb.AppendLine($"{body}    {{");
+            foreach (var s in m.States)
+            {
+                sb.AppendLine($"{body}        case \"{Escape(s.PropertyName)}\":");
+                foreach (var c in m.Computeds)
+                {
+                    if (c.ReadsEverything || c.Reads.Contains(s.PropertyName))
+                        sb.AppendLine($"{body}            __{c.PropertyName}Valid = false;");
+                }
+
+                sb.AppendLine($"{body}            break;");
+            }
+
+            sb.AppendLine($"{body}        default:");
+            sb.AppendLine($"{body}            InvalidateComputed();");
+            sb.AppendLine($"{body}            break;");
+            sb.AppendLine($"{body}    }}");
+            sb.AppendLine($"{body}}}");
+            sb.AppendLine();
         }
+
+        // RollbackOnError: a shallow copy of the state fields, taken as each synchronous action starts and put
+        // back when it throws. Field reads and writes only -- no notification, no serialization.
+        if (m.RollbackOnError && m.States.Count > 0)
+        {
+            var fields = string.Join(", ", m.States.Select(s => "this." + Id(s.FieldName)));
+            sb.AppendLine($"{body}/// <inheritdoc />");
+            sb.AppendLine($"{body}protected override object?[]? CaptureRollbackState() => new object?[] {{ {fields} }};");
+            sb.AppendLine();
+            sb.AppendLine($"{body}/// <inheritdoc />");
+            sb.AppendLine($"{body}protected override void ApplyRollbackState(object?[] state)");
+            sb.AppendLine($"{body}{{");
+            var slot = 0;
+            foreach (var s in m.States)
+                sb.AppendLine($"{body}    this.{Id(s.FieldName)} = ({s.TypeFqn})state[{slot++}]!;");
+            sb.AppendLine($"{body}}}");
+            sb.AppendLine();
+        }
+
+        EmitActionDescriptors(sb, m, body);
 
         // SerializeState
         sb.AppendLine($"{body}/// <inheritdoc />");
@@ -1138,15 +1771,24 @@ public sealed class BlexGenerator : IIncrementalGenerator
         sb.AppendLine($"{body}/// <inheritdoc />");
         sb.AppendLine($"{body}public override void DeserializeState({JsonObject} state)");
         sb.AppendLine($"{body}{{");
+        // Every field is read before any is assigned: a payload that fails partway -- a value of the wrong
+        // type, an enum member that no longer exists -- leaves the store exactly as it was, rather than
+        // half-restored with nothing notified about the half that moved.
         var idx = 0;
         foreach (var s in m.States)
         {
             // A property that is present but JSON-null must restore the field to default/null;
             // only a *missing* property leaves the current value untouched.
-            var node = $"__n{idx++}";
+            var node = $"__n{idx}";
+            var value = $"__v{idx++}";
+            sb.AppendLine($"{body}    {s.TypeFqn} {value} = this.{Id(s.FieldName)};");
             sb.AppendLine($"{body}    if (state.TryGetPropertyValue(\"{Escape(s.PropertyName)}\", out var {node}))");
-            sb.AppendLine($"{body}        this.{Id(s.FieldName)} = {node} is null ? default! : {JsonSerializer}.Deserialize<{s.TypeFqn}>({node}, global::Bit.Blex.BlexJson.Options)!;");
+            sb.AppendLine($"{body}        {value} = {node} is null ? default! : {JsonSerializer}.Deserialize<{s.TypeFqn}>({node}, global::Bit.Blex.BlexJson.Options)!;");
         }
+
+        idx = 0;
+        foreach (var s in m.States)
+            sb.AppendLine($"{body}    this.{Id(s.FieldName)} = __v{idx++};");
 
         sb.AppendLine($"{body}}}");
 

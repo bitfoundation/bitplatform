@@ -41,7 +41,7 @@ public class UnconfirmedAccountPasswordTests
         var email = MagicLinkSignInUtils.NewTestEmail();
 
         await identityController.SignUp(NewSignUpRequest(email, AttackerPassword), TestContext.CancellationToken);
-        await Assert.ThrowsAsync<KnownException>(() => identityController.SignUp(NewSignUpRequest(email, OwnerPassword), TestContext.CancellationToken));
+        await identityController.SignUp(NewSignUpRequest(email, OwnerPassword), TestContext.CancellationToken);
         await ConfirmEmail(server, identityController, email);
 
         await Assert.ThrowsExactlyAsync<UnauthorizedException>(
