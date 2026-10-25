@@ -42,10 +42,11 @@ namespace Bit.Bortable.Demo.Server.Controllers;
 public class McpController : ControllerBase
 {
     // The longest real answer is the component's own code - the sorting engine, every rule a drag is
-    // put through - at about 45,000 characters; the component's reference, the README's longest
-    // sections and the demo's pages land far below it. The cap sits above all of them so each arrives
-    // whole, and is there so a pathological answer cannot dominate a client's context window.
-    private const int MaxDocumentLength = 60_000;
+    // put through, the keyboard and the moves made by code - at under 100,000 characters; the
+    // component's reference, the README's longest sections and the demo's pages land far below it. The
+    // cap sits above all of them so each arrives whole, and is there so a pathological answer cannot
+    // dominate a client's context window.
+    private const int MaxDocumentLength = 120_000;
 
     [HttpGet]
     [McpServerTool(Name = nameof(SearchBortable), Title = "Search everything about Bit.Bortable", ReadOnly = true, OpenWorld = false, UseStructuredContent = true)]

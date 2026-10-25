@@ -1,0 +1,46 @@
+@page "/large-list"
+
+<PageTitle>Large list · Bortable</PageTitle>
+
+<div class="bb-intro">
+    <h1>Large list</h1>
+    <p class="bb-subtitle">
+        Three hundred rows in a scrolling panel. Drag a row toward the panel's edge and it scrolls - the browser
+        scrolls for the mouse's native drag, Bortable for a finger, a pen, or the mouse with <code>ForceFallback</code>.
+        Only a new drop position reaches .NET; <code>IsolateItems</code> keeps each step from rendering every row's
+        template again.
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="bb-demo">
+    <div class="large-controls">
+        <label><input id="large-isolate" type="checkbox" @bind="_isolate" /> <code>IsolateItems</code></label>
+        <label><input id="large-fallback" type="checkbox" @bind="_fallback" /> <code>ForceFallback</code></label>
+    </div>
+
+    <div class="large-panel" id="large-panel">
+        <Bortable @bind-Items="_rows" TItem="Row" Id="large-list" AriaLabel="Rows"
+                  IsolateItems="_isolate" ForceFallback="_fallback" ItemLabel="r => r.Name"
+                  Class="demo-list" ItemClass="demo-item">
+            <ItemTemplate Context="row">
+                <span class="large-name">@row.Name</span>
+                <span class="large-note">@row.Note</span>
+            </ItemTemplate>
+        </Bortable>
+    </div>
+
+    <p class="demo-order"><strong>First five:</strong> <span id="large-order">@string.Join(", ", _rows.Take(5).Select(r => r.Name))</span></p>
+</div>
+
+@code {
+    private sealed record Row(string Name, string Note);
+
+    private IList<Row> _rows = Enumerable.Range(1, 300)
+        .Select(i => new Row($"Row {i}", $"#{i:000} · {(i % 3 == 0 ? "blocked" : i % 2 == 0 ? "in review" : "open")}"))
+        .ToList();
+
+    private bool _isolate;
+    private bool _fallback;
+}

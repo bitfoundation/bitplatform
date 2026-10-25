@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -8,32 +8,41 @@ namespace Bit.Bortable;
 
 /// <summary>
 /// A Blazor-native drag-and-drop sortable list, inspired by SortableJS. Reorder items within a list or
-/// drag them between lists that share a <see cref="Group"/>. The sorting engine runs in C# on the
-/// browser's native drag events; the <c>bit-bortable.js</c> module only hit-tests, installs drag handles
-/// and plays the FLIP animations. Needs <see cref="BitBortable.AddBitBortableServices"/>.
+/// drag them between lists that share a <see cref="Group"/>. The sorting engine runs in C#; the
+/// <c>bit-bortable.js</c> module routes the input where the pointer is - it hit-tests the lists and calls
+/// .NET only when the drop position changes - installs drag handles and plays the FLIP animations.
+/// Needs <see cref="BitBortable.AddBitBortableServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)"/>.
 /// </summary>
 /// <typeparam name="TItem">The type of the bound items.</typeparam>
 public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDisposable
 {
-    // The type bit-bortable.js adds to the data of every drag it lets a list sort (see its dragstart listener).
-    private const string DragDataType = "application/x-bit-bortable";
-
     private static readonly EqualityComparer<TItem> Comparer = EqualityComparer<TItem>.Default;
 
     // Items currently selected for multi-drag in this list.
     private readonly HashSet<TItem> _selected = new();
 
+    // The key each item is rendered with (data-bortable-key), by which the browser layer names an item. Items are
+    // compared the way @key compares them, so an item keeps its key for as long as it stays in the list.
+    private readonly Dictionary<object, string> _keyOf = new(ItemComparer.Instance);
+    private readonly Dictionary<string, TItem> _itemOf = new(StringComparer.Ordinal);
+
     private ElementReference _listElement;
     private IJSObjectReference? _module;
-    private string? _appliedHandle;
+    private DotNetObjectReference<BortableBridge>? _bridge;
+    // The options the browser layer last received; null until the list is registered with it.
+    private BortableJsOptions? _appliedOptions;
+    // The key of the item that is the list's tab stop (see ActiveKey).
+    private string? _activeKey;
+    // The multi-drag selection as last handed to SelectedItemsChanged: the same collection coming back as SelectedItems
+    // is not a new selection. And whether a drag changed the selection since.
+    private IReadOnlyCollection<TItem>? _publishedSelection;
+    private bool _selectionChanged;
+    private Anchor? _anchor;
+    // How many times the page gave the list its parameters: what an isolated item template shows may have changed.
+    private int _parametersVersion;
+    private bool _defaultsApplied;
     private bool _playFlipOnRender;
     private bool _disposed;
-
-    // The drag the last render was for and whether that render made the list take its events (see
-    // HandlesDrag), then the drag whose render the DOM has since received (see OnContainerDragOver).
-    private BortableDragContext? _renderedDrag;
-    private bool _handlesDrag;
-    private BortableDragContext? _appliedDrag;
 
     [Inject] private BortableService Service { get; set; } = default!;
 
@@ -53,6 +62,14 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     /// <summary>Optional extra content rendered after the items (e.g. an empty-state placeholder).</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>
+    /// Renders each item's template in a component of its own, rendered again only when the item, the template or the
+    /// list's parameters change - not on every step of a drag, where only the item wrappers move. For long lists with
+    /// costly templates. Leave it off when a template shows something that changes as other items move during a
+    /// drag (an item's position, say): it is brought up to date only when the drag ends. Default <c>false</c>.
+    /// </summary>
+    [Parameter] public bool IsolateItems { get; set; }
+
     /// <summary>Stable DOM id for the list. Auto-generated when not supplied.</summary>
     [Parameter] public string Id { get; set; } = $"bit-bortable-{Guid.NewGuid():N}";
 
@@ -67,6 +84,44 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
     /// <summary>Allow reordering within this list. Set to <c>false</c> to only allow dragging out.</summary>
     [Parameter] public bool Sort { get; set; } = true;
+
+    /// <summary>
+    /// Decides whether the dragged item may be placed at a position in this list, as the item reaches it: return
+    /// <c>false</c> to refuse. Asked with the proposed move - <see cref="BortableEventArgs{TItem}.NewIndex"/> is the
+    /// index the item would have here, <see cref="BortableEventArgs{TItem}.FromId"/> the list it comes from - for a
+    /// reorder within this list and for an item coming in from another list alike, before anything is shown. A
+    /// refused position keeps the item where it was, and the pointer shows that it cannot be dropped there. Keep it
+    /// fast and free of side effects: it runs while the pointer moves. Mirrors the SortableJS <c>onMove</c> option.
+    /// </summary>
+    [Parameter] public Func<BortableEventArgs<TItem>, bool>? CanDrop { get; set; }
+
+    /// <summary>
+    /// The most items this list holds: once it holds this many, it takes no item from another list (a multi-drag
+    /// counts every item it carries). Reordering within the list, and swapping, are not affected. <c>null</c>
+    /// (the default) sets no limit.
+    /// </summary>
+    [Parameter] public int? MaxItems { get; set; }
+
+    /// <summary>
+    /// Asked once an item has been dropped into this list - from this list or another one - whether to keep the
+    /// move, for a check that has to wait (a server call, a confirmation dialog). The drop shows at once; the lists
+    /// stay as dropped while the task runs, and no other drag starts until it completes. Return <c>false</c> to put
+    /// every list the drag changed back as it was: <c>ItemsChanged</c> is raised for them (the page may have rendered
+    /// them as dropped meanwhile), <c>OnEnd</c> reports <see cref="BortableEventArgs{TItem}.Canceled"/>, and no
+    /// <c>OnUpdate</c>, <c>OnAdd</c>, <c>OnRemove</c> or <c>OnSort</c> is raised. Return <c>true</c> to keep it: the
+    /// events follow as usual. Do not change the lists while it runs: a refusal puts back what they held before the
+    /// drag.
+    /// </summary>
+    [Parameter] public Func<BortableEventArgs<TItem>, Task<bool>>? ConfirmDrop { get; set; }
+
+    /// <summary>
+    /// When <c>true</c>, a drag that starts in this list and is released outside every list that takes it puts
+    /// everything back where it was: a live reorder is undone, and an item previewed in another list returns home.
+    /// The SortableJS <c>revertOnSpill</c> option. With the default <c>false</c> the drag keeps what it did, as in
+    /// SortableJS: an item previewed in another list lands there wherever it is released. A drag cancelled with
+    /// Escape where Bortable can tell (a keyboard drag, or a touch or pen drag) is always put back.
+    /// </summary>
+    [Parameter] public bool RevertOnSpill { get; set; }
 
     /// <summary>
     /// The fraction (0–1) of an item that acts as its swap zone, mirroring the SortableJS
@@ -167,6 +222,92 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     /// </summary>
     [Parameter] public string SelectedClass { get; set; } = "bit-bortable-selected";
 
+    /// <summary>
+    /// The items selected for a multi-drag (<see cref="MultiDrag"/>), to read or set from the page: bind it with
+    /// <c>@bind-SelectedItems</c>. Items that are not in the list, or that cannot be dragged, are left out.
+    /// </summary>
+    [Parameter] public IReadOnlyCollection<TItem>? SelectedItems { get; set; }
+
+    /// <summary>
+    /// Raised with the selection, in list order, when a click, Shift+click or Shift+Space changes it, or a drag
+    /// spends or clears it (supports <c>@bind-SelectedItems</c>).
+    /// </summary>
+    [Parameter] public EventCallback<IReadOnlyCollection<TItem>> SelectedItemsChanged { get; set; }
+
+    /// <summary>
+    /// How long, in milliseconds, a mouse or pen press on an item must be held before it can be dragged; a pointer
+    /// that moves further than <see cref="DelayTolerance"/> first is a click or a selection instead. Default <c>0</c>.
+    /// The SortableJS <c>delay</c> option.
+    /// </summary>
+    [Parameter] public int Delay { get; set; }
+
+    /// <summary>
+    /// How long, in milliseconds, a finger must rest on an item before it drags it - a long press - so that a swipe
+    /// over the list still scrolls the page. A finger that moves further than <see cref="DelayTolerance"/> first
+    /// scrolls. Default <c>200</c>; set <c>0</c> with a <see cref="Handle"/> whose CSS has <c>touch-action: none</c>
+    /// for a handle that drags at once.
+    /// </summary>
+    [Parameter] public int TouchDelay { get; set; } = 200;
+
+    /// <summary>
+    /// How far, in pixels, the pointer may move while <see cref="Delay"/> or <see cref="TouchDelay"/> runs before the
+    /// press is taken for a scroll or a click instead of a drag. Default <c>5</c>. The SortableJS
+    /// <c>touchStartThreshold</c> option.
+    /// </summary>
+    [Parameter] public int DelayTolerance { get; set; } = 5;
+
+    /// <summary>
+    /// When <c>true</c>, the mouse drags like a finger or a pen: with pointer events and a preview of the item that
+    /// follows the pointer (<see cref="DragClass"/>), instead of the browser's own drag and its drag image - for a
+    /// preview styled the app's way, or a web view whose native drag and drop does not work. A finger and a pen
+    /// always drag this way. The SortableJS <c>forceFallback</c> option.
+    /// </summary>
+    [Parameter] public bool ForceFallback { get; set; }
+
+    /// <summary>
+    /// Class of the preview that follows a finger, a pen, or the mouse with <see cref="ForceFallback"/>: a copy of the
+    /// item, placed above the page. Default <c>bit-bortable-drag</c>. The SortableJS <c>dragClass</c> option.
+    /// </summary>
+    [Parameter] public string DragClass { get; set; } = "bit-bortable-drag";
+
+    /// <summary>
+    /// Scrolls whatever the pointer is near the edge of - the list, a scrolling panel around it, the page - while a
+    /// finger, a pen or a <see cref="ForceFallback"/> mouse drags an item, the innermost one that can still scroll
+    /// that way first. A native mouse drag is scrolled by the browser itself. Default <c>true</c>. The SortableJS
+    /// <c>scroll</c> option.
+    /// </summary>
+    [Parameter] public bool Scroll { get; set; } = true;
+
+    /// <summary>How close, in pixels, the pointer must come to an edge to scroll (see <see cref="Scroll"/>). Default <c>40</c>.</summary>
+    [Parameter] public int ScrollSensitivity { get; set; } = 40;
+
+    /// <summary>The most pixels an edge scrolls per frame, reached at the very edge (see <see cref="Scroll"/>). Default <c>16</c>.</summary>
+    [Parameter] public int ScrollSpeed { get; set; } = 16;
+
+    /// <summary>
+    /// Lets the items be picked up, moved and dropped from the keyboard: an item is focusable (the list is one tab
+    /// stop, and the arrow keys move between its items), Space or Enter picks it up, the arrow keys move it - within
+    /// the list, and into the next list of the group in that direction - Home and End move it to the ends, Space or
+    /// Enter drops it and Escape puts it back. Every step is announced to screen readers. Default <c>true</c>.
+    /// </summary>
+    [Parameter] public bool Keyboard { get; set; } = true;
+
+    /// <summary>The list's accessible name (<c>aria-label</c>), by which announcements also name it, e.g. "Done".</summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    /// <summary>How announcements name an item, e.g. <c>card => card.Title</c>. Default: the item's <c>ToString()</c>.</summary>
+    [Parameter] public Func<TItem, string>? ItemLabel { get; set; }
+
+    /// <summary>
+    /// The texts the list gives assistive technology - the keyboard instructions, how an item is described, and what
+    /// is announced as items are picked up, moved, dropped or put back - to translate or reword them. Default
+    /// <see cref="BortableMessages.Default"/>.
+    /// </summary>
+    [Parameter] public BortableMessages? Messages { get; set; }
+
+    /// <summary>Any other attribute given to the list (<c>aria-describedby</c>, <c>data-*</c>, <c>title</c>...), rendered on its container.</summary>
+    [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
     /// <summary>Raised on this list when a drag starts in it.</summary>
     [Parameter] public EventCallback<BortableEventArgs<TItem>> OnStart { get; set; }
 
@@ -194,11 +335,35 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     // ----- lifecycle ------------------------------------------------------
 
     /// <inheritdoc />
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        // The app-wide defaults, for every parameter the page does not set itself. Only the first time: a parameter
+        // left out later keeps its value, as any Blazor parameter does.
+        if (!_defaultsApplied)
+        {
+            _defaultsApplied = true;
+            Service.Options.ApplyTo(this, parameters);
+        }
+        return base.SetParametersAsync(parameters);
+    }
+
+    /// <inheritdoc />
     protected override void OnInitialized() => Service.Zones.Add(this);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
+        _parametersVersion++;
+
+        // A selection set by the page (@bind-SelectedItems) replaces the list's own.
+        if (MultiDrag && SelectedItems is { } wanted && !ReferenceEquals(wanted, _publishedSelection))
+        {
+            _publishedSelection = wanted;
+            _selected.Clear();
+            foreach (var item in wanted)
+                if (CanDrag(item)) _selected.Add(item);
+        }
+
         // Forget selected items that are no longer in the (possibly replaced) list.
         if (_selected.Count > 0)
         {
@@ -208,8 +373,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         }
     }
 
-    // Drag events fire continuously, so this component decides itself when to
-    // re-render instead of re-rendering after every handled DOM event.
+    // The component decides itself when to re-render instead of re-rendering after every handled DOM event.
     Task IHandleEvent.HandleEventAsync(EventCallbackWorkItem callback, object? arg) => callback.InvokeAsync(arg);
 
     // ----- rendering helpers ---------------------------------------------
@@ -225,7 +389,8 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         if (ctx is not null && ReferenceEquals(ctx.CurrentZone, this) && ctx.Item is TItem dragged && Comparer.Equals(dragged, item))
         {
             if (ctx.PlaceholderZone is null || ReferenceEquals(ctx.PlaceholderZone, this))
-                dragState = Css(GhostClass, ChosenClass);
+                // A keyboard drag moves the item itself, with no drag image: it is chosen, not a ghost of itself.
+                dragState = ctx.Input == BortableInput.Keyboard ? ChosenClass : Css(GhostClass, ChosenClass);
             else if (ctx.PullMode != BortablePull.Clone)
                 // Previewed as the placeholder in another list: hide the original here, as
                 // SortableJS does. For a clone, the original stays put and visible.
@@ -285,36 +450,141 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         _ => "auto"
     };
 
-    // ----- multi-drag selection ------------------------------------------
+    private bool KeyboardEnabled => Keyboard && !Disabled;
 
-    private EventCallback ItemClickCallback(TItem item)
-        => MultiDrag ? EventCallback.Factory.Create(this, () => ToggleSelection(item)) : default;
+    private BortableMessages EffectiveMessages => Messages ?? BortableMessages.Default;
 
-    /// <summary>Toggles an item's multi-drag selection when clicked (MultiDrag mode).</summary>
-    private void ToggleSelection(TItem item)
+    /// <summary>The id of the hidden element holding the keyboard instructions every item refers to.</summary>
+    private string InstructionsId => $"{Id}-instructions";
+
+    /// <summary>
+    /// The key of the item that is the list's tab stop: the one last focused, or the first. The other items take
+    /// the focus from the arrow keys or a click, so a list is a single stop in the page's tab order.
+    /// </summary>
+    private string? ActiveKey()
     {
-        if (!MultiDrag || !CanDrag(item)) return;
-        if (!_selected.Add(item)) _selected.Remove(item);
-        StateHasChanged();
+        var items = Items;
+        if (!KeyboardEnabled || items is null || items.Count == 0) return null;
+        if (_activeKey is not null && _itemOf.TryGetValue(_activeKey, out var active) && items.Contains(active)) return _activeKey;
+        return KeyOf(items[0]);
     }
 
-    // ----- drag event handlers -------------------------------------------
+    private string LabelOf(TItem item) => (ItemLabel is not null ? ItemLabel(item) : item?.ToString()) ?? string.Empty;
 
-    private async Task OnItemDragStart(TItem item, DragEventArgs e)
+    /// <summary>An item's template in a component of its own (see <see cref="IsolateItems"/>).</summary>
+    private RenderFragment IsolatedItem(TItem item) => builder =>
     {
-        // Only a drag bit-bortable.js let this item start: not the drag of a link, an image or an element of
-        // the app's own inside an item that is not draggable itself (one behind a handle, or a filtered one).
-        if (!IsListDrag(e) || !CanDrag(item) || Items is null) return;
+        builder.OpenComponent<BortableItemView<TItem>>(0);
+        builder.AddComponentParameter(1, nameof(BortableItemView<TItem>.Item), item);
+        builder.AddComponentParameter(2, nameof(BortableItemView<TItem>.Template), ItemTemplate);
+        builder.AddComponentParameter(3, nameof(BortableItemView<TItem>.Version), _parametersVersion);
+        builder.CloseComponent();
+    };
+
+    /// <summary>The key <paramref name="item"/> is rendered with, which the browser layer names it by.</summary>
+    private string? KeyOf(TItem item)
+    {
+        if (item is null) return null;
+        if (_keyOf.TryGetValue(item, out var key)) return key;
+        key = Service.NextKey();
+        _keyOf[item] = key;
+        _itemOf[key] = item;
+        return key;
+    }
+
+    /// <summary>Lets go of the keys of items that have left the list, once there are enough of them to matter.</summary>
+    private void PruneKeys()
+    {
+        var items = Items;
+        if (items is null || _keyOf.Count <= items.Count * 2 + 32) return;
+
+        var keep = new Dictionary<object, string>(ItemComparer.Instance);
+        foreach (var item in items)
+            if (item is not null && _keyOf.TryGetValue(item, out var key)) keep[item] = key;
+
+        _keyOf.Clear();
+        _itemOf.Clear();
+        foreach (var (item, key) in keep)
+        {
+            _keyOf[item] = key;
+            _itemOf[key] = (TItem)item;
+        }
+    }
+
+    // ----- multi-drag selection ------------------------------------------
+
+    private EventCallback<MouseEventArgs> ItemClickCallback(TItem item)
+        => MultiDrag ? EventCallback.Factory.Create<MouseEventArgs>(this, e => SelectAsync(item, e.ShiftKey)) : default;
+
+    /// <summary>
+    /// A click on an item in MultiDrag mode: toggles its selection, or with <paramref name="range"/> (Shift) selects
+    /// every item from the one last clicked to this one.
+    /// </summary>
+    private async Task<bool> SelectAsync(TItem item, bool range)
+    {
+        var items = Items;
+        if (!MultiDrag || items is null || !CanDrag(item) || items.IndexOf(item) is var at && at < 0) return false;
+
+        int from = range && _anchor is { } anchor ? items.IndexOf(anchor.Item) : -1;
+        if (from >= 0)
+        {
+            for (int i = Math.Min(from, at); i <= Math.Max(from, at); i++)
+                if (CanDrag(items[i])) _selected.Add(items[i]);
+        }
+        else if (!_selected.Add(item))
+        {
+            _selected.Remove(item);
+        }
+
+        _anchor = new(item);
+        StateHasChanged();
+        await PublishSelectionAsync();
+        return _selected.Contains(item);
+    }
+
+    /// <summary>Hands the selection to <see cref="SelectedItemsChanged"/>, in list order.</summary>
+    private Task PublishSelectionAsync()
+    {
+        _selectionChanged = false;
+        if (!SelectedItemsChanged.HasDelegate) return Task.CompletedTask;
+        IReadOnlyCollection<TItem> snapshot = Items is { } items ? items.Where(_selected.Contains).ToList() : [];
+        _publishedSelection = snapshot;
+        return SelectedItemsChanged.InvokeAsync(snapshot);
+    }
+
+    /// <summary>The item a Shift-click selects a range from (boxed, as an item may be a default value type).</summary>
+    private sealed record Anchor(TItem Item);
+
+    // ----- the drag, as the browser layer reports it ---------------------
+
+    /// <summary>
+    /// Starts a drag of the item the browser layer names by <paramref name="key"/>. Answers the lists that take the
+    /// drag, so the browser layer routes the pointer to them alone; <c>null</c> when the item cannot be dragged.
+    /// </summary>
+    private async Task<BortableStartResult?> StartAsync(string key, string input)
+    {
+        if (_disposed || Items is null || Service.Confirming > 0 || !_itemOf.TryGetValue(key, out var item) || !CanDrag(item)) return null;
 
         BortableMoveInfo? info = null;
         BortableDragOutcome? abandoned = null;
+        string[]? lists = null;
+        string? announce = null;
+        bool clone = false;
+        BortableDragContext? started = null;
         await Service.Gate.WaitAsync();
         try
         {
             // A drag whose end was never observed (e.g. its element was removed mid-drag): end it where it is.
-            if (Service.Context is { } stale) abandoned = await FinishAsync(stale, commit: false);
+            if (Service.Context is { } stale) abandoned = Finish(stale, commit: false);
 
-            info = BeginDrag(item);
+            info = BeginDrag(item, InputOf(input), carrySelection: true);
+            if (info is not null && Service.Context is { } ctx)
+            {
+                lists = [.. Service.Zones.Where(zone => zone.TakesDrag(ctx)).Select(zone => zone.Id)];
+                announce = EffectiveMessages.PickedUp(Announcement(ctx, this, item!));
+                clone = ctx.PullMode == BortablePull.Clone;
+                started = ctx;
+            }
         }
         finally
         {
@@ -323,11 +593,267 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
         // The abandoned drag is reported first, as it ended before this one started.
         if (abandoned is not null) await ReportAsync(abandoned);
-        if (info is not null) await RaiseEventAsync(BortableEventType.Start, info);
+        // Picking up an unselected item drops the selection.
+        if (_selectionChanged) await PublishSelectionAsync();
+        if (info is not null)
+        {
+            try
+            {
+                await RaiseEventAsync(BortableEventType.Start, info);
+            }
+            catch
+            {
+                // The browser is never told the drag started, so it would never end it: end it here, as cancelled.
+                if (started is not null) await AbortAsync(started);
+                throw;
+            }
+        }
+        return lists is null ? null : new BortableStartResult { Lists = lists, Announce = announce, Clone = clone, Drag = started?.Id ?? 0 };
     }
 
-    /// <summary>Records a drag of <paramref name="item"/> on the coordinator; <c>null</c> when the item is no longer in the list.</summary>
-    private BortableMoveInfo? BeginDrag(TItem item)
+    /// <summary>Ends <paramref name="ctx"/> as cancelled, if it is still the drag in progress, and reports it.</summary>
+    private async Task AbortAsync(BortableDragContext ctx)
+    {
+        BortableDragOutcome? outcome = null;
+        await Service.Gate.WaitAsync();
+        try
+        {
+            if (ReferenceEquals(Service.Context, ctx) && !ctx.Finished) outcome = Cancel(ctx);
+        }
+        finally
+        {
+            Service.Gate.Release();
+        }
+
+        if (outcome is not null) await ReportAsync(outcome);
+    }
+
+    /// <summary>What an announcement says about <paramref name="item"/>, as it sits in <paramref name="zone"/> now.</summary>
+    private static BortableAnnouncement Announcement(BortableDragContext ctx, IBortableZone zone, object item, string? target = null) => new()
+    {
+        Item = zone.LabelOf(item),
+        Position = zone.IndexOf(item) + 1,
+        Count = zone.Count,
+        List = zone.Label,
+        OldPosition = ctx.OldIndex + 1,
+        FromList = ctx.Source.Label,
+        Target = target
+    };
+
+    /// <summary>What to announce once a drag has ended as <paramref name="outcome"/> says.</summary>
+    private static string EndAnnouncement(BortableDragOutcome outcome)
+    {
+        var info = outcome.Info;
+        var messages = outcome.Context.Source.Messages;
+        var about = Announcement(outcome.Context, info.To, info.Item);
+        return info.Canceled ? messages.Canceled(about) : messages.Dropped(about);
+    }
+
+    // ----- the keyboard ---------------------------------------------------
+
+    private static readonly BortableKeyResult NotDragging = new() { Dragging = false };
+
+    /// <summary>
+    /// A key pressed on the item rendered with <paramref name="key"/>, or during a keyboard drag, as the browser layer
+    /// reports it: <c>pick</c> picks the item up, <c>to</c> moves it to <paramref name="index"/> of the list
+    /// <paramref name="listId"/> (or of the list it is in) - the browser layer works out which item or list lies in the
+    /// direction of the arrow key - and <c>drop</c> and <c>cancel</c> end the drag. A keyboard drag moves the item
+    /// itself, into another list too: there is no native drag to keep alive. Answers what to announce and where the
+    /// item is now, so the focus follows it.
+    /// </summary>
+    private async Task<BortableKeyResult> KeyAsync(string key, string action, string? listId, int index, int drag)
+    {
+        switch (action)
+        {
+            case "pick": return await PickAsync(key);
+            case "select": return await KeySelectAsync(key);
+            case "to": return await KeyMoveAsync(listId, index, drag);
+            case "drop": return await KeyEndAsync(drop: true, drag);
+            case "cancel": return await KeyEndAsync(drop: false, drag);
+            default: return NotDragging;
+        }
+    }
+
+    private async Task<BortableKeyResult> PickAsync(string key)
+    {
+        if (_disposed || !KeyboardEnabled || Items is null || !_itemOf.TryGetValue(key, out var item) || Items.IndexOf(item) < 0)
+            return NotDragging;
+
+        _activeKey = key;
+        if (!CanDrag(item))
+            return new BortableKeyResult { Announce = EffectiveMessages.Locked(new BortableAnnouncement { Item = LabelOf(item), Position = Items.IndexOf(item) + 1, Count = Items.Count, List = AriaLabel }) };
+
+        var started = await StartAsync(key, "keyboard");
+        if (started is null) return NotDragging;
+
+        return new BortableKeyResult { Dragging = true, Lists = started.Lists, Announce = started.Announce, List = Id, Key = key, Drag = started.Drag };
+    }
+
+    /// <summary>Shift+Space on an item of a MultiDrag list: toggles its selection, and says so.</summary>
+    private async Task<BortableKeyResult> KeySelectAsync(string key)
+    {
+        if (_disposed || !KeyboardEnabled || !MultiDrag || Items is null || Service.Context is not null || !_itemOf.TryGetValue(key, out var item))
+            return NotDragging;
+
+        _activeKey = key;
+        var about = new BortableAnnouncement { Item = LabelOf(item), Position = Items.IndexOf(item) + 1, Count = Items.Count, List = AriaLabel };
+        if (!CanDrag(item)) return new BortableKeyResult { Announce = EffectiveMessages.Locked(about) };
+
+        bool selected = await SelectAsync(item, range: false);
+        about = new BortableAnnouncement { Item = about.Item, Position = about.Position, Count = about.Count, List = about.List, Selected = _selected.Count };
+        return new BortableKeyResult { Announce = selected ? EffectiveMessages.Selected(about) : EffectiveMessages.Deselected(about), List = Id, Key = key };
+    }
+
+    private async Task<BortableKeyResult> KeyMoveAsync(string? listId, int index, int drag)
+    {
+        BortableMoveInfo? change = null;
+        BortableKeyResult result;
+        await Service.Gate.WaitAsync();
+        try
+        {
+            var ctx = Service.ContextOf(drag);
+            if (ctx is null || ctx.Input != BortableInput.Keyboard) return NotDragging;
+
+            var current = ctx.CurrentZone;
+            var target = listId is null ? current : Service.Zones.FirstOrDefault(zone => zone.Id == listId) ?? current;
+            var messages = ctx.Source.Messages;
+            string? announce;
+
+            if (target.IsSwap)
+            {
+                int outcome = target.ApplyOver(ctx, index, out change);
+                announce = outcome == Refused
+                    ? messages.Refused(Announcement(ctx, current, ctx.Item))
+                    : messages.SwapTarget(Announcement(ctx, current, ctx.Item,
+                        ctx.SwapTargetItem is { } partner ? ctx.SwapTargetZone!.LabelOf(partner) : null));
+            }
+            else
+            {
+                int outcome = ReferenceEquals(target, current) && ReferenceEquals(current, ctx.Source)
+                    ? current.ApplyOver(ctx, index > current.IndexOf(ctx.Item) ? index + 1 : index, out change)
+                    : MoveByKey(ctx, target, index, out change);
+                announce = outcome switch
+                {
+                    Changed => messages.Moved(Announcement(ctx, ctx.CurrentZone, ctx.Item)),
+                    Refused => messages.Refused(Announcement(ctx, current, ctx.Item)),
+                    _ => null
+                };
+            }
+
+            var zone = ctx.CurrentZone;
+            zone.Focus(zone.KeyOfItem(ctx.Item));
+            result = new BortableKeyResult
+            {
+                Dragging = true,
+                Announce = announce,
+                List = zone.Id,
+                Key = zone.KeyOfItem(ctx.Item),
+                Target = ctx.SwapTargetItem is { } swapWith ? ctx.SwapTargetZone!.KeyOfItem(swapWith) : null
+            };
+        }
+        finally
+        {
+            Service.Gate.Release();
+        }
+
+        if (change is not null) await change.To.RaiseEventAsync(BortableEventType.Change, change);
+        return result;
+    }
+
+    /// <summary>
+    /// Moves the dragged item to <paramref name="index"/> of <paramref name="target"/> in a keyboard drag: within a
+    /// list the item has been carried into, or into another list - out of the list it is in, or, for a clone, as a
+    /// copy, which is taken out again when it moves on. Back home it simply returns. Asked of the target's rules
+    /// like any other position.
+    /// </summary>
+    private static int MoveByKey(BortableDragContext ctx, IBortableZone target, int index, out BortableMoveInfo? change)
+    {
+        change = null;
+        var current = ctx.CurrentZone;
+        var source = ctx.Source;
+        bool home = ReferenceEquals(target, source);
+        bool clone = ctx.PullMode == BortablePull.Clone;
+
+        if (!home && !ReferenceEquals(target, current) && !target.TakesDrag(ctx)) return Refused;
+
+        // The item that will sit in the target: the one carried, the original back home, or a copy on its way out.
+        var item = home ? ctx.OriginalItem : clone && ReferenceEquals(current, source) ? null : ctx.Item;
+
+        // Where it ends up. Within the list it is in, the browser layer names an item's index; into another list, a
+        // gap among its items. Back home with a clone, that gap counts the original, which is still there and moves
+        // too: past it, the original lands one place earlier.
+        int there = home && clone ? target.IndexOf(ctx.OriginalItem) : -1;
+        if (ReferenceEquals(target, current)) index = Math.Clamp(index, 0, target.Count - 1);
+        else if (there >= 0) index = Math.Clamp(index > there ? index - 1 : index, 0, target.Count - 1);
+        else index = Math.Clamp(index, 0, target.Count);
+        if (ReferenceEquals(target, current) && target.IndexOf(ctx.Item) == index) return Unchanged;
+        if (!target.AllowsDropAt(ctx, index)) return Refused;
+
+        item ??= source.CloneItem(ctx.OriginalItem);
+        if (!ReferenceEquals(item, ctx.Item) && !ReferenceEquals(target, current) && target.IndexOf(item) >= 0 && !home) return Refused; // a copy equal to an item there
+
+        // Out of where it is (a clone's original never leaves its list).
+        if (!(clone && ReferenceEquals(current, source)))
+        {
+            int at = current.IndexOf(ctx.Item);
+            if (at >= 0)
+            {
+                ctx.Touch(current);
+                current.RemoveAt(at);
+            }
+        }
+
+        // Into the target: a clone's original is still at home, so coming back moves it there instead.
+        there = target.IndexOf(item);
+        ctx.Touch(target);
+        if (there >= 0) target.RemoveAt(there);
+        target.Insert(Math.Min(index, target.Count), item);
+
+        // A swap highlighted in a swap list on the way no longer applies.
+        ClearSwapTarget(ctx);
+        ctx.Item = item;
+        ctx.CurrentZone = target;
+        current.Rerender();
+        target.Rerender();
+        change = MoveInfo(ctx, target, target.IndexOf(item));
+        return Changed;
+    }
+
+    private async Task<BortableKeyResult> KeyEndAsync(bool drop, int drag)
+    {
+        BortableDragOutcome outcome;
+        await Service.Gate.WaitAsync();
+        try
+        {
+            var ctx = Service.ContextOf(drag);
+            if (ctx is null || ctx.Input != BortableInput.Keyboard) return NotDragging;
+            outcome = drop ? Finish(ctx, commit: true) : Cancel(ctx);
+        }
+        finally
+        {
+            Service.Gate.Release();
+        }
+
+        outcome = await ConfirmAndReportAsync(outcome);
+        var zone = outcome.Info.To;
+        var key = zone.KeyOfItem(outcome.Info.Item);
+        zone.Focus(key);
+        return new BortableKeyResult { Announce = EndAnnouncement(outcome), List = zone.Id, Key = key };
+    }
+
+    private static BortableInput InputOf(string input) => input switch
+    {
+        "touch" => BortableInput.Touch,
+        "pen" => BortableInput.Pen,
+        "keyboard" => BortableInput.Keyboard,
+        _ => BortableInput.Mouse
+    };
+
+    /// <summary>
+    /// Records a drag of <paramref name="item"/> on the coordinator; <c>null</c> when the item is no longer in the
+    /// list. With <paramref name="carrySelection"/> a selected item carries the multi-drag selection with it.
+    /// </summary>
+    private BortableMoveInfo? BeginDrag(TItem item, BortableInput input, bool carrySelection)
     {
         int oldIndex = Items?.IndexOf(item) ?? -1;
         if (oldIndex < 0) return null;
@@ -335,7 +861,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         // Multi-drag: dragging a selected item carries the whole selection; dragging an
         // unselected item drops the selection and drags only that item (like SortableJS).
         List<object>? block = null;
-        if (MultiDrag)
+        if (MultiDrag && carrySelection)
         {
             if (_selected.Contains(item))
             {
@@ -343,9 +869,10 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
                 foreach (var it in Items!)
                     if (_selected.Contains(it)) block.Add(it!);
             }
-            else
+            else if (_selected.Count > 0)
             {
                 _selected.Clear();
+                _selectionChanged = true;
             }
         }
 
@@ -357,21 +884,20 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             CurrentZone = this,
             OldIndex = oldIndex,
             PullMode = EffectivePull,
+            Id = Service.NextDragId(),
+            Input = input,
             MultiItems = block is { Count: > 1 } ? block : null
         };
         Service.Context = ctx;
-        // Every list that takes the drag, this one included, renders for it.
-        SyncDragStates();
+        StateHasChanged();
         return MoveInfo(ctx, this, oldIndex);
     }
 
-    private static bool IsListDrag(DragEventArgs e) => e.DataTransfer?.Types is { } types && Array.IndexOf(types, DragDataType) >= 0;
-
     /// <summary>
-    /// Whether this list takes the <c>dragover</c> and <c>drop</c> events of the drag: the list the item is in
-    /// always does (it sorts, or takes the item back), any other one when it can receive the item, or in swap
-    /// mode trade an item of its own for it. A list that does not leaves the events to the list around it, as
-    /// SortableJS does, so a column of a board can be dragged over the card lists of the other columns.
+    /// Whether this list takes the drag: the list the item is in always does (it sorts, or takes the item back),
+    /// any other one when it can receive the item, or in swap mode trade an item of its own for it. The browser
+    /// layer leaves a list that does not to the list around it, as SortableJS does, so a column of a board can be
+    /// dragged over the card lists of the other columns.
     /// </summary>
     private bool HandlesDrag(BortableDragContext ctx)
     {
@@ -381,43 +907,25 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         return CanAccept(ctx) && (!Swap || (EffectivePull != BortablePull.None && ctx.Source.CanReceiveFrom(this)));
     }
 
-    /// <summary>Has every list on the page render for the drag that just started or ended (see <see cref="IBortableZone.SyncDragState"/>).</summary>
-    private void SyncDragStates()
-    {
-        // A copy: a list that re-renders may add or remove the lists inside it.
-        foreach (var zone in Service.Zones.ToArray())
-            zone.SyncDragState();
-    }
+    // What ApplyOver answers: a list changed, nothing changed, or this list refused the position.
+    private const int Changed = 1, Unchanged = 0, Refused = -1;
 
     /// <summary>
-    /// Positions the drag preview as the pointer moves. Within the home list it
-    /// reorders the items live; over another list it shows a drop placeholder.
-    /// Driven by <c>dragover</c> (which bubbles up from the items) so the pointer
-    /// coordinates are available for swap-threshold hit testing.
+    /// Positions the drag preview at drop position <paramref name="index"/>, which the browser layer measured where
+    /// the pointer is. Within the home list it reorders the items live; over another list it shows a drop
+    /// placeholder; in swap mode it highlights the item under the pointer (<c>-1</c>: none). Answers 1 when a list
+    /// changed (the browser layer plays the slide animation), 0 when nothing did, -1 when this list refused it.
     /// </summary>
-    private async Task OnContainerDragOver(DragEventArgs e)
+    private async Task<int> OverAsync(int index, int drag)
     {
-        var ctx = Service.Context;
-        // A drag this list does not take goes on to the list around it, as it rendered no stopPropagation for it.
-        // Nor does the list act before the DOM carries the flags it rendered for the drag (a round trip after
-        // dragstart under Blazor Server): until then no list stopped the event, so the lists around this one
-        // received it as well, and two lists would act on the same pointer position.
-        if (ctx is null || ctx.Finished || _disposed || !ReferenceEquals(_appliedDrag, ctx) || !HandlesDrag(ctx)) return;
-
-        // dragover fires continuously; skip it while a previous one is still being handled.
-        if (!await Service.Gate.WaitAsync(0)) return;
-
-        BortableMoveInfo? change = null;
+        BortableMoveInfo? change;
+        int result;
+        await Service.Gate.WaitAsync();
         try
         {
-            if (!ReferenceEquals(Service.Context, ctx) || ctx.Finished) return;
-
-            if (Swap)
-                await UpdateSwapTargetAsync(ctx, e);
-            else if (ReferenceEquals(ctx.CurrentZone, this))
-                change = await ReorderWithinAsync(ctx, e);
-            else
-                change = await PreviewFromOtherListAsync(ctx, e);
+            var ctx = Service.ContextOf(drag);
+            if (ctx is null || _disposed || !HandlesDrag(ctx)) return Refused;
+            result = ApplyOver(ctx, index, out change);
         }
         finally
         {
@@ -425,76 +933,83 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         }
 
         if (change is not null) await RaiseEventAsync(BortableEventType.Change, change);
+        return result;
+    }
+
+    /// <summary>Positions the drag at drop position <paramref name="index"/> of this list, inside the gate (see <see cref="OverAsync"/>).</summary>
+    private int ApplyOver(BortableDragContext ctx, int index, out BortableMoveInfo? change)
+    {
+        change = null;
+        if (Swap) return UpdateSwapTarget(ctx, index) ? Changed : Unchanged;
+        return ReferenceEquals(ctx.CurrentZone, this)
+            ? ReorderWithin(ctx, index, out change)
+            : PreviewFromOtherList(ctx, index, out change);
     }
 
     /// <summary>Reorders the home list as the dragged item moves over it.</summary>
-    private async Task<BortableMoveInfo?> ReorderWithinAsync(BortableDragContext ctx, DragEventArgs e)
+    private int ReorderWithin(BortableDragContext ctx, int target, out BortableMoveInfo? change)
     {
-        // A swap target highlighted by a swap-mode list of the group no longer applies.
-        ClearSwapTarget(ctx);
+        change = null;
 
         if (!AllowSort || Items is null || ctx.Item is not TItem dragged)
         {
             // Back home from a cross-list preview into a list that cannot be sorted: the
             // item returns to its original place (SortableJS "revert").
-            await ClearPlaceholderAsync(ctx);
-            return null;
+            bool reverted = ClearSwapTarget(ctx) | ClearPlaceholder(ctx);
+            return reverted ? Changed : Unchanged;
         }
 
         // While the item is previewed in another list its original here is hidden; the
         // drop index is still expressed in this list's indices (hidden item included).
-        int target = await GetDropIndexAsync(e.ClientX, e.ClientY);
-        if (target < 0) return null; // dead zone: keep the current order (and any preview)
+        if (target < 0) return ClearSwapTarget(ctx) ? Changed : Unchanged; // dead zone: keep the current order (and any preview)
 
         int from = Items.IndexOf(dragged);
-        if (from < 0) return null;
+        if (from < 0) return Unchanged;
         int insertAt = Math.Min(target > from ? target - 1 : target, Items.Count - 1);
         bool previewedElsewhere = ctx.PlaceholderZone is not null;
-        if (insertAt == from && !previewedElsewhere) return null;
+        if (insertAt == from && !previewedElsewhere) return ClearSwapTarget(ctx) ? Changed : Unchanged;
+
+        // The app's own rule for this position, asked before anything shows.
+        if (!AllowsDrop(ctx, insertAt)) return Refused;
+
+        // A swap target highlighted by a swap-mode list of the group no longer applies.
+        ClearSwapTarget(ctx);
 
         // Back home from a cross-list preview: take the item back, at the pointer's position.
-        if (previewedElsewhere) await ClearPlaceholderAsync(ctx);
-        await CaptureFlipAsync();
-        if (Stale(ctx)) return null;
+        if (previewedElsewhere) ClearPlaceholder(ctx);
 
         if (insertAt != from)
         {
             ctx.Touch(this);
             Items.RemoveAt(from);
             Items.Insert(insertAt, dragged);
+            change = MoveInfo(ctx, this, insertAt);
         }
-        RequestFlipPlay();
         StateHasChanged();
-
-        return insertAt != from ? MoveInfo(ctx, this, insertAt) : null;
+        return Changed;
     }
 
     /// <summary>
     /// Previews where an item dragged in from another list would land. The actual
     /// item is not moved until the drag ends, so the native drag stays alive.
     /// </summary>
-    private async Task<BortableMoveInfo?> PreviewFromOtherListAsync(BortableDragContext ctx, DragEventArgs e)
+    private int PreviewFromOtherList(BortableDragContext ctx, int index, out BortableMoveInfo? change)
     {
-        // The list can take the item (see HandlesDrag), but never into its own descendant list (or into
-        // the preview copy of it), which would detach the dragged subtree from the render tree.
-        if (await WouldNestAsync()) return null;
-
-        int index = await GetDropIndexAsync(e.ClientX, e.ClientY);
-        if (index < 0) return null; // dead zone: keep the current preview (if any)
+        change = null;
+        if (index < 0) return Unchanged; // dead zone: keep the current preview (if any)
 
         index = Math.Min(index, Count);
-        if (ReferenceEquals(ctx.PlaceholderZone, this) && ctx.PlaceholderIndex == index) return null;
+        if (ReferenceEquals(ctx.PlaceholderZone, this) && ctx.PlaceholderIndex == index) return Unchanged;
+        if (!AllowsDrop(ctx, index)) return Refused;
 
-        if (!await ShowPlaceholderAsync(ctx, index)) return null;
-        return MoveInfo(ctx, this, index);
+        ShowPlaceholder(ctx, index);
+        change = MoveInfo(ctx, this, index);
+        return Changed;
     }
 
-    /// <summary>
-    /// Whether the drag moved on while this handler was awaiting the browser: the list was disposed in the
-    /// meantime (a list that is gone must not become the drop target or the swap target again, or the item
-    /// would be committed into a list nobody can see), or the drag was finished or abandoned.
-    /// </summary>
-    private bool Stale(BortableDragContext ctx) => _disposed || ctx.Finished;
+    /// <summary>Whether <see cref="CanDrop"/> lets the dragged item take index <paramref name="newIndex"/> of this list.</summary>
+    private bool AllowsDrop(BortableDragContext ctx, int newIndex)
+        => CanDrop is null || CanDrop(ArgsOf(MoveInfo(ctx, this, newIndex)));
 
     /// <summary>
     /// Whether the item currently being dragged (and, for a multi-drag, the rest of the
@@ -510,11 +1025,14 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         {
             foreach (var item in block)
                 if (item is not TItem t || Items.Contains(t)) return false;
-            return true;
+            return HasRoomFor(block.Count);
         }
 
-        return ctx.Item is TItem dragged && !Items.Contains(dragged);
+        return ctx.Item is TItem dragged && !Items.Contains(dragged) && HasRoomFor(1);
     }
+
+    /// <summary>Whether <see cref="MaxItems"/> leaves room for <paramref name="incoming"/> more items. A swap brings one and takes one.</summary>
+    private bool HasRoomFor(int incoming) => Swap || MaxItems is not { } max || Count + incoming <= max;
 
     private bool CanReceiveFrom(IBortableZone source)
     {
@@ -524,102 +1042,66 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         return string.Equals(Group, source.GroupName, StringComparison.Ordinal);
     }
 
-    /// <summary>
-    /// Shows (or moves) the drop placeholder in this zone at <paramref name="index"/>; <c>false</c> when the
-    /// drag went stale while the positions were being captured.
-    /// </summary>
-    private async Task<bool> ShowPlaceholderAsync(BortableDragContext ctx, int index)
+    /// <summary>Shows (or moves) the drop placeholder in this zone at <paramref name="index"/>.</summary>
+    private void ShowPlaceholder(BortableDragContext ctx, int index)
     {
         var previous = ctx.PlaceholderZone;
         var source = ctx.CurrentZone; // hides its original while the item is previewed elsewhere
-
-        // Snapshot every list whose layout is about to change (FLIP).
-        await CaptureFlipAsync();
-        if (previous is not null && !ReferenceEquals(previous, this)) await previous.CaptureFlipAsync();
-        if (previous is null) await source.CaptureFlipAsync();
-        if (Stale(ctx)) return false;
 
         ClearSwapTarget(ctx);
         ctx.PlaceholderZone = this;
         ctx.PlaceholderIndex = index;
 
-        if (previous is not null && !ReferenceEquals(previous, this))
-        {
-            previous.RequestFlipPlay();
-            previous.Rerender();
-        }
-        if (previous is null)
-        {
-            source.RequestFlipPlay();
-            source.Rerender();
-        }
-        RequestFlipPlay();
+        if (previous is not null && !ReferenceEquals(previous, this)) previous.Rerender();
+        if (previous is null) source.Rerender();
         StateHasChanged();
-        return true;
     }
 
-    /// <summary>Removes the placeholder from whichever zone is currently showing it.</summary>
-    private static async Task ClearPlaceholderAsync(BortableDragContext ctx)
+    /// <summary>Removes the placeholder from whichever zone is currently showing it; <c>true</c> when there was one.</summary>
+    private static bool ClearPlaceholder(BortableDragContext ctx)
     {
         var zone = ctx.PlaceholderZone;
-        if (zone is null) return;
+        if (zone is null) return false;
 
         var source = ctx.CurrentZone; // its hidden original becomes visible again
-        await zone.CaptureFlipAsync();
-        if (!ReferenceEquals(source, zone)) await source.CaptureFlipAsync();
-
         ctx.PlaceholderZone = null;
 
-        zone.RequestFlipPlay();
         zone.Rerender();
-        if (!ReferenceEquals(source, zone))
-        {
-            source.RequestFlipPlay();
-            source.Rerender();
-        }
+        if (!ReferenceEquals(source, zone)) source.Rerender();
+        return true;
     }
 
     // ----- swap mode (Swap plugin) ---------------------------------------
 
     /// <summary>
-    /// Tracks the item under the pointer as the swap target while dragging in swap
-    /// mode. Nothing is moved until drop; only the highlight (<see cref="SwapClass"/>)
-    /// follows the pointer. Works within this list and across lists in the group.
+    /// Tracks the item under the pointer (the item at <paramref name="index"/>, or none) as the swap target while
+    /// dragging in swap mode. Nothing is moved until drop; only the highlight (<see cref="SwapClass"/>) follows the
+    /// pointer. Works within this list and across lists in the group.
     /// </summary>
-    private async Task UpdateSwapTargetAsync(BortableDragContext ctx, DragEventArgs e)
+    private bool UpdateSwapTarget(BortableDragContext ctx, int index)
     {
-        if (Items is null) return;
-
-        // The list can trade with the item (see HandlesDrag), but never let the item land inside its own
-        // subtree. Refusing it leaves the preview or highlight of another list alone, as a sorting list does.
-        bool home = ReferenceEquals(ctx.CurrentZone, this);
-        if (!home && await WouldNestAsync()) return;
-        if (Stale(ctx)) return;
+        if (Items is null) return false;
 
         // A placeholder shown by a sorting list of the group no longer applies.
-        await ClearPlaceholderAsync(ctx);
+        bool changed = ClearPlaceholder(ctx);
 
+        bool home = ReferenceEquals(ctx.CurrentZone, this);
         object? target = null;
-        if (!home || AllowSort)
+        if ((!home || AllowSort) && index >= 0 && index < Items.Count)
         {
-            int index = await GetItemIndexAtAsync(e.ClientX, e.ClientY);
-            if (index >= 0 && index < Items.Count)
-            {
-                var candidate = Items[index];
-                bool valid = candidate is not null && (home
-                    ? !Equals(candidate, ctx.Item)                                          // not the dragged item itself
-                    : ctx.Source.Accepts(candidate) && ctx.Source.IndexOf(candidate) < 0);  // fits the source list
-                if (valid) target = candidate;
-            }
+            var candidate = Items[index];
+            bool valid = candidate is not null && (home
+                ? !Equals(candidate, ctx.Item)                                          // not the dragged item itself
+                : ctx.Source.Accepts(candidate) && ctx.Source.IndexOf(candidate) < 0);  // fits the source list
+            if (valid) target = candidate;
         }
 
-        if (Stale(ctx)) return;
-        SetSwapTarget(ctx, target is null ? null : this, target);
+        return SetSwapTarget(ctx, target is null ? null : this, target) | changed;
     }
 
-    private void SetSwapTarget(BortableDragContext ctx, IBortableZone? zone, object? item)
+    private static bool SetSwapTarget(BortableDragContext ctx, IBortableZone? zone, object? item)
     {
-        if (ReferenceEquals(ctx.SwapTargetZone, zone) && Equals(ctx.SwapTargetItem, item)) return;
+        if (ReferenceEquals(ctx.SwapTargetZone, zone) && Equals(ctx.SwapTargetItem, item)) return false;
 
         var previous = ctx.SwapTargetZone;
         ctx.SwapTargetZone = zone;
@@ -627,19 +1109,21 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
         if (previous is not null && !ReferenceEquals(previous, zone)) previous.Rerender();
         zone?.Rerender();
+        return true;
     }
 
-    private static void ClearSwapTarget(BortableDragContext ctx)
+    private static bool ClearSwapTarget(BortableDragContext ctx)
     {
         var zone = ctx.SwapTargetZone;
-        if (zone is null) return;
+        if (zone is null) return false;
         ctx.SwapTargetZone = null;
         ctx.SwapTargetItem = null;
         zone.Rerender();
+        return true;
     }
 
     /// <summary>Trades the dragged item's slot with the highlighted swap target.</summary>
-    private static async Task CommitSwapAsync(BortableDragContext ctx)
+    private static void CommitSwap(BortableDragContext ctx)
     {
         var fromZone = ctx.CurrentZone;
         var toZone = ctx.SwapTargetZone!;
@@ -650,49 +1134,52 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         int toIndex = toZone.IndexOf(target);
         if (fromIndex < 0 || toIndex < 0) return;
 
-        await fromZone.CaptureFlipAsync();
-        if (!ReferenceEquals(toZone, fromZone)) await toZone.CaptureFlipAsync();
-
         ctx.Touch(fromZone);
         ctx.Touch(toZone);
         fromZone.Replace(fromIndex, target);
         toZone.Replace(toIndex, dragged);
         ctx.CurrentZone = toZone;
-
-        fromZone.RequestFlipPlay();
-        toZone.RequestFlipPlay();
     }
 
     // ----- drop / end ----------------------------------------------------
 
-    private Task OnDrop(DragEventArgs _) => CompleteDragAsync();
-
-    // Fires on the source item whether or not the drop landed on a list (released
-    // elsewhere, or cancelled with Escape). Whichever of drop/dragend comes first
-    // completes the drag; the other one finds nothing left to do.
-    private Task OnItemDragEnd(DragEventArgs _) => CompleteDragAsync();
-
     /// <summary>
-    /// Ends the drag: commits the pending swap or placeholder (like SortableJS, an
-    /// item previewed in another list stays there even when released outside a
-    /// list), gathers a multi-drag selection, then raises the lifecycle events.
+    /// Ends the drag as the browser layer reports it:
+    /// <list type="bullet">
+    /// <item><c>drop</c> - released over a list that takes it: the pending swap or placeholder is committed and a
+    /// multi-drag selection gathered;</item>
+    /// <item><c>release</c> - released anywhere else (for a native drag, also Escape, which the browser does not tell
+    /// apart): the same, as in SortableJS, unless the source list has <see cref="RevertOnSpill"/>, which puts
+    /// everything back;</item>
+    /// <item><c>cancel</c> - cancelled (Escape in a keyboard, touch or pen drag, a pointer the system took over):
+    /// everything is put back;</item>
+    /// <item><c>abandon</c> - the browser lost track of the drag: it ends where it is, its pending preview dropped.</item>
+    /// </list>
+    /// Then the destination's <see cref="ConfirmDrop"/> is asked, and the lifecycle events are raised. Answers what to
+    /// announce.
     /// </summary>
-    private async Task CompleteDragAsync()
+    private async Task<string?> EndAsync(string how, int drag)
     {
-        if (Service.Context is null) return;
+        if (Service.Context is null) return null;
 
         BortableDragOutcome? outcome = null;
         await Service.Gate.WaitAsync();
         try
         {
-            if (Service.Context is { Finished: false } ctx) outcome = await FinishAsync(ctx, commit: true);
+            if (Service.ContextOf(drag) is { } ctx)
+            {
+                bool putBack = how == "cancel" || (how == "release" && ctx.Source.RevertOnSpill);
+                outcome = putBack ? Cancel(ctx) : Finish(ctx, commit: how != "abandon");
+            }
         }
         finally
         {
             Service.Gate.Release();
         }
 
-        if (outcome is not null) await ReportAsync(outcome);
+        if (outcome is null) return null;
+        outcome = await ConfirmAndReportAsync(outcome);
+        return how == "abandon" ? null : EndAnnouncement(outcome);
     }
 
     /// <summary>
@@ -701,7 +1188,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     /// its list is gone) whatever is pending is dropped and the lists keep what the drag already did to them.
     /// Returns what <see cref="ReportAsync"/> raises once the gate is released.
     /// </summary>
-    private async Task<BortableDragOutcome> FinishAsync(BortableDragContext ctx, bool commit)
+    private BortableDragOutcome Finish(BortableDragContext ctx, bool commit)
     {
         ctx.Finished = true;
 
@@ -711,13 +1198,73 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         IReadOnlyList<object>? moved = null;
         try
         {
-            if (commit) moved = await CommitAsync(ctx);
+            if (commit) moved = Commit(ctx);
         }
         finally
         {
-            await EndAsync(ctx, placeholderZone, swapZone);
+            EndDrag(ctx, placeholderZone, swapZone);
         }
 
+        return Outcome(ctx, moved, canceled: false);
+    }
+
+    /// <summary>
+    /// Ends <paramref name="ctx"/> without keeping anything, inside the gate: the pending swap, placeholder and
+    /// multi-drag gathering are dropped, and the item the drag moved goes back to where it was.
+    /// </summary>
+    private BortableDragOutcome Cancel(BortableDragContext ctx)
+    {
+        ctx.Finished = true;
+
+        var placeholderZone = ctx.PlaceholderZone;
+        var swapZone = ctx.SwapTargetZone;
+        try
+        {
+            PutBack(ctx);
+        }
+        finally
+        {
+            EndDrag(ctx, placeholderZone, swapZone);
+        }
+
+        return Outcome(ctx, moved: null, canceled: true);
+    }
+
+    /// <summary>
+    /// Undoes the moves the drag made, by the item rather than by the list as it was: an edit the app made to its
+    /// own list in the meantime stays. Only the dragged item moves before the drop (within its list, or, in a
+    /// keyboard drag, into another list); everything else is still pending and is simply never committed.
+    /// </summary>
+    private static void PutBack(BortableDragContext ctx)
+    {
+        var source = ctx.Source;
+        var current = ctx.CurrentZone;
+        var item = ctx.Item;
+
+        if (!ReferenceEquals(current, source))
+        {
+            int at = current.IndexOf(item);
+            if (at >= 0)
+            {
+                ctx.Touch(current);
+                current.RemoveAt(at);
+            }
+            ctx.Item = ctx.OriginalItem;
+            ctx.CurrentZone = source;
+            item = ctx.OriginalItem;
+        }
+
+        int index = source.IndexOf(item);
+        if (index == ctx.OldIndex) return;
+
+        ctx.Touch(source);
+        if (index >= 0) source.RemoveAt(index);
+        source.Insert(Math.Min(ctx.OldIndex, source.Count), item);
+    }
+
+    /// <summary>What a finished drag reports: where the item ended up, and which lists it left different.</summary>
+    private static BortableDragOutcome Outcome(BortableDragContext ctx, IReadOnlyList<object>? moved, bool canceled)
+    {
         var to = ctx.CurrentZone;
         return new BortableDragOutcome
         {
@@ -728,29 +1275,215 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
                 OldIndex = ctx.OldIndex,
                 NewIndex = to.IndexOf(ctx.Item),
                 From = ctx.Source,
-                To = to
+                To = to,
+                Input = ctx.Input,
+                IsClone = IsCloneInto(ctx, to),
+                Canceled = canceled
             },
             // Only the lists the drag left different: an item dragged away and back again changed nothing.
             ChangedZones = ctx.TouchedZones.Where(ctx.Changed).ToList(),
             // Whether the drag itself changed the list, not whether the list differs from what it was at
             // dragstart: an edit the app made to its own list in the meantime is not the drag's update.
             ListChanged = !ReferenceEquals(to, ctx.Source) || ctx.Changed(to),
-            SourceChanged = ctx.Changed(ctx.Source)
+            SourceChanged = ctx.Changed(ctx.Source),
+            Context = ctx
+        };
+    }
+
+    private static bool IsCloneInto(BortableDragContext ctx, IBortableZone to)
+        => ctx.PullMode == BortablePull.Clone && !ReferenceEquals(to, ctx.Source);
+
+    // ----- moves made by code --------------------------------------------
+
+    /// <summary>
+    /// Moves <paramref name="item"/> to <paramref name="newIndex"/> within this list, as a drag would: the list must
+    /// allow it (<see cref="Sort"/>, <see cref="Disabled"/>, <see cref="CanDrop"/>), the destination's
+    /// <see cref="ConfirmDrop"/> is asked, the items slide into place, and the drag's events follow, with
+    /// <see cref="BortableEventArgs{TItem}.Input"/> set to <see cref="BortableInput.Api"/>. In swap mode the item
+    /// trades places with the one at <paramref name="newIndex"/>. <see cref="Filter"/> locks an item against the
+    /// user's drags only, and a multi-drag selection is not carried along.
+    /// <para>
+    /// This is the non-drag way to rearrange a list that an accessible app offers next to dragging: "move up",
+    /// "move to top" buttons or an item menu.
+    /// </para>
+    /// </summary>
+    /// <returns><c>true</c> when the item moved; <c>false</c> when it is not in this list, the index is out of range or
+    /// the item is already there, a drag is in progress, or a rule refused the move.</returns>
+    public Task<bool> MoveAsync(TItem item, int newIndex) => MoveCoreAsync(item, this, newIndex);
+
+    /// <summary>
+    /// Moves <paramref name="item"/> from this list into the list whose <see cref="Id"/> is <paramref name="listId"/>,
+    /// at <paramref name="newIndex"/>, as a drag would: the lists must exchange items (<see cref="Group"/>,
+    /// <see cref="Pull"/>, <see cref="Put"/>, <see cref="MaxItems"/>, the item type), the destination's
+    /// <see cref="CanDrop"/> and <see cref="ConfirmDrop"/> are asked, a <see cref="BortablePull.Clone"/> source puts
+    /// a copy there, and the drag's events follow with <see cref="BortableEventArgs{TItem}.Input"/> set to
+    /// <see cref="BortableInput.Api"/>. Into a swap-mode list the item trades places with the one at
+    /// <paramref name="newIndex"/>.
+    /// </summary>
+    /// <returns><c>true</c> when the item moved; <c>false</c> when there is no such list, the item is not in this
+    /// list, the index is out of range, a drag is in progress, or a rule refused the move.</returns>
+    public Task<bool> MoveToAsync(TItem item, string listId, int newIndex)
+    {
+        ArgumentNullException.ThrowIfNull(listId);
+        var target = Service.Zones.FirstOrDefault(zone => string.Equals(zone.Id, listId, StringComparison.Ordinal));
+        return target is null ? Task.FromResult(false) : MoveCoreAsync(item, target, newIndex);
+    }
+
+    /// <summary>A whole drag in one call: picked up, put at <paramref name="newIndex"/> of <paramref name="target"/>, dropped.</summary>
+    private async Task<bool> MoveCoreAsync(TItem item, IBortableZone target, int newIndex)
+    {
+        if (_disposed || Items is null || Service.Context is not null || Service.Confirming > 0) return false;
+
+        bool within = ReferenceEquals(target, this);
+        int from = Items.IndexOf(item);
+        if (from < 0 || newIndex < 0) return false;
+        if (within ? newIndex >= Items.Count || newIndex == from : newIndex > (target.IsSwap ? target.Count - 1 : target.Count)) return false;
+
+        // The lists the move may change, snapshotted for the slide.
+        await CaptureFlipAsync();
+        if (!within) await target.CaptureFlipAsync();
+
+        BortableMoveInfo? start;
+        BortableMoveInfo? change = null;
+        BortableDragOutcome outcome;
+        await Service.Gate.WaitAsync();
+        try
+        {
+            if (Service.Context is not null || Service.Confirming > 0) return false;
+
+            start = BeginDrag(item, BortableInput.Api, carrySelection: false);
+            if (start is null) return false;
+            var ctx = Service.Context!;
+
+            int result = Refused;
+            if (target.TakesDrag(ctx))
+            {
+                // The position as the browser layer measures it: within a sorting list, a gap counted with the item
+                // still in place; in swap mode, the item to trade with.
+                int position = !target.IsSwap && within && newIndex > from ? newIndex + 1 : newIndex;
+                RequestFlipPlay();
+                if (!within) target.RequestFlipPlay();
+                result = target.ApplyOver(ctx, position, out change);
+            }
+
+            outcome = result == Changed ? Finish(ctx, commit: true) : Cancel(ctx);
+        }
+        finally
+        {
+            Service.Gate.Release();
+        }
+
+        // The move is already made: a handler of OnStart or OnChange that throws does not keep it from being confirmed
+        // and reported - OnEnd still follows OnStart - and its exception is passed on after.
+        Exception? failure = null;
+        try
+        {
+            await RaiseEventAsync(BortableEventType.Start, start);
+            if (change is not null) await change.To.RaiseEventAsync(BortableEventType.Change, change);
+        }
+        catch (Exception exception)
+        {
+            failure = exception;
+        }
+        outcome = await ConfirmAndReportAsync(outcome);
+        if (failure is not null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw(failure);
+
+        // A screen reader hears what a button or a menu just did, as it would for a keyboard drag.
+        var info = outcome.Info;
+        if (!info.Canceled) await InvokeJsVoidAsync("announce", EffectiveMessages.Moved(Announcement(outcome.Context, info.To, info.Item)));
+        return !info.Canceled;
+    }
+
+    /// <summary>
+    /// Asks the destination's <see cref="ConfirmDrop"/> whether to keep a drag that changed the lists, puts them back
+    /// when it says no, then reports the outcome, which it returns. No other drag starts while it is asked.
+    /// </summary>
+    private async Task<BortableDragOutcome> ConfirmAndReportAsync(BortableDragOutcome outcome)
+    {
+        if (!outcome.Info.Canceled && outcome.ChangedZones.Count > 0)
+        {
+            // Raised until a refusal has put the lists back, so no drag starts on lists about to be restored.
+            Service.Confirming++;
+            try
+            {
+                bool keep;
+                try
+                {
+                    keep = await outcome.Info.To.ConfirmAsync(outcome.Info);
+                }
+                catch
+                {
+                    // Put back and reported like a refusal - OnEnd still follows OnStart - before the exception goes on.
+                    await ReportAsync(await RefuseAsync(outcome));
+                    throw;
+                }
+
+                if (!keep) outcome = await RefuseAsync(outcome);
+            }
+            finally
+            {
+                Service.Confirming--;
+            }
+        }
+
+        await ReportAsync(outcome);
+        return outcome;
+    }
+
+    /// <summary>Puts every list a refused drag changed back to what it held before the drag, sliding the items back.</summary>
+    private async Task<BortableDragOutcome> RefuseAsync(BortableDragOutcome outcome)
+    {
+        var ctx = outcome.Context;
+        foreach (var zone in outcome.ChangedZones)
+            await zone.CaptureFlipAsync();
+
+        await Service.Gate.WaitAsync();
+        try
+        {
+            foreach (var zone in outcome.ChangedZones)
+            {
+                ctx.Restore(zone);
+                zone.RequestFlipPlay();
+                zone.Rerender();
+            }
+        }
+        finally
+        {
+            Service.Gate.Release();
+        }
+
+        var source = ctx.Source;
+        return new BortableDragOutcome
+        {
+            Info = new BortableMoveInfo
+            {
+                Item = ctx.OriginalItem,
+                OldIndex = ctx.OldIndex,
+                NewIndex = source.IndexOf(ctx.OriginalItem),
+                From = source,
+                To = source,
+                Input = ctx.Input,
+                Canceled = true
+            },
+            // The bound lists held the drop while ConfirmDrop ran, and a page may have rendered them so: ItemsChanged
+            // tells it they are back.
+            ChangedZones = outcome.ChangedZones,
+            Context = ctx
         };
     }
 
     /// <summary>Commits the pending swap or placeholder and gathers a multi-drag selection; returns the items a multi-drag moved.</summary>
-    private static async Task<IReadOnlyList<object>?> CommitAsync(BortableDragContext ctx)
+    private static IReadOnlyList<object>? Commit(BortableDragContext ctx)
     {
         if (ctx.SwapTargetZone is not null && ctx.SwapTargetItem is not null)
         {
-            await CommitSwapAsync(ctx);
+            CommitSwap(ctx);
             return null;
         }
 
         if (ctx.PlaceholderZone is { } target && !ReferenceEquals(target, ctx.CurrentZone))
-            await target.CommitPlaceholderAsync(ctx);
-        return ctx.MultiItems is not null ? await CollectMultiAsync(ctx) : null;
+            target.CommitPlaceholder(ctx);
+        return ctx.MultiItems is not null ? CollectMulti(ctx) : null;
     }
 
     /// <summary>
@@ -762,9 +1495,18 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         foreach (var zone in outcome.ChangedZones)
             await zone.NotifyItemsChangedAsync();
 
+        // A multi-drag spends its selection; items that left a list leave its selection.
+        var ctx = outcome.Context;
+        foreach (var zone in new HashSet<IBortableZone>([ctx.Source, ctx.CurrentZone, .. ctx.TouchedZones], ReferenceEqualityComparer.Instance))
+            await zone.PublishSelectionIfChangedAsync();
+
         var info = outcome.Info;
         var from = info.From;
-        if (ReferenceEquals(from, info.To))
+        if (info.Canceled)
+        {
+            // Nothing was kept: the drag only ends.
+        }
+        else if (ReferenceEquals(from, info.To))
         {
             if (outcome.ListChanged)
             {
@@ -788,7 +1530,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     /// block is removed from wherever it sits and re-inserted contiguously, in its
     /// original order, at the primary's position in the destination list.
     /// </summary>
-    private static async Task<IReadOnlyList<object>?> CollectMultiAsync(BortableDragContext ctx)
+    private static IReadOnlyList<object>? CollectMulti(BortableDragContext ctx)
     {
         var block = ctx.MultiItems;
         ctx.MultiItems = null;
@@ -810,9 +1552,6 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         for (int i = 0; i < primaryPos; i++)
             if (!BlockContains(block, target.ItemAt(i))) anchor++;
 
-        await source.CaptureFlipAsync();
-        if (!sameList) await target.CaptureFlipAsync();
-
         ctx.Touch(source);
         ctx.Touch(target);
 
@@ -829,8 +1568,6 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             target.Insert(anchor + i, block[i]);
 
         source.ClearSelection();
-        source.RequestFlipPlay();
-        target.RequestFlipPlay();
         return block;
     }
 
@@ -842,7 +1579,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     }
 
     /// <summary>Moves (or clones) the dragged item from its source list into this list at the placeholder index.</summary>
-    private async Task CommitPlaceholderAsync(BortableDragContext ctx)
+    private void CommitPlaceholder(BortableDragContext ctx)
     {
         int index = ctx.PlaceholderIndex;
         ctx.PlaceholderZone = null;
@@ -863,25 +1600,20 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             if (sourceIndex < 0) return;
         }
 
-        await source.CaptureFlipAsync();
-        await CaptureFlipAsync();
-
         if (!clone)
         {
             ctx.Touch(source);
             source.RemoveAt(sourceIndex);
-            source.RequestFlipPlay();
         }
 
         ctx.Touch(this);
         Items.Insert(Math.Clamp(index, 0, Items.Count), item);
         ctx.Item = moving;
         ctx.CurrentZone = this;
-        RequestFlipPlay();
     }
 
     /// <summary>Clears the drag state and brings every zone the drag touched up to date.</summary>
-    private async Task EndAsync(BortableDragContext ctx, params IBortableZone?[] alsoTouched)
+    private void EndDrag(BortableDragContext ctx, params IBortableZone?[] alsoTouched)
     {
         var zones = new HashSet<IBortableZone>(ReferenceEqualityComparer.Instance) { ctx.Source, ctx.CurrentZone };
         if (ctx.PlaceholderZone is not null) zones.Add(ctx.PlaceholderZone);
@@ -898,11 +1630,9 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
         foreach (var zone in zones)
         {
-            await zone.EndDragAsync();
+            zone.EndDrag();
             zone.Rerender();
         }
-        // The lists that took the drag's events let the next drag's (or an unrelated one's) bubble again.
-        SyncDragStates();
     }
 
     private static BortableMoveInfo MoveInfo(BortableDragContext ctx, IBortableZone to, int newIndex) => new()
@@ -914,24 +1644,12 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         OldIndex = ctx.OldIndex,
         NewIndex = newIndex,
         From = ctx.Source,
-        To = to
+        To = to,
+        Input = ctx.Input,
+        IsClone = IsCloneInto(ctx, to)
     };
 
     // ----- JS interop ----------------------------------------------------
-
-    private async Task<int> GetDropIndexAsync(double clientX, double clientY)
-        => await InvokeJsAsync("dropIndex", -1, _listElement, clientX, clientY,
-            SwapThreshold, InvertSwap, InvertedSwapThreshold, DirectionValue);
-
-    private async Task<int> GetItemIndexAtAsync(double clientX, double clientY)
-        => await InvokeJsAsync("itemIndexAt", -1, _listElement, clientX, clientY);
-
-    /// <summary>
-    /// True when this list must not receive the dragged item: it lives inside the DOM
-    /// subtree of the item being dragged (receiving it here would nest the item inside
-    /// itself), or inside the drop placeholder (a preview copy of the item).
-    /// </summary>
-    private async Task<bool> WouldNestAsync() => await InvokeJsAsync("wouldNest", false, _listElement);
 
     private async Task CaptureFlipAsync()
     {
@@ -943,33 +1661,69 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         if (Animation > 0) _playFlipOnRender = true;
     }
 
-    // The annotation is the one IJSObjectReference.InvokeAsync puts on its result type; only int and bool flow through here.
-    private async ValueTask<T> InvokeJsAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] T>(
-        string identifier, T fallback, params object?[] args)
+    private BortableJsOptions JsOptions() => new()
     {
-        if (_disposed || _module is null) return fallback;
-        try { return await _module.InvokeAsync<T>(identifier, args); }
-        catch (JSDisconnectedException) { return fallback; }
-        catch (ObjectDisposedException) { return fallback; }
-        catch (TaskCanceledException) { return fallback; }
+        Id = Id,
+        Handle = string.IsNullOrEmpty(Handle) ? null : Handle,
+        SwapThreshold = SwapThreshold,
+        InvertSwap = InvertSwap,
+        InvertedSwapThreshold = InvertedSwapThreshold,
+        Direction = DirectionValue,
+        Animation = Animation,
+        Swap = Swap,
+        MultiDrag = MultiDrag,
+        Keyboard = KeyboardEnabled,
+        Delay = Math.Max(0, Delay),
+        TouchDelay = Math.Max(0, TouchDelay),
+        DelayTolerance = Math.Max(0, DelayTolerance),
+        ForceFallback = ForceFallback,
+        DragClass = DragClass ?? string.Empty,
+        Scroll = Scroll,
+        ScrollSensitivity = Math.Max(0, ScrollSensitivity),
+        ScrollSpeed = Math.Max(0, ScrollSpeed)
+    };
+
+    /// <summary>
+    /// Registers the list with the browser layer after its first interactive render, and sends its options again
+    /// whenever one of them changes. A registration the browser never received is tried again on the next render.
+    /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BortableJsOptions))]
+    private async Task SyncBrowserLayerAsync()
+    {
+        var options = JsOptions();
+        if (options == _appliedOptions) return;
+
+        bool registered = _appliedOptions is not null;
+        _appliedOptions = options;
+        if (registered)
+        {
+            await InvokeJsVoidAsync("configure", _listElement, options);
+            return;
+        }
+
+        _bridge ??= DotNetObjectReference.Create(new BortableBridge(this));
+        if (!await InvokeJsVoidAsync("register", _listElement, _bridge, options) && ReferenceEquals(_appliedOptions, options))
+            _appliedOptions = null;
     }
 
-    private async ValueTask InvokeJsVoidAsync(string identifier, params object?[] args)
+    /// <summary>Calls the module, ignoring a browser that is gone; <c>false</c> when the call did not reach it.</summary>
+    private async ValueTask<bool> InvokeJsVoidAsync(string identifier, params object?[] args)
     {
-        if (_disposed || _module is null) return;
-        try { await _module.InvokeVoidAsync(identifier, args); }
-        catch (JSDisconnectedException) { }
-        catch (ObjectDisposedException) { }
-        catch (TaskCanceledException) { }
+        if (_disposed || _module is null) return false;
+        try
+        {
+            await _module.InvokeVoidAsync(identifier, args);
+            return true;
+        }
+        catch (JSDisconnectedException) { return false; }
+        catch (ObjectDisposedException) { return false; }
+        catch (TaskCanceledException) { return false; }
     }
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (_disposed) return;
-
-        // The DOM now carries the event flags rendered for this drag (see OnContainerDragOver).
-        _appliedDrag = _renderedDrag;
 
         if (firstRender)
         {
@@ -980,12 +1734,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
         if (_module is null) return;
 
-        var handle = string.IsNullOrEmpty(Handle) ? null : Handle;
-        if (!string.Equals(handle, _appliedHandle, StringComparison.Ordinal))
-        {
-            _appliedHandle = handle;
-            await InvokeJsVoidAsync("setHandle", _listElement, handle);
-        }
+        await SyncBrowserLayerAsync();
 
         if (_playFlipOnRender)
         {
@@ -999,8 +1748,11 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     string IBortableZone.Id => Id;
     string? IBortableZone.GroupName => Group;
     bool IBortableZone.AllowSort => AllowSort;
+    bool IBortableZone.RevertOnSpill => RevertOnSpill;
+    bool IBortableZone.IsSwap => Swap;
     bool IBortableZone.CanReceiveFrom(IBortableZone source) => CanReceiveFrom(source);
     bool IBortableZone.Accepts(object item) => item is TItem;
+    bool IBortableZone.TakesDrag(BortableDragContext ctx) => !_disposed && HandlesDrag(ctx);
 
     private int Count => Items?.Count ?? 0;
     int IBortableZone.Count => Count;
@@ -1015,12 +1767,28 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
     void IBortableZone.Replace(int index, object item) => Items![index] = (TItem)item;
 
+    void IBortableZone.SetItems(object?[] items)
+    {
+        var list = Items!;
+        list.Clear();
+        foreach (var item in items) list.Add((TItem)item!);
+    }
+
+    int IBortableZone.ApplyOver(BortableDragContext ctx, int index, out BortableMoveInfo? change)
+    {
+        change = null;
+        return _disposed || !HandlesDrag(ctx) ? Refused : ApplyOver(ctx, index, out change);
+    }
+
     void IBortableZone.ClearSelection()
     {
         if (_selected.Count == 0) return;
         _selected.Clear();
+        _selectionChanged = true;
         StateHasChanged();
     }
+
+    Task IBortableZone.PublishSelectionIfChangedAsync() => _selectionChanged ? PublishSelectionAsync() : Task.CompletedTask;
 
     object IBortableZone.CloneItem(object item)
     {
@@ -1029,22 +1797,13 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         return item; // value types / strings: safe to share
     }
 
-    Task IBortableZone.CommitPlaceholderAsync(BortableDragContext ctx) => CommitPlaceholderAsync(ctx);
+    void IBortableZone.CommitPlaceholder(BortableDragContext ctx) => CommitPlaceholder(ctx);
 
     Task IBortableZone.CaptureFlipAsync() => CaptureFlipAsync();
 
     void IBortableZone.RequestFlipPlay() => RequestFlipPlay();
 
     void IBortableZone.Rerender() => StateHasChanged();
-
-    void IBortableZone.SyncDragState()
-    {
-        var ctx = Service.Context;
-        bool handles = ctx is { Finished: false } && HandlesDrag(ctx);
-        // A list that takes the drag renders its flags for it, as its dragover handler waits for them; one that
-        // took the previous drag clears them.
-        if (handles != _handlesDrag || (handles && !ReferenceEquals(_renderedDrag, ctx))) StateHasChanged();
-    }
 
     async Task IBortableZone.NotifyItemsChangedAsync()
     {
@@ -1053,18 +1812,40 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             await ItemsChanged.InvokeAsync(Items);
     }
 
-    async Task IBortableZone.EndDragAsync()
+    void IBortableZone.EndDrag()
     {
         var items = Items;
-        if (_selected.Count > 0 && items is not null)
-            _selected.RemoveWhere(item => !items.Contains(item));
-
-        // Drop a FLIP snapshot that no render is going to play.
-        if (!_playFlipOnRender) await InvokeJsVoidAsync("clear", _listElement);
+        if (_selected.Count > 0 && items is not null && _selected.RemoveWhere(item => !items.Contains(item)) > 0)
+            _selectionChanged = true;
     }
 
     Task IBortableZone.RaiseEventAsync(BortableEventType type, BortableMoveInfo info)
         => RaiseEventAsync(type, info);
+
+    Task<BortableStartResult?> IBortableZone.StartAsync(string key, string input) => StartAsync(key, input);
+
+    Task<int> IBortableZone.OverAsync(int index, int drag) => OverAsync(index, drag);
+
+    Task<string?> IBortableZone.EndAsync(string how, int drag) => EndAsync(how, drag);
+
+    Task<BortableKeyResult> IBortableZone.KeyAsync(string key, string action, string? list, int index, int drag) => KeyAsync(key, action, list, index, drag);
+
+    string? IBortableZone.Label => AriaLabel;
+
+    BortableMessages IBortableZone.Messages => EffectiveMessages;
+
+    string IBortableZone.LabelOf(object item) => item is TItem t ? LabelOf(t) : item.ToString() ?? string.Empty;
+
+    string? IBortableZone.KeyOfItem(object item) => item is TItem t ? KeyOf(t) : null;
+
+    void IBortableZone.Focus(string? key)
+    {
+        if (key is null || key == _activeKey) return;
+        _activeKey = key;
+        StateHasChanged();
+    }
+
+    bool IBortableZone.AllowsDropAt(BortableDragContext ctx, int newIndex) => AllowsDrop(ctx, newIndex);
 
     private Task RaiseEventAsync(BortableEventType type, BortableMoveInfo info)
     {
@@ -1081,8 +1862,13 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         };
         if (!callback.HasDelegate) return Task.CompletedTask;
 
+        return callback.InvokeAsync(ArgsOf(info));
+    }
+
+    private static BortableEventArgs<TItem> ArgsOf(BortableMoveInfo info)
+    {
         var item = (TItem)info.Item;
-        var args = new BortableEventArgs<TItem>
+        return new BortableEventArgs<TItem>
         {
             Item = item,
             Items = info.Items is { } items ? items.Cast<TItem>().ToList() : [item],
@@ -1091,21 +1877,41 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             FromId = info.From.Id,
             ToId = info.To.Id,
             FromGroup = info.From.GroupName,
-            ToGroup = info.To.GroupName
+            ToGroup = info.To.GroupName,
+            Input = info.Input,
+            IsClone = info.IsClone,
+            Canceled = info.Canceled
         };
-        return callback.InvokeAsync(args);
     }
+
+    async Task<bool> IBortableZone.ConfirmAsync(BortableMoveInfo info)
+        => ConfirmDrop is null || info.Item is not TItem || await ConfirmDrop(ArgsOf(info));
 
     // ----- disposal ------------------------------------------------------
 
-    /// <summary>Ends any drag this list is the source of, and leaves any other drag this list was part of.</summary>
+    /// <summary>Ends any drag this list is the source of, leaves any other drag this list was part of, and unregisters it from the browser layer.</summary>
     public async ValueTask DisposeAsync()
     {
         if (_disposed) return;
         _disposed = true;
         Service.Zones.Remove(this);
+        var module = _module;
         _module = null; // shared by every list of the scope; BortableService releases it
 
+        await LeaveDragAsync();
+
+        if (module is not null && _appliedOptions is not null)
+        {
+            try { await module.InvokeVoidAsync("unregister", _listElement); }
+            catch (JSDisconnectedException) { }
+            catch (ObjectDisposedException) { }
+            catch (TaskCanceledException) { }
+        }
+        _bridge?.Dispose();
+    }
+
+    private async Task LeaveDragAsync()
+    {
         if (Service.Context is not { } ctx) return;
 
         if (ReferenceEquals(ctx.Source, this) || ReferenceEquals(ctx.CurrentZone, this))
@@ -1117,7 +1923,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             await Service.Gate.WaitAsync();
             try
             {
-                if (ReferenceEquals(Service.Context, ctx) && !ctx.Finished) outcome = await FinishAsync(ctx, commit: false);
+                if (ReferenceEquals(Service.Context, ctx) && !ctx.Finished) outcome = Finish(ctx, commit: false);
             }
             finally
             {
@@ -1143,5 +1949,17 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             ctx.SwapTargetZone = null;
             ctx.SwapTargetItem = null;
         }
+    }
+
+    /// <summary>Compares boxed items the way <c>@key</c> compares the items themselves.</summary>
+    private sealed class ItemComparer : IEqualityComparer<object>
+    {
+        public static readonly ItemComparer Instance = new();
+
+        bool IEqualityComparer<object>.Equals(object? x, object? y)
+            => x is TItem a && y is TItem b ? Comparer.Equals(a, b) : Equals(x, y);
+
+        int IEqualityComparer<object>.GetHashCode(object obj)
+            => obj is TItem item ? Comparer.GetHashCode(item!) : obj.GetHashCode();
     }
 }

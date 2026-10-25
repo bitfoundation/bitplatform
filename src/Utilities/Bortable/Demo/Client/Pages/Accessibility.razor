@@ -1,0 +1,85 @@
+@page "/accessibility"
+
+<PageTitle>Keyboard and screen readers · Bortable</PageTitle>
+
+<div class="bb-intro">
+    <h1>Keyboard and screen readers</h1>
+    <p class="bb-subtitle">
+        Tab into a list, move between its items with the arrow keys, press <kbd>Space</kbd> to pick one up, the arrow
+        keys to move it - <kbd>→</kbd> carries it over to the Sprint - <kbd>Space</kbd> to drop it and
+        <kbd>Escape</kbd> to put it back. Every step is announced to screen readers. The buttons on each item move it
+        without dragging at all (<code>MoveAsync</code>, <code>MoveToAsync</code>), as WCAG 2.5.7 asks.
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="bb-demo">
+    <div class="demo-columns">
+        <div class="demo-col">
+            <div class="demo-col-title" id="a11y-backlog-title">Backlog</div>
+            <Bortable @ref="_backlogList" @bind-Items="_backlog" TItem="string" Group="a11y" Id="a11y-backlog"
+                      AriaLabel="Backlog" OnEnd="Log"
+                      Class="demo-list" ItemClass="demo-item a11y-item" GhostClass="demo-ghost">
+                <ItemTemplate Context="item">
+                    <span>@item</span>
+                    <span class="a11y-actions">
+                        <button type="button" aria-label="@($"Move {item} up")" @onclick="() => MoveUp(_backlogList, _backlog, item)">↑</button>
+                        <button type="button" aria-label="@($"Move {item} down")" @onclick="() => MoveDown(_backlogList, _backlog, item)">↓</button>
+                        <button type="button" aria-label="@($"Move {item} to the Sprint")" @onclick='() => _backlogList.MoveToAsync(item, "a11y-sprint", _sprint.Count)'>→</button>
+                    </span>
+                </ItemTemplate>
+            </Bortable>
+        </div>
+        <div class="demo-col">
+            <div class="demo-col-title" id="a11y-sprint-title">Sprint</div>
+            <Bortable @ref="_sprintList" @bind-Items="_sprint" TItem="string" Group="a11y" Id="a11y-sprint"
+                      AriaLabel="Sprint" OnEnd="Log"
+                      Class="demo-list" ItemClass="demo-item a11y-item tinted" GhostClass="demo-ghost">
+                <ItemTemplate Context="item">
+                    <span>@item</span>
+                    <span class="a11y-actions">
+                        <button type="button" aria-label="@($"Move {item} up")" @onclick="() => MoveUp(_sprintList, _sprint, item)">↑</button>
+                        <button type="button" aria-label="@($"Move {item} down")" @onclick="() => MoveDown(_sprintList, _sprint, item)">↓</button>
+                        <button type="button" aria-label="@($"Move {item} back to the Backlog")" @onclick='() => _sprintList.MoveToAsync(item, "a11y-backlog", _backlog.Count)'>←</button>
+                    </span>
+                </ItemTemplate>
+            </Bortable>
+        </div>
+    </div>
+
+    <p class="demo-order"><strong>Backlog:</strong> <span id="a11y-backlog-order">@string.Join(", ", _backlog)</span></p>
+    <p class="demo-order"><strong>Sprint:</strong> <span id="a11y-sprint-order">@string.Join(", ", _sprint)</span></p>
+
+    <div class="bb-log event-log" id="a11y-log">
+        @if (_log.Count == 0)
+        {
+            <div class="bb-log-empty event-log__empty">No moves yet…</div>
+        }
+        @foreach (var line in _log)
+        {
+            <div class="bb-log-line event-log__line">@line</div>
+        }
+    </div>
+</div>
+
+@code {
+    private Bortable<string> _backlogList = default!;
+    private Bortable<string> _sprintList = default!;
+    private IList<string> _backlog = new List<string> { "Sign-up page", "Password reset", "Audit log", "Dark mode" };
+    private IList<string> _sprint = new List<string> { "Search", "Export to CSV" };
+    private readonly List<string> _log = [];
+
+    private static Task MoveUp(Bortable<string> list, IList<string> items, string item)
+        => list.MoveAsync(item, Math.Max(0, items.IndexOf(item) - 1));
+
+    private static Task MoveDown(Bortable<string> list, IList<string> items, string item)
+        => list.MoveAsync(item, Math.Min(items.Count - 1, items.IndexOf(item) + 1));
+
+    private void Log(BortableEventArgs<string> e)
+    {
+        var what = e.Canceled ? "cancelled" : e.CrossedLists ? $"{e.FromId} -> {e.ToId}#{e.NewIndex}" : $"#{e.OldIndex} -> #{e.NewIndex}";
+        _log.Insert(0, $"[{e.Input.ToString().ToLowerInvariant()}] {e.Item}: {what}");
+        if (_log.Count > 12) _log.RemoveAt(_log.Count - 1);
+    }
+}

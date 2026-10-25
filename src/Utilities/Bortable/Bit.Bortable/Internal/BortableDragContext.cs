@@ -6,6 +6,12 @@
 /// </summary>
 internal sealed class BortableDragContext
 {
+    /// <summary>
+    /// Names this drag to the browser layer, which sends it back with every call about the drag: a call that arrives
+    /// late, about a drag that has since ended, is never taken for one about the drag in progress.
+    /// </summary>
+    public int Id { get; init; }
+
     /// <summary>The data item currently being dragged (the clone once a clone has been dropped).</summary>
     public required object Item { get; set; }
 
@@ -23,6 +29,9 @@ internal sealed class BortableDragContext
 
     /// <summary>The effective pull mode resolved from the source list.</summary>
     public BortablePull PullMode { get; init; }
+
+    /// <summary>How the drag is made.</summary>
+    public BortableInput Input { get; init; }
 
     /// <summary>The zone currently showing the drop placeholder (a target preview), if any.</summary>
     public IBortableZone? PlaceholderZone { get; set; }
@@ -76,6 +85,12 @@ internal sealed class BortableDragContext
         for (int i = 0; i < before.Length; i++)
             if (!Equals(before[i], zone.ItemAt(i))) return true;
         return false;
+    }
+
+    /// <summary>Puts <paramref name="zone"/> back to the items it held before this drag first changed it.</summary>
+    public void Restore(IBortableZone zone)
+    {
+        if (_before.TryGetValue(zone, out var before)) zone.SetItems(before);
     }
 
     /// <summary>Guards against finalizing the same drag twice (drop + dragend).</summary>

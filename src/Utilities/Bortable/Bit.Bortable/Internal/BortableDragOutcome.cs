@@ -18,4 +18,7 @@ internal sealed class BortableDragOutcome
 
     /// <summary>Whether the drag changed the source list.</summary>
     public bool SourceChanged { get; init; }
+
+    /// <summary>The drag whose outcome this is, kept to put its lists back should the destination refuse it.</summary>
+    public required BortableDragContext Context { get; init; }
 }

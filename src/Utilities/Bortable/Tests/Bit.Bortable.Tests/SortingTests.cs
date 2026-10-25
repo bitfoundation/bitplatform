@@ -1,4 +1,4 @@
-﻿using Bunit;
+using Bunit;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Bortable.Tests;
@@ -254,25 +254,60 @@ public class SortingTests : BortableTestContext
     }
 
     [TestMethod]
-    public async Task ADragTheBrowserLayerDidNotMarkIsNotASort()
+    public async Task AStartForAnItemTheListNoLongerHoldsIsRefused()
     {
         List<string> items = ["A", "B"];
         var log = new List<Raised<string>>();
-        var list = RenderList(items, "L1", p =>
-        {
-            p.Add(c => c.Handle, ".grip");
-            Record(p, "L1", log);
-        });
+        var list = RenderList(items, "L1", p => Record(p, "L1", log));
+        string key = KeyOf(list, "A");
 
-        // The drag of a link, an image or an element of the app's own inside an item that is not draggable itself
-        // (here, pressed outside its handle) bubbles up to the item: it stays the app's drag.
-        await ItemElement(list, "A").DragStartAsync(new DragEventArgs());
-        await DragOverAsync(list, 2);
+        // The browser names the item it saw rendered; on Blazor Server the app may have removed it since.
+        items.Remove("A");
+        list.Render(p => p.Add(c => c.Items, items));
+        var started = await StartByKeyAsync(list, key);
+        await DragOverAsync(list, 1);
         await DropAsync(list);
 
-        Assert.AreSequenceEqual(["A", "B"], items);
+        Assert.IsNull(started);
+        Assert.AreSequenceEqual(["B"], items);
         Assert.IsEmpty(log);
         Assert.IsNull(Coordinator.Context);
+    }
+
+    [TestMethod]
+    public async Task AStartForAnUnknownKeyIsRefused()
+    {
+        var list = RenderList(["A", "B"]);
+
+        Assert.IsNull(await StartByKeyAsync(list, "not-a-key"));
+        Assert.IsNull(Coordinator.Context);
+    }
+
+    [TestMethod]
+    public async Task EachItemKeepsItsKeyAcrossRendersAndMoves()
+    {
+        List<string> items = ["A", "B", "C"];
+        var list = RenderList(items);
+        var before = items.ToDictionary(i => i, i => KeyOf(list, i));
+
+        await DragStartAsync(list, "A");
+        await DragOverAsync(list, 3);
+        await DropAsync(list);
+        list.Render(p => p.Add(c => c.Class, "re-rendered"));
+
+        foreach (var item in items) Assert.AreEqual(before[item], KeyOf(list, item));
+        Assert.HasCount(3, before.Values.Distinct());
+    }
+
+    [TestMethod]
+    public async Task TheStartNamesTheListsThatTakeTheDrag()
+    {
+        var list = RenderList(["A", "B"], "L1");
+
+        var started = await DragStartAsync(list, "A");
+
+        Assert.IsNotNull(started);
+        Assert.AreSequenceEqual(["L1"], started.Lists.ToList());
     }
 
     [TestMethod]
@@ -353,64 +388,75 @@ public class SortingTests : BortableTestContext
     }
 
     [TestMethod]
-    public async Task DragoverSendsThePointerAndTheSwapOptionsToTheBrowserLayer()
+    public void TheHitTestOptionsAreSentToTheBrowserLayer()
     {
-        var list = RenderList(["A", "B"], extra: p =>
+        var list = RenderList(["A", "B"], "L1", p =>
         {
             p.Add(c => c.SwapThreshold, 0.65);
             p.Add(c => c.InvertSwap, true);
             p.Add(c => c.InvertedSwapThreshold, 0.3);
             p.Add(c => c.Direction, BortableDirection.Horizontal);
+            p.Add(c => c.Animation, 200);
         });
 
-        await DragStartAsync(list, "A");
-        await DragOverAsync(list, 2);
-
-        // The argument order is the contract with dropIndex(listEl, x, y, swapThreshold, invertSwap,
-        // invertedSwapThreshold, direction) in bit-bortable.ts.
-        var args = DropIndexCalls.Single().Arguments;
-        Assert.HasCount(7, args);
-        Assert.AreEqual(10d, args[1]);
-        Assert.AreEqual(20d, args[2]);
-        Assert.AreEqual(0.65, args[3]);
-        Assert.AreEqual(true, args[4]);
-        Assert.AreEqual(0.3, args[5]);
-        Assert.AreEqual("horizontal", args[6]);
+        // The browser layer measures the drop position itself, with these: see dropIndex in bit-bortable.ts.
+        var sent = SentOptions(list)!;
+        Assert.AreEqual("L1", sent.Id);
+        Assert.AreEqual(0.65, sent.SwapThreshold);
+        Assert.IsTrue(sent.InvertSwap);
+        Assert.AreEqual(0.3, sent.InvertedSwapThreshold);
+        Assert.AreEqual("horizontal", sent.Direction);
+        Assert.AreEqual(200, sent.Animation);
+        Assert.IsFalse(sent.Swap);
     }
 
     [TestMethod]
-    public async Task EachDirectionIsSentAsTheNameTheBrowserLayerExpects()
+    public void EachDirectionIsSentAsTheNameTheBrowserLayerExpects()
     {
         var list = RenderList(["A", "B"]);
-        var sent = new List<object?>();
+        var sent = new List<string>();
 
         foreach (var direction in new[] { BortableDirection.Auto, BortableDirection.Vertical, BortableDirection.Horizontal })
         {
             list.Render(p => p.Add(c => c.Direction, direction));
-            await DragStartAsync(list, "A");
-            await DragOverAsync(list, -1);
-            await DropAsync(list);
-            sent.Add(DropIndexCalls[^1].Arguments[6]);
+            sent.Add(SentOptions(list)!.Direction);
         }
 
         Assert.AreSequenceEqual(["auto", "vertical", "horizontal"], sent);
     }
 
     [TestMethod]
-    public async Task AnimatedListsSnapshotBeforeAReorderAndPlayAfterIt()
+    public void TheListRegistersOnceAndIsReconfiguredOnlyWhenAnOptionChanges()
+    {
+        var list = RenderList(["A"]);
+
+        list.Render(p => p.Add(c => c.Class, "unrelated"));
+        list.Render(p => p.Add(c => c.Animation, 300));
+        list.Render(p => p.Add(c => c.Style, "color: red"));
+
+        Assert.ContainsSingle(Module.Invocations["register"]);
+        Assert.ContainsSingle(Module.Invocations["configure"]);
+        Assert.AreEqual(300, SentOptions(list)!.Animation);
+    }
+
+    [TestMethod]
+    public async Task OverAnswersWhetherAListChangedWhichIsWhenTheBrowserAnimates()
     {
         var list = RenderList(["A", "B", "C"]);
 
         await DragStartAsync(list, "A");
-        await DragOverAsync(list, 3);
 
-        Assert.IsNotEmpty(Module.Invocations["capture"]);
-        Assert.IsNotEmpty(Module.Invocations["play"]);
-        Assert.AreEqual(150, Module.Invocations["play"][^1].Arguments[1]);
+        Assert.IsTrue(await DragOverAsync(list, 3));
+        // The same position again (the pointer rests): nothing to animate.
+        Assert.IsFalse(await DragOverAsync(list, 3));
+        Assert.IsFalse(await DragOverAsync(list, -1));
+        // The browser layer snapshots and plays the slides around these calls itself.
+        Assert.IsEmpty(Module.Invocations["capture"]);
+        Assert.IsEmpty(Module.Invocations["play"]);
     }
 
     [TestMethod]
-    public async Task WithoutAnimationNoFlipCallIsMade()
+    public async Task WithoutAnimationTheListStillReorders()
     {
         List<string> items = ["A", "B", "C"];
         var list = RenderList(items, extra: p => p.Add(c => c.Animation, 0));
@@ -420,7 +466,6 @@ public class SortingTests : BortableTestContext
         await DropAsync(list);
 
         Assert.AreSequenceEqual(["B", "C", "A"], items);
-        Assert.IsEmpty(Module.Invocations["capture"]);
-        Assert.IsEmpty(Module.Invocations["play"]);
+        Assert.AreEqual(0, SentOptions(list)!.Animation);
     }
 }

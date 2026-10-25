@@ -173,6 +173,80 @@ html:root[bit-theme="dark"] {
     cursor: default;
 }
 
+/* The Rules page: the board outlines the columns that take the dragged card, and a column that refuses it. */
+.rules-board {
+    --bit-bortable-accepts-outline: 2px dashed color-mix(in srgb, var(--bb-primary) 45%, transparent);
+    --bit-bortable-over-outline: 2px solid var(--bb-primary);
+    --bit-bortable-refused-outline: 2px solid #dc2626;
+}
+
+.rules-approve {
+    display: block;
+    margin-bottom: .75rem;
+}
+
+/* The Keyboard and screen readers page: the buttons that move an item without dragging it. */
+.a11y-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+}
+
+.a11y-actions {
+    display: inline-flex;
+    gap: .25rem;
+}
+
+.a11y-actions button {
+    min-width: 1.75rem;
+    min-height: 1.75rem;
+    border: 1px solid var(--bb-border);
+    border-radius: .375rem;
+    background: var(--bb-surface);
+    color: inherit;
+    cursor: pointer;
+}
+
+.a11y-actions button:focus-visible {
+    outline: 2px solid var(--bb-primary);
+    outline-offset: 1px;
+}
+
+/* The Large list page: a scrolling panel of rows. */
+.large-controls {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: .75rem;
+}
+
+.large-panel {
+    max-height: 520px;
+    overflow: auto;
+    border: 1px solid var(--bb-border);
+    border-radius: .5rem;
+    padding: .5rem;
+}
+
+.large-panel .demo-item {
+    display: flex;
+    justify-content: space-between;
+}
+
+.large-note {
+    color: var(--bb-text-soft);
+    font-size: .8125rem;
+}
+
+/* The Touch page's handle drags at once on a touch screen: the browser must not scroll from it. */
+.touch-handle {
+    touch-action: none;
+}
+
+#touch-handle-list .demo-item {
+    cursor: default;
+}
+
 /* Grid example: the list is a CSS grid; each item wraps a square. */
 .demo-grid {
     display: grid;

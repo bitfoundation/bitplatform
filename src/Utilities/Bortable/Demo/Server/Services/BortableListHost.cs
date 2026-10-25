@@ -1,4 +1,4 @@
-﻿// A Renderer is the framework's own extension point for running components outside a browser -
+// A Renderer is the framework's own extension point for running components outside a browser -
 // bUnit and the static HTML renderer are built on it - and it lives in the RenderTree namespace the
 // analyzer guards against everyday use. Hosting the real Bortable is the whole point here, and so is
 // reading back the frames it rendered: they are where its event handlers are found.
@@ -15,8 +15,9 @@ namespace Bit.Bortable.Demo.Server.Services;
 
 /// <summary>
 /// Renders real <see cref="Bortable{TItem}"/> lists in-process, with no browser behind them, and drives
-/// a drag through them by dispatching the DOM events a browser would - to the very event handlers the
-/// lists rendered.
+/// a drag through them the way the browser layer does: by calling each list's bridge - the object a list
+/// registers with <c>bit-bortable.js</c> - when a drag starts, when the drop position changes and when the
+/// drag ends.
 /// <para>
 /// Every decision a drag involves is private to the component: whether a list takes an item
 /// (<c>CanAccept</c>, <c>CanReceiveFrom</c>), where the item goes, what is moved, cloned or swapped,
@@ -25,19 +26,12 @@ namespace Bit.Bortable.Demo.Server.Services;
 /// would keep answering "accepted" for a drop the shipped list has since learnt to refuse.
 /// </para>
 /// <para>
-/// The handlers are found the way the browser's half of Blazor finds them: in the render tree. Each
-/// list's frames are walked for its container (the element carrying <c>data-bortable-list</c>, with its
-/// <c>ondragover</c> and <c>ondrop</c>) and its item wrappers (keyed by their item, with
-/// <c>ondragstart</c>, <c>ondragend</c> and, in multi-drag mode, <c>onclick</c>), and an event is
-/// dispatched to the handler id found there. Every render hands out new ids, so the frames are read
-/// again before each event.
-/// </para>
-/// <para>
-/// The browser layer is a stand-in that answers the three calls whose answers matter - the hit tests
-/// <c>dropIndex</c> and <c>itemIndexAt</c>, and <c>wouldNest</c> - with the position the caller asked
-/// for, for the list under the pointer only, exactly as the real module answers for one element at a
-/// time. Every other call (the FLIP animation, the drag handle) answers with nothing, the way the
-/// component sees an interop call during prerendering, which it is written to shrug off.
+/// The browser layer is a stand-in. The lists register with it after their first render, handing it their
+/// bridge and their options; the lab then calls the bridge's <c>[JSInvokable]</c> methods by name, exactly as
+/// <c>bit-bortable.js</c> does, with the item keys the lists rendered (<c>data-bortable-key</c>) and the drop
+/// positions the caller asked for - the hit test is the one thing a list cannot be told in C#. A click of a
+/// multi-drag selection is a Blazor event, dispatched to the handler id found in the render tree, which is read
+/// again before each call since every render hands out new ids.
 /// </para>
 /// </summary>
 internal sealed class BortableListHost : IAsyncDisposable
@@ -79,11 +73,11 @@ internal sealed class BortableListHost : IAsyncDisposable
     /// <summary>One callback a list raised, with the step that raised it.</summary>
     public sealed record Callback(int Step, string Event, string List, BortableEventArgs<string>? Args, string[]? Items);
 
-    /// <summary>An item wrapper, or the drop placeholder, as the list rendered it - with its handler ids (0: none).</summary>
-    public sealed record RenderedItem(string Item, string Class, bool Placeholder, bool Draggable, ulong DragStart, ulong DragEnd, ulong Click);
+    /// <summary>An item wrapper, or the drop placeholder, as the list rendered it - with its key and its click handler id (0: none).</summary>
+    public sealed record RenderedItem(string Item, string Class, bool Placeholder, bool Draggable, string? Key, ulong Click);
 
-    /// <summary>A list as it rendered: its container's class, element reference and handler ids, and its wrappers in DOM order.</summary>
-    public sealed record RenderedList(string Id, string Class, string? Element, ulong DragOver, ulong Drop, RenderedItem[] Items);
+    /// <summary>A list as it rendered: its container's class and element reference, and its wrappers in DOM order.</summary>
+    public sealed record RenderedList(string Id, string Class, string? Element, RenderedItem[] Items);
 
     private readonly ServiceProvider _services;
     private readonly AsyncServiceScope _scope;
@@ -125,12 +119,8 @@ internal sealed class BortableListHost : IAsyncDisposable
     /// <summary>How many times the lists imported their browser module: once, after the first render, as they all share it.</summary>
     public int ModuleImports => _browser.Imports;
 
-    /// <summary>
-    /// The dragstart of an item the browser layer lets its list drag: bit-bortable.js marks it with its own data
-    /// type, and a list starts a drag only for a dragstart carrying it (any other is the drag of a link, an image
-    /// or an element of the app's own inside the item).
-    /// </summary>
-    public static DragEventArgs ListDragStart() => new() { DataTransfer = new DataTransfer { Types = ["application/x-bit-bortable"] } };
+    /// <summary>The ids of the lists that registered with the browser layer.</summary>
+    public IReadOnlyCollection<string> Registered => _browser.Bridges.Keys;
 
     /// <summary>Renders <paramref name="lists"/>, in order, as the children of one host component.</summary>
     public static async Task<BortableListHost> StartAsync(IReadOnlyList<ListSetup> lists)
@@ -150,20 +140,7 @@ internal sealed class BortableListHost : IAsyncDisposable
         return host;
     }
 
-    /// <summary>
-    /// Puts the pointer over a list for the next dragover: the browser layer answers its hit tests
-    /// with these positions, for that list's element and no other. -1 is "over no item" - what the real
-    /// module answers for a dead zone.
-    /// </summary>
-    public void PointAt(RenderedList list, int dropIndex, int itemIndex)
-    {
-        _browser.Over = list.Element;
-        _browser.OverList = list.Id;
-        _browser.DropIndex = dropIndex;
-        _browser.ItemIndex = itemIndex;
-    }
-
-    /// <summary>The calls the lists made into the browser layer since the last time this was asked, with the answers.</summary>
+    /// <summary>The calls the browser layer made into the lists since the last time this was asked, with the answers.</summary>
     public string[] TakeBrowserCalls()
     {
         var calls = _browser.Calls.ToArray();
@@ -178,6 +155,57 @@ internal sealed class BortableListHost : IAsyncDisposable
     public async Task DispatchAsync(ulong handler, EventArgs args)
     {
         await _renderer.Dispatcher.InvokeAsync(() => _renderer.DispatchEventAsync(handler, null, args)).WaitAsync(_eventTimeout);
+    }
+
+    /// <summary>
+    /// A drag of the item rendered with <paramref name="key"/> starts in <paramref name="list"/>. Returns the ids of
+    /// the lists that take the drag, or null when the list refused it.
+    /// </summary>
+    public async Task<string[]?> StartAsync(string list, string item, string key)
+    {
+        var result = await CallAsync(list, "Start", key, "mouse");
+        var lists = result?.GetType().GetProperty("Lists")?.GetValue(result) as string[];
+
+        _browser.Calls.Add($"Start('{list}', '{item}') -> {(lists is null ? "refused" : $"taken by {string.Join(", ", lists.Select(id => $"'{id}'"))}")}");
+        return lists;
+    }
+
+    /// <summary>The pointer reached drop position <paramref name="index"/> of <paramref name="list"/>; returns whether a list changed.</summary>
+    public async Task<bool> OverAsync(string list, int index)
+    {
+        var result = await CallAsync(list, "Over", index, 0) as int? ?? 0;
+
+        _browser.Calls.Add($"Over('{list}', {index}) -> {(result > 0 ? "changed" : result < 0 ? "refused" : "unchanged")}");
+        return result > 0;
+    }
+
+    /// <summary>The drag ended (<c>drop</c>, <c>release</c> or <c>cancel</c>), reported through <paramref name="list"/>.</summary>
+    public async Task EndAsync(string list, string how)
+    {
+        await CallAsync(list, "End", how, 0);
+
+        _browser.Calls.Add($"End('{how}')");
+    }
+
+    /// <summary>
+    /// Calls a <c>[JSInvokable]</c> method of the bridge <paramref name="list"/> registered, by name, as the browser
+    /// layer does, and waits for it - and every render and callback it causes - to finish.
+    /// </summary>
+    private async Task<object?> CallAsync(string list, string method, params object[] args)
+    {
+        if (_browser.Bridges.TryGetValue(list, out var bridge) is false)
+            throw new InvalidOperationException($"The list '{list}' never registered with the browser layer.");
+
+        var target = bridge.GetType().GetProperty("Value")!.GetValue(bridge)!;
+        var invokable = target.GetType().GetMethods()
+            .Single(candidate => candidate.Name == method && candidate.IsDefined(typeof(JSInvokableAttribute), inherit: false));
+
+        return await _renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            var task = (Task)invokable.Invoke(target, args)!;
+            await task;
+            return invokable.ReturnType.IsGenericType ? invokable.ReturnType.GetProperty("Result")!.GetValue(task) : null;
+        }).WaitAsync(_eventTimeout);
     }
 
     /// <summary>Every list as it renders right now, read off the render tree.</summary>
@@ -216,7 +244,6 @@ internal sealed class BortableListHost : IAsyncDisposable
         var array = frames.Array;
         var containerClass = string.Empty;
         string? element = null;
-        ulong dragOver = 0, drop = 0;
         var items = new List<RenderedItem>();
 
         for (var i = 0; i < frames.Count; i++)
@@ -232,11 +259,9 @@ internal sealed class BortableListHost : IAsyncDisposable
             if (attributes.ContainsKey("data-bortable-list"))
             {
                 containerClass = Text(attributes, "class");
-                dragOver = Handler(attributes, "ondragover");
-                drop = Handler(attributes, "ondrop");
 
                 // The @ref capture follows the attributes: its id is the ElementReference the list hands
-                // the browser layer, which is how the stand-in knows which list a hit test is about.
+                // the browser layer when it registers.
                 if (next < end && array[next].FrameType == RenderTreeFrameType.ElementReferenceCapture) element = array[next].ElementReferenceCaptureId;
             }
             else if (attributes.ContainsKey("data-bortable-item"))
@@ -252,13 +277,12 @@ internal sealed class BortableListHost : IAsyncDisposable
                     Text(attributes, "class"),
                     placeholder,
                     Text(attributes, "draggable") == "true",
-                    Handler(attributes, "ondragstart"),
-                    Handler(attributes, "ondragend"),
+                    attributes.ContainsKey("data-bortable-key") ? Text(attributes, "data-bortable-key") : null,
                     Handler(attributes, "onclick")));
             }
         }
 
-        return new RenderedList(id, containerClass, element, dragOver, drop, [.. items]);
+        return new RenderedList(id, containerClass, element, [.. items]);
     }
 
     private static string Text(Dictionary<string, RenderTreeFrame> attributes, string name)
@@ -362,24 +386,18 @@ internal sealed class BortableListHost : IAsyncDisposable
     }
 
     /// <summary>
-    /// Stands in for the browser. The lists import its module once, share it and call everything through it;
-    /// the module answers the hit tests for the list under the pointer with the position the lab put
-    /// there, and every other call with nothing.
+    /// Stands in for the browser. The lists import its module once, share it and register with it, handing it
+    /// their bridge; it keeps each bridge by the list's id, for the lab to call, and answers every other call
+    /// (the FLIP animation) with nothing.
     /// </summary>
     private sealed class BrowserStandIn : IJSRuntime, IJSObjectReference
     {
-        /// <summary>The element reference id of the list under the pointer.</summary>
-        public string? Over { get; set; }
-
-        /// <summary>That list's Id, for the record of the calls.</summary>
-        public string? OverList { get; set; }
-
-        public int DropIndex { get; set; } = -1;
-
-        public int ItemIndex { get; set; } = -1;
-
         public int Imports { get; private set; }
 
+        /// <summary>The bridge (a <c>DotNetObjectReference</c>) each list registered, by the list's id.</summary>
+        public Dictionary<string, object> Bridges { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>The calls the lab made into the lists, as the browser layer would have made them.</summary>
         public List<string> Calls { get; } = [];
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
@@ -387,37 +405,23 @@ internal sealed class BortableListHost : IAsyncDisposable
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
         {
-            // Every call a list makes into its module passes the list's own element first.
-            var element = args is { Length: > 0 } && args[0] is ElementReference reference ? reference.Id : null;
-            var over = element is not null && element == Over;
-
-            object? answer = identifier switch
+            switch (identifier)
             {
-                // The module is this same object: one stand-in, one table of answers.
-                "import" when typeof(TValue) == typeof(IJSObjectReference) => Import(),
-                "dropIndex" => Answer(identifier, over, over ? DropIndex : -1),
-                "itemIndexAt" => Answer(identifier, over, over ? ItemIndex : -1),
-                // Lists are never nested here, so no list is ever inside the item being dragged.
-                "wouldNest" => Answer(identifier, over, false),
-                _ => null
-            };
+                // The module is this same object: one stand-in, one table of lists.
+                case "import" when typeof(TValue) == typeof(IJSObjectReference):
+                    Imports++;
+                    return ValueTask.FromResult((TValue)(object)this);
 
-            // Nothing, for a call that answers with a value type, is its default.
-            return ValueTask.FromResult(answer is TValue value ? value : default!);
+                // register(listElement, bridge, options): the options carry the list's id.
+                case "register" when args is { Length: 3 } && args[1] is { } bridge && IdOf(args[2]) is { } id:
+                    Bridges[id] = bridge;
+                    break;
+            }
+
+            return ValueTask.FromResult(default(TValue)!);
         }
 
-        private IJSObjectReference Import()
-        {
-            Imports++;
-            return this;
-        }
-
-        private object Answer(string identifier, bool over, object value)
-        {
-            var list = over ? $"'{OverList}'" : "a list not under the pointer";
-            Calls.Add($"{identifier}({list}) -> {(value is bool flag ? (flag ? "true" : "false") : value)}");
-            return value;
-        }
+        private static string? IdOf(object? options) => options?.GetType().GetProperty("Id")?.GetValue(options) as string;
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
