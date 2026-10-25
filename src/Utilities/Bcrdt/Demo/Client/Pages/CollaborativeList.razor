@@ -15,7 +15,9 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Two replicas of one list</h3>
     <p class="bb-card-desc">
-        Add an item in either replica, rename it, tick it, move it up or down - and watch the other follow.
+        Add an item in either replica, rename it, tick it, move it up or down - and watch the other follow. A
+        rename is sent when the title field loses focus or you press Enter; everything else is sent at once. The
+        footer counts the items, the ticked items and the engine's storage blocks.
     </p>
 
     @if (!Ready)
@@ -132,6 +134,40 @@
     </p>
 </div>
 
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The same list in code</h3>
+    <p class="bb-card-desc">
+        Everything the buttons above do is one call on a <code>BcrdtArray</code> or on one of its
+        <code>BcrdtMap</code> elements. A new item is built detached - a <code>BcrdtMap</code> not yet in any
+        document - and its writes are replayed when it joins, so the element and both of its keys reach the other
+        replica as one update rather than three.
+    </p>
+    <pre class="bb-code">BcrdtArray items = document.Array(<span class="s">"items"</span>);
+
+<span class="k">var</span> item = <span class="k">new</span> BcrdtMap();                  <span class="c">// detached until it is inserted</span>
+item.Set(<span class="s">"title"</span>, <span class="s">"Buy milk"</span>);
+item.Set(<span class="s">"done"</span>, <span class="k">false</span>);
+items.Push(item);                         <span class="c">// one update: the element and both keys</span>
+
+items.GetMap(0)?.Set(<span class="s">"done"</span>, <span class="k">true</span>);        <span class="c">// a tick writes one key of one item</span>
+items.Move(0, 2);                         <span class="c">// delete, then insert a copy where it goes</span>
+items.Delete(1);
+
+items.ObserveDeep((events, transaction) =&gt; { <span class="c">/* any change, nested ones included */</span> });</pre>
+    <p class="bb-card-desc">
+        Two habits keep a list like this correct in the browser. Key every rendered row by its item
+        (<code>@@key="item"</code>): remote insertions and deletions shift positions, and a row reused for a
+        different item would send a half-typed title to the wrong one. And read <code>Move</code>'s destination as
+        a position in the list <em>before</em> the element is lifted out - one step down is
+        <code>Move(index, index + 2)</code>.
+    </p>
+    <p class="bb-card-desc">
+        An application with view models rather than markup can project the same array through
+        <code>BcrdtListBinding&lt;T&gt;</code>, an <code>IReadOnlyList&lt;T&gt;</code> that raises
+        <code>INotifyCollectionChanged</code> as the list changes - locally or remotely.
+    </p>
+</div>
+
 @if (Ready)
 {
     <div class="bb-card">
@@ -189,15 +225,17 @@
 
     private void SetDraft(DemoReplica replica, string? value) => _drafts[replica.Label] = value ?? string.Empty;
 
+    // An Enter that confirms an input method's candidate (Japanese, Chinese, Korean...) belongs to the
+    // composition, not to the form: adding then would add the half-composed title.
     private void OnDraftKey(DemoReplica replica, KeyboardEventArgs args)
     {
-        if (args.Key is "Enter") Add(replica);
+        if (args.Key is "Enter" && !args.IsComposing) Add(replica);
     }
 
     private void Add(DemoReplica replica)
     {
         string title = Draft(replica);
-        if (string.IsNullOrWhiteSpace(title)) title = $"BcrdtItem {++_added} from {replica.Label}";
+        if (string.IsNullOrWhiteSpace(title)) title = $"Item {++_added} from {replica.Label}";
 
         // A detached map can be filled in before it is inserted; the buffered writes replay as real
         // collaborative operations at the moment it joins the document, so the whole item - element

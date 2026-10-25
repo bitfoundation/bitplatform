@@ -85,7 +85,7 @@ public sealed class BcrdtContentAny : IBcrdtContent
     public static BcrdtContentAny Read(ref BcrdtBufferReader reader)
     {
         int count = reader.ValidateCount(reader.ReadVarUInt32(), "value");
-        var values = new List<object?>(count);
+        var values = new List<object?>(BcrdtBufferReader.InitialCapacity(count));
         for (int i = 0; i < count; i++) values.Add(BcrdtAnyCodec.Read(ref reader));
         return new BcrdtContentAny(values, true);
     }

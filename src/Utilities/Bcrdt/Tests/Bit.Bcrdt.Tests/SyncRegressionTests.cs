@@ -369,8 +369,9 @@ public class SyncRegressionTests
 
         List<byte[]> fromHolder = [];
         BcrdtSyncExchange.Handle(holder, BcrdtSyncProtocol.Decode(BcrdtSyncExchange.CreateAnnouncement(joiner)), "holder", fromHolder);
+        // The small reply first, so a joiner on a slow link learns somebody is here before the delta lands.
         Assert.AreSequenceEqual(
-            [BcrdtSyncMessageKind.SyncStep2, BcrdtSyncMessageKind.SyncStep1Reply],
+            [BcrdtSyncMessageKind.SyncStep1Reply, BcrdtSyncMessageKind.SyncStep2],
             fromHolder.Select(message => BcrdtSyncProtocol.Decode(message).Kind));
 
         // Applied in order, the joiner holds everything the holder does: nothing is owed back.
@@ -383,8 +384,74 @@ public class SyncRegressionTests
 
         // A deletion the holder lacks changes nothing a state vector can see, but the digest shows it.
         joiner.GetText("t").Delete(0, 1);
-        BcrdtSyncExchange.Handle(joiner, BcrdtSyncProtocol.Decode(fromHolder[1]), "joiner", fromJoiner);
+        BcrdtSyncExchange.Handle(joiner, BcrdtSyncProtocol.Decode(fromHolder[0]), "joiner", fromJoiner);
         Assert.AreSequenceEqual([BcrdtSyncMessageKind.SyncStep2], fromJoiner.Select(message => BcrdtSyncProtocol.Decode(message).Kind));
+    }
+
+    [TestMethod]
+    public async Task A_returning_replica_does_not_push_deletions_the_room_already_has()
+    {
+        // The room deleted text while this replica was away. Its reply arrives before the delta that
+        // carries those deletions, so its digest cannot be matched yet; answering it at once would send
+        // the room this replica's whole delete set, which a relay hands to every member.
+        using var room = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
+        room.GetText("body").Insert(0, "hello world");
+        using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
+        doc.ApplyUpdate(room.EncodeStateAsUpdate());
+        room.GetText("body").Delete(6, 5);
+
+        var network = new BcrdtInMemoryNetwork();
+        RawPeer peer = await RawPeer.JoinAsync(network, "room");
+        await using BcrdtSyncProvider provider = await CreateProviderAsync(doc, network.CreateTransport("room"));
+        await provider.ConnectAsync();
+
+        await AnswerAnnouncementAsync(peer, room);
+
+        await AssertEventuallyAsync(() => provider.IsSynced, "the reply and the delta complete the handshake");
+        Assert.AreEqual("hello ", doc.GetText("body").ToString());
+        await Task.Delay(QuietPeriod);
+        Assert.IsFalse(peer.Received.Any(message => message.Kind == BcrdtSyncMessageKind.SyncStep2), "the room held every deletion already");
+    }
+
+    [TestMethod]
+    public async Task A_returning_replica_pushes_its_own_offline_deletions_once_the_rooms_have_arrived()
+    {
+        using var room = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
+        room.GetText("body").Insert(0, "hello world");
+        using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
+        doc.ApplyUpdate(room.EncodeStateAsUpdate());
+
+        // Both sides deleted something the other has not seen.
+        room.GetText("body").Delete(6, 5);
+        doc.GetText("body").Delete(0, 5);
+
+        var network = new BcrdtInMemoryNetwork();
+        RawPeer peer = await RawPeer.JoinAsync(network, "room");
+        await using BcrdtSyncProvider provider = await CreateProviderAsync(doc, network.CreateTransport("room"));
+        await provider.ConnectAsync();
+
+        await AnswerAnnouncementAsync(peer, room);
+
+        await AssertEventuallyAsync(() => peer.Received.Any(message => message.Kind == BcrdtSyncMessageKind.SyncStep2), "the room lacks a deletion");
+        await Task.Delay(QuietPeriod);
+        BcrdtSyncMessage[] pushed = [.. peer.Received.Where(message => message.Kind == BcrdtSyncMessageKind.SyncStep2)];
+        Assert.HasCount(1, pushed);
+
+        room.ApplyUpdate(pushed[0].Payload);
+        Assert.AreEqual(" ", room.GetText("body").ToString());
+        Assert.AreEqual(" ", doc.GetText("body").ToString());
+    }
+
+    /// <summary>Answers the provider's announcement as a peer holding <paramref name="holder"/> would: reply first, then delta.</summary>
+    private static async Task AnswerAnnouncementAsync(RawPeer peer, BcrdtDocument holder)
+    {
+        await AssertEventuallyAsync(() => peer.Received.Any(message => message.Kind == BcrdtSyncMessageKind.SyncStep1), "the provider should announce itself");
+        BcrdtSyncMessage announcement = peer.Received.First(message => message.Kind == BcrdtSyncMessageKind.SyncStep1);
+
+        List<byte[]> replies = [];
+        BcrdtSyncExchange.Handle(holder, announcement, "peer", replies);
+        Assert.AreEqual(BcrdtSyncMessageKind.SyncStep1Reply, BcrdtSyncProtocol.Decode(replies[0]).Kind);
+        foreach (byte[] reply in replies) await peer.SendAsync(reply);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -642,8 +709,7 @@ public class SyncRegressionTests
             "/ws/{documentId}",
             options: new BcrdtWebSocketEndpointOptions { MaxMessageSize = 64 * 1024 }));
 
-        using var client = new ClientWebSocket();
-        await client.ConnectAsync(new Uri(host.WebSocketBase + "/ws/doc"), CancellationToken.None);
+        using ClientWebSocket client = await ConnectRawAsync(host.WebSocketBase + "/ws/doc");
 
         // One byte over: the server reads all of it before refusing, so nothing is left unread to
         // turn its close into a connection reset.
@@ -703,12 +769,15 @@ public class SyncRegressionTests
     }
 
     [TestMethod]
-    public void Only_an_auth_message_is_withheld_from_relaying()
+    public void Only_auth_and_liveness_messages_are_withheld_from_relaying()
     {
+        // An Auth verdict relayed from a client is a forgery; a ping relayed to a room is answered by
+        // everyone to everyone.
+        BcrdtSyncMessageKind[] withheld = [BcrdtSyncMessageKind.Auth, BcrdtSyncMessageKind.Ping, BcrdtSyncMessageKind.Pong];
         foreach (BcrdtSyncMessageKind kind in Enum.GetValues<BcrdtSyncMessageKind>())
         {
             byte[] message = [BcrdtSyncProtocol.Version, (byte)kind];
-            Assert.AreEqual(kind != BcrdtSyncMessageKind.Auth, BcrdtSyncProtocol.IsRelayable(message), kind.ToString());
+            Assert.AreEqual(!withheld.Contains(kind), BcrdtSyncProtocol.IsRelayable(message), kind.ToString());
         }
     }
 
@@ -996,6 +1065,99 @@ public class SyncRegressionTests
     }
 
     [TestMethod]
+    public async Task A_401_from_the_hub_negotiation_is_retried_with_a_fresh_connection()
+    {
+        // What an access token that expired while the device slept looks like: the next attempt asks the
+        // token provider again and gets through. Treating the first 401 as final stopped the provider
+        // for good.
+        int negotiations = 0;
+        await using LoopbackHost host = await LoopbackHost.StartAsync(
+            app =>
+            {
+                app.Use(async (HttpContext context, RequestDelegate next) =>
+                {
+                    if (context.Request.Path.StartsWithSegments("/hub/negotiate") && Interlocked.Increment(ref negotiations) == 1)
+                    {
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        return;
+                    }
+                    await next(context);
+                });
+                app.MapHub<BcrdtHub>("/hub");
+            },
+            builder => builder.Services.AddBitBcrdtHub());
+
+        await using var transport = new BcrdtSignalRTransport(host.BaseUrl + "/hub", "doc");
+        await using BcrdtSyncProvider provider = await CreateProviderAsync(new BcrdtDocument(), transport);
+        int denials = 0;
+        provider.AuthorizationDenied += _ => Interlocked.Increment(ref denials);
+        await provider.ConnectAsync();
+
+        await AssertEventuallyAsync(() => transport.State == BcrdtTransportState.Connected, "the retry should get through");
+        Assert.AreEqual(0, denials);
+        Assert.AreEqual(2, negotiations);
+    }
+
+    [TestMethod]
+    public async Task A_401_that_persists_from_the_hub_negotiation_becomes_a_refusal()
+    {
+        int negotiations = 0;
+        await using LoopbackHost host = await LoopbackHost.StartAsync(
+            app =>
+            {
+                app.Use(async (HttpContext context, RequestDelegate next) =>
+                {
+                    if (context.Request.Path.StartsWithSegments("/hub/negotiate"))
+                    {
+                        Interlocked.Increment(ref negotiations);
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        return;
+                    }
+                    await next(context);
+                });
+                app.MapHub<BcrdtHub>("/hub");
+            },
+            builder => builder.Services.AddBitBcrdtHub());
+
+        await using var transport = new BcrdtSignalRTransport(host.BaseUrl + "/hub", "doc");
+        await using BcrdtSyncProvider provider = await CreateProviderAsync(new BcrdtDocument(), transport);
+        int denials = 0;
+        provider.AuthorizationDenied += _ => Interlocked.Increment(ref denials);
+        await provider.ConnectAsync();
+
+        await AssertEventuallyAsync(() => denials == 1 && provider.Status == BcrdtConnectionStatus.Faulted, "a user who is not signed in is told so");
+        await Task.Delay(QuietPeriod);
+        Assert.AreEqual(3, negotiations, "a bounded number of attempts, then no more");
+    }
+
+    [TestMethod]
+    public async Task A_403_from_the_hub_negotiation_is_a_refusal_at_once()
+    {
+        int negotiations = 0;
+        await using LoopbackHost host = await LoopbackHost.StartAsync(
+            app =>
+            {
+                app.Use(async (HttpContext context, RequestDelegate next) =>
+                {
+                    if (context.Request.Path.StartsWithSegments("/hub/negotiate"))
+                    {
+                        Interlocked.Increment(ref negotiations);
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        return;
+                    }
+                    await next(context);
+                });
+                app.MapHub<BcrdtHub>("/hub");
+            },
+            builder => builder.Services.AddBitBcrdtHub());
+
+        await using var transport = new BcrdtSignalRTransport(host.BaseUrl + "/hub", "doc");
+        await Assert.ThrowsExactlyAsync<BcrdtTransportAuthorizationException>(() => transport.ConnectAsync().AsTask());
+        Assert.AreEqual(1, negotiations);
+        Assert.AreEqual(BcrdtTransportState.Disconnected, transport.State);
+    }
+
+    [TestMethod]
     public async Task A_document_named_like_an_application_group_cannot_reach_that_group()
     {
         await using LoopbackHost host = await LoopbackHost.StartAsync(
@@ -1008,7 +1170,11 @@ public class SyncRegressionTests
         int adminReceived = 0;
         int intruderReceived = 0;
         admin.On<byte[]>(BcrdtHub.ReceiveMethod, _ => Interlocked.Increment(ref adminReceived));
-        intruder.On<byte[]>(BcrdtHub.ReceiveMethod, _ => Interlocked.Increment(ref intruderReceived));
+        intruder.On<byte[]>(BcrdtHub.ReceiveMethod, message =>
+        {
+            // The grant answering its own join is the hub talking to it, not the group.
+            if (BcrdtSyncProtocol.Decode(message).Kind != BcrdtSyncMessageKind.Auth) Interlocked.Increment(ref intruderReceived);
+        });
         await admin.StartAsync();
         await intruder.StartAsync();
 
@@ -1167,11 +1333,21 @@ public class SyncRegressionTests
         }
     }
 
-    private static async Task<ClientWebSocket> ConnectRawAsync(string address, string? key = null)
+    /// <summary>Connects a bare socket to a relay and reads past the access grant every relay sends first.</summary>
+    private static async Task<ClientWebSocket> ConnectRawAsync(
+        string address,
+        string? key = null,
+        BcrdtDocumentAccess expectedAccess = BcrdtDocumentAccess.ReadWrite)
     {
         var socket = new ClientWebSocket();
         if (key is not null) socket.Options.SetRequestHeader("X-Key", key);
         await socket.ConnectAsync(new Uri(address), CancellationToken.None);
+
+        byte[] buffer = new byte[256];
+        WebSocketReceiveResult result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None).WaitAsync(Patience);
+        BcrdtSyncMessage grant = BcrdtSyncProtocol.Decode(buffer.AsMemory(0, result.Count));
+        Assert.AreEqual(BcrdtSyncMessageKind.Auth, grant.Kind);
+        Assert.AreEqual(expectedAccess, BcrdtSyncProtocol.DecodeAuthAccess(grant.Payload).Access);
         return socket;
     }
 
@@ -1345,7 +1521,7 @@ public class SyncRegressionTests
     }
 
     /// <summary>A Kestrel host on a loopback port chosen by the operating system.</summary>
-    private sealed class LoopbackHost : IAsyncDisposable
+    internal sealed class LoopbackHost : IAsyncDisposable
     {
         private LoopbackHost(WebApplication app)
         {

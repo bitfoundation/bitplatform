@@ -52,7 +52,17 @@ public static class BcrdtUpdateDecoder
             BcrdtStructStore store = doc.Store;
             BcrdtUpdateCodec.ResolveRoots(groups, doc);
 
-            DeferredBlocks? deferred = IntegrateBlocks(transaction, store, groups, out integrationFailure);
+            DeferredBlocks? deferred;
+            bool wasIntegrating = transaction.IntegratingRemoteBlocks;
+            transaction.IntegratingRemoteBlocks = true;
+            try
+            {
+                deferred = IntegrateBlocks(transaction, store, groups, out integrationFailure);
+            }
+            finally
+            {
+                transaction.IntegratingRemoteBlocks = wasIntegrating;
+            }
             bool retryDeferred = MergeDeferred(store, deferred);
 
             BcrdtDeleteSet? unapplied = ApplyDeleteSet(transaction, deleteSet);

@@ -36,6 +36,9 @@ public abstract class ReplicaPageBase : BcrdtComponentBase
     /// <summary>One label per replica panel.</summary>
     protected abstract string[] ReplicaLabels { get; }
 
+    /// <summary>Whether the replicas keep every deleted block, so snapshots of them can be restored.</summary>
+    protected virtual bool KeepHistory => false;
+
     /// <summary>Runs once the replicas are open, for per-page setup such as undo stacks.</summary>
     protected virtual void OnReplicasOpened() { }
 
@@ -47,7 +50,7 @@ public abstract class ReplicaPageBase : BcrdtComponentBase
         // shows the "opening" placeholder, and the interactive render opens them.
         if (!RendererInfo.IsInteractive) return;
 
-        Replicas = await Workspace.OpenReplicasAsync(DocumentId, ReplicaLabels);
+        Replicas = await Workspace.OpenReplicasAsync(DocumentId, KeepHistory, ReplicaLabels);
 
         foreach (DemoReplica replica in Replicas)
         {
