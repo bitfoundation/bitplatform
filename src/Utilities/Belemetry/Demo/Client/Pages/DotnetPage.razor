@@ -81,6 +81,15 @@
         which is the cheapest way to drop a chatty source such as Blazor's per-event spans.
     </p>
     <p>
+        In WebAssembly, <code>HttpClient</code> traces itself only with the <code>HttpActivityPropagationSupport</code>
+        switch on, and the WebAssembly SDK turns it off by default. Off, its requests go out through the browser's
+        <code>fetch</code>, and the browser script records them as client spans of its own (<code>Dependencies</code>,
+        with <code>traceparent</code> only where <code>PropagateTraceContextTo</code> allows). This demo turns it on in
+        its client project, which is why the checkout trace below has a <code>System.Net.Http</code> span. On, though,
+        <code>HttpClient</code> sends <code>traceparent</code> to every origin it calls, so a cross-origin API has to
+        allow that header.
+    </p>
+    <p>
         Sampling is parent-based: a span whose parent was sampled is recorded, a new trace is recorded with
         probability <code>Traces.SamplingRatio</code> (1.0), deciding on the trace id the way OpenTelemetry's
         <code>TraceIdRatioBased</code> sampler does - so every service in a trace makes the same decision. Without

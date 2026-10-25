@@ -138,13 +138,12 @@ function fitsKeepalive(request: OutgoingRequest): boolean {
     return request.body.length <= KEEPALIVE_LIMIT - keepaliveInFlight && keepaliveRequests < KEEPALIVE_MAX_REQUESTS;
 }
 
-function post(request: OutgoingRequest): Promise<Response> {
+function post(request: OutgoingRequest, keepalive: boolean): Promise<Response> {
     const headers: Record<string, string> = {};
     const extra = request.headers || {};
     for (const key of Object.keys(extra)) headers[key] = extra[key];
     headers['Content-Type'] = request.contentType;
     if (request.contentEncoding) headers['Content-Encoding'] = request.contentEncoding;
-    const keepalive = fitsKeepalive(request);
     const size = request.body.length;
     const release = () => {
         keepaliveInFlight = Math.max(0, keepaliveInFlight - size);
@@ -225,6 +224,8 @@ function takePersisted(id: string, config: PersistenceConfig): PersistedRequest 
 export class Transport {
     private inflight: Promise<void>[] = [];
     private resending = false;
+    /** Whether the page is being unloaded for good: a keepalive request's fetch may fail then and still be sent. */
+    private unloading = false;
     /** The stored request a resend pass is sending: out of storage until its outcome is known. */
     private resent: { entry: PersistedRequest; keepalive: boolean; restored: boolean } | null = null;
 
@@ -265,10 +266,16 @@ export class Transport {
     private async attempt(request: OutgoingRequest, unload: boolean, maxAttempts: number): Promise<Attempted> {
         let current = request;
         for (let attempt = 1; ; attempt++) {
+            const keepalive = fitsKeepalive(current);
             let response: Response | null = null;
             try {
-                response = await post(current);
+                response = await post(current, keepalive);
             } catch (e) {
+                // Chromium fails the fetch of a keepalive request when its page unloads, and sends the request all the
+                // same: stored as well, it would arrive twice. Only offline is it certain that it did not go.
+                if (keepalive && this.unloading && !(typeof navigator !== 'undefined' && navigator.onLine === false)) {
+                    return { outcome: 'delivered', remaining: current };
+                }
                 debug('network error', current.url, e);
             }
             let delay: number | null = null;
@@ -395,8 +402,10 @@ export class Transport {
      * The page is being hidden, maybe for good: a stored request being resent without keepalive would be cancelled
      * with it, so it goes back to storage for the next visit. Should it get through after all (the page was only
      * hidden), its outcome takes it out again. Synchronous, as everything that runs on pagehide must be.
+     * @param unloading Whether the page is being unloaded for good (a pagehide outside the back/forward cache).
      */
-    pageHidden(): void {
+    pageHidden(unloading = false): void {
+        if (unloading) this.unloading = true;
         const resent = this.resent;
         if (!resent || resent.keepalive || resent.restored || !this.canPersist()) return;
         resent.restored = true;

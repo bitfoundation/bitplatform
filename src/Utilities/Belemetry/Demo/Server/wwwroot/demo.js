@@ -77,4 +77,12 @@ window.blDemo = {
     context: function () {
         return window.BitBelemetry ? window.BitBelemetry.getContext() : null;
     },
+
+    // The Performance Timeline entry types this browser reports. The script measures a web vital or a long task only
+    // when its entry type is here, so the page can say which of its buttons record nothing in this browser.
+    entryTypes: function () {
+        return typeof PerformanceObserver !== 'undefined' && PerformanceObserver.supportedEntryTypes
+            ? Array.from(PerformanceObserver.supportedEntryTypes)
+            : [];
+    },
 };

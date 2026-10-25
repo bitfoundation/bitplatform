@@ -307,7 +307,8 @@ describe('errors', () => {
         const ctx = fakeContext();
         uninstall = installErrors(ctx);
         const error = new TypeError('x is undefined');
-        window.dispatchEvent(new ErrorEvent('error', { message: 'x is undefined', error }));
+        // As Chromium words it; Firefox and Safari say "TypeError: x is undefined".
+        window.dispatchEvent(new ErrorEvent('error', { message: 'Uncaught TypeError: x is undefined', error }));
         window.dispatchEvent(new ErrorEvent('error', { message: 'ResizeObserver loop limit exceeded' }));
         const rejection = new Event('unhandledrejection');
         rejection.reason = 'nope';
@@ -317,6 +318,14 @@ describe('errors', () => {
         expect(ctx.records[0].attributes).toMatchObject({ 'exception.type': 'TypeError', 'exception.message': 'x is undefined' });
         expect(ctx.records[0].attributes['exception.stacktrace']).toContain('TypeError');
         expect(ctx.records[1].attributes).toMatchObject({ 'exception.type': 'UnhandledRejection', 'exception.message': 'nope' });
+    });
+
+    it('keeps the event message when no error object carries one', () => {
+        const ctx = fakeContext();
+        uninstall = installErrors(ctx);
+        window.dispatchEvent(new ErrorEvent('error', { message: 'Uncaught a plain string', error: 'a plain string' }));
+        window.dispatchEvent(new ErrorEvent('error', { message: 'Script error.', filename: 'https://cdn.test/x.js' }));
+        expect(ctx.records.map(r => r.attributes['exception.message'])).toEqual(['Uncaught a plain string']);
     });
 });
 

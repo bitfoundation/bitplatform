@@ -122,6 +122,14 @@
         <div class="bb-toolbar">
             <button type="button" class="btn btn-primary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="ShiftLayout">Cause a layout shift</button>
         </div>
+        @if (MissingVitals is { Length: > 0 } missing)
+        {
+            <p class="demo-status">
+                This browser does not report @string.Join(", ", missing): it lacks the Performance API
+                @(missing.Length == 1 ? "that vital is" : "those vitals are") measured with, and the script skips what it
+                cannot measure. A Chromium-based browser reports all five.
+            </p>
+        }
         <div id="bl-shift-target">
             <p>This paragraph moves down while a spacer is inserted above it, then jumps back.</p>
         </div>
@@ -147,6 +155,13 @@
         <div class="bb-toolbar">
             <button type="button" class="btn btn-primary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="BlockMainThread">Block the main thread for 200 ms</button>
         </div>
+        @if (_entryTypes is not null && _entryTypes.Contains("longtask") is false)
+        {
+            <p class="demo-status">
+                This browser has no Long Tasks API, so the button records nothing here; a Chromium-based browser records
+                a <code>longtask</code> span.
+            </p>
+        }
         <TelemetryFeedView Compact="true" Match="@IsPerformanceSpan"
                            EmptyText="No documentLoad or longtask spans yet - press the button, or reload the page." />
     </div>
@@ -167,7 +182,9 @@
         The echo endpoint below answers with the <code>traceparent</code> it received: its trace id is the trace id
         of the browser span in the feed. URLs in <code>IgnoreUrls</code> (the Blazor framework routes by default, plus
         the exporters' own endpoints) are never recorded, and neither is a request that already carries a
-        <code>traceparent</code> - in WebAssembly that is .NET's <code>HttpClient</code>, which traces itself.
+        <code>traceparent</code> - in WebAssembly that is .NET's <code>HttpClient</code> when it traces itself, which
+        takes the <code>HttpActivityPropagationSupport</code> switch the WebAssembly SDK turns off by default (this demo
+        turns it on; see <a href="/dotnet">.NET instrumentation</a>).
     </p>
     <div class="bb-demo">
         <div class="bb-demo-bar"><span class="bb-demo-label">Live<span class="demo-sample-title">Dependencies</span></span></div>
@@ -302,6 +319,35 @@
     private int _ignoredClicks;
     private int _events;
     private CallResult? _call;
+    private string[]? _entryTypes;
+
+    // The Performance Timeline entry type each vital is measured from. TTFB comes from the navigation timing every
+    // browser has.
+    private static readonly (string Vital, string EntryType)[] _vitalEntryTypes =
+    [
+        ("FCP", "paint"), ("LCP", "largest-contentful-paint"), ("CLS", "layout-shift"), ("INP", "event"),
+    ];
+
+    private string[]? MissingVitals => _entryTypes is null
+        ? null
+        : [.. _vitalEntryTypes.Where(v => _entryTypes.Contains(v.EntryType) is false).Select(v => v.Vital)];
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false || RendererInfo.IsInteractive is false) return;
+
+        try
+        {
+            var types = await JS.InvokeAsync<JsonElement>("blDemo.entryTypes");
+            if (types.ValueKind != JsonValueKind.Array) return;
+            _entryTypes = [.. types.EnumerateArray().Select(t => t.GetString()).OfType<string>()];
+            StateHasChanged();
+        }
+        catch
+        {
+            // Without the answer the page simply makes no claim about this browser.
+        }
+    }
 
     private sealed record JsFetchResult(int Status, string? Body, int Ms);
 

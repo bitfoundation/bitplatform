@@ -190,6 +190,34 @@ describe('Transport', () => {
         await pass;
     });
 
+    it('does not store a keepalive request whose fetch fails as the page unloads', async () => {
+        // Chromium fails the fetch of every keepalive request in flight when its page unloads, and sends them all
+        // the same: stored too, the next visit would deliver each one twice.
+        const rejects = [];
+        vi.stubGlobal('fetch', () => new Promise((_, reject) => rejects.push(reject)));
+        localStorage.setItem('bit-belemetry-queue', JSON.stringify([storedRequest(1)]));
+        const t = transport();
+        const pass = t.resendPersisted();
+        const sent = t.send(request(), true);
+        t.pageHidden(true);
+        for (const reject of rejects) reject(new TypeError('Failed to fetch'));
+        await Promise.all([pass, sent]);
+        expect(loadPersisted()).toEqual([]);
+    });
+
+    it('still stores a request that fails while the page is only hidden, or offline as it unloads', async () => {
+        vi.stubGlobal('fetch', mockFetch(new TypeError('Failed to fetch')));
+        const t = transport();
+        t.pageHidden(false); // a tab switch: the page lives on, and the failure is real
+        await t.send(request(), true);
+        expect(loadPersisted()).toHaveLength(1);
+
+        vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+        t.pageHidden(true);
+        await t.send(request(), true);
+        expect(loadPersisted()).toHaveLength(2);
+    });
+
     it('retries retryable statuses with backoff and honors Retry-After', async () => {
         const fetch = mockFetch(503, { status: 429, headers: { 'Retry-After': '2' } }, 200);
         vi.stubGlobal('fetch', fetch);

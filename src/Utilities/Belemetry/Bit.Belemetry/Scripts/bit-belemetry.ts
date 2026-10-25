@@ -28,6 +28,7 @@ import { createException, createLog, sanitizeAttributes } from './records';
 import { buildResource } from './resource';
 import { SessionManager } from './session';
 import { resetStats, statsSnapshot, type StatsSnapshot } from './stats';
+import { StorageKeys } from './storage';
 import { fromBase64, Transport } from './transport';
 
 export { Features };
@@ -201,7 +202,7 @@ function onConsentChanged(s: State, previous: number, next: number, released: Te
     syncContext();
 }
 
-function onPageHidden(s: State): void {
+function onPageHidden(s: State, unloading: boolean): void {
     // Everything here must start its requests synchronously: nothing async is guaranteed to run after pagehide.
     s.pipeline.flush(true);
     if (bridge && bridge.unloadDrain) {
@@ -213,7 +214,7 @@ function onPageHidden(s: State): void {
             debug('unload drain unavailable', e);
         }
     }
-    s.transport.pageHidden();
+    s.transport.pageHidden(unloading);
 }
 
 function init(input: BelemetryConfig | null | undefined): State {
@@ -274,10 +275,16 @@ export function start(config?: BelemetryConfig | null): void {
         updateSink(s);
         s.consent.onChange((previous, next, released) => onConsentChanged(s, previous, next, released));
         s.session.onChange = syncContext;
-        s.disposers.push(onHidden(() => onPageHidden(s), 'last'));
+        s.disposers.push(onHidden(unloading => onPageHidden(s, unloading), 'last'));
         const onOnline = () => s.transport.resendPersisted();
         addEventListener('online', onOnline);
         s.disposers.push(() => removeEventListener('online', onOnline));
+        // A decision made in another tab of the app reaches this one through the stored choice.
+        const onStorage = (event: StorageEvent) => {
+            if (event.key === StorageKeys.consent) s.consent.adopt(event.newValue);
+        };
+        addEventListener('storage', onStorage);
+        s.disposers.push(() => removeEventListener('storage', onStorage));
         // The online event only covers the device's own connection; a backend that was down needs a periodic retry.
         const retryMs = s.config.persistence.retryIntervalMs;
         if (s.config.persistence.enabled && retryMs > 0) {

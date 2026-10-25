@@ -190,6 +190,13 @@
     font-weight: var(--fl-weight-regular);
 }
 
+/* WebKit counts a select's longest option into the page's scroll width even when max-width holds the box to its
+   column, so the MCP page's consent picker scrolled a phone sideways. Paint containment keeps the text in the box;
+   overflow does not, as WebKit ignores it on a select. */
+.bb-field > select {
+    contain: paint;
+}
+
 .demo-toolbar-label {
     font-size: var(--fl-font-size-200);
 }

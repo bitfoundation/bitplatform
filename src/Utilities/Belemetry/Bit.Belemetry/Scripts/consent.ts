@@ -26,16 +26,23 @@ export class ConsentManager {
     /** Reads the persisted choice (if `persist`). */
     load(): void {
         if (!this.config.persist) return;
-        const raw = readItem('local', StorageKeys.consent);
-        if (!raw) return;
-        try {
-            const stored = JSON.parse(raw);
-            if (stored && stored.v === 1 && typeof stored.features === 'number') {
-                this.decision = stored.features & Features.All & this.available;
-            }
-        } catch {
-            // A corrupt entry counts as "no decision".
-        }
+        const features = parseChoice(readItem('local', StorageKeys.consent));
+        if (features !== null) this.decision = features & Features.All & this.available;
+    }
+
+    /**
+     * Adopts the choice another tab of the app persisted (the `storage` event's new value): a banner answered there is
+     * answered here, and a feature revoked there stops being collected here as well. A removed or unreadable entry
+     * changes nothing.
+     */
+    adopt(raw: string | null): void {
+        const features = this.config.persist ? parseChoice(raw) : null;
+        if (features === null) return;
+        const decision = features & Features.All & this.available;
+        if (decision === this.decision) return;
+        const previous = this.granted();
+        this.decision = decision;
+        this.changed(previous);
     }
 
     get decided(): boolean {
@@ -115,6 +122,18 @@ export class ConsentManager {
                 // Never throw into the host page.
             }
         }
+    }
+}
+
+/** The features of a persisted choice (`bit-belemetry-consent`), or null when the entry is not one. */
+function parseChoice(raw: string | null): number | null {
+    if (!raw) return null;
+    try {
+        const stored = JSON.parse(raw);
+        return stored && stored.v === 1 && typeof stored.features === 'number' ? stored.features : null;
+    } catch {
+        // A corrupt entry counts as "no decision".
+        return null;
     }
 }
 

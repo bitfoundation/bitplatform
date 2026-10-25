@@ -62,7 +62,9 @@ core because every host may need them and they add no dependency.
   JSON on purpose.
 - **The exporter must not instrument itself.** Every export runs inside `BelemetrySuppression.Begin()`, so the
   `System.Net.Http` activities it creates are not sampled. The JS fetch/XHR instrumentation ignores exporter URLs
-  and any request that already carries a `traceparent` header (in WASM, .NET's HttpClient has already traced it).
+  and any request that already carries a `traceparent` header (in WASM, .NET's HttpClient has already traced it - when
+  the app turns `HttpActivityPropagationSupport` on; the WebAssembly SDK turns it off, and then HttpClient's requests
+  carry no `traceparent` and the script records them as its own fetch spans).
   In WASM the .NET sender also sets the fetch option `bitBelemetryExport: true` (`BelemetryHttpSender.MarkAsExport`,
   through the `WebAssemblyFetchOptions` the runtime copies into fetch's init object); the fetch instrumentation skips
   such a request whatever its URL, so a script a server started (Auto) does not trace the WebAssembly pipeline's exports.
@@ -106,6 +108,11 @@ How consent works:
 - **After the decision**, held records the user granted are sent and the rest are dropped.
 - **Revoking a feature** purges its queued records. Revoking `Persistence` also clears stored requests, revoking
   `Sessions` clears the stored session, and revoking `UserTracking` clears the pseudo id and the user id.
+- **Other tabs** adopt a decision through the `storage` event of `bit-belemetry-consent` (`ConsentManager.adopt`), as if
+  it had been made there (released, purged, reported to .NET); a removed or unreadable entry changes nothing.
+- **.NET reads the grant back** after every `setConsent` (`BelemetryConsentService.SetAsync`), on every host: the
+  script reports a change only when its own grant changed, so a grant it refused (Global Privacy Control) would
+  otherwise stay granted in the WebAssembly or Hybrid pipeline.
 
 ### Storage keys (browser)
 
@@ -207,6 +214,9 @@ Notes on the fields:
   other URLs'; a partial success stores only what is left and does not hold anything back (the backend answered). The
   script takes each stored request out of `localStorage` only while sending it, and puts it back when the page is
   hidden if it is being sent without `keepalive` (`Transport.pageHidden`).
+- Once the page is unloading for good (a `pagehide` outside the back/forward cache), a `keepalive` request whose fetch
+  fails is not stored: Chromium fails the fetch of every keepalive request as its page unloads and sends them all the
+  same, so storing them would deliver each twice on the next visit. Offline, it is stored as before.
 - `service.instanceId` is null from `<BelemetryScript />`: a browser tab is its own instance, so the script
   generates a random `service.instance.id` per page load.
 

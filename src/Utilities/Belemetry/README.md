@@ -175,6 +175,13 @@ In the browser, metrics need `System.Diagnostics.Metrics`, which the WebAssembly
 `MetricsSupport` to `true` unless the project sets it. A project that sets it to `false` gets no metrics, and Belemetry
 logs a warning at startup.
 
+`HttpClient` spans are a switch of their own, which the WebAssembly SDK also turns off (`HttpActivityPropagationSupport`)
+and the package leaves alone. Off, `HttpClient`'s requests go out through the browser's `fetch`, and the browser script
+records them as its own client spans (`Dependencies`, with `traceparent` only where `Browser.PropagateTraceContextTo`
+allows). Set `<HttpActivityPropagationSupport>true</HttpActivityPropagationSupport>` to have .NET trace them as
+`System.Net.Http` spans inside the current activity's trace instead - but then `HttpClient` sends `traceparent` to every
+origin it calls, and a cross-origin API that does not allow the header in CORS fails.
+
 ### Standalone Blazor WebAssembly
 
 ```csharp
@@ -405,7 +412,8 @@ How it behaves:
 - **Revoking is immediate.** Queued records of a revoked feature are discarded, and its device storage is cleared:
   `Persistence` clears the offline queue, `Sessions` the stored session, `UserTracking` the pseudo id and user id.
 - **The choice is remembered** (`Consent.Persist`, default on) in `localStorage` (and in a file in Hybrid apps) -
-  recording the choice itself is strictly necessary.
+  recording the choice itself is strictly necessary. Other open tabs of the app adopt it as it is made, so a banner
+  answered in one tab closes in the rest, and a revoke there stops them sending too.
 - **Global Privacy Control** is honored (`Consent.HonorGlobalPrivacyControl`, default on): a browser sending GPC never
   gets the `Analytics` features.
 - **No cookies.** Belemetry sets none.
@@ -913,6 +921,9 @@ console.log(BitBelemetry.getContext());   // { consent, decided, sessionId, pseu
   the package (see [Metrics](#metrics)).
 - **Duplicate HTTP spans in WebAssembly:** they should not happen - the script skips requests that already carry a
   `traceparent` from .NET's `HttpClient`. If a custom handler strips it, add the URL to `Browser.IgnoreUrls`.
+- **No `System.Net.Http` spans in WebAssembly:** the WebAssembly SDK turns `HttpClient`'s tracing off
+  (`HttpActivityPropagationSupport`), and its requests show up as the browser script's fetch spans instead. Turning it
+  on has a cost: `HttpClient` then sends `traceparent` to every origin, which a cross-origin API must allow in CORS.
 
 ---
 
