@@ -345,6 +345,142 @@ public class SupportTicket
     public string Details { get; set; } = "";
 }
 
+/// <summary>Model for the expressions demo: a quote whose totals, conditions and rules are written as text.</summary>
+public class Quote
+{
+    public string Customer { get; set; } = "";
+
+    [Display(Name = "Customer type")]
+    public string CustomerType { get; set; } = "person";
+
+    [Display(Name = "VAT number")]
+    public string? VatNumber { get; set; }
+
+    public List<QuoteLine> Lines { get; set; } = [new()];
+
+    public decimal? Discount { get; set; }
+
+    /// <summary>Derived by the schema's expression, not typed by the user.</summary>
+    public decimal Total { get; set; }
+
+    [Display(Name = "Approved by")]
+    public string? Approver { get; set; }
+
+    [Display(Name = "Issued on")]
+    public DateOnly? IssuedOn { get; set; }
+
+    [Display(Name = "Valid until")]
+    public DateOnly? ValidUntil { get; set; }
+}
+
+public class QuoteLine
+{
+    public string Product { get; set; } = "";
+
+    public int Quantity { get; set; } = 1;
+
+    [Display(Name = "Unit price")]
+    public decimal UnitPrice { get; set; }
+
+    [Display(Name = "Line total")]
+    public decimal LineTotal { get; set; }
+}
+
+/// <summary>Model for the tabs and review demo: a customer record edited in any order rather than walked through.</summary>
+public class CustomerRecord
+{
+    public string Name { get; set; } = "";
+
+    public string Email { get; set; } = "";
+
+    public string? Phone { get; set; }
+
+    public string Plan { get; set; } = "team";
+
+    public int Seats { get; set; } = 5;
+
+    /// <summary>A month picker's value: the first day of the month chosen.</summary>
+    [Display(Name = "Billing from")]
+    public DateOnly? BillingFrom { get; set; }
+
+    [Display(Name = "Paperless invoices")]
+    public bool Paperless { get; set; } = true;
+
+    /// <summary>A week picker's value, kept as the picker's own text (2026-W44).</summary>
+    [Display(Name = "Kick-off week")]
+    public string? KickoffWeek { get; set; }
+
+    [Display(Name = "Notes for the team")]
+    public string? Notes { get; set; }
+}
+
+/// <summary>Model for the drafts demo: a form long enough that losing it halfway through would hurt.</summary>
+public class MembershipApplication
+{
+    [Display(Name = "Full name")]
+    public string FullName { get; set; } = "";
+
+    public string Email { get; set; } = "";
+
+    [Display(Name = "Membership")]
+    public string Tier { get; set; } = "standard";
+
+    [Display(Name = "Why do you want to join?")]
+    public string Motivation { get; set; } = "";
+
+    /// <summary>Marked sensitive by the schema, so no draft ever holds it.</summary>
+    [Display(Name = "IBAN")]
+    public string? Iban { get; set; }
+
+    [Display(Name = "Choose a password")]
+    public string Password { get; set; } = "";
+}
+
+/// <summary>Model for the search lookup demo: a deal that names one customer out of thousands.</summary>
+public class DealAssignment
+{
+    [Display(Name = "Deal")]
+    public string Title { get; set; } = "";
+
+    [Display(Name = "Customer")]
+    public string? CustomerId { get; set; }
+
+    [Display(Name = "Account manager")]
+    public string? ManagerId { get; set; }
+}
+
+/// <summary>Model for the localization demo.</summary>
+public class TeamOrder
+{
+    public string Company { get; set; } = "";
+
+    public string Plan { get; set; } = "team";
+
+    public int Seats { get; set; } = 5;
+
+    public string? Notes { get; set; }
+}
+
+/// <summary>Model for the Blazor inputs demo: a card some of whose fields are edited by Blazor's own InputText and InputNumber.</summary>
+public class ContactCard
+{
+    public string Name { get; set; } = "";
+
+    public string Email { get; set; } = "";
+
+    public int Age { get; set; }
+
+    public ContactCardAddress Address { get; set; } = new();
+}
+
+public class ContactCardAddress
+{
+    public string City { get; set; } = "";
+}
+
+/// <summary>One of the many customers the search lookup demo looks through.</summary>
+public sealed record DemoCustomer(string Id, string Name, string City);
+
 /// <summary>Stand-in for a repository the demo's async rules and option providers call.</summary>
 public sealed class DemoDirectory
 {
@@ -376,6 +512,62 @@ public sealed class DemoDirectory
     {
         await Task.Delay(400, ct);
         return !TakenUsernames.Contains(username, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static readonly string[] CompanyNames =
+        ["Northwind", "Contoso", "Fabrikam", "Tailspin", "Wingtip", "Litware", "Adventure Works", "Proseware",
+         "Woodgrove", "Lucerne", "Alpine Ski", "Coho", "Datum", "Humongous", "Trey", "Blue Yonder"];
+
+    private static readonly string[] CompanyKinds =
+        ["Traders", "Logistics", "Bank", "Travel", "Toys", "Foods", "Studios", "Labs", "Publishing", "Energy"];
+
+    private static readonly string[] CustomerCities =
+        ["Paris", "Lyon", "London", "Bristol", "Berlin", "Hamburg", "Munich", "Tokyo", "Osaka", "Madrid",
+         "Lisbon", "Oslo", "Vienna", "Zurich", "Dublin"];
+
+    /// <summary>Far too many to put in a dropdown: 2,400 customers.</summary>
+    private static readonly DemoCustomer[] Customers =
+    [
+        .. (from name in CompanyNames
+            from kind in CompanyKinds
+            from city in CustomerCities
+            select (Name: $"{name} {kind}", City: city))
+           .Select((c, i) => new DemoCustomer($"C-{i + 1:0000}", c.Name, c.City))
+    ];
+
+    private static readonly string[] Managers =
+        ["Ada Lovelace", "Alan Turing", "Barbara Liskov", "Donald Knuth", "Edsger Dijkstra", "Frances Allen",
+         "Grace Hopper", "John Backus", "Ken Thompson", "Margaret Hamilton", "Niklaus Wirth", "Radia Perlman"];
+
+    /// <summary>
+    /// A customer search as a server would run it: the first matches for the text, or - with no text and
+    /// a current value, as an edit form opens - the one customer the stored id names.
+    /// </summary>
+    public async ValueTask<IEnumerable<DemoCustomer>> SearchCustomersAsync(string? text, string? currentId, CancellationToken ct = default)
+    {
+        await Task.Delay(250, ct);
+        if (string.IsNullOrWhiteSpace(text))
+            return currentId is null ? [] : Customers.Where(c => c.Id == currentId);
+
+        // Matched against what the box shows, too: text committed before its results arrived is searched for
+        // exactly, and a server that only knew names and cities apart would never find "Contoso Foods · Lyon".
+        return Customers
+            .Where(c => LabelOf(c).Contains(text.Trim(), StringComparison.OrdinalIgnoreCase))
+            .Take(8)
+            .ToList();
+    }
+
+    /// <summary>How the search lookup demo shows a customer.</summary>
+    public static string LabelOf(DemoCustomer customer) => $"{customer.Name} · {customer.City}";
+
+    /// <summary>Account managers: few enough that an empty search may as well list the first of them.</summary>
+    public async ValueTask<IEnumerable<string>> SearchManagersAsync(string? text, CancellationToken ct = default)
+    {
+        await Task.Delay(150, ct);
+        return Managers
+            .Where(m => string.IsNullOrWhiteSpace(text) || m.Contains(text, StringComparison.OrdinalIgnoreCase))
+            .Take(6)
+            .ToList();
     }
 
     public static IReadOnlyList<BormSelectOption> Teams =>

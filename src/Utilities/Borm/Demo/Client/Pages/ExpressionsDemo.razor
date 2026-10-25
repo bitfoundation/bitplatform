@@ -1,0 +1,193 @@
+﻿@page "/expressions"
+@implements IDisposable
+
+<PageTitle>Expressions · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Expressions</h1>
+    <p class="bb-subtitle">
+        Every total, condition and rule in this quote is written as text: <code>{Quantity} * {UnitPrice}</code>,
+        <code>{Total} &gt;= 10000</code>, <code>{ValidUntil} &gt; {IssuedOn}</code>. Text travels - it is exported
+        to JSON Schema and imported back - so a form a server sends can compute, decide and judge with no code
+        behind it. An expression reads the answers and calls a fixed list of functions, and nothing else.
+    </p>
+</div>
+
+<div class="bb-note">
+    Add a line or two and watch the line totals and the quote total follow. Choose <em>Company</em> and the
+    VAT number appears, required and checked against a pattern. Push the total past 10,000 and the quote
+    asks who approved it. A validity of more than 90 days is a warning, not an error: the quote can still be sent.
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
+    <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Send quote" />
+</div>
+
+@if (_submitted)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Sent ✓</strong><pre>@_json</pre></div>
+}
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Try an expression against the answers above</span></div>
+    <div class="bb-fields">
+        <label class="bb-field expression-probe">
+            Expression
+            <input type="text" value="@_probe" spellcheck="false" autocomplete="off"
+                   @oninput="e => _probe = e.Value?.ToString() ?? string.Empty" />
+            <small>Try <code>count({Lines})</code>, <code>upper({Customer})</code>, <code>dateDiff({IssuedOn}, {ValidUntil})</code> or <code>iif({Total} &gt; 100, 'big', 'small')</code>.</small>
+        </label>
+    </div>
+    <div class="demo-readout" aria-live="polite">
+        <p class="bb-overline">@(ProbeError is null ? "Answer" : "Does not parse")</p>
+        <pre id="expression-answer">@(ProbeError ?? ProbeAnswer)</pre>
+    </div>
+</div>
+
+<div class="bb-toolbar">
+    <button type="button" class="btn btn-secondary" aria-expanded="@(_showSchema ? "true" : "false")" @onclick="() => _showSchema = !_showSchema">
+        @(_showSchema ? "Hide" : "Show") the schema as JSON
+    </button>
+</div>
+@if (_showSchema)
+{
+    <div class="demo-readout">
+        <p class="bb-overline">BormJsonSchemaExporter.Export - every expression as it travels</p>
+        <pre>@BormJsonSchemaExporter.Export(_state.Definition)</pre>
+    </div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+"""
+@page "/expressions"
+
+<BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Send quote" />
+
+@code {
+    private readonly Quote _model = new() { IssuedOn = DateOnly.FromDateTime(DateTime.Today) };
+    private BormState _state = default!;
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<Quote>()
+            .Title("Quote")
+            .Field(x => x.Customer, f => f.Required())
+            .Field(x => x.CustomerType, f => f.AsRadio().Options(("person", "Person"), ("company", "Company")))
+            .Field(x => x.VatNumber, f => f
+                .VisibleWhen("{CustomerType} = 'company'")
+                .RequiredWhen("{CustomerType} = 'company'")
+                .Must("matches({VatNumber}, '^[A-Z]{2}[0-9A-Z]{8,12}$')",
+                      "Two letters, then 8 to 12 letters or digits."))
+            .Array(x => x.Lines, line => line
+                    .Field(l => l.Product, f => f.Required())
+                    .Field(l => l.Quantity, f => f.Must("{Quantity} >= 1", "Order at least one."))
+                    .Field(l => l.UnitPrice, f => f.Step(0.01).Must("{UnitPrice} > 0", "Give the line a price."))
+                    // This row's quantity and price: a path resolves against the row first.
+                    .Computed(l => l.LineTotal, "{Quantity} * {UnitPrice}"),
+                f => f.Attr("itemNoun", "line"))
+            .Field(x => x.Discount, f => f.Must("{Discount} <= sum({Lines[].LineTotal})",
+                                                "The discount cannot be more than the lines."))
+            // [] is every row. A missing discount is no discount.
+            .Computed(x => x.Total, "round(sum({Lines[].LineTotal}) - coalesce({Discount}, 0), 2)")
+            .Field(x => x.Approver, f => f
+                .VisibleWhen("{Total} >= 10000")
+                .RequiredWhen("{Total} >= 10000")
+                .Help("A quote of 10,000 or more needs an approver."))
+            .Field(x => x.IssuedOn, f => f.Required())
+            .Field(x => x.ValidUntil, f => f
+                .Must("{ValidUntil} > {IssuedOn}", "A quote is valid until some day after it is issued.")
+                .Must("dateDiff({IssuedOn}, {ValidUntil}) <= 90",
+                      "More than 90 days is unusual - check with finance.", BormValidationSeverity.Warning))
+            .MustAll("count({Lines}) > 0", "Add at least one line.", nameof(Quote.Lines))
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+    }
+
+    public void Dispose() => _state.Dispose();
+}
+""";
+
+    private readonly Quote _model = new() { IssuedOn = DateOnly.FromDateTime(DateTime.Today) };
+    private BormState _state = default!;
+    private bool _submitted;
+    private bool _showSchema;
+    private string _json = "";
+    private string _probe = "sum({Lines[].LineTotal})";
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<Quote>()
+            .Title("Quote")
+            .Field(x => x.Customer, f => f.Required())
+            .Field(x => x.CustomerType, f => f.AsRadio().Options(("person", "Person"), ("company", "Company")))
+            .Field(x => x.VatNumber, f => f
+                .VisibleWhen("{CustomerType} = 'company'")
+                .RequiredWhen("{CustomerType} = 'company'")
+                .Must("matches({VatNumber}, '^[A-Z]{2}[0-9A-Z]{8,12}$')",
+                      "Two letters, then 8 to 12 letters or digits."))
+            .Array(x => x.Lines, line => line
+                    .Field(l => l.Product, f => f.Required())
+                    .Field(l => l.Quantity, f => f.Must("{Quantity} >= 1", "Order at least one."))
+                    .Field(l => l.UnitPrice, f => f.Step(0.01).Must("{UnitPrice} > 0", "Give the line a price."))
+                    .Computed(l => l.LineTotal, "{Quantity} * {UnitPrice}"),
+                f => f.Attr("itemNoun", "line"))
+            .Field(x => x.Discount, f => f.Must("{Discount} <= sum({Lines[].LineTotal})",
+                                                "The discount cannot be more than the lines."))
+            .Computed(x => x.Total, "round(sum({Lines[].LineTotal}) - coalesce({Discount}, 0), 2)")
+            .Field(x => x.Approver, f => f
+                .VisibleWhen("{Total} >= 10000")
+                .RequiredWhen("{Total} >= 10000")
+                .Help("A quote of 10,000 or more needs an approver."))
+            .Field(x => x.IssuedOn, f => f.Required())
+            .Field(x => x.ValidUntil, f => f
+                .Must("{ValidUntil} > {IssuedOn}", "A quote is valid until some day after it is issued.")
+                .Must("dateDiff({IssuedOn}, {ValidUntil}) <= 90",
+                      "More than 90 days is unusual - check with finance.", BormValidationSeverity.Warning))
+            .MustAll("count({Lines}) > 0", "Add at least one line.", nameof(Quote.Lines))
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+        // The console below reads the answers, so it follows every change to them.
+        _state.StateChanged += OnStateChanged;
+    }
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    // Parsing is bounded and evaluating never throws, so a box anyone can type into is safe to evaluate live.
+    private string? ProbeError => BormExpression.TryParse(_probe, out _, out var error) ? null : error;
+
+    private string ProbeAnswer => BormExpression.TryParse(_probe, out var expression, out _)
+        ? Describe(expression!.Evaluate(_state.Data))
+        : string.Empty;
+
+    private static string Describe(object? value) => value switch
+    {
+        null => "null - no answer",
+        string text => $"'{text}'",
+        bool b => b ? "true" : "false",
+        System.Collections.IEnumerable list => "[" + string.Join(", ", list.Cast<object?>().Select(Describe)) + "]",
+        IFormattable formattable => formattable.ToString(null, System.Globalization.CultureInfo.InvariantCulture),
+        _ => value.ToString() ?? string.Empty
+    };
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+
+    public void Dispose()
+    {
+        _state.StateChanged -= OnStateChanged;
+        _state.Dispose();
+    }
+}

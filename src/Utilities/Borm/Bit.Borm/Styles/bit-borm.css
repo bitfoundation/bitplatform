@@ -219,8 +219,9 @@ textarea.bit-borm-input { resize: vertical; min-height: 4.5rem; }
 }
 .bit-borm-tag__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bit-borm-tag__remove {
+    /* 24px: WCAG 2.2's minimum target size, met by the target itself rather than by its spacing. */
     display: inline-flex; align-items: center; justify-content: center;
-    inline-size: 1.15rem; block-size: 1.15rem; flex: none;
+    inline-size: 1.5rem; block-size: 1.5rem; flex: none;
     border: none; border-radius: 999px; background: transparent;
     color: var(--bit-borm-muted); font-size: .95rem; line-height: 1; cursor: pointer; padding: 0;
 }
@@ -249,9 +250,19 @@ textarea.bit-borm-input { resize: vertical; min-height: 4.5rem; }
 
 .bit-borm-messages { list-style: none; margin: .15rem 0 0; padding: 0; }
 .bit-borm-message { font-size: .8rem; }
-.bit-borm-message--error { color: var(--bit-borm-error); }
+/* Weight as well as colour, so an error reads as one to someone who cannot tell the colours apart. */
+.bit-borm-message--error { color: var(--bit-borm-error); font-weight: 600; }
 .bit-borm-message--warning { color: var(--bit-borm-warning); }
 .bit-borm-message--info { color: var(--bit-borm-muted); }
+/* The severity in words, from data-severity (localised through the message provider). Generated
+   content is read by screen readers but is no part of the message's text. An error's is read only —
+   the field's own invalid state already shows it — and a warning's or a note's is shown too, since
+   colour is otherwise all that tells them from an error. */
+.bit-borm-message[data-severity]::before { content: attr(data-severity) " "; font-weight: 600; }
+.bit-borm-message--error[data-severity]::before {
+    position: absolute; inline-size: 1px; block-size: 1px; margin: -1px; padding: 0;
+    overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0;
+}
 
 /* Error summary */
 .bit-borm-summary {
@@ -336,7 +347,7 @@ textarea.bit-borm-input { resize: vertical; min-height: 4.5rem; }
 .bit-borm-stepper__link {
     display: flex; align-items: center; gap: .5rem;
     background: none; border: none; padding: 0; margin: 0;
-    font: inherit; color: inherit; cursor: pointer; text-align: left;
+    font: inherit; color: inherit; cursor: pointer; text-align: start;
 }
 .bit-borm-stepper__link:hover .bit-borm-stepper__label { text-decoration: underline; }
 .bit-borm-stepper__link:focus-visible { outline: 2px solid var(--bit-borm-accent); outline-offset: 2px; border-radius: var(--bit-borm-radius); }
@@ -344,6 +355,59 @@ textarea.bit-borm-input { resize: vertical; min-height: 4.5rem; }
 .bit-borm-stepper__step.is-active .bit-borm-stepper__num { border-color: var(--bit-borm-accent); color: var(--bit-borm-accent); }
 .bit-borm-stepper__step.is-done .bit-borm-stepper__num { background: var(--bit-borm-accent); color: var(--bit-borm-accent-contrast); border-color: var(--bit-borm-accent); }
 .bit-borm-step-body { display: flex; flex-direction: column; gap: var(--bit-borm-gap); }
+
+/* Tabs, accordion and sections: a form's steps the user moves between freely. */
+.bit-borm-tabs__list {
+    display: flex; flex-wrap: wrap; gap: .25rem; margin: 0 0 1.25rem;
+    border-block-end: 1px solid var(--bit-borm-border);
+}
+.bit-borm-tabs__tab {
+    display: inline-flex; align-items: center; gap: .5rem; min-height: 2.5rem; padding: .5rem .9rem;
+    margin-block-end: -1px; border: 1px solid transparent; border-radius: var(--bit-borm-radius) var(--bit-borm-radius) 0 0;
+    background: none; font: inherit; color: var(--bit-borm-muted); cursor: pointer;
+}
+.bit-borm-tabs__tab:hover { color: var(--bit-borm-text); }
+.bit-borm-tabs__tab.is-active {
+    color: var(--bit-borm-text); font-weight: 600; background: var(--bit-borm-surface);
+    border-color: var(--bit-borm-border); border-block-end-color: var(--bit-borm-surface);
+}
+.bit-borm-tabs__tab:focus-visible { outline: 2px solid var(--bit-borm-accent); outline-offset: 2px; }
+/* The count beside a tab or section holding errors. It is backed by text for assistive technology, so
+   the colour is never the only thing saying something is wrong. */
+.bit-borm-tabs__badge {
+    display: inline-flex; align-items: center; justify-content: center; min-width: 1.4rem; height: 1.4rem;
+    padding: 0 .35rem; border-radius: 999px; font-size: .75rem; font-weight: 700;
+    background: var(--bit-borm-error); color: var(--bit-borm-accent-contrast);
+}
+.bit-borm-section { border: 1px solid var(--bit-borm-border); border-radius: var(--bit-borm-radius); padding: 1rem 1.25rem; min-width: 0; }
+.bit-borm-section + .bit-borm-section { margin-block-start: var(--bit-borm-gap); }
+.bit-borm-section__title { display: flex; align-items: center; gap: .6rem; font-size: 1.05rem; font-weight: 650; margin: 0 0 1rem; }
+.bit-borm-section--collapsible { padding: 0; }
+.bit-borm-section--collapsible > .bit-borm-section__title {
+    margin: 0; padding: .9rem 1.25rem; cursor: pointer; min-height: 2.75rem; border-radius: var(--bit-borm-radius);
+}
+.bit-borm-section--collapsible > .bit-borm-section__title:focus-visible { outline: 2px solid var(--bit-borm-accent); outline-offset: 2px; }
+.bit-borm-section--collapsible[open] > .bit-borm-section__title { border-block-end: 1px solid var(--bit-borm-border); border-end-start-radius: 0; border-end-end-radius: 0; }
+.bit-borm-section--collapsible > .bit-borm-section__body { padding: 1rem 1.25rem; }
+.bit-borm-section.has-errors { border-color: var(--bit-borm-error); }
+
+/* A review: the answers read back, a description list per step. */
+.bit-borm-review { display: flex; flex-direction: column; gap: 1.25rem; margin-block-start: .5rem; }
+.bit-borm-review__header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-block-end: .5rem; }
+.bit-borm-review__heading { font-size: 1rem; font-weight: 650; }
+.bit-borm-review__list { margin: 0; display: flex; flex-direction: column; }
+.bit-borm-review__entry {
+    display: grid; grid-template-columns: minmax(8rem, 1fr) 2fr; gap: .25rem 1rem;
+    padding: .55rem 0; border-block-end: 1px solid var(--bit-borm-border);
+}
+.bit-borm-review__label { color: var(--bit-borm-muted); font-weight: 500; }
+.bit-borm-review__value { margin: 0; color: var(--bit-borm-text); overflow-wrap: anywhere; }
+.bit-borm-review__value .bit-borm-review__list { padding-inline-start: .75rem; border-inline-start: 2px solid var(--bit-borm-border); }
+.bit-borm-review__rows { margin: 0; padding-inline-start: 1.25rem; display: flex; flex-direction: column; gap: .5rem; }
+.bit-borm-review__empty { color: var(--bit-borm-muted); font-style: italic; }
+@media (max-width: 640px) {
+    .bit-borm-review__entry { grid-template-columns: 1fr; }
+}
 
 /* These containers are focusable only so a step change or an error jump has somewhere to land. The
    outline is deliberate — it tells the user where they now are — but the default browser one is drawn

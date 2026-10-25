@@ -24,6 +24,14 @@ public sealed class BormFieldDefinition
     /// <summary>Human-readable label.</summary>
     public string? Label { get; set; }
 
+    /// <summary>
+    /// The key the field's texts are translated under (<c>{key}.label</c>, <c>{key}.help</c>, …; see
+    /// <see cref="IBormSchemaLocalizer"/>). Null uses the field's path with the rows taken out —
+    /// set it when two forms should share a translation, or when the path is not a key a translator
+    /// should have to read. <c>x-i18n</c> in JSON Schema.
+    /// </summary>
+    public string? TextKey { get; set; }
+
     /// <summary>Placeholder text for empty inputs.</summary>
     public string? Placeholder { get; set; }
 
@@ -58,6 +66,17 @@ public sealed class BormFieldDefinition
     /// <summary>Whether the field is read-only. Read-only fields render as <c>readonly</c>, not <c>disabled</c>.</summary>
     public bool ReadOnly { get; set; }
 
+    /// <summary>
+    /// Whether the value is something that must not outlive the page — a card number, a national id,
+    /// a one-time code. A sensitive field is left out of drafts (<see cref="BormDraft"/>) and of a
+    /// snapshot that asks to exclude it, so an autosave to browser storage cannot keep it. A password
+    /// is sensitive whatever this says; see <see cref="IsSensitive"/>.
+    /// </summary>
+    public bool Sensitive { get; set; }
+
+    /// <summary>Whether the value is treated as sensitive: marked <see cref="Sensitive"/>, or a password.</summary>
+    public bool IsSensitive => Sensitive || Type == BormFieldType.Password;
+
     /// <summary>Default value applied when the form initialises and the value is missing.</summary>
     public object? DefaultValue { get; set; }
 
@@ -79,6 +98,17 @@ public sealed class BormFieldDefinition
 
     /// <summary>Field paths whose values <see cref="OptionsProvider"/> reads, so options reload when they change.</summary>
     public IList<string> OptionsDependencies { get; set; } = new List<string>();
+
+    /// <summary>
+    /// When set, <see cref="OptionsProvider"/> is a search rather than a list: it is asked again as the
+    /// user types into the combobox, with <see cref="BormOptionsContext.SearchText"/> holding what they
+    /// typed, once it is at least this many characters long — the customer lookup over a hundred
+    /// thousand records that no dropdown can hold. Null for a provider that loads the whole list.
+    /// </summary>
+    public int? SearchMinLength { get; set; }
+
+    /// <summary>How long the user has to pause before a search runs, in milliseconds. Only meaningful with <see cref="SearchMinLength"/>.</summary>
+    public int SearchDebounceMilliseconds { get; set; } = 250;
 
     /// <summary>
     /// Suggested values offered through a <c>&lt;datalist&gt;</c>. Unlike <see cref="Options"/> these

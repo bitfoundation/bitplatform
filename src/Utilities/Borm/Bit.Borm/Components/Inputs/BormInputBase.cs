@@ -72,7 +72,7 @@ public abstract class BormInputBase : ComponentBase, IDisposable
     /// because a real <c>&lt;label&gt;</c> already points at the control and an <c>aria-label</c> would
     /// silently override it.
     /// </summary>
-    protected string? AriaLabel => Field.ShowLabel ? null : Field.Label ?? Field.Name;
+    protected string? AriaLabel => Field.ShowLabel ? null : Context.Label;
 
     /// <summary>
     /// Extra attributes declared on the schema, splatted onto the control. Attributes the renderer sets

@@ -46,6 +46,12 @@ public static class BormMessageKeys
     /// <summary>A value that should be a UUID (JSON Schema's <c>format: uuid</c>) is not one.</summary>
     public const string Uuid = "uuid";
 
+    /// <summary>
+    /// An expression rule (<see cref="BormExpressionRule"/>) that was given no message of its own does
+    /// not hold — an <c>x-rules</c> entry in a document that only says what must be true.
+    /// </summary>
+    public const string Rule = "rule";
+
     // --- UI chrome ---
     // The library renders text of its own — buttons, placeholders, the empty state of a repeater. It
     // goes through the same provider as the validation messages, so translating a form means
@@ -126,6 +132,9 @@ public static class BormMessageKeys
     /// <summary>Announced when the wizard's position changes. Args: current step, total visible steps.</summary>
     public const string StepOf = "ui.step.of";
 
+    /// <summary>Read beside a tab or section holding errors the user has been shown. Arg 0 is how many.</summary>
+    public const string StepErrors = "ui.step.errors";
+
     /// <summary>Accessible name of the button that reveals a password. </summary>
     public const string PasswordShow = "ui.password.show";
 
@@ -155,6 +164,12 @@ public static class BormMessageKeys
     /// </summary>
     public const string ComboboxAvailable = "ui.combobox.available";
 
+    /// <summary>
+    /// Announced by a combobox that searches its options before enough has been typed for a search to
+    /// run. Arg 0 is how many characters it needs.
+    /// </summary>
+    public const string ComboboxSearchHint = "ui.combobox.searchHint";
+
     /// <summary>Accessible name of a tag's remove button. Arg 0 is the tag.</summary>
     public const string TagRemove = "ui.tags.remove";
 
@@ -175,6 +190,36 @@ public static class BormMessageKeys
     /// whose role cannot carry <c>aria-required</c> itself, and whose visible asterisk is decorative.
     /// </summary>
     public const string RequiredHint = "ui.required";
+
+    /// <summary>What <c>BormUnsavedChangesGuard</c> asks before the user navigates away from unsaved changes.</summary>
+    public const string UnsavedChanges = "ui.unsavedChanges";
+
+    /// <summary>Read before an error message ("Error:"), so it is not told from a warning by colour alone.</summary>
+    public const string SeverityError = "ui.severity.error";
+
+    /// <summary>Shown and read before a warning ("Warning:").</summary>
+    public const string SeverityWarning = "ui.severity.warning";
+
+    /// <summary>Shown and read before an informational message ("Note:").</summary>
+    public const string SeverityInfo = "ui.severity.info";
+
+    /// <summary>A true answer to a yes/no question, as a review reads it back.</summary>
+    public const string Yes = "ui.yes";
+
+    /// <summary>A false answer to a yes/no question, as a review reads it back.</summary>
+    public const string No = "ui.no";
+
+    /// <summary>What a review shows for a question nobody answered.</summary>
+    public const string ReviewEmpty = "ui.review.empty";
+
+    /// <summary>What a review shows in place of a sensitive answer — a password, a card number.</summary>
+    public const string ReviewHidden = "ui.review.hidden";
+
+    /// <summary>The visible text of a review's "change this step" button.</summary>
+    public const string ReviewChange = "ui.review.change";
+
+    /// <summary>The accessible name of a review's "change this step" button. Arg 0 is the step's title.</summary>
+    public const string ReviewChangeStep = "ui.review.changeStep";
 }
 
 /// <summary>The English defaults used when no <see cref="IBormMessageProvider"/> is registered.</summary>
@@ -206,6 +251,7 @@ public sealed class BormDefaultMessageProvider : IBormMessageProvider
         BormMessageKeys.FileType => $"Only these file types are allowed: {Arg(args, 0)}.",
         BormMessageKeys.Conversion => $"'{Arg(args, 0)}' is not a valid value for this field.",
         BormMessageKeys.Uuid => "Enter a valid UUID.",
+        BormMessageKeys.Rule => "This value is not valid.",
 
         BormMessageKeys.SelectPlaceholder => "-- Select --",
         BormMessageKeys.SelectLoading => "Loading…",
@@ -230,6 +276,7 @@ public sealed class BormDefaultMessageProvider : IBormMessageProvider
         BormMessageKeys.Next => "Next",
         BormMessageKeys.Progress => "Progress",
         BormMessageKeys.StepOf => $"Step {Arg(args, 0)} of {Arg(args, 1)}",
+        BormMessageKeys.StepErrors => Arg(args, 0) is 1 ? "1 problem to fix" : $"{Arg(args, 0)} problems to fix",
         BormMessageKeys.PasswordShow => "Show password",
         BormMessageKeys.PasswordHide => "Hide password",
         BormMessageKeys.Clear => "Clear",
@@ -237,12 +284,23 @@ public sealed class BormDefaultMessageProvider : IBormMessageProvider
         BormMessageKeys.CharactersRemaining => $"{Arg(args, 0)} characters remaining",
         BormMessageKeys.CharactersOver => $"{Arg(args, 0)} characters over the limit",
         BormMessageKeys.ComboboxAvailable => $"{Arg(args, 0)} choices available",
+        BormMessageKeys.ComboboxSearchHint => $"Type at least {Arg(args, 0)} characters to search",
         BormMessageKeys.TagRemove => $"Remove {Arg(args, 0)}",
         BormMessageKeys.TagEntry => $"Add to {Arg(args, 0)}",
         BormMessageKeys.TagPlaceholder => "Add…",
         BormMessageKeys.TagCount => $"{Arg(args, 0)} selected",
         BormMessageKeys.OneOf => "Choose one of the available options.",
         BormMessageKeys.RequiredHint => "Required",
+        BormMessageKeys.UnsavedChanges => "You have unsaved changes. Leave this page anyway?",
+        BormMessageKeys.SeverityError => "Error:",
+        BormMessageKeys.SeverityWarning => "Warning:",
+        BormMessageKeys.SeverityInfo => "Note:",
+        BormMessageKeys.Yes => "Yes",
+        BormMessageKeys.No => "No",
+        BormMessageKeys.ReviewEmpty => "Not answered",
+        BormMessageKeys.ReviewHidden => "Not shown",
+        BormMessageKeys.ReviewChange => "Change",
+        BormMessageKeys.ReviewChangeStep => $"Change {Arg(args, 0)}",
 
         _ => key
     };

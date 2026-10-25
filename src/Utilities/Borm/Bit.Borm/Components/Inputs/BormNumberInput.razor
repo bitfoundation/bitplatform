@@ -4,14 +4,14 @@
 @if (HasAffix)
 {
     <div class="bit-borm-affixed @(Context.HasError && Context.ShowMessages ? "bit-borm-affixed--invalid" : "")">
-        @if (!string.IsNullOrEmpty(Field.Prefix))
+        @if (!string.IsNullOrEmpty(Context.Prefix))
         {
-            <span class="bit-borm-affix bit-borm-affix--prefix" aria-hidden="true">@Field.Prefix</span>
+            <span class="bit-borm-affix bit-borm-affix--prefix" aria-hidden="true">@Context.Prefix</span>
         }
         @Control
-        @if (!string.IsNullOrEmpty(Field.Suffix))
+        @if (!string.IsNullOrEmpty(Context.Suffix))
         {
-            <span class="bit-borm-affix bit-borm-affix--suffix" aria-hidden="true">@Field.Suffix</span>
+            <span class="bit-borm-affix bit-borm-affix--suffix" aria-hidden="true">@Context.Suffix</span>
         }
     </div>
 }
@@ -29,7 +29,7 @@ else
                                               class="@CssClass"
                                               type="number"
                                               value="@Context.StringValue"
-                                              placeholder="@Field.Placeholder"
+                                              placeholder="@Context.Placeholder"
                                               disabled="@Disabled"
                                               readonly="@ReadOnly"
                                               min="@MinAttribute"
@@ -52,5 +52,5 @@ else
 
     private string InputMode => Field.InputMode ?? (Field.Type == BormFieldType.Integer ? "numeric" : "decimal");
 
-    private bool HasAffix => !string.IsNullOrEmpty(Field.Prefix) || !string.IsNullOrEmpty(Field.Suffix);
+    private bool HasAffix => !string.IsNullOrEmpty(Context.Prefix) || !string.IsNullOrEmpty(Context.Suffix);
 }

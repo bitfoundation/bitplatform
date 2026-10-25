@@ -65,6 +65,18 @@ public static class BormServiceCollectionExtensions
         return services;
     }
 
+    /// <summary>
+    /// Translates the schema's own text — labels, help, placeholders, options, step titles — through
+    /// <typeparamref name="TLocalizer"/>, typically one wrapping <c>IStringLocalizer</c>. See
+    /// <see cref="IBormSchemaLocalizer"/> for the keys it is asked for.
+    /// </summary>
+    public static IServiceCollection AddBormSchemaLocalizer<TLocalizer>(this IServiceCollection services)
+        where TLocalizer : class, IBormSchemaLocalizer
+    {
+        services.TryAddScoped<IBormSchemaLocalizer, TLocalizer>();
+        return services;
+    }
+
     /// <summary>Registers a message provider instance (useful for a simple dictionary of overrides).</summary>
     public static IServiceCollection AddBormMessages(this IServiceCollection services, IBormMessageProvider provider)
     {

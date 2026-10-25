@@ -1,0 +1,196 @@
+﻿@page "/drafts"
+@implements IDisposable
+@inject IJSRuntime JS
+
+<PageTitle>Drafts, autosave &amp; unsaved changes · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Drafts, autosave &amp; unsaved changes</h1>
+    <p class="bb-subtitle">
+        A long form owes its user "you were halfway through this - carry on?". <code>BormAutosave</code> writes a
+        draft a moment after the typing stops, <code>BormDraft.Restore</code> puts it back as unsaved changes, and
+        <code>BormUnsavedChangesGuard</code> asks before the user walks away from them. Where a draft is kept is
+        the application's choice; this page keeps it in the browser's local storage.
+    </p>
+</div>
+
+<div class="bb-note">
+    Fill in a few answers, wait a second, and reload the page: the browser asks first - that is the guard - and
+    then the answers come back. The IBAN and the password never do. They are sensitive, so no draft holds them,
+    which the draft below shows. Submitting clears the draft, and leaves nothing for the guard to ask about.
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
+    <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Apply" ShowResetButton="true" />
+    <BormAutosave State="_state" OnSave="SaveDraftAsync" DelayMilliseconds="800" />
+    <BormUnsavedChangesGuard State="_state" />
+
+    <p class="demo-status" role="status">@_status</p>
+    <div class="bb-toolbar">
+        <button type="button" class="btn btn-secondary" disabled="@(_draft is null)" @onclick="ForgetDraftAsync">Forget the draft</button>
+    </div>
+    <div class="demo-readout">
+        <p class="bb-overline">The draft in this browser's storage</p>
+        <pre>@(_draft is null ? "No draft saved yet." : Indented(_draft))</pre>
+    </div>
+</div>
+
+@if (_submitted)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Application sent ✓</strong><pre>@_json</pre></div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+"""
+@page "/drafts"
+@inject IJSRuntime JS
+
+<BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Apply" ShowResetButton="true" />
+<BormAutosave State="_state" OnSave="SaveDraftAsync" DelayMilliseconds="800" />
+<BormUnsavedChangesGuard State="_state" />
+
+@code {
+    private const string DraftKey = "membership-application";
+    private readonly MembershipApplication _model = new();
+    private BormState _state = default!;
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<MembershipApplication>()
+            .Title("Membership application")
+            .Version("1")                                   // recorded in every draft
+            .Field(x => x.FullName, f => f.Required())
+            .Field(x => x.Email, f => f.Required().Email())
+            .Field(x => x.Tier, f => f.AsRadio()
+                .Options(("standard", "Standard"), ("supporter", "Supporter"), ("patron", "Patron")))
+            .Field(x => x.Motivation, f => f.AsTextArea(5).Required().MinLength(40).CharacterCount())
+            .Field(x => x.Iban, f => f.Sensitive())         // never written to a draft
+            .Field(x => x.Password, f => f.AsPassword().Required().MinLength(10))
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+    }
+
+    // Storage is the browser's, so the draft is looked for once the page runs there.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        if (await JS.InvokeAsync<string?>("localStorage.getItem", DraftKey) is { } json)
+        {
+            BormDraft.Restore(_state, json);    // back as unsaved changes
+            StateHasChanged();
+        }
+    }
+
+    private async Task SaveDraftAsync(string json) => await JS.InvokeVoidAsync("localStorage.setItem", DraftKey, json);
+
+    private async Task HandleSubmit(BormState state)
+    {
+        // ... send the application ...
+        await JS.InvokeVoidAsync("localStorage.removeItem", DraftKey);     // a submitted form has no draft
+        state.AcceptChanges();                                             // and nothing left to warn about
+    }
+
+    public void Dispose() => _state.Dispose();
+}
+""";
+
+    private const string DraftKey = "bit-borm-demo:membership-application";
+
+    private readonly MembershipApplication _model = new();
+    private BormState _state = default!;
+    private string? _draft;
+    private string _status = "Nothing saved yet.";
+    private bool _submitted;
+    private string _json = "";
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<MembershipApplication>()
+            .Title("Membership application")
+            .Version("1")
+            .Field(x => x.FullName, f => f.Required())
+            .Field(x => x.Email, f => f.Required().Email())
+            .Field(x => x.Tier, f => f.AsRadio()
+                .Options(("standard", "Standard"), ("supporter", "Supporter"), ("patron", "Patron")))
+            .Field(x => x.Motivation, f => f.AsTextArea(5).Required().MinLength(40).CharacterCount())
+            .Field(x => x.Iban, f => f.Sensitive())
+            .Field(x => x.Password, f => f.AsPassword().Required().MinLength(10))
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        _draft = await JS.InvokeAsync<string?>("localStorage.getItem", DraftKey);
+        if (_draft is null) return;
+
+        var result = BormDraft.Restore(_state, _draft);
+        _status = result.Restored
+            ? $"Restored a draft saved {Ago(result.SavedAt)}" + (result.Skipped.Count > 0 ? $"; {result.Skipped.Count} answer(s) no longer fit the form." : ".")
+            : $"The stored draft could not be read: {result.Error}";
+        StateHasChanged();
+    }
+
+    private async Task SaveDraftAsync(string json)
+    {
+        await JS.InvokeVoidAsync("localStorage.setItem", DraftKey, json);
+        _draft = json;
+        _status = $"Draft saved at {DateTime.Now:T}.";
+        StateHasChanged();
+    }
+
+    private async Task ForgetDraftAsync()
+    {
+        await JS.InvokeVoidAsync("localStorage.removeItem", DraftKey);
+        _draft = null;
+        _status = "Draft forgotten. The answers on the page are still unsaved changes.";
+    }
+
+    private async Task HandleSubmit(BormState state)
+    {
+        await JS.InvokeVoidAsync("localStorage.removeItem", DraftKey);
+        state.AcceptChanges();
+        _draft = null;
+        _status = "Sent, and the draft cleared.";
+        _submitted = true;
+        // The model holds the password: the page shows what a server would get, without printing it.
+        var sent = System.Text.Json.JsonSerializer.SerializeToNode(_model)!.AsObject();
+        sent[nameof(MembershipApplication.Password)] = "(not shown)";
+        _json = sent.ToJsonString(JsonOptions);
+    }
+
+    private static readonly System.Text.Json.JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
+
+    private static string Ago(DateTimeOffset? savedAt)
+    {
+        if (savedAt is not { } at) return "earlier";
+        var minutes = (int)Math.Round((DateTimeOffset.Now - at).TotalMinutes);
+        return minutes < 1 ? "a moment ago" : minutes == 1 ? "a minute ago" : $"{minutes} minutes ago";
+    }
+
+    private static string Indented(string json)
+    {
+        try
+        {
+            using var document = System.Text.Json.JsonDocument.Parse(json);
+            return System.Text.Json.JsonSerializer.Serialize(document.RootElement, JsonOptions);
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return json;
+        }
+    }
+
+    public void Dispose() => _state.Dispose();
+}

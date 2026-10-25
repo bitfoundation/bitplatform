@@ -1,0 +1,128 @@
+﻿@page "/search-lookup"
+@implements IDisposable
+@inject DemoDirectory Directory
+
+<PageTitle>Lookups that search as you type · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Lookups that search as you type</h1>
+    <p class="bb-subtitle">
+        A customer out of thousands fits no dropdown. <code>SearchFrom</code> makes the combobox ask a service as the
+        user types - once enough is typed and the user pauses, with a search typed past cancelled so its answer
+        never lands over a newer one. The model only ever receives a choice.
+    </p>
+</div>
+
+<div class="bb-note">
+    This is an existing deal being edited: the form opened holding the id <code>C-0042</code>, and asked the service
+    once for that customer, so the box shows a name rather than an id. Type two letters of a company or a city to
+    search 2,400 customers. Text that names no customer is refused, because a search field stands for a record.
+    The account manager searches with nothing typed at all, so the first few appear as soon as the box opens.
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
+    <div class="bb-toolbar">
+        <button type="button" class="btn btn-secondary" @onclick="StartNewDeal" disabled="@_isNew">Start a new deal instead</button>
+    </div>
+    @* Keyed: a new deal is a new form, not the old one emptied. *@
+    <BormView @key="_state" State="_state" OnValidSubmit="HandleSubmit" SubmitText="Save deal" />
+</div>
+
+@if (_submitted)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Saved ✓</strong><pre>@_json</pre></div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+"""
+@page "/search-lookup"
+@inject DemoDirectory Directory
+
+<BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Save deal" />
+
+@code {
+    // An existing deal: the customer is stored by id.
+    private readonly DealAssignment _model = new() { Title = "Renewal 2027", CustomerId = "C-0042" };
+    private BormState _state = default!;
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<DealAssignment>()
+            .Title("Deal")
+            .Field(x => x.Title, f => f.Required())
+            .Field(x => x.CustomerId, f => f.Required().SearchFrom(
+                // With no text and a current value, the search is asked for the one record the id names.
+                search: ctx => Directory.SearchCustomersAsync(ctx.SearchText, ctx.CurrentValue as string, ctx.CancellationToken),
+                value: c => c.Id,
+                label: DemoDirectory.LabelOf,
+                minLength: 2,                     // nothing is asked before two characters
+                debounceMilliseconds: 250))       // and only once the user pauses
+            .Field(x => x.ManagerId, f => f.SearchFrom(
+                search: ctx => Directory.SearchManagersAsync(ctx.SearchText, ctx.CancellationToken),
+                value: m => m,
+                label: m => m,
+                minLength: 0))                    // the top results, before anything is typed
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+    }
+
+    public void Dispose() => _state.Dispose();
+}
+""";
+
+    private DealAssignment _model = new() { Title = "Renewal 2027", CustomerId = "C-0042" };
+    private BormState _state = default!;
+    private bool _isNew;
+    private bool _submitted;
+    private string _json = "";
+
+    protected override void OnInitialized() => _state = NewState(_model);
+
+    private BormState NewState(DealAssignment model)
+    {
+        var schema = BormBuilder.For<DealAssignment>()
+            .Title("Deal")
+            .Field(x => x.Title, f => f.Required())
+            .Field(x => x.CustomerId, f => f.Required().SearchFrom(
+                search: ctx => Directory.SearchCustomersAsync(ctx.SearchText, ctx.CurrentValue as string, ctx.CancellationToken),
+                value: c => c.Id,
+                label: DemoDirectory.LabelOf,
+                minLength: 2,
+                debounceMilliseconds: 250))
+            .Field(x => x.ManagerId, f => f.SearchFrom(
+                search: ctx => Directory.SearchManagersAsync(ctx.SearchText, ctx.CancellationToken),
+                value: m => m,
+                label: m => m,
+                minLength: 0))
+            .Build();
+
+        return new BormState(schema, new BormModelDataAccessor(model));
+    }
+
+    private void StartNewDeal()
+    {
+        var previous = _state;
+        _model = new DealAssignment();
+        _state = NewState(_model);
+        _isNew = true;
+        _submitted = false;
+        previous.Dispose();
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+
+    public void Dispose() => _state.Dispose();
+}

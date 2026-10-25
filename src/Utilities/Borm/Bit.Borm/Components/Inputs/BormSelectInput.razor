@@ -55,7 +55,7 @@
         ? Context.Text(BormMessageKeys.SelectLoading)
         : Context.OptionsFailed
             ? Context.Text(BormMessageKeys.SelectError)
-            : Field.Placeholder ?? Context.Text(BormMessageKeys.SelectPlaceholder);
+            : Context.Placeholder ?? Context.Text(BormMessageKeys.SelectPlaceholder);
 
     private IEnumerable<IGrouping<string?, BormSelectOption>> Grouped
         => Context.Options.GroupBy(o => o.Group);

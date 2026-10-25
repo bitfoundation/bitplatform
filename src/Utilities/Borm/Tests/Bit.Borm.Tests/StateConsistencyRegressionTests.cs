@@ -390,7 +390,10 @@ public class StateConsistencyRegressionTests : ComponentTestBase
         Assert.AreEqual(1, state.CurrentStepIndex);
 
         saving.SetResult();
-        Assert.IsTrue(await first);
+        // The handler recorded an error against step one while it ran, which is a submit that did not go
+        // through: it reports false and says the server rejected it, rather than claiming success.
+        Assert.IsFalse(await first);
+        Assert.AreEqual(BormSubmitOutcome.Rejected, state.SubmitOutcome);
     }
 
     // ---------------------------------------------------------------- files

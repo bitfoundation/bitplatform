@@ -27,7 +27,7 @@
     @if (Field.ShowLabel)
     {
         <span id="@Context.LabelId">
-            @(Field.Label ?? Field.Name)
+            @(Context.Label)
             @if (Context.IsRequired)
             {
                 <span class="bit-borm-required" aria-hidden="true">*</span>

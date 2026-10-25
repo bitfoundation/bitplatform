@@ -14,6 +14,9 @@ public sealed class BormState : IDisposable
     private readonly Dictionary<string, List<BormValidationMessage>> _messages = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _touched = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _dirty = new(StringComparer.OrdinalIgnoreCase);
+
+    // Paths judged since their value last changed, so "valid" can be told apart from "never checked".
+    private readonly HashSet<string> _validated = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, object?> _initialValues = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, IReadOnlyList<BormSelectOption>> _loadedOptions = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _optionsInFlight = new(StringComparer.OrdinalIgnoreCase);
@@ -23,12 +26,23 @@ public sealed class BormState : IDisposable
     private readonly Dictionary<string, string> _conversionErrors = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, Exception> _optionsErrors = new(StringComparer.OrdinalIgnoreCase);
 
-    private readonly bool _hasClearOnHide;
-    private readonly bool _hasComputed;
-    private readonly bool _hasChangeHandlers;
-    private readonly bool _hasRevalidateOn;
-    private readonly bool _hasNormalizers;
-    private readonly bool _hasOptionDependencies;
+    // For a field that searches its options: the text the current results answer, and the option the
+    // user picked — whose label the box keeps showing after a later search no longer returns it.
+    private readonly Dictionary<string, string?> _searchText = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, BormSelectOption> _chosen = new(StringComparer.OrdinalIgnoreCase);
+
+    // Which fields take part in each sweep a write runs, worked out once per schema. See BormFieldIndex.
+    private BormFieldIndex _index;
+
+    // ArrayCount as a delegate, made once rather than once per sweep.
+    private readonly Func<string, int> _countRows;
+
+    private bool HasClearOnHide => _index.ClearOnHide.Length > 0;
+    private bool HasComputed => _index.Computed.Length > 0;
+    private bool HasChangeHandlers => _index.HasChangeHandlers;
+    private bool HasRevalidateOn => _index.Revalidating.Length > 0;
+    private bool HasNormalizers => _index.Normalizing.Length > 0;
+    private bool HasOptionDependencies => _index.CascadingOptions.Length > 0;
 
     // Handlers write values, and those writes are changes too. Bounded so a pair that answer each other
     // settles rather than recursing, exactly as a cycle of computed formulas does.
@@ -44,17 +58,12 @@ public sealed class BormState : IDisposable
 
     public BormState(BormDefinition definition, IBormDataAccessor data, IServiceProvider? services = null)
     {
-        Definition = definition;
-        Data = data;
+        Definition = definition ?? throw new ArgumentNullException(nameof(definition));
+        Data = data ?? throw new ArgumentNullException(nameof(data));
         Services = services;
-        // Checked once: these sweeps run after every value change, and most schemas use neither.
-        _hasClearOnHide = definition.AllFields().Any(f => f.ClearOnHide);
-        _hasComputed = definition.AllFields().Any(f => f.Computed is not null);
-        _hasChangeHandlers = definition.AllFields().Any(f => f.OnChanged is not null);
-        _hasRevalidateOn = definition.AllFields().Any(f => f.RevalidateOn.Count > 0);
-        _hasNormalizers = definition.AllFields().Any(f => f.Normalize is not null);
-        _hasOptionDependencies = definition.AllFields()
-            .Any(f => f.OptionsProvider is not null && f.OptionsDependencies.Count > 0);
+        // Worked out once: these sweeps run after every value change, and most schemas use few of them.
+        _index = new BormFieldIndex(definition);
+        _countRows = ArrayCount;
 
         ApplyDefaults();
         SeedRequiredArrayItems();
@@ -140,6 +149,17 @@ public sealed class BormState : IDisposable
     public bool SingleErrorPerField { get; set; }
 
     /// <summary>
+    /// Whether a field's asynchronous rules still run when one of its synchronous rules has already
+    /// found an error. False by default: a username that does not match its pattern is not sent to the
+    /// server to ask whether it is taken. See <see cref="BormValidator.RunAsyncRulesOnInvalidFields"/>.
+    /// </summary>
+    public bool RunAsyncRulesOnInvalidFields
+    {
+        get => _validator.RunAsyncRulesOnInvalidFields;
+        set => _validator.RunAsyncRulesOnInvalidFields = value;
+    }
+
+    /// <summary>
     /// What every DOM id this form renders starts with — <c>borm_</c> unless changed. Ids are derived
     /// from field paths, so two forms on one page binding the same schema render the same ids, and a
     /// label, an <c>aria-describedby</c> or an error-summary link in one of them points into the other.
@@ -180,7 +200,8 @@ public sealed class BormState : IDisposable
     /// <summary>Whether a step may be jumped to directly — it has been reached at least once.</summary>
     public bool IsStepReachable(int index)
         => index >= 0 && index < Definition.Steps.Count
-           && index <= FurthestStepIndex
+           // Only a wizard gates its steps; tabs and sections are all there to be moved between.
+           && (!Definition.IsWizard || index <= FurthestStepIndex)
            && IsStepVisible(Definition.Steps[index]);
 
     /// <summary>Number of times submission has been attempted.</summary>
@@ -306,7 +327,7 @@ public sealed class BormState : IDisposable
         // Text a number field could not read is refused here exactly as a typed model's accessor refuses
         // it. A dictionary store takes anything, so without this "1.5" in an integer box was stored as a
         // string, passed every rule and reached the submit handler as text in a numeric field.
-        var rejected = IsUnreadableNumber(path, value);
+        var rejected = IsUnreadableEntry(path, value);
         if (!rejected) Data.SetValue(path, value);
         RecordConversionResult(path, value, rejected || Data.LastWriteFailed);
 
@@ -342,8 +363,8 @@ public sealed class BormState : IDisposable
     private void RunChangeHandler(string path)
     {
         const int maxDepth = 4;
-        if (!_hasChangeHandlers || !_initialised || _changeHandlerDepth >= maxDepth) return;
-        if (Definition.FindByPath(path)?.OnChanged is not { } handler) return;
+        if (!HasChangeHandlers || !_initialised || _restoring || _changeHandlerDepth >= maxDepth) return;
+        if (FindField(path)?.OnChanged is not { } handler) return;
 
         _changeHandlerDepth++;
         try
@@ -368,11 +389,16 @@ public sealed class BormState : IDisposable
     private void RecomputeValues(string? changedPath, int depth = 0)
     {
         const int maxCascade = 8;
-        if (!_hasComputed || depth > maxCascade) return;
+        if (!HasComputed || depth > maxCascade) return;
+        if (changedPath is null)
+        {
+            RecomputeAll(maxCascade);
+            return;
+        }
 
         // Materialised before the loop: writing a computed value runs the same side-effect sweeps a
         // typed-in one does, and those mutate the data the walk is reading.
-        foreach (var (field, path) in EnumerateFieldPaths().ToList())
+        foreach (var (field, path) in PathsOf(_index.Computed))
         {
             if (field.Computed is null) continue;
 
@@ -401,6 +427,48 @@ public sealed class BormState : IDisposable
     }
 
     /// <summary>
+    /// Evaluates every computed field — when the form is created, or rebased onto new values — by
+    /// passes over all of them in schema order, repeated while any value still moves.
+    /// </summary>
+    /// <remarks>
+    /// Cascading from each value as it changed, the way a single edit does, walked every formula again
+    /// per formula that moved: seeding a two-hundred-line invoice whose lines each compute a total
+    /// walked the whole invoice two hundred times. A pass already reaches every formula, so a second
+    /// pass is all a value computed late in the first one needs, and a set of formulas feeding each
+    /// other in a cycle settles in at most <paramref name="maxPasses"/> of them. What a changed value
+    /// sets off — clearing a field it hides, reloading choices it drives, a change handler — runs once
+    /// per changed field, after the values have settled, so each of those sees the final figures.
+    /// </remarks>
+    private void RecomputeAll(int maxPasses)
+    {
+        HashSet<string>? changed = null;
+        for (var pass = 0; pass <= maxPasses; pass++)
+        {
+            var moved = false;
+            foreach (var (field, path) in PathsOf(_index.Computed))
+            {
+                var next = field.Computed!(new BormComputedContext(Data, path, BormPath.Parent(path)));
+                if (SameValue(Data.GetValue(path), next)) continue;
+
+                Data.SetValue(path, next);
+                TrackDirty(path);
+                (changed ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase)).Add(path);
+                moved = true;
+            }
+            if (!moved) break;
+        }
+
+        if (changed is null) return;
+        foreach (var path in changed)
+        {
+            ClearHiddenValues(path);
+            InvalidateDependentOptions(path);
+            RunChangeHandler(path);
+            FieldChanged?.Invoke(path);
+        }
+    }
+
+    /// <summary>
     /// Whether two values are the same answer. Numbers compare by value whatever their CLR type: a
     /// formula returning <c>5</c> for a <c>decimal</c> property is read back as <c>5m</c>, and
     /// <see cref="object.Equals(object?, object?)"/> calling those different made every recompute a
@@ -415,15 +483,23 @@ public sealed class BormState : IDisposable
     }
 
     /// <summary>
-    /// Whether <paramref name="value"/> is text a numeric field cannot read. Only a field with no CLR
-    /// type of its own or a numeric one is judged: a typed model's accessor refuses such text already,
-    /// and a field whose property is a string holds whatever it is given.
+    /// Whether <paramref name="value"/> is text a numeric, month or week field cannot read. Only a field
+    /// with no CLR type of its own (or, for a number, a numeric one) is judged: a typed model's accessor
+    /// refuses such text already, and a field whose property is a string otherwise holds whatever it
+    /// is given.
     /// </summary>
-    private bool IsUnreadableNumber(string path, object? value)
+    private bool IsUnreadableEntry(string path, object? value)
     {
         if (value is not string { Length: > 0 } text) return false;
-        if (Definition.FindByPath(path) is not { Type: BormFieldType.Integer or BormFieldType.Number or BormFieldType.Range } field)
+        if (FindField(path) is not { Type: BormFieldType.Integer or BormFieldType.Number or BormFieldType.Range
+                or BormFieldType.Month or BormFieldType.Week } field)
             return false;
+
+        // A month or a week held as text — no CLR type, or a string property — is the picker's own
+        // form or nothing; a browser without a picker shows a plain text box, and anything typed into
+        // it would otherwise be stored as though it were a period.
+        if (field.Type is BormFieldType.Month or BormFieldType.Week)
+            return (field.ValueType is null || field.ValueType == typeof(string)) && !BormPeriod.TryParse(text.Trim(), field.Type, out _);
 
         if (field.ValueType is { } declared)
         {
@@ -511,7 +587,11 @@ public sealed class BormState : IDisposable
     }
 
     private BormValidationMessage ConversionMessage(string path)
-        => new(path, Text(BormMessageKeys.Conversion, _conversionErrors[path]));
+        => new(path, Text(BormMessageKeys.Conversion, _conversionErrors[path]))
+        {
+            Code = BormMessageKeys.Conversion,
+            Source = BormValidationSource.Conversion
+        };
 
     /// <summary>
     /// Resolves a piece of the library's own text (see <see cref="BormMessageKeys"/>) through the
@@ -520,6 +600,162 @@ public sealed class BormState : IDisposable
     /// form — buttons, placeholders and repeater labels included, not only the validation messages.
     /// </summary>
     public string Text(string key, params object?[] args) => Messages.Get(key, args);
+
+    // ---------------------------------------------------------------- schema text
+
+    private IBormSchemaLocalizer? _schemaLocalizer;
+    private bool _schemaLocalizerResolved;
+
+    /// <summary>
+    /// A piece of the schema's own text, translated: what the registered <see cref="IBormSchemaLocalizer"/>
+    /// says for <paramref name="key"/>, else what the document's <see cref="BormDefinition.Translations"/>
+    /// say for the current UI culture, else <paramref name="text"/> as written. The built-in components
+    /// render every label, help text, placeholder, option and title through this; a custom renderer
+    /// should too.
+    /// </summary>
+    public string? Localize(string key, string? text)
+    {
+        if (!_schemaLocalizerResolved)
+        {
+            _schemaLocalizer = Services?.GetService(typeof(IBormSchemaLocalizer)) as IBormSchemaLocalizer;
+            _schemaLocalizerResolved = true;
+        }
+
+        if (_schemaLocalizer?.Localize(key, text) is { } localized) return localized;
+        if (Definition.Translations.Count > 0)
+        {
+            if (_language is { } language)
+            {
+                // By name alone, so it needs no culture data: de-CH, then de.
+                for (var name = language; ; name = name[..name.LastIndexOf('-')])
+                {
+                    if (Definition.Translations.TryGetValue(name, out var table) && table.TryGetValue(key, out var translated))
+                        return translated;
+                    if (name.LastIndexOf('-') <= 0) break;
+                }
+            }
+            else
+            {
+                for (var culture = CultureInfo.CurrentUICulture; ; culture = culture.Parent)
+                {
+                    if (Definition.Translations.TryGetValue(culture.Name, out var table) && table.TryGetValue(key, out var translated))
+                        return translated;
+                    if (culture.Name.Length == 0) break;
+                }
+            }
+        }
+        return text;
+    }
+
+    private string? _language;
+
+    /// <summary>
+    /// The language this form's own text is read out in - a culture name, <c>de</c> or <c>pt-BR</c> - whatever
+    /// the page's culture is. Null (the default) follows <see cref="CultureInfo.CurrentUICulture"/>.
+    /// </summary>
+    /// <remarks>
+    /// For a form shown in a language other than the page's - a public form in the visitor's language - and for
+    /// an application with no culture data to switch to: under <c>InvariantGlobalization</c>, common on
+    /// WebAssembly, the UI culture is always the invariant one and no translation would ever apply. The
+    /// document's <see cref="BormDefinition.Translations"/> are looked up by this name, then by the name with
+    /// its last part dropped (<c>de-CH</c>, then <c>de</c>). <see cref="BormView"/> marks the form with it as its
+    /// <c>lang</c>, so a screen reader reads it in that language. A registered <see cref="IBormSchemaLocalizer"/>
+    /// is asked as before, and finds its culture its own way.
+    /// </remarks>
+    public string? Language
+    {
+        get => _language;
+        set
+        {
+            var language = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+            if (string.Equals(language, _language, StringComparison.OrdinalIgnoreCase)) return;
+            _language = language;
+            NotifyChanged();
+        }
+    }
+
+    /// <summary>The language the schema's text is read out in right now: <see cref="Language"/>, else the UI culture's.</summary>
+    internal string TextLanguage => _language ?? CultureInfo.CurrentUICulture.Name;
+
+    /// <summary>Whether anything could translate the schema's text — so a form that has nothing to translate pays nothing for it.</summary>
+    private bool Translates
+    {
+        get
+        {
+            if (!_schemaLocalizerResolved) Localize(string.Empty, null);
+            return _schemaLocalizer is not null || Definition.Translations.Count > 0;
+        }
+    }
+
+    /// <summary>
+    /// The key a field's texts are translated under: its <see cref="BormFieldDefinition.TextKey"/>, or its
+    /// path with the rows taken out (<c>Lines[2].Product</c> is <c>Lines.Product</c>).
+    /// </summary>
+    public static string TextKeyOf(BormFieldDefinition field, string path)
+    {
+        if (field.TextKey is { Length: > 0 } key) return key;
+        if (path.IndexOf('[') < 0) return path;
+
+        var sb = new System.Text.StringBuilder(path.Length);
+        for (var i = 0; i < path.Length; i++)
+        {
+            if (path[i] != '[') { sb.Append(path[i]); continue; }
+            var close = path.IndexOf(']', i);
+            if (close < 0) break;
+            i = close;
+        }
+        return sb.ToString();
+    }
+
+    /// <summary>The field's label, translated, or null when it has none.</summary>
+    public string? LabelOf(BormFieldDefinition field, string path) => SchemaText(field, path, ".label", field.Label);
+
+    /// <summary>The field's help text, translated.</summary>
+    public string? HelpOf(BormFieldDefinition field, string path) => SchemaText(field, path, ".help", field.HelpText);
+
+    /// <summary>The field's placeholder, translated.</summary>
+    public string? PlaceholderOf(BormFieldDefinition field, string path) => SchemaText(field, path, ".placeholder", field.Placeholder);
+
+    /// <summary>The text before the field's input, translated.</summary>
+    public string? PrefixOf(BormFieldDefinition field, string path) => SchemaText(field, path, ".prefix", field.Prefix);
+
+    /// <summary>The text after the field's input, translated.</summary>
+    public string? SuffixOf(BormFieldDefinition field, string path) => SchemaText(field, path, ".suffix", field.Suffix);
+
+    /// <summary>A step's title, translated, falling back to its id.</summary>
+    public string StepTitleOf(BormStep step) => Localize($"steps.{step.Id}.title", step.Title) ?? step.Id;
+
+    /// <summary>A step's description, translated.</summary>
+    public string? StepDescriptionOf(BormStep step) => Localize($"steps.{step.Id}.description", step.Description);
+
+    /// <summary>The form's title, translated.</summary>
+    public string? FormTitle => Localize("form.title", Definition.Title);
+
+    /// <summary>The form's description, translated.</summary>
+    public string? FormDescription => Localize("form.description", Definition.Description);
+
+    private string? SchemaText(BormFieldDefinition field, string path, string suffix, string? text)
+        => Translates ? Localize(TextKeyOf(field, path) + suffix, text) : text;
+
+    // A field's own options with their labels translated, per culture: the options sit on the render path
+    // of every choice control, and translating every label of every render would be the cost of a form
+    // that had nothing to translate at all.
+    private readonly Dictionary<BormFieldDefinition, (string Culture, IReadOnlyList<BormSelectOption> Options)> _localizedOptions = [];
+
+    private IReadOnlyList<BormSelectOption> LocalizedOptions(BormFieldDefinition field, string path, IReadOnlyList<BormSelectOption> options)
+    {
+        if (options.Count == 0 || !Translates) return options;
+
+        var culture = TextLanguage;
+        if (_localizedOptions.TryGetValue(field, out var cached) && cached.Culture == culture) return cached.Options;
+
+        var key = TextKeyOf(field, path) + ".options.";
+        var localized = options
+            .Select(o => Localize(key + o.Value, o.Label) is { } label && !ReferenceEquals(label, o.Label) ? o with { Label = label } : o)
+            .ToList();
+        _localizedOptions[field] = (culture, localized);
+        return localized;
+    }
 
     // Resolved once. A repeater asks for four labels per row per render, and a container lookup for
     // each of them is pure waste — the registration cannot change for the life of a form anyway.
@@ -578,12 +814,40 @@ public sealed class BormState : IDisposable
     /// "undo" or "you have unsaved work" prompt bound to <see cref="IsFormDirty"/> must not fire for it.
     /// This is how <c>dirtyFields</c> behaves in React Hook Form and TanStack Form.
     /// </summary>
-    private void TrackDirty(string path)
+    /// <param name="path">The path whose value changed.</param>
+    /// <param name="rowsFollowed">
+    /// True when <paramref name="path"/> is a list whose rows were added, removed or reordered rather
+    /// than replaced: the rows' own state has followed them (see <see cref="RemapArrayIndices"/>), and
+    /// what they hold is as it was.
+    /// </param>
+    private void TrackDirty(string path, bool rowsFollowed = false)
     {
         if (_initialValues.TryGetValue(path, out var initial) && MatchesInitial(initial, Data.GetValue(path)))
             _dirty.Remove(path);
         else
             _dirty.Add(path);
+
+        // Every change of value passes through here, and a value that moved is one no verdict has been
+        // given on yet — nor has the object or list holding it, whose own rules may read it.
+        ForgetValidated(path, beneath: !rowsFollowed);
+    }
+
+    private void ForgetValidated(string path, bool beneath = true)
+    {
+        if (_validated.Count == 0) return;
+        if (beneath) RemovePathsUnder(_validated, path);
+        else _validated.Remove(path);
+        for (var parent = BormPath.Parent(path); parent.Length > 0; parent = BormPath.Parent(parent))
+            _validated.Remove(parent);
+    }
+
+    /// <summary>Records <paramref name="path"/>, and every field beneath it, as judged by a pass that just finished.</summary>
+    private void MarkValidated(string path)
+    {
+        _validated.Add(path);
+        if (FindField(path) is not { IsContainer: true }) return;
+        foreach (var (_, candidate) in EnumerateFieldPaths())
+            if (BormPath.IsAtOrUnder(candidate, path)) _validated.Add(candidate);
     }
 
     /// <summary>
@@ -665,7 +929,7 @@ public sealed class BormState : IDisposable
     /// is evaluated against that row, exactly as <see cref="IsVisible"/> and <see cref="IsDisabled"/> do.
     /// </summary>
     public bool IsReadOnly(BormFieldDefinition field, string? path = null)
-        => ReadOnly || field.ReadOnly
+        => ReadOnly || field.ReadOnly || (IsSubmitting && ReadOnlyWhileSubmitting)
            || (field.ReadOnlyWhen is not null && field.ReadOnlyWhen.Evaluate(ScopeFor(path)));
 
     /// <summary>Whether a field is required right now, taking <see cref="BormFieldDefinition.RequiredWhen"/> into account.</summary>
@@ -693,7 +957,7 @@ public sealed class BormState : IDisposable
             }
 
             prefix = BormPath.Combine(prefix, segment.Name!);
-            if (prefix.Length < path.Length && Definition.FindByPath(prefix) is { IsContainer: true } container
+            if (prefix.Length < path.Length && FindField(prefix) is { IsContainer: true } container
                 && !IsVisible(container, prefix))
                 return false;
         }
@@ -716,15 +980,16 @@ public sealed class BormState : IDisposable
     /// </summary>
     private void ClearHiddenValues(string changedPath)
     {
-        if (!_hasClearOnHide) return;
+        if (!HasClearOnHide) return;
 
         // Materialised: clearing a hidden container changes the live array counts the walk reads.
         List<string>? cleared = null;
-        foreach (var (field, path) in EnumerateFieldPaths().ToList())
+        foreach (var (field, path) in PathsOf(_index.ClearOnHide))
         {
-            if (!field.ClearOnHide || field.VisibleWhen is null) continue;
-            if (!DependsOn(field.VisibleWhen, changedPath, BormPath.Parent(path))) continue;
-            if (field.VisibleWhen.Evaluate(ScopeFor(path))) continue;
+            // The index only lists fields that have a condition.
+            var condition = field.VisibleWhen!;
+            if (!DependsOn(condition, changedPath, BormPath.Parent(path))) continue;
+            if (condition.Evaluate(ScopeFor(path))) continue;
             if (Data.GetValue(path) is null) continue;
 
             Data.SetValue(path, null);
@@ -781,8 +1046,9 @@ public sealed class BormState : IDisposable
             return _loadedOptions.TryGetValue(path, out var loaded) ? loaded : Array.Empty<BormSelectOption>();
 
         // The schema's own list is handed back as-is when it already is a read-only list (the default),
-        // because this sits on the render path and copying it per render would be pure waste.
-        return field.Options as IReadOnlyList<BormSelectOption> ?? field.Options.ToList();
+        // because this sits on the render path and copying it per render would be pure waste — unless
+        // its labels are to be translated, which happens once per culture.
+        return LocalizedOptions(field, path, field.Options as IReadOnlyList<BormSelectOption> ?? field.Options.ToList());
     }
 
     /// <summary>True while a field's <see cref="BormFieldDefinition.OptionsProvider"/> is running.</summary>
@@ -819,8 +1085,26 @@ public sealed class BormState : IDisposable
     /// </summary>
     public async ValueTask EnsureOptionsAsync(BormFieldDefinition field, string path)
     {
-        if (field.OptionsProvider is null || _loadedOptions.ContainsKey(path) || !_optionsInFlight.Add(path))
-            return;
+        if (field.OptionsProvider is null || _loadedOptions.ContainsKey(path)) return;
+
+        // A search has nothing to ask until enough has been typed — except, when the field opens holding
+        // a value, for the one option behind it, so the box shows a label rather than a bare id.
+        string? search = null;
+        if (field.SearchMinLength is { } minLength)
+        {
+            var typed = _searchText.TryGetValue(path, out var text) ? text : null;
+            var resolving = typed is null && Data.GetValue(path) is not null;
+            // Nothing typed yet is an empty search, which a minimum of zero runs ("the top results").
+            search = resolving ? null : typed ?? string.Empty;
+            if (!resolving && search!.Length < minLength)
+            {
+                _loadedOptions[path] = Array.Empty<BormSelectOption>();
+                OptionsVersion++;
+                return;
+            }
+        }
+
+        if (!_optionsInFlight.Add(path)) return;
 
         var cts = new CancellationTokenSource();
         _optionsCts[path] = cts;
@@ -833,7 +1117,11 @@ public sealed class BormState : IDisposable
             // Scoped like every other context the form hands out, so a provider on a repeater's
             // template reading ctx.Value("Country") gets this row's country — the same thing its
             // dependsOn: "Country" already means. An absolute path still resolves from the root.
-            var ctx = new BormOptionsContext(field, path, ScopeFor(path), Services, cts.Token);
+            var ctx = new BormOptionsContext(field, path, ScopeFor(path), Services, cts.Token)
+            {
+                SearchText = search,
+                CurrentValue = Data.GetValue(path)
+            };
             var options = await field.OptionsProvider(ctx);
             if (!cts.IsCancellationRequested) _loadedOptions[path] = options;
         }
@@ -873,6 +1161,90 @@ public sealed class BormState : IDisposable
         }
     }
 
+    /// <summary>
+    /// Runs a field's search (see <see cref="BormFieldDefinition.SearchMinLength"/>) for
+    /// <paramref name="text"/>, replacing the options it offers. A search still running for earlier text
+    /// is cancelled, and its answer never lands on top of this one. The built-in combobox calls this as
+    /// the user types; a custom control can too.
+    /// </summary>
+    public ValueTask SearchOptionsAsync(BormFieldDefinition field, string path, string? text)
+    {
+        ArgumentNullException.ThrowIfNull(field);
+        if (field.SearchMinLength is null) return EnsureOptionsAsync(field, path);
+
+        var term = string.IsNullOrWhiteSpace(text) ? string.Empty : text.Trim();
+        if (_searchText.TryGetValue(path, out var current) && current == term && _loadedOptions.ContainsKey(path))
+            return ValueTask.CompletedTask;
+
+        _searchText[path] = term;
+        CancelOptionsLoad(path);
+        _loadedOptions.Remove(path);
+        _optionsErrors.Remove(path);
+        OptionsVersion++;
+        return EnsureOptionsAsync(field, path);
+    }
+
+    /// <summary>The text a search field's current results answer, or null before anything was typed.</summary>
+    public string? SearchText(string path) => _searchText.TryGetValue(path, out var text) ? text : null;
+
+    /// <summary>Remembers the option the user picked from a search, so its label outlives the results it came from.</summary>
+    internal void RememberChoice(string path, BormSelectOption option) => _chosen[path] = option;
+
+    /// <summary>The option last picked for a search field, when its value is still the one held.</summary>
+    internal BormSelectOption? ChosenOption(string path, string value)
+        => _chosen.TryGetValue(path, out var option) && string.Equals(option.Value, value, StringComparison.Ordinal) ? option : null;
+
+    // Entries a control is still turning into a value: a search field's text, committed before its results
+    // arrived. A submit made meanwhile judged, and sent, the value from before — the click lands while the
+    // lookup that would have changed it is still out.
+    private readonly List<Task> _pendingEntries = [];
+
+    /// <summary>
+    /// Tells the form an entry is still being turned into a value, so a submit or a wizard's Next made
+    /// meanwhile waits for it rather than judging the value from before. The built-in search combobox does this
+    /// for text committed before its results arrived; a control of your own whose commit awaits something - a
+    /// lookup, a parse on the server - passes that work here and awaits what it returns.
+    /// </summary>
+    public async Task TrackEntryAsync(Task entry)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        _pendingEntries.Add(entry);
+        try
+        {
+            await entry;
+        }
+        finally
+        {
+            _pendingEntries.Remove(entry);
+        }
+    }
+
+    /// <summary>
+    /// Waits for every entry still being committed, including any made while waiting. A failure is not this
+    /// caller's to report: the control that made the entry is awaiting it too.
+    /// </summary>
+    private async Task SettleEntriesAsync()
+    {
+        while (_pendingEntries.Count > 0)
+        {
+            await Task.WhenAll(_pendingEntries.ToArray())
+                .ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing | ConfigureAwaitOptions.ContinueOnCapturedContext);
+            _pendingEntries.RemoveAll(entry => entry.IsCompleted);
+        }
+    }
+
+    /// <summary>
+    /// Refuses an entry a field cannot take — a search field answered with text that names no result —
+    /// the way an entry a number field cannot read is refused: the model keeps its last value, and the
+    /// field says why.
+    /// </summary>
+    internal void RefuseEntry(string path, string text)
+    {
+        RecordConversionResult(path, text, failed: true);
+        _touched.Add(path);
+        NotifyChanged();
+    }
+
     /// <summary>Drops cached options for a field so the next render reloads them.</summary>
     public void InvalidateOptions(string path)
     {
@@ -904,14 +1276,13 @@ public sealed class BormState : IDisposable
     /// </param>
     private void InvalidateDependentOptions(string changedPath, bool rowsMoved = false)
     {
-        if (!_hasOptionDependencies) return;
+        if (!HasOptionDependencies) return;
 
         // Two passes: the walk only collects, so it never sees the data change underneath it, and a
         // form where nothing depends on this path — which is almost every write — allocates nothing.
         List<(string Path, bool KeepValue)>? targets = null;
-        foreach (var (field, path) in EnumerateFieldPaths())
+        foreach (var (field, path) in PathsOf(_index.CascadingOptions))
         {
-            if (field.OptionsProvider is null) continue;
             // Matched the same way conditions and computed dependencies are: relative to the object that
             // owns the field, so a cascading select inside a repeater row can name its sibling
             // ("Country") and still reload, and by prefix, so naming a container covers its members.
@@ -937,13 +1308,16 @@ public sealed class BormState : IDisposable
             CancelOptionsLoad(path);
             _loadedOptions.Remove(path);
             _optionsErrors.Remove(path);
+            // A search typed against the old dependency is not a search for the new one.
+            _searchText.Remove(path);
             OptionsVersion++;
             // The previously selected option may no longer exist in the new list. This is judged on the
             // dependency, not on whether the choices happen to be cached: a value written before the
             // control ever rendered — a prefill, a restored draft — was still chosen for the old
             // dependency, and leaving it because no list had been fetched yet is how a city survives the
             // country it belongs to.
-            if (keepValue || Data.GetValue(path) is null) continue;
+            // A draft being restored hands over the answer together with its dependency.
+            if (keepValue || _restoring || Data.GetValue(path) is null) continue;
 
             Data.SetValue(path, null);
             TrackDirty(path);
@@ -1047,7 +1421,10 @@ public sealed class BormState : IDisposable
             invalid = true;
             break;
         }
-        return new BormFieldState(IsTouched(path), IsDirty(path), invalid, messages, IsValidatingField(path));
+        return new BormFieldState(IsTouched(path), IsDirty(path), invalid, messages, IsValidatingField(path))
+        {
+            IsValidated = _validated.Contains(path)
+        };
     }
 
     /// <summary>Validates the entire form and stores the results.</summary>
@@ -1066,12 +1443,18 @@ public sealed class BormState : IDisposable
         NotifyChanged();
         try
         {
-            var messages = await _validator.ValidateAsync(Definition, Data, Services, null, includeAsync, token);
+            // The validator says which fields it judged, from the paths it built anyway: walking the schema
+            // again built every row's paths a second time, a third of what a full validation allocated.
+            // A field a condition hides was not judged, and does not read as validated.
+            var judged = new List<string>(Math.Max(_validated.Count, 16));
+            var messages = await _validator.ValidateAsync(Definition, Data, Services, null, includeAsync, judged, token);
             var merged = await MergeExternal(messages);
             token.ThrowIfCancellationRequested();
             ReplaceAllMessages(DropHiddenStepMessages(merged));
             ReapplyConversionErrors();
             HasValidated = true;
+            _validated.Clear();
+            foreach (var path in judged) _validated.Add(path);
             return !HasErrors;
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
@@ -1122,7 +1505,7 @@ public sealed class BormState : IDisposable
             var messages = new List<BormValidationMessage>();
             foreach (var path in step.Fields)
             {
-                if (Definition.FindByPath(path) is not { } field) continue;
+                if (FindField(path) is not { } field) continue;
                 messages.AddRange(await _validator.ValidateFieldAsync(field, path, Data, Services, includeAsync, token));
             }
 
@@ -1135,7 +1518,7 @@ public sealed class BormState : IDisposable
                 {
                     var hidden = HiddenFieldPaths();
                     messages.AddRange(external.Where(m =>
-                        step.Fields.Any(f => BormPath.IsAtOrUnder(m.FieldPath, f)) && !IsHidden(m.FieldPath, hidden)));
+                        step.Fields.Any(f => BormPath.IsAtOrUnder(m.FieldPath, f)) && !IsHidden(m.FieldPath, hidden)).Select(AsExternal));
                 }
             }
 
@@ -1146,6 +1529,7 @@ public sealed class BormState : IDisposable
             {
                 RemoveMessagesUnder(path);
                 _touched.Add(path);
+                MarkValidated(path);
             }
             foreach (var m in messages)
             {
@@ -1194,7 +1578,7 @@ public sealed class BormState : IDisposable
     public async ValueTask<bool> ValidateFieldAsync(string path, bool includeAsync = true)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
-        if (Definition.FindByPath(path) is not { } field) return false;
+        if (FindField(path) is not { } field) return false;
 
         await ValidateFieldAsync(field, path, includeAsync);
         return true;
@@ -1229,6 +1613,9 @@ public sealed class BormState : IDisposable
             // an object or a row being revalidated as a whole — has to report itself again, not only
             // one standing at the path itself.
             ReapplyConversionErrors(path);
+            // Only once every rule has had its say: a run that skipped the async ones (a keystroke)
+            // has not judged a field that has any.
+            if (includeAsync || !HasAsyncRules(field)) MarkValidated(path);
             NotifyChanged();
         }
         catch (OperationCanceledException) when (cts.IsCancellationRequested)
@@ -1296,14 +1683,13 @@ public sealed class BormState : IDisposable
     /// </remarks>
     public async ValueTask ValidateDependentsAsync(string changedPath, bool includeAsync = false)
     {
-        if (!_hasRevalidateOn || string.IsNullOrEmpty(changedPath)) return;
+        if (!HasRevalidateOn || string.IsNullOrEmpty(changedPath)) return;
 
         // Materialised before the loop: validating writes messages, and a rule is free to read the
         // live arrays the walk is enumerating.
         List<(BormFieldDefinition Field, string Path)>? dependents = null;
-        foreach (var (field, path) in EnumerateFieldPaths())
+        foreach (var (field, path) in PathsOf(_index.Revalidating))
         {
-            if (field.RevalidateOn.Count == 0) continue;
             // A field is never its own dependent; its own write already validated it.
             if (string.Equals(path, changedPath, StringComparison.OrdinalIgnoreCase)) continue;
             if (!DeclaresPath(field.RevalidateOn, changedPath, BormPath.Parent(path))) continue;
@@ -1347,12 +1733,12 @@ public sealed class BormState : IDisposable
     /// </summary>
     public bool NormalizeAll()
     {
-        if (!_hasNormalizers) return false;
+        if (!HasNormalizers) return false;
 
         var changed = false;
         // Materialised: normalising writes values, and a write runs sweeps that mutate the live arrays
         // this walk is reading.
-        foreach (var (field, path) in EnumerateFieldPaths().ToList())
+        foreach (var (field, path) in PathsOf(_index.Normalizing))
             changed |= NormalizeField(field, path);
         return changed;
     }
@@ -1427,7 +1813,7 @@ public sealed class BormState : IDisposable
     /// <summary>Adds a message for a path (used by server-side validation results).</summary>
     public void SetServerError(string path, string message)
     {
-        AddMessage(new BormValidationMessage(path, message));
+        AddMessage(new BormValidationMessage(path, message) { Source = BormValidationSource.Server });
         _touched.Add(path);
         NotifyChanged();
     }
@@ -1436,17 +1822,60 @@ public sealed class BormState : IDisposable
     /// Replaces the form's messages with those returned by a server round-trip, so a failed POST can
     /// surface its errors on the right fields in one call.
     /// </summary>
+    /// <remarks>
+    /// The messages stand until the field they are on is next validated — the user correcting it, or
+    /// the next submit — at which point the field's own rules speak for it again; the server is asked
+    /// again on that next submit. A message on a path the form does not show still blocks
+    /// <see cref="IsValid"/>, and is listed by the error summary.
+    /// </remarks>
     public void SetServerErrors(IEnumerable<BormValidationMessage> messages)
     {
         ArgumentNullException.ThrowIfNull(messages);
 
-        ReplaceAllMessages(messages.ToList());
+        ReplaceAllMessages(messages.Select(m => m.Source == BormValidationSource.Rule ? m with { Source = BormValidationSource.Server } : m).ToList());
         // A value the model could never accept is not something the server has an opinion about — it
         // never reached the server — so replacing the message set must not take its complaint with it,
         // leaving the box showing text the model does not hold and nothing at all to say why.
         ReapplyConversionErrors();
         foreach (var m in _messages.Keys) _touched.Add(m);
         NotifyChanged();
+    }
+
+    /// <summary>
+    /// Replaces the form's messages with the errors of a failed request, in the shape ASP.NET Core's
+    /// <c>ValidationProblemDetails.Errors</c> — and most other validation responses — use: each key a
+    /// field, each value what is wrong with it. Pass <c>problem.Errors</c> as it arrives.
+    /// </summary>
+    /// <param name="errors">Field keys and their messages.</param>
+    /// <param name="mapPath">
+    /// Turns a key into the path of the field it belongs to, for an API whose names are not the form's
+    /// — a prefix to drop, a property renamed on the way. Return null (or empty) to put the messages on
+    /// the form as a whole. Without it, a key is taken as a path as it is, minus the <c>$.</c>
+    /// System.Text.Json puts in front of the ones it reports; <c>""</c> and <c>$</c> mean the whole
+    /// request. Paths match the form's without regard to case, so <c>lines[0].product</c> from a
+    /// camel-cased API lands on <c>Lines[0].Product</c>.
+    /// </param>
+    public void SetServerErrors(IEnumerable<KeyValuePair<string, string[]>> errors, Func<string, string?>? mapPath = null)
+    {
+        ArgumentNullException.ThrowIfNull(errors);
+
+        var messages = new List<BormValidationMessage>();
+        foreach (var (key, texts) in errors)
+        {
+            var path = mapPath is null ? DefaultServerPath(key) : mapPath(key) ?? string.Empty;
+            foreach (var text in texts ?? [])
+                if (!string.IsNullOrEmpty(text))
+                    messages.Add(new BormValidationMessage(path, text) { Source = BormValidationSource.Server });
+        }
+        SetServerErrors(messages);
+
+        static string DefaultServerPath(string key)
+        {
+            var path = key.Trim();
+            if (path is "$") return string.Empty;
+            if (path.StartsWith("$.", StringComparison.Ordinal)) path = path[2..];
+            return path;
+        }
     }
 
     public void ClearMessages()
@@ -1464,24 +1893,108 @@ public sealed class BormState : IDisposable
 
     // ---------------------------------------------------------------- submission
 
+    private CancellationTokenSource? _submitCts;
+
+    /// <summary>
+    /// How the last submit ended — <see cref="BormSubmitOutcome.None"/> before the first one and after
+    /// <see cref="Reset()"/>. What a "Saved." banner, a "could not save, try again" message and a
+    /// retry button all bind to, each to the case that is theirs.
+    /// </summary>
+    public BormSubmitOutcome SubmitOutcome { get; private set; }
+
+    /// <summary>
+    /// The exception the last submit's handler threw, when <see cref="SubmitOutcome"/> is
+    /// <see cref="BormSubmitOutcome.Failed"/>; null otherwise.
+    /// </summary>
+    public Exception? SubmitError { get; private set; }
+
+    /// <summary>
+    /// When true, every field is read-only while the submit handler runs, so what the user types into
+    /// the form during a slow save cannot leave the form showing values other than the ones saved.
+    /// Off by default: a form that keeps working while it saves is what most people expect.
+    /// </summary>
+    public bool ReadOnlyWhileSubmitting
+    {
+        get => _readOnlyWhileSubmitting;
+        set
+        {
+            if (_readOnlyWhileSubmitting == value) return;
+            _readOnlyWhileSubmitting = value;
+            NotifyChanged();
+        }
+    }
+
+    private bool _readOnlyWhileSubmitting;
+
+    /// <summary>
+    /// Asks a submit in flight to stop: the token its handler was given is signalled. A handler that
+    /// honours it ends the submit as <see cref="BormSubmitOutcome.Cancelled"/>; one that has already
+    /// sent its request is free to finish, since whether a request that reached the server took effect
+    /// is the server's to say. Does nothing when no submit is running.
+    /// </summary>
+    public void CancelSubmit() => _submitCts?.Cancel();
+
+    /// <summary>
+    /// The token of the submit in flight — what a handler wired through <c>BormView.OnValidSubmit</c>,
+    /// which is handed only the state, passes on to its request. <see cref="CancellationToken.None"/>
+    /// while no submit is running.
+    /// </summary>
+    public CancellationToken SubmitCancellationToken => _submitCts?.Token ?? CancellationToken.None;
+
     /// <summary>
     /// Runs the full submit cycle: marks every field touched, validates, and invokes
     /// <paramref name="onValid"/> or <paramref name="onInvalid"/>. Concurrent calls are ignored while a
     /// submit is in flight, which is what stops a double-click from posting twice.
     /// </summary>
     /// <returns>
-    /// Whether the form passed validation. A call ignored because a submit was already in flight returns
-    /// false without validating anything or raising either callback, and leaves the messages as the
-    /// earlier attempt left them; check <see cref="IsSubmitting"/> before calling to tell the two apart.
+    /// Whether the submit got through: the form passed validation and the handler returned without
+    /// throwing, being cancelled or recording errors of its own (see <see cref="SubmitOutcome"/>). A call
+    /// ignored because a submit was already in flight returns false without validating anything or
+    /// raising either callback, and leaves the messages as the earlier attempt left them; check
+    /// <see cref="IsSubmitting"/> before calling to tell the two apart.
     /// </returns>
-    public async Task<bool> SubmitAsync(
+    public Task<bool> SubmitAsync(
         Func<BormState, Task>? onValid = null,
+        Func<BormState, Task>? onInvalid = null)
+        => SubmitAsync(onValid is null ? null : (state, _) => onValid(state), onInvalid);
+
+    /// <summary>
+    /// Runs the full submit cycle, handing <paramref name="onValid"/> a token that
+    /// <see cref="CancelSubmit"/> and disposing the form signal — the one to pass on to the request the
+    /// handler makes.
+    /// </summary>
+    /// <remarks>
+    /// <para>The cycle, in order:</para>
+    /// <list type="number">
+    /// <item>Every normalizer runs, so the values judged and sent are the tidied ones.</item>
+    /// <item>Every field is marked touched and the whole form is validated, async rules included.</item>
+    /// <item>Invalid: <paramref name="onInvalid"/> runs, and the outcome is <see cref="BormSubmitOutcome.Invalid"/>.</item>
+    /// <item>
+    /// Valid: <paramref name="onValid"/> runs. If it records errors — <see cref="SetServerErrors(IEnumerable{BormValidationMessage})"/>
+    /// with what a rejected request said — the outcome is <see cref="BormSubmitOutcome.Rejected"/>; if it
+    /// throws, <see cref="BormSubmitOutcome.Failed"/>, with the exception in <see cref="SubmitError"/> and
+    /// rethrown; if it stops because the token was cancelled, <see cref="BormSubmitOutcome.Cancelled"/>;
+    /// otherwise <see cref="BormSubmitOutcome.Succeeded"/>.
+    /// </item>
+    /// </list>
+    /// <para>
+    /// Nothing about a failure is retried behind the application's back, and the user's values are left
+    /// exactly as they were, so "try again" is simply submitting again.
+    /// </para>
+    /// </remarks>
+    public async Task<bool> SubmitAsync(
+        Func<BormState, CancellationToken, Task>? onValid,
         Func<BormState, Task>? onInvalid = null)
     {
         if (IsSubmitting) return false;
 
         IsSubmitting = true;
         IsSubmitSuccessful = false;
+        SubmitOutcome = BormSubmitOutcome.None;
+        SubmitError = null;
+        // An answer still being committed is part of what is submitted. Waited for while the form already says
+        // it is submitting, so a second press is refused rather than racing the first.
+        await SettleEntriesAsync();
         RegisterSubmitAttempt();
         // Tidy first, judge second. A field the user never visited never blurred, so this is the only
         // chance its normalizer gets — and a value that reaches the handler should be the one that
@@ -1489,24 +2002,55 @@ public sealed class BormState : IDisposable
         NormalizeAll();
         MarkAllTouched();
         NotifyChanged();
+
+        var cts = _submitCts = new CancellationTokenSource();
         try
         {
             var valid = await ValidateAsync();
-            if (valid)
+            if (!valid)
             {
-                if (onValid is not null) await onValid(this);
-                // Set only once the handler has returned: a save that threw did not succeed, and a
-                // "Saved" banner bound to this must not appear over the top of the failure.
-                IsSubmitSuccessful = true;
+                SubmitOutcome = BormSubmitOutcome.Invalid;
+                if (onInvalid is not null) await onInvalid(this);
+                return false;
             }
-            else if (onInvalid is not null)
+
+            if (onValid is not null)
             {
-                await onInvalid(this);
+                try
+                {
+                    await onValid(this, cts.Token);
+                }
+                catch (OperationCanceledException) when (cts.IsCancellationRequested)
+                {
+                    SubmitOutcome = BormSubmitOutcome.Cancelled;
+                    return false;
+                }
+                catch (Exception ex)
+                {
+                    SubmitOutcome = BormSubmitOutcome.Failed;
+                    SubmitError = ex;
+                    throw;
+                }
             }
-            return valid;
+
+            // A handler that posted the form and was told what was wrong with it put those errors on the
+            // fields; that is a submit that did not go through, whatever the client-side rules thought.
+            if (HasErrors)
+            {
+                SubmitOutcome = BormSubmitOutcome.Rejected;
+                return false;
+            }
+
+            // Set only once the handler has returned: a save that threw did not succeed, and a
+            // "Saved" banner bound to this must not appear over the top of the failure.
+            SubmitOutcome = BormSubmitOutcome.Succeeded;
+            IsSubmitSuccessful = true;
+            return true;
         }
         finally
         {
+            if (ReferenceEquals(_submitCts, cts)) _submitCts = null;
+            cts.Dispose();
             IsSubmitting = false;
             NotifyChanged();
         }
@@ -1589,6 +2133,98 @@ public sealed class BormState : IDisposable
     }
 
     /// <summary>
+    /// <see cref="Snapshot()"/>, leaving out what <paramref name="options"/> asks — the values of fields
+    /// the form is hiding, which a hidden branch keeps unless it is <c>ClearOnHide</c>, and sensitive
+    /// values, which must not be written anywhere that outlives the page.
+    /// </summary>
+    /// <remarks>
+    /// This is how a payload gets the semantics a schema-driven form needs: a hidden answer is
+    /// <em>retained</em> while the user can still toggle back to it, <em>cleared</em> when the field
+    /// is <c>ClearOnHide</c>, and <em>excluded</em> from what is sent when the snapshot says so.
+    /// </remarks>
+    public IReadOnlyDictionary<string, object?> Snapshot(BormSnapshotOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        List<string>? hidden = null;
+        if (options.ExcludeHidden)
+        {
+            hidden = HiddenFieldPaths();
+            hidden.AddRange(HiddenStepFields());
+        }
+
+        var values = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (field, path) in EnumerateFieldPaths())
+        {
+            if (field.Type == BormFieldType.Object || field.IsPresentational) continue;
+            if (options.ExcludeSensitive && field.IsSensitive) continue;
+            if (hidden is not null && IsHidden(path, hidden)) continue;
+            values[path] = Data.GetValue(path);
+        }
+        return values;
+    }
+
+    // ---------------------------------------------------------------- drafts (see BormDraft)
+
+    /// <summary>Every field of the schema with its live path, in schema order — what a draft walks.</summary>
+    internal IEnumerable<(BormFieldDefinition Field, string Path)> FieldPaths() => EnumerateFieldPaths();
+
+    /// <summary>Whether the paths a draft restore writes are being written right now.</summary>
+    private bool _restoring;
+
+    /// <summary>
+    /// Runs a draft restore. Change handlers stay silent — the draft already holds whatever they would
+    /// write, and running them would overwrite answers it restores — and a cascading select keeps the
+    /// answer it is given rather than having it emptied by the dependency it arrived with.
+    /// </summary>
+    internal void Restoring(Action restore)
+    {
+        _restoring = true;
+        try
+        {
+            Batch(restore);
+        }
+        finally
+        {
+            _restoring = false;
+        }
+    }
+
+    /// <summary>
+    /// Whether every row <paramref name="path"/> runs through exists. Visibility is not asked about: a
+    /// draft keeps the answers of a branch the user had hidden, exactly as the form itself does.
+    /// </summary>
+    internal bool IsLiveForRestore(string path)
+    {
+        var prefix = string.Empty;
+        foreach (var segment in BormPath.Parse(path))
+        {
+            if (segment.IsIndex)
+            {
+                if (prefix.Length == 0 || segment.Index >= ArrayCount(prefix)) return false;
+                prefix = BormPath.Combine(prefix, segment.Index);
+            }
+            else
+            {
+                prefix = BormPath.Combine(prefix, segment.Name!);
+            }
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Writes one restored value as an unsaved change, or reports that the field can no longer hold it —
+    /// without leaving a complaint on the field about an entry the user never typed.
+    /// </summary>
+    internal bool TryRestoreValue(string path, object? value)
+    {
+        Write(path, value, markTouched: false);
+        if (!_conversionErrors.Remove(path)) return true;
+        RemoveMessagesFor(path);
+        return false;
+    }
+
+    /// <summary>
     /// Drops everything accumulated since the form opened — messages, touched/dirty flags, conversion
     /// failures, cached options, the submit count and the wizard position — without touching the data.
     /// </summary>
@@ -1597,6 +2233,7 @@ public sealed class BormState : IDisposable
         _messages.Clear();
         _touched.Clear();
         _dirty.Clear();
+        _validated.Clear();
         _conversionErrors.Clear();
 
         // Cancel before clearing: a load still in flight would otherwise land in the cache after the
@@ -1604,6 +2241,8 @@ public sealed class BormState : IDisposable
         foreach (var path in _optionsCts.Keys.ToList()) CancelOptionsLoad(path);
         _loadedOptions.Clear();
         _optionsErrors.Clear();
+        _searchText.Clear();
+        _chosen.Clear();
         OptionsVersion++;
 
         // Likewise a validation still waiting on an async rule: it judged the data as it was before
@@ -1623,6 +2262,8 @@ public sealed class BormState : IDisposable
         SubmitCount = 0;
         HasValidated = false;
         IsSubmitSuccessful = false;
+        SubmitOutcome = BormSubmitOutcome.None;
+        SubmitError = null;
         CurrentStepIndex = 0;
         FurthestStepIndex = 0;
         ClampStep();
@@ -1658,6 +2299,7 @@ public sealed class BormState : IDisposable
         RemoveMessagesUnder(path);
         RemovePathsUnder(_touched, path);
         RemovePathsUnder(_dirty, path);
+        ForgetValidated(path);
         foreach (var key in _conversionErrors.Keys.Where(k => BormPath.IsAtOrUnder(k, path)).ToList())
             _conversionErrors.Remove(key);
 
@@ -1711,11 +2353,22 @@ public sealed class BormState : IDisposable
         NotifyChanged();
     }
 
-    private void CaptureInitialValues()
+    /// <param name="onlyMissing">
+    /// Baseline only the paths that have none yet — fields a changed schema has just added — so the
+    /// ones that were already there keep measuring dirtiness from where the form opened.
+    /// </param>
+    private void CaptureInitialValues(bool onlyMissing = false)
     {
         foreach (var (field, path) in EnumerateFieldPaths())
         {
             if (field.IsPresentational || field.Type == BormFieldType.Object) continue;
+            if (onlyMissing)
+            {
+                if (_initialValues.ContainsKey(path)) continue;
+                // Its value is its baseline from here on, so whatever moved it into place — a default,
+                // a computed value — is not a change the user made.
+                _dirty.Remove(path);
+            }
 
             var value = Data.GetValue(path);
             _initialValues[path] = HoldsManyValues(field, value)
@@ -1756,7 +2409,7 @@ public sealed class BormState : IDisposable
     {
         get
         {
-            if (!Definition.IsWizard) return null;
+            if (!Definition.HasSteps) return null;
             ClampStep();
             return Definition.Steps[CurrentStepIndex];
         }
@@ -1769,7 +2422,7 @@ public sealed class BormState : IDisposable
     /// </summary>
     private void ClampStep()
     {
-        if (!Definition.IsWizard) return;
+        if (!Definition.HasSteps) return;
         if (CurrentStepIndex >= 0 && CurrentStepIndex < Definition.Steps.Count
             && IsStepVisible(Definition.Steps[CurrentStepIndex])) return;
 
@@ -1803,7 +2456,8 @@ public sealed class BormState : IDisposable
     /// </summary>
     private List<string> HiddenStepFields()
     {
-        if (!Definition.IsWizard) return [];
+        // Whatever the layout: a tab or section a condition takes away hides its fields as a step does.
+        if (!Definition.HasSteps) return [];
 
         var hidden = Definition.Steps.Where(s => !IsStepVisible(s)).SelectMany(s => s.Fields).ToList();
         if (hidden.Count == 0) return hidden;
@@ -1856,11 +2510,15 @@ public sealed class BormState : IDisposable
         }
     }
 
-    /// <summary>Advances to the next visible step after validating the current one.</summary>
+    /// <summary>
+    /// Advances to the next visible step — after validating the current one on a wizard; tabs and
+    /// sections are moved between freely and validated together on submit.
+    /// </summary>
     public async ValueTask<bool> NextStepAsync()
     {
-        if (!Definition.IsWizard) return false;
-        if (!await ValidateStepAsync()) return false;
+        if (!Definition.HasSteps) return false;
+        await SettleEntriesAsync();
+        if (Definition.IsWizard && !await ValidateStepAsync()) return false;
 
         for (var i = CurrentStepIndex + 1; i < Definition.Steps.Count; i++)
         {
@@ -1878,7 +2536,7 @@ public sealed class BormState : IDisposable
     /// <summary>Moves to the previous visible step (no validation).</summary>
     public void PreviousStep()
     {
-        if (!Definition.IsWizard) return;
+        if (!Definition.HasSteps) return;
         for (var i = CurrentStepIndex - 1; i >= 0; i--)
         {
             if (IsStepVisible(Definition.Steps[i]))
@@ -1898,7 +2556,7 @@ public sealed class BormState : IDisposable
     /// </summary>
     public void GoToStep(int index)
     {
-        if (!Definition.IsWizard || index < 0 || index >= Definition.Steps.Count) return;
+        if (!Definition.HasSteps || index < 0 || index >= Definition.Steps.Count) return;
         if (!IsStepVisible(Definition.Steps[index])) return;
         if (index == CurrentStepIndex) return;
 
@@ -1933,7 +2591,9 @@ public sealed class BormState : IDisposable
     public int InsertArrayItem(BormFieldDefinition arrayField, string arrayPath, int index)
         => InsertItem(arrayField, arrayPath, index, notify: true);
 
-    private int InsertItem(BormFieldDefinition arrayField, string arrayPath, int index, bool notify)
+    // `track`: whether to judge the list's dirtiness now. A caller adding many rows judges it once at the
+    // end, since the judgement compares the whole list with its baseline and per row that is quadratic.
+    private int InsertItem(BormFieldDefinition arrayField, string arrayPath, int index, bool notify, bool track = true)
     {
         var list = EnsureList(arrayPath);
         var target = Math.Clamp(index, 0, list.Count);
@@ -1941,14 +2601,43 @@ public sealed class BormState : IDisposable
 
         if (!EditList(arrayPath, list, l => l.Insert(target, item))) return -1;
 
-        RemapArrayIndices(arrayPath, i => i >= target ? i + 1 : i);
-        TrackDirty(arrayPath);
+        // Appending moves no row, so there is nothing to re-key.
+        if (target < list.Count - 1 || list.IsFixedSize) RemapArrayIndices(arrayPath, i => i >= target ? i + 1 : i);
+        if (track) TrackDirty(arrayPath, rowsFollowed: true);
         // The row was created a line ago, so every value in it is a placeholder the default may replace.
         ApplyItemDefaults(arrayField, BormPath.Combine(arrayPath, target), overwrite: true);
         // Recompute, the ClearOnHide sweep, the cascading-options sweep and the list's own rules (the
         // collection-size rule may now pass) all run once, together, in NotifyArrayChanged below.
         if (notify) NotifyArrayChanged(arrayPath);
         return target;
+    }
+
+    /// <summary>
+    /// Makes a list hold exactly <paramref name="count"/> rows — new ones appended with their defaults,
+    /// surplus ones taken off the end — and settles the form once, however many rows that was. Adding
+    /// them one at a time settles it once per row, and with a total computed over the list that is a walk
+    /// of every row for every row added. Returns how many rows the list holds afterwards.
+    /// </summary>
+    internal int SetRowCount(BormFieldDefinition arrayField, string arrayPath, int count)
+    {
+        var current = ArrayCount(arrayPath);
+        if (count == current) return current;
+
+        if (count > current)
+        {
+            for (var i = current; i < count; i++)
+                if (InsertItem(arrayField, arrayPath, int.MaxValue, notify: false, track: false) < 0) break;
+        }
+        else if (Data.GetValue(arrayPath) is IList list)
+        {
+            var keep = count;
+            if (!EditList(arrayPath, list, l => { while (l.Count > keep) l.RemoveAt(l.Count - 1); })) return ArrayCount(arrayPath);
+            RemapArrayIndices(arrayPath, i => i >= keep ? null : i);
+        }
+
+        TrackDirty(arrayPath, rowsFollowed: true);
+        NotifyArrayChanged(arrayPath);
+        return ArrayCount(arrayPath);
     }
 
     /// <summary>
@@ -1990,7 +2679,7 @@ public sealed class BormState : IDisposable
     private void RevalidateArrayRules(string arrayPath)
     {
         if (!IsSubmitted && !IsTouched(arrayPath) && MessagesFor(arrayPath).Count == 0) return;
-        if (Definition.FindByPath(arrayPath) is not { } field) return;
+        if (FindField(arrayPath) is not { } field) return;
 
         // Only what can be answered now. A rule that does not finish synchronously cannot be waited for
         // from here, and its verdict is left as it stands rather than guessed at.
@@ -2038,7 +2727,7 @@ public sealed class BormState : IDisposable
             Data.SetValue(targetPath + relative, copy);
         }
 
-        TrackDirty(arrayPath);
+        TrackDirty(arrayPath, rowsFollowed: true);
         // Recompute, the ClearOnHide sweep, the cascading-options sweep and the list's own rules all
         // run once, together, in NotifyArrayChanged below — judged on the row holding its copy.
         NotifyArrayChanged(arrayPath);
@@ -2108,7 +2797,7 @@ public sealed class BormState : IDisposable
         // touched flags and loaded choices.
         RemapArrayIndices(arrayPath, i => i == index ? null : i > index ? i - 1 : i);
 
-        TrackDirty(arrayPath);
+        TrackDirty(arrayPath, rowsFollowed: true);
         // Recompute, the ClearOnHide sweep, the cascading-options sweep and the list's own rules all
         // run once, together, in NotifyArrayChanged below.
         NotifyArrayChanged(arrayPath);
@@ -2131,7 +2820,7 @@ public sealed class BormState : IDisposable
         // Indices shifted, so everything keyed by them is re-keyed to follow its item — the row the
         // user just moved keeps the error it already showed instead of appearing to be fixed.
         RemapArrayIndices(arrayPath, index => MapMovedIndex(index, from, to));
-        TrackDirty(arrayPath);
+        TrackDirty(arrayPath, rowsFollowed: true);
         // Recompute, the ClearOnHide sweep and the cascading-options sweep all run once, together, in
         // NotifyArrayChanged below. Reordering changes neither the size nor the set of values, so the
         // list's own rules have nothing new to say.
@@ -2156,7 +2845,7 @@ public sealed class BormState : IDisposable
         if (!swapped) return;
 
         RemapArrayIndices(arrayPath, index => index == first ? second : index == second ? first : index);
-        TrackDirty(arrayPath);
+        TrackDirty(arrayPath, rowsFollowed: true);
         // Recompute, the ClearOnHide sweep and the cascading-options sweep all run once, together, in
         // NotifyArrayChanged below. A swap is a reorder: the list's own rules have nothing new to say.
         NotifyArrayChanged(arrayPath, revalidate: false);
@@ -2174,7 +2863,7 @@ public sealed class BormState : IDisposable
         if (!EditList(arrayPath, list, l => l.Clear())) return;
 
         RemapArrayIndices(arrayPath, _ => null);
-        TrackDirty(arrayPath);
+        TrackDirty(arrayPath, rowsFollowed: true);
         // Recompute, the ClearOnHide sweep, the cascading-options sweep and the list's own rules (the
         // collection-size rule is judged against the field itself) all run once, together, in
         // NotifyArrayChanged below.
@@ -2240,9 +2929,13 @@ public sealed class BormState : IDisposable
         // answer a question whose answer had not changed since the first one.
         var hidden = HiddenFieldPaths();
         return hidden.Count == 0
-            ? messages.Concat(external).ToList()
-            : messages.Concat(external.Where(m => !IsHidden(m.FieldPath, hidden))).ToList();
+            ? messages.Concat(external.Select(AsExternal)).ToList()
+            : messages.Concat(external.Where(m => !IsHidden(m.FieldPath, hidden)).Select(AsExternal)).ToList();
     }
+
+    /// <summary>Marks a message from an external validator as such, unless it already says where it came from.</summary>
+    private static BormValidationMessage AsExternal(BormValidationMessage message)
+        => message.Source == BormValidationSource.Rule ? message with { Source = BormValidationSource.External } : message;
 
     /// <summary>
     /// Every field path the schema is currently hiding. An external validator — a FluentValidation
@@ -2253,13 +2946,13 @@ public sealed class BormState : IDisposable
     private List<string> HiddenFieldPaths()
     {
         var hidden = new List<string>();
-        foreach (var (field, fieldPath) in EnumerateFieldPaths())
+        if (_index.Conditional.Length == 0) return hidden;
+        foreach (var (field, fieldPath) in PathsOf(_index.Conditional))
         {
-            if (field.VisibleWhen is null) continue;
             // Already inside a hidden branch: its own condition cannot make it visible again, and
             // testing it would be one condition evaluation per descendant of every hidden container.
             if (IsHidden(fieldPath, hidden)) continue;
-            if (!field.VisibleWhen.Evaluate(ScopeFor(fieldPath))) hidden.Add(fieldPath);
+            if (!field.VisibleWhen!.Evaluate(ScopeFor(fieldPath))) hidden.Add(fieldPath);
         }
         return hidden;
     }
@@ -2366,9 +3059,12 @@ public sealed class BormState : IDisposable
         RemapMessages(arrayPath, map);
         RemapKeys(_touched, arrayPath, map);
         RemapKeys(_dirty, arrayPath, map);
+        RemapKeys(_validated, arrayPath, map);
         RemapKeys(_conversionErrors, arrayPath, map);
         RemapKeys(_loadedOptions, arrayPath, map);
         RemapKeys(_optionsErrors, arrayPath, map);
+        RemapKeys(_searchText, arrayPath, map);
+        RemapKeys(_chosen, arrayPath, map);
         OptionsVersion++;
 
         // Work still in flight was started for whichever row stood at its path at the time, and its
@@ -2622,40 +3318,129 @@ public sealed class BormState : IDisposable
     /// </summary>
     private IEnumerable<(BormFieldDefinition Field, string Path)> EnumerateFieldPaths()
     {
-        foreach (var field in Definition.Fields)
-            foreach (var pair in Descend(field, field.Name))
-                yield return pair;
-
-        IEnumerable<(BormFieldDefinition, string)> Descend(BormFieldDefinition field, string path)
+        // One iterator and one stack for the whole walk, pushed in reverse so they pop in schema order.
+        // An iterator nested per field allocated one per field — a quarter of a megabyte on every full
+        // validation of a two-thousand-field form, only to list paths. A list's rows are still counted
+        // when the walk reaches the list, after the consumer has seen everything before it.
+        var pending = new Stack<(BormFieldDefinition, string)>();
+        var fields = Definition.Fields;
+        for (var f = 0; f < fields.Count; f++)
         {
-            yield return (field, path);
+            pending.Push((fields[f], fields[f].Name));
+            while (pending.Count > 0)
+            {
+                var (field, path) = pending.Pop();
+                yield return (field, path);
 
-            if (field.Type == BormFieldType.Object)
-            {
-                foreach (var child in field.Children)
-                    foreach (var pair in Descend(child, BormPath.Combine(path, child.Name)))
-                        yield return pair;
-            }
-            else if (field.Type == BormFieldType.Array && field.ItemTemplate is { } template)
-            {
-                var count = ArrayCount(path);
-                for (var i = 0; i < count; i++)
+                if (field.Type == BormFieldType.Object)
                 {
-                    var itemPath = BormPath.Combine(path, i);
-                    if (template.Type == BormFieldType.Object)
+                    PushChildren(pending, field, path);
+                }
+                else if (field.Type == BormFieldType.Array && field.ItemTemplate is { } template)
+                {
+                    for (var i = ArrayCount(path) - 1; i >= 0; i--)
                     {
-                        foreach (var child in template.Children)
-                            foreach (var pair in Descend(child, BormPath.Combine(itemPath, child.Name)))
-                                yield return pair;
-                    }
-                    else
-                    {
-                        foreach (var pair in Descend(template, itemPath))
-                            yield return pair;
+                        var itemPath = BormPath.Combine(path, i);
+                        if (template.Type == BormFieldType.Object) PushChildren(pending, template, itemPath);
+                        else pending.Push((template, itemPath));
                     }
                 }
             }
         }
+
+        static void PushChildren(Stack<(BormFieldDefinition, string)> pending, BormFieldDefinition owner, string ownerPath)
+        {
+            for (var c = owner.Children.Count - 1; c >= 0; c--)
+                pending.Push((owner.Children[c], BormPath.Combine(ownerPath, owner.Children[c].Name)));
+        }
+    }
+
+    /// <summary>
+    /// The live paths of the given fields — every row of a list each sits in — materialised, since the
+    /// sweeps that ask write values that change the very row counts the expansion reads.
+    /// </summary>
+    private List<(BormFieldDefinition Field, string Path)> PathsOf(BormFieldTemplate[] templates)
+    {
+        var paths = new List<(BormFieldDefinition, string)>(templates.Length);
+        foreach (var template in templates) template.Expand(_countRows, paths);
+        return paths;
+    }
+
+    /// <summary>
+    /// The definition a path resolves to — <see cref="BormDefinition.FindByPath"/>, remembered per
+    /// template so a lookup on the write path is a dictionary read rather than a walk of the schema.
+    /// </summary>
+    internal BormFieldDefinition? FindField(string path) => _index.Find(path);
+
+    /// <summary>
+    /// How a view rendering this form moves to a step — with focus following it — when something inside
+    /// it asks to. Set by <see cref="BormView"/> while it shows the form.
+    /// </summary>
+    internal Action<int>? StepNavigator { get; set; }
+
+    /// <summary>The Blazor edit context provided for this form, when one is — by a view, or by hand.</summary>
+    internal BormEditContextAdapter? EditContextAdapter { get; set; }
+
+    /// <summary>Moves on every time <see cref="NotifyDefinitionChanged"/> runs, for views that cache what they derived from the schema.</summary>
+    internal int DefinitionVersion { get; private set; }
+
+    /// <summary>
+    /// Tells the state that its <see cref="Definition"/> was changed in place — a field added, removed
+    /// or reconfigured, a rule or condition swapped, a step inserted — so it can catch up without being
+    /// rebuilt and losing what the user has entered.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The state works out once which fields take part in each of the sweeps a write runs — clearing
+    /// hidden values, recomputing, reloading cascading choices, revalidating dependents — because those
+    /// run on every keystroke. A schema edited under it is otherwise only half seen: a computed field
+    /// added to a form that had none was never computed, and a <c>ClearOnHide</c> added later never
+    /// cleared anything.
+    /// </para>
+    /// <para>
+    /// Catching up means: new fields get their defaults and their baselines (so they are not dirty),
+    /// computed values are evaluated again, and everything recorded against a path the schema no
+    /// longer has — messages, touched and dirty flags, rejected entries, loaded choices, work in
+    /// flight — is dropped, so a removed field cannot keep blocking a submit from beyond the page.
+    /// The values the user entered stay; a removed field's value is left in the model, where the
+    /// application can still read it. Replacing the whole <see cref="Definition"/> object is a
+    /// different matter: build a new state for it (<c>BormView</c> does that by itself).
+    /// </para>
+    /// </remarks>
+    public void NotifyDefinitionChanged()
+    {
+        _index = new BormFieldIndex(Definition);
+        _localizedOptions.Clear();
+        DefinitionVersion++;
+
+        ApplyDefaults();
+        SeedRequiredArrayItems();
+        RecomputeValues(changedPath: null);
+        CaptureInitialValues(onlyMissing: true);
+
+        bool Gone(string path) => path.Length > 0 && FindField(path) is null;
+        foreach (var path in _messages.Keys.Where(Gone).ToList()) _messages.Remove(path);
+        _touched.RemoveWhere(Gone);
+        _dirty.RemoveWhere(Gone);
+        _validated.RemoveWhere(Gone);
+        foreach (var path in _initialValues.Keys.Where(Gone).ToList()) _initialValues.Remove(path);
+        foreach (var path in _conversionErrors.Keys.Where(Gone).ToList()) _conversionErrors.Remove(path);
+        foreach (var path in _loadedOptions.Keys.Where(Gone).ToList()) _loadedOptions.Remove(path);
+        foreach (var path in _optionsErrors.Keys.Where(Gone).ToList()) _optionsErrors.Remove(path);
+        foreach (var path in _searchText.Keys.Where(Gone).ToList()) _searchText.Remove(path);
+        foreach (var path in _chosen.Keys.Where(Gone).ToList()) _chosen.Remove(path);
+        foreach (var path in _optionsCts.Keys.Where(Gone).ToList()) CancelOptionsLoad(path);
+        foreach (var path in _fieldValidationCts.Keys.Where(Gone).ToList())
+        {
+            _fieldValidationCts.Remove(path, out var cts);
+            cts!.Cancel();
+            cts.Dispose();
+            _validatingFields.Remove(path);
+        }
+        OptionsVersion++;
+
+        ClampStep();
+        NotifyChanged();
     }
 
     private IEnumerable<string> EnumerateValuePaths()
@@ -2705,6 +3490,9 @@ public sealed class BormState : IDisposable
         _formValidationCts?.Cancel();
         _formValidationCts?.Dispose();
         _formValidationCts = null;
+
+        // A save still running for a form that is gone is told so; the submit disposes its own source.
+        _submitCts?.Cancel();
 
         foreach (var cts in _fieldValidationCts.Values.Concat(_optionsCts.Values))
         {

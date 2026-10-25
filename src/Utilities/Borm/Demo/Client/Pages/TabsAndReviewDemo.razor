@@ -1,0 +1,142 @@
+﻿@page "/tabs-review"
+@implements IDisposable
+
+<PageTitle>Tabs, sections &amp; review · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Tabs, sections &amp; review</h1>
+    <p class="bb-subtitle">
+        A customer record is not a process to walk through in order. The same steps a wizard uses can be shown
+        as tabs, an accordion or titled sections the user moves around in freely - and a review step reads every
+        answer back in words, with a way back to change it.
+    </p>
+</div>
+
+<div class="bb-note">
+    Switch the layout: the answers stay, because they live in the model. Tabs follow the WAI-ARIA pattern - one
+    tab stop, then the arrow keys, Home and End. Submit with something missing and the form turns to the first
+    tab that needs attention; a tab holding errors says how many, in words as well as colour. Choose the
+    <em>Solo</em> plan and the onboarding step goes away, from the review too. The billing month and the kick-off
+    week use the browser's month and week pickers.
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
+    <div class="bb-toolbar">
+        <span class="bb-soft" id="layout-label">Layout</span>
+        <div class="bb-segmented" role="group" aria-labelledby="layout-label">
+            @foreach (var option in Layouts)
+            {
+                <button type="button" aria-pressed="@(option == _layout ? "true" : "false")" @onclick="() => SetLayout(option)">@option</button>
+            }
+        </div>
+    </div>
+    @* Keyed: a layout is a different arrangement of the same state, so the view is built afresh for it. *@
+    <BormView @key="_layout" State="_state" OnValidSubmit="HandleSubmit" SubmitText="Save record" ShowErrorSummary="true" />
+</div>
+
+@if (_submitted)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Saved ✓</strong><pre>@_json</pre></div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+"""
+@page "/tabs-review"
+
+<BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Save record" ShowErrorSummary="true" />
+
+@code {
+    private readonly CustomerRecord _model = new();
+    private BormState _state = default!;
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<CustomerRecord>()
+            .Title("Customer record")
+            .StepLayout(BormStepLayout.Tabs)            // or Accordion, Sections, Wizard
+            .Field(x => x.Name, f => f.Required())
+            .Field(x => x.Email, f => f.Required().Email())
+            .Field(x => x.Phone, f => f.Autocomplete("tel"))
+            .Field(x => x.Plan, f => f.AsRadio()
+                .Options(("solo", "Solo"), ("team", "Team"), ("enterprise", "Enterprise")))
+            .Field(x => x.Seats, f => f.Range(1, 500).VisibleWhen("{Plan} != 'solo'"))
+            .Field(x => x.BillingFrom, f => f.AsMonth().Required())     // DateOnly: the 1st of the month
+            .Field(x => x.Paperless)
+            .Field(x => x.KickoffWeek, f => f.AsWeek())                 // string: "2026-W44"
+            .Field(x => x.Notes, f => f.AsTextArea(3))
+            .Review("summary", "Check the record")
+            .Step("contact", s => s.Title("Contact").Fields("Name", "Email", "Phone"))
+            .Step("plan", s => s.Title("Plan & billing").Fields("Plan", "Seats", "BillingFrom", "Paperless"))
+            .Step("onboarding", s => s.Title("Onboarding")
+                .Fields("KickoffWeek", "Notes")
+                .VisibleWhen("{Plan} != 'solo'"))
+            .Step("review", s => s.Title("Review").Fields("summary"))
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+    }
+
+    public void Dispose() => _state.Dispose();
+}
+""";
+
+    private static readonly BormStepLayout[] Layouts =
+        [BormStepLayout.Tabs, BormStepLayout.Accordion, BormStepLayout.Sections, BormStepLayout.Wizard];
+
+    private readonly CustomerRecord _model = new();
+    private BormStepLayout _layout = BormStepLayout.Tabs;
+    private BormState _state = default!;
+    private bool _submitted;
+    private string _json = "";
+
+    protected override void OnInitialized() => _state = new BormState(Schema(_layout), new BormModelDataAccessor(_model));
+
+    private static BormDefinition Schema(BormStepLayout layout) => BormBuilder.For<CustomerRecord>()
+        .Title("Customer record")
+        .StepLayout(layout)
+        .Field(x => x.Name, f => f.Required())
+        .Field(x => x.Email, f => f.Required().Email())
+        .Field(x => x.Phone, f => f.Autocomplete("tel"))
+        .Field(x => x.Plan, f => f.AsRadio()
+            .Options(("solo", "Solo"), ("team", "Team"), ("enterprise", "Enterprise")))
+        .Field(x => x.Seats, f => f.Range(1, 500).VisibleWhen("{Plan} != 'solo'"))
+        .Field(x => x.BillingFrom, f => f.AsMonth().Required())
+        .Field(x => x.Paperless)
+        .Field(x => x.KickoffWeek, f => f.AsWeek())
+        .Field(x => x.Notes, f => f.AsTextArea(3))
+        .Review("summary", "Check the record")
+        .Step("contact", s => s.Title("Contact").Fields("Name", "Email", "Phone"))
+        .Step("plan", s => s.Title("Plan & billing").Fields("Plan", "Seats", "BillingFrom", "Paperless"))
+        .Step("onboarding", s => s.Title("Onboarding")
+            .Fields("KickoffWeek", "Notes")
+            .VisibleWhen("{Plan} != 'solo'"))
+        .Step("review", s => s.Title("Review").Fields("summary"))
+        .Build();
+
+    private void SetLayout(BormStepLayout layout)
+    {
+        if (layout == _layout) return;
+
+        // The answers are in the model, so a state over the same model starts where the last one left off.
+        var previous = _state;
+        _layout = layout;
+        _state = new BormState(Schema(layout), new BormModelDataAccessor(_model));
+        previous.Dispose();
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+
+    public void Dispose() => _state.Dispose();
+}

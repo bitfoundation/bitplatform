@@ -17,7 +17,10 @@ namespace Bit.Borm;
 /// <c>minItems</c>/<c>maxItems</c>, <c>uniqueItems</c>, <c>$ref</c> into <c>$defs</c>/<c>definitions</c>
 /// (with its sibling keywords, and recursive references cut off at the cycle), <c>allOf</c> (merged),
 /// <c>if</c>/<c>then</c>/<c>else</c> and <c>dependentRequired</c>/<c>dependencies</c> (both mapped onto
-/// conditional requiredness).
+/// conditional requiredness), <c>dependentSchemas</c> and schema-valued <c>dependencies</c> (fields
+/// shown once their trigger is answered), and <c>oneOf</c>/<c>anyOf</c> unions of object shapes told
+/// apart by a property — a <c>const</c> per branch, or OpenAPI's <c>discriminator</c> — which become a
+/// choice and the fields each branch adds.
 /// </para>
 /// <para>
 /// UI intent that JSON Schema cannot express travels in <c>x-</c> extensions: <c>x-widget</c>,
@@ -139,6 +142,13 @@ public static class BormJsonSchemaImporter
         {
             form.Title = ReadString(merged, "title");
             form.Description = ReadString(merged, "description");
+            form.Version = ReadString(merged, "x-version");
+            ReadTranslations(merged, form);
+            // A layout this version does not know is read as the wizard every document had before.
+            if (ReadString(merged, "x-stepLayout") is { } layout && !int.TryParse(layout, out _)
+                && Enum.TryParse<BormStepLayout>(layout, ignoreCase: true, out var stepLayout)
+                && Enum.IsDefined(stepLayout))
+                form.StepLayout = stepLayout;
             if (TryReadInt(merged, "x-columns", out var cols))
                 form.Columns = Math.Max(1, cols);
 
@@ -152,6 +162,7 @@ public static class BormJsonSchemaImporter
 
             ApplyConditionalRequiredness(ctx, merged, form.Fields);
             ReadSteps(merged, form);
+            ReadFormRules(merged, form);
         }
         finally
         {
@@ -218,6 +229,7 @@ public static class BormJsonSchemaImporter
             Prefix = ReadString(schema, "x-prefix"),
             Suffix = ReadString(schema, "x-suffix"),
             Accept = ReadString(schema, "x-accept"),
+            TextKey = ReadString(schema, "x-i18n"),
             Required = required
         };
 
@@ -226,6 +238,7 @@ public static class BormJsonSchemaImporter
         if (ReadBool(schema, "readOnly") == true) field.ReadOnly = true;
         if (ReadBool(schema, "x-multiple") == true) field.Multiple = true;
         if (ReadBool(schema, "x-clearOnHide") == true) field.ClearOnHide = true;
+        if (ReadBool(schema, "x-sensitive") == true) field.Sensitive = true;
         if (ReadBool(schema, "x-autofocus") == true) field.Autofocus = true;
         if (ReadBool(schema, "x-showLabel") == false) field.ShowLabel = false;
         if (ReadBool(schema, "x-characterCount") == true) field.ShowCharacterCount = true;
@@ -260,6 +273,7 @@ public static class BormJsonSchemaImporter
         ApplyConstraints(field, schema);
         var valueKind = ApplyEnum(constChoices, field, schema, type);
         ApplyConditions(field, schema);
+        ApplyExpressions(field, schema);
 
         if (TryGet(schema, "default", out var def))
             field.DefaultValue = BormConditionJson.ReadValue(def);
@@ -481,6 +495,8 @@ public static class BormJsonSchemaImporter
             "hidden" => BormFieldType.Hidden,
             "static" => BormFieldType.Static,
             "switch" => BormFieldType.Checkbox,
+            "month" => BormFieldType.Month,
+            "week" => BormFieldType.Week,
             _ => field.Type
         };
 
@@ -814,13 +830,115 @@ public static class BormJsonSchemaImporter
     private static void ApplyConditions(BormFieldDefinition field, JsonElement schema)
     {
         if (TryGet(schema, "x-visibleWhen", out var visible))
-            field.VisibleWhen = BormConditionJson.Read(visible);
+            field.VisibleWhen = ReadCondition(field.Name, "x-visibleWhen", visible);
         if (TryGet(schema, "x-disabledWhen", out var disabled))
-            field.DisabledWhen = BormConditionJson.Read(disabled);
+            field.DisabledWhen = ReadCondition(field.Name, "x-disabledWhen", disabled);
         if (TryGet(schema, "x-readOnlyWhen", out var readOnly))
-            field.ReadOnlyWhen = BormConditionJson.Read(readOnly);
+            field.ReadOnlyWhen = ReadCondition(field.Name, "x-readOnlyWhen", readOnly);
         if (TryGet(schema, "x-requiredWhen", out var requiredWhen))
-            field.RequiredWhen = BormConditionJson.Read(requiredWhen);
+            field.RequiredWhen = ReadCondition(field.Name, "x-requiredWhen", requiredWhen);
+    }
+
+    /// <summary>
+    /// <c>x-computed</c> (an expression the field's value is derived from) and <c>x-rules</c> (expressions
+    /// the value must satisfy) — the two things a document can say about a field's value that JSON
+    /// Schema's own keywords cannot, and that would otherwise need code behind the form.
+    /// </summary>
+    private static void ApplyExpressions(BormFieldDefinition field, JsonElement schema)
+    {
+        if (ReadString(schema, "x-computed") is { Length: > 0 } text)
+        {
+            var expression = ParseExpression(field.Name, "x-computed", text);
+            field.Computed = expression.ToComputed();
+            field.ComputedDependencies.Clear();
+            foreach (var dependency in expression.Dependencies) field.ComputedDependencies.Add(dependency);
+            // The value is the form's to set, so the box is locked — unless the document says the user
+            // may override it, in which case the next change to a dependency overwrites what they typed.
+            if (ReadBool(schema, "readOnly") != false) field.ReadOnly = true;
+        }
+
+        if (!TryGet(schema, "x-rules", out var rules) || rules.ValueKind != JsonValueKind.Array) return;
+        foreach (var element in rules.EnumerateArray())
+        {
+            if (ReadRule(field.Name, element, formLevel: false) is not { } rule) continue;
+            field.Validators.Add(rule);
+            // As BormFieldBuilder.Must does: correcting another field the rule reads revalidates this one.
+            foreach (var dependency in rule.Expression.Dependencies)
+            {
+                if (string.Equals(dependency, field.Name, StringComparison.OrdinalIgnoreCase)) continue;
+                if (!field.RevalidateOn.Contains(dependency, StringComparer.OrdinalIgnoreCase)) field.RevalidateOn.Add(dependency);
+            }
+        }
+    }
+
+    /// <summary>
+    /// The root's <c>x-translations</c>: <c>{"de": {"Name.label": "Name", "form.title": "Bewerbung"}}</c> —
+    /// a culture's texts by the keys <see cref="IBormSchemaLocalizer"/> documents. Anything that is not
+    /// text under a culture is ignored rather than guessed at.
+    /// </summary>
+    private static void ReadTranslations(JsonElement schema, BormDefinition form)
+    {
+        if (!TryGet(schema, "x-translations", out var cultures) || cultures.ValueKind != JsonValueKind.Object) return;
+        foreach (var culture in cultures.EnumerateObject())
+        {
+            if (culture.Value.ValueKind != JsonValueKind.Object) continue;
+            var table = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var entry in culture.Value.EnumerateObject())
+                if (entry.Value.ValueKind == JsonValueKind.String && entry.Value.GetString() is { } text) table[entry.Name] = text;
+            if (table.Count > 0) form.Translations[culture.Name] = table;
+        }
+    }
+
+    /// <summary>The root's <c>x-rules</c>: expressions over the whole form, each optionally naming the field its message belongs on.</summary>
+    private static void ReadFormRules(JsonElement schema, BormDefinition form)
+    {
+        if (!TryGet(schema, "x-rules", out var rules) || rules.ValueKind != JsonValueKind.Array) return;
+        foreach (var element in rules.EnumerateArray())
+            if (ReadRule("(form)", element, formLevel: true) is { } rule) form.Validators.Add(rule);
+    }
+
+    /// <summary>
+    /// One rule: <c>{"expression": "...", "message": "...", "severity": "warning", "field": "..."}</c>,
+    /// or just the expression as a string. A rule with no expression is skipped; one whose expression
+    /// does not parse fails the import, for the reason <see cref="BormConditionJson.Read"/> gives.
+    /// </summary>
+    private static BormExpressionRule? ReadRule(string owner, JsonElement element, bool formLevel)
+    {
+        var text = element.ValueKind == JsonValueKind.String ? element.GetString() : ReadString(element, "expression");
+        if (string.IsNullOrWhiteSpace(text)) return null;
+
+        var severity = ReadString(element, "severity")?.Trim().ToLowerInvariant() switch
+        {
+            "warning" => BormValidationSeverity.Warning,
+            "info" => BormValidationSeverity.Info,
+            _ => BormValidationSeverity.Error
+        };
+        return new BormExpressionRule(ParseExpression(owner, "x-rules", text), ReadString(element, "message"), severity,
+            formLevel ? ReadString(element, "field") : null);
+    }
+
+    private static IBormCondition? ReadCondition(string owner, string keyword, JsonElement element)
+    {
+        try
+        {
+            return BormConditionJson.Read(element);
+        }
+        catch (BormExpressionException ex)
+        {
+            throw new FormatException($"{keyword} of '{owner}': {ex.Message}", ex);
+        }
+    }
+
+    private static BormExpression ParseExpression(string owner, string keyword, string text)
+    {
+        try
+        {
+            return BormExpression.Parse(text);
+        }
+        catch (BormExpressionException ex)
+        {
+            throw new FormatException($"{keyword} of '{owner}': {ex.Message}", ex);
+        }
     }
 
     // ---------------------------------------------------------------- conditional requiredness
@@ -989,7 +1107,7 @@ public static class BormJsonSchemaImporter
                     if (f.ValueKind == JsonValueKind.String && f.GetString() is { } name) step.Fields.Add(name);
 
             if (TryGet(element, "visibleWhen", out var visible))
-                step.VisibleWhen = BormConditionJson.Read(visible);
+                step.VisibleWhen = ReadCondition($"step {id}", "visibleWhen", visible);
 
             form.Steps.Add(step);
         }
@@ -1137,6 +1255,10 @@ public static class BormJsonSchemaImporter
                     if (current.ValueKind != JsonValueKind.Object || !current.TryGetProperty("allOf", out _)) break;
                     current = MergeAllOf(current);
                 }
+
+                // Subforms that depend on an answer — a property's dependentSchemas, or the schema-valued
+                // `dependencies` draft-07 and react-jsonschema-form write — become fields that show with it.
+                current = RewriteDependentSchemas(current, identity);
 
                 recursive = _recursionHit || identity.Any(IsExhausted);
                 return current;
@@ -1312,10 +1434,10 @@ public static class BormJsonSchemaImporter
         /// "optional string", and it describes exactly one control.
         /// </summary>
         /// <remarks>
-        /// A union of genuinely different object shapes is a different question — it needs a selector
-        /// and a subform that swaps with it — and guessing a branch would silently bind the user's
-        /// answers to the wrong one. Those are left alone rather than half-applied, on the same
-        /// principle as a condition that has no JSON form.
+        /// A union of object shapes that a property tells apart — a discriminated union — is rewritten
+        /// as the one object it renders as (see <see cref="RewriteDiscriminatedUnion"/>). Any other union
+        /// of genuinely different object shapes is left alone rather than half-applied: guessing a
+        /// branch would silently bind the user's answers to the wrong one.
         /// </remarks>
         public JsonElement CollapseUnion(JsonElement schema, ISet<string>? identity = null)
         {
@@ -1325,6 +1447,8 @@ public static class BormJsonSchemaImporter
             // A branch list of `const` values (with or without a null) is an enum with labels;
             // ReadChoices reads it where it stands, so the schema is handed back untouched.
             if (ConstBranches(schema) is not null) return schema;
+
+            if (RewriteDiscriminatedUnion(schema, union, identity) is { } rewritten) return rewritten;
 
             // Telling a null branch from a real one only needs each reference followed, not each
             // branch's own keywords merged in — and the question is settled by the second real branch,
@@ -1348,6 +1472,490 @@ public static class BormJsonSchemaImporter
             // allOf on either side is carried for MergeAllOf to fold, not dropped.
             ChargeMerge();
             return Merge([branch, Without(schema, union.Keyword)], keepAllOf: true);
+        }
+
+        /// <summary>
+        /// Rewrites a union of object shapes told apart by one property — <c>{"oneOf": [card, bank]}</c>
+        /// where each branch pins <c>kind</c> to its own <c>const</c> — as the single object a form
+        /// renders it as: the telling property becomes a required choice of the branches (labelled by
+        /// their titles), and every other property a branch adds shows only while that branch is
+        /// chosen, is cleared when it stops being, and is required while its branch requires it.
+        /// Returns null when the union is not one of these, which leaves it alone.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The telling property is OpenAPI's <c>discriminator.propertyName</c> when the schema names
+        /// one, otherwise the first property every branch pins to a different value. Without one there
+        /// is nothing in the data that says which branch an answer belongs to, and inventing a selector
+        /// the data does not hold would hand the application fields it never asked for — so such a
+        /// union is still left alone.
+        /// </para>
+        /// <para>
+        /// The result is ordinary JSON Schema plus the <c>x-</c> conditions the importer already reads,
+        /// so every branch property is built by the same code as any other — references, formats,
+        /// nesting and the budgets included. A property two branches share is shown for both; when they
+        /// describe it differently, the first description is used.
+        /// </para>
+        /// </remarks>
+        private JsonElement? RewriteDiscriminatedUnion(
+            JsonElement schema, (string Keyword, JsonElement Branches) union, ISet<string>? identity, string? knownDiscriminator = null)
+        {
+            // Settled first, as cheaply as the answer allows: a union of thousands of described
+            // references is an ordinary thing for a generator to write, and merging every branch only to
+            // find it is not one of these cost a merge per branch per field. Each branch is looked at
+            // through its references alone; only one composed with allOf has to be folded to be seen.
+            var openApi = TryGet(schema, "discriminator", out var openApiDiscriminator) ? openApiDiscriminator : (JsonElement?)null;
+            var named = knownDiscriminator ?? (openApi is { } n ? ReadString(n, "propertyName") : null);
+
+            // The properties every branch so far pins, while no property is named: once none is left there
+            // is nothing to tell the branches apart by, and the rest need not be looked at. Without this, a
+            // union of plain shapes — the commonest kind — was outlined in full for every field using it.
+            HashSet<string>? candidates = null;
+            var outline = new List<(JsonElement Raw, JsonElement Target)>();
+            foreach (var raw in union.Branches.EnumerateArray())
+            {
+                var target = Resolve(raw, followed: null, keepSiblings: false);
+                if (target.ValueKind == JsonValueKind.False || DeclaresOnlyNull(target)) continue;
+                if (target.ValueKind == JsonValueKind.Object && target.TryGetProperty("allOf", out _))
+                {
+                    var pointers = new HashSet<string>(StringComparer.Ordinal);
+                    Resolve(raw, pointers, keepSiblings: false);
+                    if (pointers.Any(IsExhausted) || pointers.Any(_merging.Contains)) return null;
+                    target = MergeAllOf(target);
+                }
+                if (!TryGet(target, "properties", out var shape) || shape.ValueKind != JsonValueKind.Object) return null;
+
+                if (named is not null)
+                {
+                    if (PinnedValue(target, named) is null && MappedValue(openApi, raw) is null) return null;
+                }
+                else if (candidates is null)
+                {
+                    candidates = new HashSet<string>(StringComparer.Ordinal);
+                    foreach (var property in shape.EnumerateObject())
+                        if (PinnedValue(target, property.Name) is not null) candidates.Add(property.Name);
+                }
+                else
+                {
+                    candidates.RemoveWhere(c => PinnedValue(target, c) is null);
+                }
+                if (candidates is { Count: 0 }) return null;
+
+                outline.Add((raw, target));
+            }
+            // A union of one object is no choice at all — unless the property that chooses is already
+            // known, where one branch is "these extra questions for that one answer".
+            if (outline.Count < (knownDiscriminator is null ? 2 : 1)) return null;
+
+            var discriminator = named ?? FindDiscriminator(outline.Select(b => b.Target).ToList());
+            if (discriminator is null) return null;
+
+            var values = new List<JsonElement>();
+            foreach (var (raw, target) in outline)
+            {
+                if ((PinnedValue(target, discriminator) ?? MappedValue(openApi, raw)) is not { } value) return null;
+                values.Add(value);
+            }
+            if (values.Select(v => v.GetRawText()).Distinct(StringComparer.Ordinal).Count() != values.Count) return null;
+
+            // Only now is each branch read in full — its references' sibling keywords, its allOf.
+            var branches = new List<JsonElement>();
+            var pointersSeen = new List<HashSet<string>>();
+            foreach (var (raw, _) in outline)
+            {
+                var pointers = new HashSet<string>(StringComparer.Ordinal);
+                var target = Resolve(raw, pointers);
+                // A branch that is the shape being expanded again is a recursive union; it is not one
+                // of these, and following it would expand forever.
+                if (pointers.Any(IsExhausted) || pointers.Any(_merging.Contains)) return null;
+
+                ChargeMerge();
+                var branch = MergeAllOf(target);
+                if (branch.ValueKind != JsonValueKind.Object
+                    || !TryGet(branch, "properties", out var properties) || properties.ValueKind != JsonValueKind.Object)
+                    return null;
+                if (TryGet(branch, "type", out var type) && !(type.ValueKind == JsonValueKind.String && type.GetString() == "object"))
+                    return null;
+
+                branches.Add(branch);
+                pointersSeen.Add(pointers);
+            }
+
+            // The union is what this field is, so every definition a branch led to is part of its identity.
+            if (identity is not null)
+                foreach (var pointers in pointersSeen) identity.UnionWith(pointers);
+
+            var outer = TryGet(schema, "properties", out var op) && op.ValueKind == JsonValueKind.Object ? op : (JsonElement?)null;
+            var plans = new List<PropertyPlan>();
+            var byName = new Dictionary<string, PropertyPlan>(StringComparer.Ordinal);
+
+            // The choice of branch leads, unless the schema places it among its own properties.
+            var choice = new PropertyPlan(discriminator,
+                outer is { } o && o.TryGetProperty(discriminator, out var declared) ? declared : EmptySchema, fromOuter: true)
+            {
+                Choices = values,
+                ChoiceLabels = branches.Select((b, i) => ReadString(b, "title") ?? null).ToList()
+            };
+            if (outer is null || !outer.Value.TryGetProperty(discriminator, out _)) Add(choice);
+            if (outer is { } outerProperties)
+            {
+                foreach (var p in outerProperties.EnumerateObject())
+                    Add(p.Name == discriminator ? choice : new PropertyPlan(p.Name, p.Value, fromOuter: true));
+            }
+
+            for (var i = 0; i < branches.Count; i++)
+            {
+                var branchRequired = ReadStringArray(branches[i], "required") ?? [];
+                var condition = ConditionJson(discriminator, values[i]);
+                foreach (var p in branches[i].GetProperty("properties").EnumerateObject())
+                {
+                    if (p.Name == discriminator || p.Value.ValueKind == JsonValueKind.False) continue;
+                    if (!byName.TryGetValue(p.Name, out var plan)) Add(plan = new PropertyPlan(p.Name, p.Value, fromOuter: false));
+                    if (!plan.FromOuter) plan.VisibleWhen.Add(condition);
+                    if (branchRequired.Contains(p.Name, StringComparer.Ordinal)) plan.RequiredWhen.Add(condition);
+                }
+            }
+
+            // A property every branch has is no part of the choice: it always shows.
+            foreach (var plan in plans)
+                if (!plan.FromOuter && plan.VisibleWhen.Count == branches.Count) plan.VisibleWhen.Clear();
+
+            var required = (ReadStringArray(schema, "required") ?? []).ToList();
+            if (!required.Contains(discriminator, StringComparer.Ordinal)) required.Add(discriminator);
+
+            return WriteObject(schema, [union.Keyword, "discriminator"], plans, required);
+
+            void Add(PropertyPlan plan)
+            {
+                plans.Add(plan);
+                byName[plan.Name] = plan;
+            }
+        }
+
+        /// <summary>
+        /// Rewrites the subforms a schema hangs off one of its properties — <c>dependentSchemas</c>, and
+        /// the schema-valued entries of draft-07's <c>dependencies</c> — as fields that show while that
+        /// property is answered. When such a subform is itself a union whose branches pin the property
+        /// (the way react-jsonschema-form writes "a different set of questions per answer"), each
+        /// branch's fields show for the answers that branch pins.
+        /// </summary>
+        /// <remarks>
+        /// A property the schema already declares keeps showing; the subform can still make it
+        /// required. The array-valued <c>dependencies</c> entries are left for the conditional
+        /// requiredness pass, which reads them.
+        /// </remarks>
+        private JsonElement RewriteDependentSchemas(JsonElement schema, ISet<string>? identity)
+        {
+            if (schema.ValueKind != JsonValueKind.Object) return schema;
+
+            var subforms = new List<(string Trigger, JsonElement Schema)>();
+            if (TryGet(schema, "dependentSchemas", out var dependent) && dependent.ValueKind == JsonValueKind.Object)
+                foreach (var entry in dependent.EnumerateObject()) subforms.Add((entry.Name, entry.Value));
+            if (TryGet(schema, "dependencies", out var dependencies) && dependencies.ValueKind == JsonValueKind.Object)
+                foreach (var entry in dependencies.EnumerateObject())
+                    if (entry.Value.ValueKind == JsonValueKind.Object) subforms.Add((entry.Name, entry.Value));
+            if (subforms.Count == 0) return schema;
+
+            var plans = new List<PropertyPlan>();
+            var byName = new Dictionary<string, PropertyPlan>(StringComparer.Ordinal);
+            if (TryGet(schema, "properties", out var outer) && outer.ValueKind == JsonValueKind.Object)
+                foreach (var p in outer.EnumerateObject()) Add(new PropertyPlan(p.Name, p.Value, fromOuter: true));
+
+            foreach (var (trigger, raw) in subforms)
+            {
+                var pointers = new HashSet<string>(StringComparer.Ordinal);
+                var target = Resolve(raw, pointers);
+                if (pointers.Any(IsExhausted) || pointers.Any(_merging.Contains)) continue;
+                ChargeMerge();
+                var subform = MergeAllOf(target);
+                if (subform.ValueKind != JsonValueKind.Object) continue;
+                identity?.UnionWith(pointers);
+
+                // "Different questions per answer": a union whose branches each pin the trigger.
+                if (UnionBranches(subform) is { } union
+                    && RewriteDiscriminatedUnion(subform, union, identity: null, knownDiscriminator: trigger) is { } split)
+                {
+                    foreach (var p in split.GetProperty("properties").EnumerateObject())
+                    {
+                        if (p.Name == trigger) continue;
+                        Merge(p.Name, p.Value, visible: null, required: null, copyConditions: true);
+                    }
+                    continue;
+                }
+
+                var answered = ConditionJson(trigger, value: null, op: "IsNotEmpty");
+                var required = ReadStringArray(subform, "required") ?? [];
+                if (TryGet(subform, "properties", out var properties) && properties.ValueKind == JsonValueKind.Object)
+                {
+                    foreach (var p in properties.EnumerateObject())
+                    {
+                        if (p.Name == trigger || p.Value.ValueKind == JsonValueKind.False) continue;
+                        Merge(p.Name, p.Value, answered, required.Contains(p.Name, StringComparer.Ordinal) ? answered : null, copyConditions: false);
+                    }
+                }
+                // A subform that only adds requirements to properties the schema already has.
+                foreach (var name in required)
+                    if (byName.TryGetValue(name, out var plan) && plan.FromOuter && !plan.RequiredWhen.Contains(answered))
+                        plan.RequiredWhen.Add(answered);
+            }
+
+            return WriteObject(schema, ["dependentSchemas"], plans, ReadStringArray(schema, "required")?.ToList(),
+                keepArrayDependencies: true);
+
+            void Add(PropertyPlan plan)
+            {
+                plans.Add(plan);
+                byName[plan.Name] = plan;
+            }
+
+            void Merge(string name, JsonElement property, JsonElement? visible, JsonElement? required, bool copyConditions)
+            {
+                if (!byName.TryGetValue(name, out var plan))
+                {
+                    Add(plan = new PropertyPlan(name, property, fromOuter: false) { KeepOwnConditions = copyConditions });
+                }
+                if (visible is { } v && !plan.FromOuter) plan.VisibleWhen.Add(v);
+                if (required is { } r) plan.RequiredWhen.Add(r);
+            }
+        }
+
+        /// <summary>The first property every branch pins to a value of its own — the field that says which branch an answer is.</summary>
+        private JsonElement? PinnedValue(JsonElement branch, string property)
+        {
+            if (!TryGet(branch, "properties", out var properties) || !TryGet(properties, property, out var raw)) return null;
+            var schema = Resolve(raw, followed: null, keepSiblings: false);
+            if (TryGet(raw, "const", out var value) || TryGet(schema, "const", out value)) return value;
+            foreach (var candidate in new[] { raw, schema })
+                if (TryGet(candidate, "enum", out var e) && e.ValueKind == JsonValueKind.Array && e.GetArrayLength() == 1)
+                    return e[0];
+            return null;
+        }
+
+        /// <summary>
+        /// The value OpenAPI's discriminator assigns a branch that does not pin it itself: the key its
+        /// <c>mapping</c> gives the branch's reference, or else the name of the definition referred to —
+        /// OpenAPI's implicit mapping, and what Swashbuckle and NSwag write for an <c>allOf</c> hierarchy.
+        /// </summary>
+        private static JsonElement? MappedValue(JsonElement? discriminator, JsonElement branch)
+        {
+            if (discriminator is not { } d || ReadString(branch, "$ref") is not { Length: > 0 } reference) return null;
+
+            if (TryGet(d, "mapping", out var mapping) && mapping.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var entry in mapping.EnumerateObject())
+                    if (entry.Value.ValueKind == JsonValueKind.String && entry.Value.GetString() == reference)
+                        return StringElement(entry.Name);
+            }
+
+            var slash = reference.LastIndexOf('/');
+            return slash >= 0 && slash < reference.Length - 1 ? StringElement(reference[(slash + 1)..]) : null;
+
+            static JsonElement StringElement(string text) => ParseDetached(JsonSerializer.SerializeToUtf8Bytes(text));
+        }
+
+        private string? FindDiscriminator(List<JsonElement> branches)
+        {
+            foreach (var candidate in branches[0].GetProperty("properties").EnumerateObject())
+            {
+                var values = new HashSet<string>(StringComparer.Ordinal);
+                var pins = true;
+                foreach (var branch in branches)
+                {
+                    if (PinnedValue(branch, candidate.Name) is not { } value || !values.Add(value.GetRawText()))
+                    {
+                        pins = false;
+                        break;
+                    }
+                }
+                if (pins) return candidate.Name;
+            }
+            return null;
+        }
+
+        /// <summary>One property of a rewritten object: its schema, and when it shows and is required.</summary>
+        private sealed class PropertyPlan(string name, JsonElement schema, bool fromOuter)
+        {
+            public string Name { get; } = name;
+            public JsonElement Schema { get; } = schema;
+
+            /// <summary>Declared by the schema itself rather than a branch: it shows whatever is chosen.</summary>
+            public bool FromOuter { get; } = fromOuter;
+
+            /// <summary>Any of these shows it; none means its own conditions (if any) decide.</summary>
+            public List<JsonElement> VisibleWhen { get; } = [];
+
+            /// <summary>Any of these makes it required.</summary>
+            public List<JsonElement> RequiredWhen { get; } = [];
+
+            /// <summary>For the property that picks the branch: the values it may take, and their labels.</summary>
+            public List<JsonElement>? Choices { get; init; }
+            public List<string?>? ChoiceLabels { get; init; }
+
+            /// <summary>Its schema already carries the conditions it needs (a branch rewritten one level down).</summary>
+            public bool KeepOwnConditions { get; init; }
+        }
+
+        /// <summary>
+        /// Writes <paramref name="schema"/> again with its properties replaced by <paramref name="plans"/>
+        /// and <paramref name="removed"/> keywords dropped.
+        /// </summary>
+        private static JsonElement WriteObject(JsonElement schema, string[] removed, List<PropertyPlan> plans,
+            List<string>? required, bool keepArrayDependencies = false)
+        {
+            var buffer = new MemoryStream();
+            using (var writer = new Utf8JsonWriter(buffer))
+            {
+                writer.WriteStartObject();
+                foreach (var member in schema.EnumerateObject())
+                {
+                    if (removed.Contains(member.Name, StringComparer.Ordinal)
+                        || member.Name is "properties" or "required" or "type") continue;
+                    if (member.Name == "dependencies")
+                    {
+                        if (keepArrayDependencies) WriteArrayDependencies(writer, member.Value);
+                        else member.WriteTo(writer);
+                        continue;
+                    }
+                    member.WriteTo(writer);
+                }
+
+                writer.WriteString("type", "object");
+                writer.WritePropertyName("properties");
+                writer.WriteStartObject();
+                foreach (var plan in plans)
+                {
+                    writer.WritePropertyName(plan.Name);
+                    WriteProperty(writer, plan);
+                }
+                writer.WriteEndObject();
+
+                if (required is { Count: > 0 })
+                {
+                    writer.WritePropertyName("required");
+                    writer.WriteStartArray();
+                    foreach (var name in required) writer.WriteStringValue(name);
+                    writer.WriteEndArray();
+                }
+                writer.WriteEndObject();
+            }
+            return ParseDetached(buffer.ToArray());
+
+            static void WriteArrayDependencies(Utf8JsonWriter writer, JsonElement dependencies)
+            {
+                if (dependencies.ValueKind != JsonValueKind.Object) return;
+                var arrays = dependencies.EnumerateObject().Where(e => e.Value.ValueKind == JsonValueKind.Array).ToList();
+                if (arrays.Count == 0) return;
+                writer.WritePropertyName("dependencies");
+                writer.WriteStartObject();
+                foreach (var entry in arrays) entry.WriteTo(writer);
+                writer.WriteEndObject();
+            }
+        }
+
+        private static void WriteProperty(Utf8JsonWriter writer, PropertyPlan plan)
+        {
+            var source = plan.Schema.ValueKind == JsonValueKind.Object ? plan.Schema : EmptySchema;
+            var hideable = plan.VisibleWhen.Count > 0;
+            var conditional = plan.RequiredWhen.Count > 0;
+
+            writer.WriteStartObject();
+            foreach (var member in source.EnumerateObject())
+            {
+                if (plan.Choices is not null && member.Name is "const" or "enum" or "enumNames" or "oneOf" or "anyOf") continue;
+                if (!plan.KeepOwnConditions)
+                {
+                    if (hideable && member.Name is "x-visibleWhen" or "x-clearOnHide") continue;
+                    if (conditional && member.Name is "x-requiredWhen") continue;
+                }
+                member.WriteTo(writer);
+            }
+
+            if (plan.Choices is { } choices)
+            {
+                writer.WritePropertyName("enum");
+                writer.WriteStartArray();
+                foreach (var value in choices) value.WriteTo(writer);
+                writer.WriteEndArray();
+
+                if (plan.ChoiceLabels is { } labels && labels.Any(l => l is not null))
+                {
+                    writer.WritePropertyName("enumNames");
+                    writer.WriteStartArray();
+                    for (var i = 0; i < choices.Count; i++)
+                        writer.WriteStringValue(labels[i] ?? OptionValue(choices[i]) ?? string.Empty);
+                    writer.WriteEndArray();
+                }
+            }
+
+            if (hideable)
+            {
+                writer.WritePropertyName("x-visibleWhen");
+                WriteCombined(writer, source, "x-visibleWhen", plan.VisibleWhen, keepOwn: plan.KeepOwnConditions);
+                writer.WriteBoolean("x-clearOnHide", true);
+            }
+            if (conditional)
+            {
+                writer.WritePropertyName("x-requiredWhen");
+                WriteCombined(writer, source, "x-requiredWhen", plan.RequiredWhen, keepOwn: plan.KeepOwnConditions);
+            }
+            writer.WriteEndObject();
+        }
+
+        /// <summary>
+        /// Writes "any of <paramref name="conditions"/>" — and, when the property already said when it
+        /// applies, "that, and any of these" — so a rewrite only ever narrows what a document said.
+        /// </summary>
+        private static void WriteCombined(Utf8JsonWriter writer, JsonElement source, string keyword,
+            List<JsonElement> conditions, bool keepOwn)
+        {
+            JsonElement own = default;
+            var hasOwn = !keepOwn && TryGet(source, keyword, out own);
+            if (hasOwn)
+            {
+                writer.WriteStartObject();
+                writer.WritePropertyName(keyword == "x-visibleWhen" ? "all" : "any");
+                writer.WriteStartArray();
+                own.WriteTo(writer);
+            }
+
+            if (conditions.Count == 1)
+            {
+                conditions[0].WriteTo(writer);
+            }
+            else
+            {
+                writer.WriteStartObject();
+                writer.WritePropertyName("any");
+                writer.WriteStartArray();
+                foreach (var condition in conditions) condition.WriteTo(writer);
+                writer.WriteEndArray();
+                writer.WriteEndObject();
+            }
+
+            if (hasOwn)
+            {
+                writer.WriteEndArray();
+                writer.WriteEndObject();
+            }
+        }
+
+        /// <summary>A condition on a sibling, in the <c>x-</c> form the importer reads: Equals by default.</summary>
+        private static JsonElement ConditionJson(string field, JsonElement? value, string? op = null)
+        {
+            var buffer = new MemoryStream();
+            using (var writer = new Utf8JsonWriter(buffer))
+            {
+                writer.WriteStartObject();
+                writer.WriteString("field", field);
+                if (op is not null) writer.WriteString("op", op);
+                if (value is { } v)
+                {
+                    writer.WritePropertyName("value");
+                    v.WriteTo(writer);
+                }
+                writer.WriteEndObject();
+            }
+            return ParseDetached(buffer.ToArray());
         }
 
         /// <summary>

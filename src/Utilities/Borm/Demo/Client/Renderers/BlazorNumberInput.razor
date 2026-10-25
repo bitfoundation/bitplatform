@@ -1,0 +1,13 @@
+﻿@inherits BormInputBase
+
+@* Blazor's own InputNumber<int>, registered as "blazor-number". ValueExpression<int>() names the int property
+   the field is bound to - asking for another type throws rather than read it wrongly. *@
+<InputNumber TValue="int"
+             id="@Context.ElementId"
+             class="@CssClass"
+             Value="@(Context.Value is int value ? value : 0)"
+             ValueChanged="@((int value) => Context.SetValueAsync(value))"
+             ValueExpression="@(Context.ValueExpression<int>())"
+             disabled="@Disabled"
+             aria-required="@AriaRequired"
+             aria-describedby="@DescribedBy" />

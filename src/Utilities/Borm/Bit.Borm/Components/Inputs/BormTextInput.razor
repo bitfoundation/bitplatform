@@ -6,14 +6,14 @@
 @if (HasAffix)
 {
     <div class="bit-borm-affixed @(Context.HasError && Context.ShowMessages ? "bit-borm-affixed--invalid" : "")">
-        @if (!string.IsNullOrEmpty(Field.Prefix))
+        @if (!string.IsNullOrEmpty(Context.Prefix))
         {
-            <span class="bit-borm-affix bit-borm-affix--prefix" aria-hidden="true">@Field.Prefix</span>
+            <span class="bit-borm-affix bit-borm-affix--prefix" aria-hidden="true">@Context.Prefix</span>
         }
         @Control
-        @if (!string.IsNullOrEmpty(Field.Suffix))
+        @if (!string.IsNullOrEmpty(Context.Suffix))
         {
-            <span class="bit-borm-affix bit-borm-affix--suffix" aria-hidden="true">@Field.Suffix</span>
+            <span class="bit-borm-affix bit-borm-affix--suffix" aria-hidden="true">@Context.Suffix</span>
         }
         @if (ShowClear)
         {
@@ -70,7 +70,7 @@ else
                                               class="@CssClass"
                                               type="@HtmlType"
                                               value="@DisplayValue"
-                                              placeholder="@Field.Placeholder"
+                                              placeholder="@Context.Placeholder"
                                               disabled="@Disabled"
                                               readonly="@ReadOnly"
                                               maxlength="@MaxLengthAttribute"
@@ -120,7 +120,7 @@ else
     /// page body when it took the wrapper away again.
     /// </summary>
     private bool HasAffix
-        => !string.IsNullOrEmpty(Field.Prefix) || !string.IsNullOrEmpty(Field.Suffix) || ShowReveal || OffersClear;
+        => !string.IsNullOrEmpty(Context.Prefix) || !string.IsNullOrEmpty(Context.Suffix) || ShowReveal || OffersClear;
 
     private bool _revealed;
 

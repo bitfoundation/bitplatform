@@ -7,20 +7,39 @@
    style, translate or read. *@
 @* The splat comes first, exactly as it does in every input renderer: Blazor lets the last duplicate
    attribute win, so the form's own class and submit handler override whatever the caller splatted.
-   Without that, a stray `class` would erase `bit-borm-form` and a stray `onsubmit` would unhook validation. *@
-<form @attributes="AdditionalAttributes"
+   Without that, a stray `class` would erase `bit-borm-form` and a stray `onsubmit` would unhook validation.
+   The form's language is the one exception, set before it: a `lang` the caller gives says more than the state's. *@
+<form lang="@FormState.Language" @attributes="AdditionalAttributes"
       class="bit-borm-form @(Class)" novalidate aria-busy="@(Working ? "true" : null)"
       @onsubmit="OnFormSubmitted" @onsubmit:preventDefault="true">
+    @* With ProvideEditContext, everything inside the form can find a Blazor EditContext that mirrors
+       this form's validation — so an InputBase-derived control or a component library's input placed in
+       a custom renderer shows the same invalid state Borm's own controls do. Only then is the content
+       wrapped: a cascade is one more component between the view and what it renders. *@
+    @if (_editContextAdapter is { } adapter)
+    {
+        @* Keyed: a fixed cascade never tells its consumers the value changed, so another state's context
+           has to arrive in components built for it. *@
+        <CascadingValue @key="adapter" Value="adapter.EditContext" IsFixed="true">@Content</CascadingValue>
+    }
+    else
+    {
+        @Content
+    }
+</form>
+
+@code {
+    private RenderFragment Content => @<text>
     @* role="heading" rather than a fixed <h2>, for the same reason the Static field carries one: the
        form is rendered inside a page whose outline the library cannot know, and a form dropped under
        an <h3> would otherwise skip a level. Set TitleLevel to place it. *@
-    @if (!string.IsNullOrEmpty(FormState.Definition.Title))
+    @if (FormState.FormTitle is { Length: > 0 } formTitle)
     {
-        <div class="bit-borm-form__title" role="heading" aria-level="@TitleHeadingLevel">@FormState.Definition.Title</div>
+        <div class="bit-borm-form__title" role="heading" aria-level="@TitleHeadingLevel">@formTitle</div>
     }
-    @if (!string.IsNullOrEmpty(FormState.Definition.Description))
+    @if (FormState.FormDescription is { Length: > 0 } formDescription)
     {
-        <p class="bit-borm-form__description">@FormState.Definition.Description</p>
+        <p class="bit-borm-form__description">@formDescription</p>
     }
 
     @Header
@@ -74,13 +93,13 @@
                            reason Back and Next move it. *@
                         <button type="button" class="bit-borm-stepper__link" @onclick="@(() => GoTo(index))">
                             <span class="bit-borm-stepper__num">@displayNumber</span>
-                            <span class="bit-borm-stepper__label">@(step.Title ?? step.Id)</span>
+                            <span class="bit-borm-stepper__label">@FormState.StepTitleOf(step)</span>
                         </button>
                     }
                     else
                     {
                         <span class="bit-borm-stepper__num">@displayNumber</span>
-                        <span class="bit-borm-stepper__label">@(step.Title ?? step.Id)</span>
+                        <span class="bit-borm-stepper__label">@FormState.StepTitleOf(step)</span>
                     }
                 </li>
             }
@@ -92,9 +111,9 @@
            step does, so without it a keyboard or screen-reader user is left standing on the Next
            button with no indication that the content beneath it was replaced. *@
         <div class="bit-borm-step-body @GridClass" style="@GridStyle" tabindex="-1" @ref="_stepBody">
-            @if (!string.IsNullOrEmpty(current.Description))
+            @if (FormState.StepDescriptionOf(current) is { Length: > 0 } stepDescription)
             {
-                <p class="bit-borm-form__description">@current.Description</p>
+                <p class="bit-borm-form__description">@stepDescription</p>
             }
             <BormFieldList State="FormState" Items="StepItems(current)" />
         </div>
@@ -133,9 +152,20 @@
     }
     else
     {
-        <div class="bit-borm-form__body @GridClass" style="@GridStyle">
-            <BormFieldList State="FormState" Items="RootItems" />
-        </div>
+        @if (FormState.Definition.HasSteps)
+        {
+            @* Tabs, an accordion or sections: one form the user moves around in freely, validated together
+               on submit. A failed submit turns to the first tab with something to fix (see
+               ShowStepWithFirstError) and opens every section that has some. *@
+            <BormStepsView State="FormState" Layout="FormState.Definition.StepLayout" Label="@StepperLabelText"
+                           HeadingLevel="@Math.Clamp(TitleHeadingLevel + 1, 1, 6)" />
+        }
+        else
+        {
+            <div class="bit-borm-form__body @GridClass" style="@GridStyle">
+                <BormFieldList State="FormState" Items="RootItems" />
+            </div>
+        }
 
         @if (Actions is not null)
         {
@@ -158,9 +188,8 @@
 
     @ChildContent
     @Footer
-</form>
+    </text>;
 
-@code {
     /// <summary>The schema to render. Required unless <see cref="State"/> is supplied.</summary>
     [Parameter] public BormDefinition? Definition { get; set; }
 
@@ -192,6 +221,16 @@
 
     /// <summary>Raised after a submit that failed validation.</summary>
     [Parameter] public EventCallback<BormState> OnInvalidSubmit { get; set; }
+
+    /// <summary>
+    /// Raised with the exception when <see cref="OnValidSubmit"/> throws. While it is set, the failure
+    /// is handled here instead of escaping into the renderer — where, on Blazor Server, an unhandled
+    /// exception ends the circuit and takes everything the user typed with it. Either way the state
+    /// records it: <see cref="BormState.SubmitOutcome"/> is <see cref="BormSubmitOutcome.Failed"/> and
+    /// <see cref="BormState.SubmitError"/> holds the exception, so a "could not save" message can bind
+    /// to it.
+    /// </summary>
+    [Parameter] public EventCallback<Exception> OnSubmitError { get; set; }
 
     /// <summary>Raised with the path of a field whose value changed.</summary>
     [Parameter] public EventCallback<string> OnFieldChanged { get; set; }
@@ -283,7 +322,35 @@
     /// </summary>
     [Parameter] public string? IdPrefix { get; set; }
 
+    /// <summary>
+    /// Cascades a Blazor <see cref="Microsoft.AspNetCore.Components.Forms.EditContext"/> that mirrors the
+    /// form's validation (see <see cref="BormEditContextAdapter"/>), so a custom renderer can use an
+    /// <c>InputBase&lt;T&gt;</c>-derived control or a component library's input and have it show the
+    /// field's errors, and a <c>ValidationSummary</c> placed in the form lists them. Off by default.
+    /// </summary>
+    [Parameter] public bool ProvideEditContext { get; set; }
+
     [Parameter(CaptureUnmatchedValues = true)] public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private BormEditContextAdapter? _editContextAdapter;
+
+    /// <summary>Creates, replaces or drops the cascaded edit context to match <see cref="ProvideEditContext"/> and the state.</summary>
+    private void SyncEditContext()
+    {
+        var wanted = ProvideEditContext ? FormState : null;
+        if (_editContextAdapter is { } current && wanted is not null && ReferenceEquals(current.EditContextFor, wanted)) return;
+
+        DropEditContext();
+        if (wanted is null) return;
+        _editContextAdapter = new BormEditContextAdapter(wanted, InvokeAsync);
+    }
+
+    private void DropEditContext()
+    {
+        if (_editContextAdapter is not { } adapter) return;
+        adapter.Dispose();
+        _editContextAdapter = null;
+    }
 
     /// <summary>
     /// The state this view is bound to — either the one passed in <see cref="State"/> or the one it
@@ -340,9 +407,41 @@
         }
     }
 
-    /// <summary>The top-level fields, each with the path it binds to.</summary>
-    private IEnumerable<(BormFieldDefinition Field, string Path)> RootItems
-        => FormState.Definition.OrderedFields().Select(f => (f, f.Name));
+    /// <summary>
+    /// The top-level fields, each with the path it binds to — sorted once per schema rather than once
+    /// per render, and handed to the field list as the same list, so it can tell nothing moved.
+    /// </summary>
+    private IReadOnlyList<(BormFieldDefinition Field, string Path)> RootItems
+    {
+        get
+        {
+            if (_rootItems is null || !SameFieldsAsBefore())
+            {
+                var fields = FormState.Definition.Fields;
+                _rootSource = new (BormFieldDefinition, int, string)[fields.Count];
+                for (var i = 0; i < fields.Count; i++) _rootSource[i] = (fields[i], fields[i].Order, fields[i].Name);
+                _rootItems = FormState.Definition.OrderedFields().Select(f => (f, f.Name)).ToList();
+            }
+            return _rootItems;
+        }
+    }
+
+    // What the cached list was built from. Compared field by field, without allocating, so a schema edited
+    // in place — a field added, replaced, renamed or reordered — is shown as it now is.
+    private (BormFieldDefinition Field, int Order, string Name)[] _rootSource = [];
+    private List<(BormFieldDefinition Field, string Path)>? _rootItems;
+
+    private bool SameFieldsAsBefore()
+    {
+        var fields = FormState.Definition.Fields;
+        if (fields.Count != _rootSource.Length) return false;
+        for (var i = 0; i < fields.Count; i++)
+        {
+            var (field, order, name) = _rootSource[i];
+            if (!ReferenceEquals(fields[i], field) || fields[i].Order != order || !ReferenceEquals(fields[i].Name, name)) return false;
+        }
+        return true;
+    }
 
     /// <summary>
     /// A step's fields, resolved from the paths it names. A step that lists a field the schema does not
@@ -350,7 +449,7 @@
     /// </summary>
     private IEnumerable<(BormFieldDefinition Field, string Path)> StepItems(BormStep step)
         => step.Fields
-            .Select(name => (Field: FormState.Definition.FindByPath(name), Path: name))
+            .Select(name => (Field: FormState.FindField(name), Path: name))
             .Where(x => x.Field is not null)
             .Select(x => (x.Field!, x.Path));
 
@@ -411,6 +510,7 @@
         if (IdPrefix is not null) FormState.IdPrefix = IdPrefix;
         if (ReadOnly is { } value) FormState.ReadOnly = value;
         if (Disabled is { } disabled) FormState.Disabled = disabled;
+        SyncEditContext();
     }
 
     private void Attach(BormState state)
@@ -422,13 +522,20 @@
         _focusMissedForSubmit = 0;
         FormState.StateChanged += OnStateChanged;
         FormState.FieldChanged += OnFieldChangedInternal;
+        // What renders inside the view and sends the user to a step — a review's "change" — goes
+        // through the view, so focus moves with the step as it does from the stepper.
+        _navigator ??= GoToStep;
+        FormState.StepNavigator = _navigator;
     }
+
+    private Action<int>? _navigator;
 
     private void Detach()
     {
         if (FormState is null) return;
         FormState.StateChanged -= OnStateChanged;
         FormState.FieldChanged -= OnFieldChangedInternal;
+        if (ReferenceEquals(FormState.StepNavigator, _navigator)) FormState.StepNavigator = null;
     }
 
     private void DisposeOwned()
@@ -519,6 +626,16 @@
         _focusStepBody = true;
     }
 
+    /// <summary>
+    /// Moves to a step and takes focus with it, as the stepper does — for a button of your own that
+    /// sends the user back to a step: a review's "change", a "fix this" link.
+    /// </summary>
+    public void GoToStep(int index)
+    {
+        GoTo(index);
+        StateHasChanged();
+    }
+
     /// <summary>Restores the values the form started with. Same as <c>Form.Reset()</c>.</summary>
     public void Reset() => FormState.Reset();
 
@@ -578,11 +695,22 @@
         // a step and pulled focus while the first submit was still saving.
         if (FormState.IsSubmitting) return false;
 
-        var valid = await FormState.SubmitAsync(
-            onValid: state => OnValidSubmit.InvokeAsync(state),
-            onInvalid: state => OnInvalidSubmit.InvokeAsync(state));
+        bool valid;
+        try
+        {
+            valid = await FormState.SubmitAsync(
+                onValid: state => OnValidSubmit.InvokeAsync(state),
+                onInvalid: state => OnInvalidSubmit.InvokeAsync(state));
+        }
+        catch (Exception ex) when (OnSubmitError.HasDelegate && FormState.SubmitOutcome == BormSubmitOutcome.Failed)
+        {
+            await OnSubmitError.InvokeAsync(ex);
+            return false;
+        }
 
-        if (!valid)
+        // Rejected by the server, as much as refused by the form's own rules: either way there is a
+        // field to go and fix, and the user is taken to it.
+        if (!valid && FormState.SubmitOutcome is BormSubmitOutcome.Invalid or BormSubmitOutcome.Rejected)
         {
             ShowStepWithFirstError();
             _focusErrorForSubmit = FormState.SubmitCount;
@@ -679,6 +807,7 @@
 
     public void Dispose()
     {
+        DropEditContext();
         Detach();
         _owned?.Dispose();
         _owned = null;

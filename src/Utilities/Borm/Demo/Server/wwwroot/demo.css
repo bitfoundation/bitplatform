@@ -320,3 +320,20 @@ html:root .bit-borm-input[type="search"]::-webkit-search-cancel-button {
     font-size: var(--fl-font-size-200);
     color: var(--bb-success-text);
 }
+
+/* The expressions demo's console: the box takes the whole row, in the code face. */
+.expression-probe {
+    flex: 1 1 100%;
+}
+
+.expression-probe input {
+    font-family: var(--bb-mono);
+}
+
+/* Blazor's own ValidationSummary in a form that provides an EditContext (the Blazor inputs demo). */
+.demo-validation-summary {
+    margin: 0;
+    padding-inline-start: 1.25rem;
+    color: var(--bit-borm-error);
+    font-size: var(--fl-font-size-200);
+}

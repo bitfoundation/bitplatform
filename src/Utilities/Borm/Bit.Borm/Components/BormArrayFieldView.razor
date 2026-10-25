@@ -23,9 +23,9 @@
         }
     </legend>
 
-    @if (!string.IsNullOrEmpty(Field.HelpText))
+    @if (State.HelpOf(Field, Path) is { Length: > 0 } help)
     {
-        <p class="bit-borm-help" id="@HelpId">@Field.HelpText</p>
+        <p class="bit-borm-help" id="@HelpId">@help</p>
     }
 
     @if (Count == 0)
@@ -118,7 +118,7 @@
 
     private int Count => State.ArrayCount(Path);
 
-    private string Title => Field.Label ?? Field.Name;
+    private string Title => State.LabelOf(Field, Path) ?? Field.Name;
 
     private string ItemNoun => Field.Attributes.TryGetValue("itemNoun", out var n) && n is string s && s.Length > 0
         ? s
@@ -244,7 +244,7 @@
     {
         get
         {
-            var hasHelp = !string.IsNullOrEmpty(Field.HelpText);
+            var hasHelp = !string.IsNullOrEmpty(State.HelpOf(Field, Path));
             var hasErrors = ShowMessages && State.MessagesFor(Path).Count > 0;
             return (hasHelp, hasErrors) switch
             {

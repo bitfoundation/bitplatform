@@ -32,6 +32,8 @@ public sealed class BormFieldRendererRegistry : IBormFieldRendererRegistry
         Register(BormFieldType.Date, typeof(BormDateInput));
         Register(BormFieldType.DateTime, typeof(BormDateInput));
         Register(BormFieldType.Time, typeof(BormDateInput));
+        Register(BormFieldType.Month, typeof(BormDateInput));
+        Register(BormFieldType.Week, typeof(BormDateInput));
         Register(BormFieldType.File, typeof(BormFileInput));
         Register(BormFieldType.Static, typeof(BormStaticContent));
     }

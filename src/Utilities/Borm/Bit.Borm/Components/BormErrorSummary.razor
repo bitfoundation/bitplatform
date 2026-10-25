@@ -145,11 +145,11 @@
     {
         if (!ShowFieldNames) return message.Message;
 
-        var field = State.Definition.FindByPath(message.FieldPath);
+        var field = State.FindField(message.FieldPath);
         // A hand-built schema need not label every field, and "This field is required." on its own
         // names nothing — which is the one thing a summary entry exists to do. The field's name is a
         // worse title than a label and a far better one than no title at all.
-        var label = string.IsNullOrEmpty(field?.Label) ? field?.Name : field.Label;
+        var label = field is null ? null : State.LabelOf(field, message.FieldPath) is { Length: > 0 } translated ? translated : field.Name;
         if (string.IsNullOrEmpty(label)) return message.Message;
 
         // Every row of a repeater shares one field definition, so five identical "Product is required"
@@ -184,7 +184,7 @@
     private string? AnchorFor(string fieldPath)
     {
         if (string.IsNullOrEmpty(fieldPath)) return null;
-        var field = State.Definition.FindByPath(fieldPath);
+        var field = State.FindField(fieldPath);
         if (field is null) return null;
         return PageUri + "#" + new BormFieldContext(State, field, fieldPath).ElementId;
     }

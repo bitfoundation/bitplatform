@@ -31,7 +31,7 @@
     private Task OnSlide(ChangeEventArgs e) => Context.SetFromStringAsync(e.Value?.ToString());
 
     /// <summary>The readout beside the slider, with the field's affixes so "70" can read as "70 kg".</summary>
-    private string Display => $"{Field.Prefix}{Context.StringValue}{Field.Suffix}";
+    private string Display => $"{Context.Prefix}{Context.StringValue}{Context.Suffix}";
 
     /// <summary>
     /// What a screen reader announces as the slider moves. Null unless the field carries an affix: the
@@ -39,5 +39,5 @@
     /// it worse. With a unit attached, "70" and "70 kg" are not the same announcement.
     /// </summary>
     private string? ValueText
-        => string.IsNullOrEmpty(Field.Prefix) && string.IsNullOrEmpty(Field.Suffix) ? null : Display;
+        => string.IsNullOrEmpty(Context.Prefix) && string.IsNullOrEmpty(Context.Suffix) ? null : Display;
 }

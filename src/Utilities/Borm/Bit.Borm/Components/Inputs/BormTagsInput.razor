@@ -199,9 +199,9 @@
 
     private string RemoveLabel(string tag) => Context.Text(BormMessageKeys.TagRemove, tag);
 
-    private string EntryLabel => Context.Text(BormMessageKeys.TagEntry, Field.Label ?? Field.Name);
+    private string EntryLabel => Context.Text(BormMessageKeys.TagEntry, Context.Label);
 
-    private string? EntryPlaceholder => Field.Placeholder ?? Context.Text(BormMessageKeys.TagPlaceholder);
+    private string? EntryPlaceholder => Context.Placeholder ?? Context.Text(BormMessageKeys.TagPlaceholder);
 
     private string Announcement
     {

@@ -12,8 +12,25 @@ public sealed class BormDefinition
     /// <summary>Optional form description.</summary>
     public string? Description { get; set; }
 
+    /// <summary>
+    /// Which version of the form this is, in whatever scheme the application uses — <c>"3"</c>,
+    /// <c>"2026-10"</c>. A draft records it, so a draft saved against an older version of the form can be
+    /// recognised, and migrated, when it is restored into a newer one. Exported as <c>x-version</c>.
+    /// </summary>
+    public string? Version { get; set; }
+
     /// <summary>The CLR model type this schema was generated from, when applicable.</summary>
     public Type? ModelType { get; set; }
+
+    /// <summary>
+    /// Translations of the schema's own text that travel with it — culture name (<c>de</c>,
+    /// <c>pt-BR</c>) to key to text, in the keys <see cref="IBormSchemaLocalizer"/> documents. A form a
+    /// server sends as JSON can carry every language it is offered in (<c>x-translations</c>). Consulted
+    /// for the current UI culture, then its parent (<c>de-CH</c>, then <c>de</c>), after any registered
+    /// <see cref="IBormSchemaLocalizer"/>.
+    /// </summary>
+    public IDictionary<string, IDictionary<string, string>> Translations { get; set; }
+        = new Dictionary<string, IDictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Number of columns the form lays its fields out in. 1 (the default) is a single stacked column;
@@ -25,8 +42,21 @@ public sealed class BormDefinition
     /// <summary>Top-level fields.</summary>
     public IList<BormFieldDefinition> Fields { get; set; } = new List<BormFieldDefinition>();
 
-    /// <summary>Wizard steps. When non-empty, the form is multi-step.</summary>
+    /// <summary>
+    /// The form's steps — the pages of a wizard, the tabs or sections of a long form. When non-empty, a
+    /// field belongs to the step that names it, and <see cref="StepLayout"/> says how they are shown.
+    /// </summary>
     public IList<BormStep> Steps { get; set; } = new List<BormStep>();
+
+    /// <summary>
+    /// How <see cref="Steps"/> are presented: walked through one at a time with each validated on the way
+    /// (<see cref="BormStepLayout.Wizard"/>, the default), or shown as tabs, an accordion or titled
+    /// sections the user moves between freely, validated together on submit.
+    /// </summary>
+    public BormStepLayout StepLayout { get; set; } = BormStepLayout.Wizard;
+
+    /// <summary>True when the form is divided into <see cref="Steps"/>, whatever their layout.</summary>
+    public bool HasSteps => Steps.Count > 0;
 
     /// <summary>
     /// Rules validating the form as a whole rather than one field. Their messages are attached to the
@@ -34,8 +64,11 @@ public sealed class BormDefinition
     /// </summary>
     public IList<IBormValidationRule> Validators { get; set; } = new List<IBormValidationRule>();
 
-    /// <summary>True when the form is configured as a multi-step wizard.</summary>
-    public bool IsWizard => Steps.Count > 0;
+    /// <summary>
+    /// True when the form is a multi-step wizard: it has <see cref="Steps"/>, laid out as
+    /// <see cref="BormStepLayout.Wizard"/>.
+    /// </summary>
+    public bool IsWizard => Steps.Count > 0 && StepLayout == BormStepLayout.Wizard;
 
     /// <summary>Finds a top-level field by name.</summary>
     public BormFieldDefinition? FindField(string name)
@@ -141,8 +174,13 @@ public sealed class BormDefinition
         {
             Title = Title,
             Description = Description,
+            Version = Version,
             ModelType = ModelType,
             Columns = Columns,
+            StepLayout = StepLayout,
+            Translations = Translations.ToDictionary(
+                c => c.Key, c => (IDictionary<string, string>)new Dictionary<string, string>(c.Value, StringComparer.OrdinalIgnoreCase),
+                StringComparer.OrdinalIgnoreCase),
             Fields = Fields.Select(CloneField).ToList(),
             Steps = Steps.Select(CloneStep).ToList(),
             Validators = new List<IBormValidationRule>(Validators)
@@ -153,6 +191,7 @@ public sealed class BormDefinition
             => new(field.Name, field.Type)
             {
                 ValueType = field.ValueType,
+                TextKey = field.TextKey,
                 Label = field.Label,
                 Placeholder = field.Placeholder,
                 HelpText = field.HelpText,
@@ -162,12 +201,15 @@ public sealed class BormDefinition
                 ShowCharacterCount = field.ShowCharacterCount,
                 Required = field.Required,
                 ReadOnly = field.ReadOnly,
+                Sensitive = field.Sensitive,
                 DefaultValue = field.DefaultValue,
                 Order = field.Order,
                 Group = field.Group,
                 Options = new List<BormSelectOption>(field.Options),
                 OptionsProvider = field.OptionsProvider,
                 OptionsDependencies = new List<string>(field.OptionsDependencies),
+                SearchMinLength = field.SearchMinLength,
+                SearchDebounceMilliseconds = field.SearchDebounceMilliseconds,
                 Suggestions = new List<string>(field.Suggestions),
                 Computed = field.Computed,
                 ComputedDependencies = new List<string>(field.ComputedDependencies),
@@ -259,6 +301,16 @@ public sealed class BormDefinition
                 $"{autofocused.Count} fields are marked Autofocus ({string.Join(", ", autofocused)}); only one can win.",
                 BormSchemaDiagnosticSeverity.Warning));
 
+        // Form-level expression rules read the form from its root, and may name the field their message
+        // belongs on — which is as easy to misspell as anything they read.
+        foreach (var rule in Validators.OfType<BormExpressionRule>())
+        {
+            CheckPaths(ResolvablePaths(rule.Expression), string.Empty, $"The form-level rule '{rule.Expression.Text}'", diagnostics);
+            if (rule.FieldPath is { } target) CheckPaths([target], string.Empty, $"The form-level rule '{rule.Expression.Text}'", diagnostics);
+        }
+
+        ReportComputedCycles(diagnostics);
+
         var duplicateSteps = Steps.GroupBy(s => s.Id, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1);
         foreach (var group in duplicateSteps)
             diagnostics.Add(new BormSchemaDiagnostic(string.Empty,
@@ -266,12 +318,12 @@ public sealed class BormDefinition
 
         // Every field a step never mentions is still validated on submit but never shown, which reads
         // to the user as a form that refuses to submit for no visible reason.
-        if (IsWizard)
+        if (HasSteps)
         {
             var stepped = Steps.SelectMany(s => s.Fields).ToHashSet(StringComparer.OrdinalIgnoreCase);
             foreach (var field in Fields.Where(f => f.Type != BormFieldType.Static && !stepped.Contains(f.Name)))
                 diagnostics.Add(new BormSchemaDiagnostic(field.Name,
-                    "This field belongs to no wizard step, so it is never shown — but it is still validated on submit.",
+                    "This field belongs to no step, so it is never shown — but it is still validated on submit.",
                     BormSchemaDiagnosticSeverity.Warning));
         }
 
@@ -349,7 +401,14 @@ public sealed class BormDefinition
             CheckPaths(BormConditionGroup.NamedPaths(field.DisabledWhen), path, "DisabledWhen", into);
             CheckPaths(BormConditionGroup.NamedPaths(field.ReadOnlyWhen), path, "ReadOnlyWhen", into);
             CheckPaths(BormConditionGroup.NamedPaths(field.RequiredWhen), path, "RequiredWhen", into);
-            CheckPaths(field.ComputedDependencies, path, "a computed dependency", into);
+            // A computed expression's dependencies are derived from it, so its own references are
+            // checked instead — one warning for a misspelt name, and one that sees past a `[]`.
+            if (field.Computed?.Target is BormExpression formula)
+                CheckPaths(ResolvablePaths(formula), path, "The computed expression", into);
+            else
+                CheckPaths(field.ComputedDependencies, path, "a computed dependency", into);
+            foreach (var rule in field.Validators.OfType<BormExpressionRule>())
+                CheckPaths(ResolvablePaths(rule.Expression), path, $"The rule '{rule.Expression.Text}'", into);
             CheckPaths(field.OptionsDependencies, path, "an options dependency", into);
             CheckPaths(field.RevalidateOn, path, "RevalidateOn", into);
 
@@ -406,6 +465,7 @@ public sealed class BormDefinition
             or BormFieldType.Password or BormFieldType.Url or BormFieldType.Tel
             or BormFieldType.Search or BormFieldType.Integer or BormFieldType.Number
             or BormFieldType.Date or BormFieldType.DateTime or BormFieldType.Time
+            or BormFieldType.Month or BormFieldType.Week
             or BormFieldType.Color or BormFieldType.Range or BormFieldType.Custom;
 
         static void CheckBounds<T>(T? min, T? max, string minName, string maxName, string path,
@@ -440,6 +500,114 @@ public sealed class BormDefinition
             foreach (var group in fields.GroupBy(f => f.Name, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1))
                 into.Add(new BormSchemaDiagnostic(BormPath.Combine(parent, group.Key),
                     $"{group.Count()} sibling fields share the name '{group.Key}'; they bind to the same path and will overwrite each other."));
+        }
+    }
+
+    /// <summary>
+    /// The paths an expression names, in a form <see cref="FindByPath"/> can answer: a reference across
+    /// every row (<c>Lines[].Total</c>) is checked as one row of it, since every row shares a template.
+    /// </summary>
+    internal static IEnumerable<string> ResolvablePaths(BormExpression expression)
+        => expression.ReferencedPaths.Select(p => p.Replace("[]", "[0]", StringComparison.Ordinal));
+
+    /// <summary>
+    /// Reports computed values that feed each other in a circle — <c>A</c> from <c>B</c> and <c>B</c>
+    /// from <c>A</c>, directly or through others. The form does not hang on one (each change cascades
+    /// a bounded number of times and stops), which is precisely why it needs reporting: it stops with
+    /// at least one of them holding a value its own formula would not give, and nothing on the page says so.
+    /// </summary>
+    /// <remarks>
+    /// A dependency is matched as the runtime matches it — relative to the object owning the field,
+    /// then from the root, and naming a container covers what is in it. A field that declares no
+    /// dependencies recomputes on every change and so cannot be placed in the graph; it is left out.
+    /// </remarks>
+    private void ReportComputedCycles(List<BormSchemaDiagnostic> into)
+    {
+        var nodes = new List<(string Path, BormFieldDefinition Field)>();
+        Collect(Fields, string.Empty);
+        if (nodes.Count < 1) return;
+
+        var edges = new List<int>[nodes.Count];
+        for (var i = 0; i < nodes.Count; i++)
+        {
+            edges[i] = [];
+            var scope = BormPath.Parent(nodes[i].Path);
+            foreach (var raw in nodes[i].Field.ComputedDependencies)
+            {
+                if (string.IsNullOrEmpty(raw)) continue;
+                var dependency = StripIndices(raw);
+                for (var j = 0; j < nodes.Count; j++)
+                {
+                    // A field's own output never re-triggers it; the runtime skips that write.
+                    if (i == j || edges[i].Contains(j)) continue;
+                    if (BormPath.IsAtOrUnder(nodes[j].Path, dependency)
+                        || (scope.Length > 0 && BormPath.IsAtOrUnder(nodes[j].Path, BormPath.Combine(scope, dependency))))
+                        edges[i].Add(j);
+                }
+            }
+        }
+
+        // Depth-first search, colouring each node: 0 unvisited, 1 on the current path, 2 finished.
+        var state = new int[nodes.Count];
+        var stack = new List<int>();
+        var reported = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        for (var i = 0; i < nodes.Count; i++)
+            if (state[i] == 0) Visit(i);
+
+        void Visit(int node)
+        {
+            state[node] = 1;
+            stack.Add(node);
+            foreach (var next in edges[node])
+            {
+                if (state[next] == 1)
+                {
+                    var cycle = stack.Skip(stack.IndexOf(next)).Select(n => nodes[n].Path).ToList();
+                    // The same circle is found from whichever member the walk entered it by.
+                    var key = string.Join("|", cycle.Order(StringComparer.OrdinalIgnoreCase));
+                    if (reported.Add(key))
+                        into.Add(new BormSchemaDiagnostic(cycle[0],
+                            $"Computed values depend on each other in a cycle ({string.Join(" → ", cycle)} → {cycle[0]}). " +
+                            "Each change recomputes them a few times and then stops, leaving at least one holding a value its formula would not give.",
+                            BormSchemaDiagnosticSeverity.Warning));
+                }
+                else if (state[next] == 0)
+                {
+                    Visit(next);
+                }
+            }
+            stack.RemoveAt(stack.Count - 1);
+            state[node] = 2;
+        }
+
+        void Collect(IEnumerable<BormFieldDefinition> fields, string parent)
+        {
+            foreach (var field in fields)
+            {
+                var path = BormPath.Combine(parent, field.Name);
+                if (field.Computed is not null && field.ComputedDependencies.Count > 0) nodes.Add((path, field));
+                if (field.Type == BormFieldType.Object) Collect(field.Children, path);
+                else if (field.ItemTemplate is { } template)
+                {
+                    if (template.Type == BormFieldType.Object) Collect(template.Children, path + "[]");
+                    else if (template.Computed is not null && template.ComputedDependencies.Count > 0) nodes.Add((path + "[]", template));
+                }
+            }
+        }
+
+        // Template paths spell every row as `[]`, so a dependency naming one row is matched as any row.
+        static string StripIndices(string path)
+        {
+            var sb = new System.Text.StringBuilder(path.Length);
+            for (var i = 0; i < path.Length; i++)
+            {
+                if (path[i] != '[') { sb.Append(path[i]); continue; }
+                var close = path.IndexOf(']', i);
+                if (close < 0) { sb.Append(path, i, path.Length - i); break; }
+                sb.Append("[]");
+                i = close;
+            }
+            return sb.ToString();
         }
     }
 }

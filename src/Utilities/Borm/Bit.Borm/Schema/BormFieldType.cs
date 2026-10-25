@@ -102,5 +102,19 @@ public enum BormFieldType
     /// each tag its own row with add, remove and reorder buttons, which is the wrong shape entirely for
     /// a word.
     /// </summary>
-    Tags
+    Tags,
+
+    /// <summary>
+    /// A month of a year — a card's expiry, a billing period, a start date given to the month. Renders
+    /// the browser's month picker. A <c>DateOnly</c> or <c>DateTime</c> holds the month's first day;
+    /// with no CLR type the value is the text the picker speaks, <c>2024-05</c>.
+    /// </summary>
+    Month,
+
+    /// <summary>
+    /// An ISO 8601 week — a timesheet, a delivery slot, a rota. Renders the browser's week picker. A
+    /// <c>DateOnly</c> or <c>DateTime</c> holds the week's Monday; with no CLR type the value is the
+    /// text the picker speaks, <c>2024-W19</c>.
+    /// </summary>
+    Week
 }

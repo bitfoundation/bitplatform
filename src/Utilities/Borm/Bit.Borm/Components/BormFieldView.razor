@@ -27,13 +27,13 @@
         <fieldset class="bit-borm-group @(Context.HasError && Context.ShowMessages ? "bit-borm-group--invalid" : "")"
                   id="@Context.ElementId" style="@GridStyle" disabled="@State.IsDisabled(Field, Path)"
                   aria-describedby="@Context.DescribedBy">
-            @if (!string.IsNullOrEmpty(Field.Label))
+            @if (Context.State.LabelOf(Field, Path) is { Length: > 0 } legend)
             {
-                <legend class="bit-borm-group__legend">@Field.Label</legend>
+                <legend class="bit-borm-group__legend">@legend</legend>
             }
-            @if (!string.IsNullOrEmpty(Field.HelpText))
+            @if (!string.IsNullOrEmpty(Context.HelpText))
             {
-                <p class="bit-borm-help" id="@Context.HelpId">@Field.HelpText</p>
+                <p class="bit-borm-help" id="@Context.HelpId">@Context.HelpText</p>
             }
             @* A message about the object as a whole — "this address cannot be delivered to", from a server
                or a model-level validator — belongs to no single child. It used to be recorded and never
@@ -53,9 +53,9 @@
         @* A checkbox labels itself, so it gets no separate <label> — that would announce twice. *@
         <div class="bit-borm-field bit-borm-field--checkbox @InvalidClass" style="@GridStyle">
             <DynamicComponent Type="Registry.Resolve(Field)" Parameters="Params" />
-            @if (!string.IsNullOrEmpty(Field.HelpText))
+            @if (!string.IsNullOrEmpty(Context.HelpText))
             {
-                <p class="bit-borm-help" id="@Context.HelpId">@Field.HelpText</p>
+                <p class="bit-borm-help" id="@Context.HelpId">@Context.HelpText</p>
             }
             <BormValidationMessages Messages="Context.Messages" Show="Context.ShowMessages" Id="@Context.ErrorId" />
         </div>
@@ -91,9 +91,9 @@
                 </label>
             }
             <DynamicComponent Type="Registry.Resolve(Field)" Parameters="Params" />
-            @if (!string.IsNullOrEmpty(Field.HelpText))
+            @if (!string.IsNullOrEmpty(Context.HelpText))
             {
-                <p class="bit-borm-help" id="@Context.HelpId">@Field.HelpText</p>
+                <p class="bit-borm-help" id="@Context.HelpId">@Context.HelpText</p>
             }
             <BormValidationMessages Messages="Context.Messages" Show="Context.ShowMessages" Id="@Context.ErrorId" />
         </div>
@@ -173,7 +173,9 @@
     }
 
     private bool AlwaysRender
-        => Field.Attributes.TryGetValue("alwaysRender", out var v) && v is true;
+        => (Field.Attributes.TryGetValue("alwaysRender", out var v) && v is true)
+           // A review reads every other answer, none of which its own signature can see.
+           || (Field.IsPresentational && Field.Attributes.TryGetValue("review", out var review) && review is true);
 
     private RenderSignature Capture() => new(
         State.IsVisible(Field, Path),
@@ -192,7 +194,10 @@
         // never re-rendered and never asked for its cities. The version moves on every load, landing
         // and invalidation, which is what makes the control ask.
         Field.OptionsProvider is null ? 0 : State.OptionsVersion,
-        Context.IsValidating);
+        Context.IsValidating,
+        // The label, help and options are read out in the form's language: a page that switches it
+        // re-renders the view, and every field has to follow, not only the ones whose value moved.
+        State.TextLanguage);
 
     /// <summary>
     /// Everything the rendered output of one field depends on. Messages are compared by reference:
@@ -210,7 +215,8 @@
         bool OptionsFailed,
         int OptionCount,
         int OptionsVersion,
-        bool Validating)
+        bool Validating,
+        string Culture)
     {
         public bool Equals(RenderSignature other)
             => Visible == other.Visible
@@ -223,6 +229,7 @@
                && OptionCount == other.OptionCount
                && OptionsVersion == other.OptionsVersion
                && Validating == other.Validating
+               && string.Equals(Culture, other.Culture, StringComparison.Ordinal)
                && ReferenceEquals(Messages, other.Messages)
                && ValuesMatch(Value, other.Value);
 
@@ -244,7 +251,7 @@
     private IEnumerable<(BormFieldDefinition Field, string Path)> ChildItems
         => Field.Children.OrderBy(c => c.Order).Select(c => (c, BormPath.Combine(Path, c.Name)));
 
-    private string LabelText => Field.Label ?? Field.Name;
+    private string LabelText => Context.Label;
 
     /// <summary>
     /// Whether the field renders a set of controls rather than one, so its label is a <c>&lt;span&gt;</c>

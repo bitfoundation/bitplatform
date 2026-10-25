@@ -1,0 +1,200 @@
+﻿@namespace Bit.Borm
+
+@{ var steps = VisibleSteps; }
+@switch (Layout)
+{
+    case BormStepLayout.Tabs:
+        <div class="bit-borm-tabs">
+            @* The WAI-ARIA tabs pattern: one tab stop for the whole list (the selected tab), the arrow keys
+               moving between tabs, Home and End to the ends. Selecting a tab shows its panel at once —
+               automatic activation — because changing panels costs nothing here. *@
+            <div role="tablist" class="bit-borm-tabs__list" aria-label="@Label">
+                @foreach (var (step, index) in steps)
+                {
+                    var selected = index == State.CurrentStepIndex;
+                    var errors = ErrorsIn(step);
+                    <button type="button" role="tab" class="bit-borm-tabs__tab @(selected ? "is-active" : "") @(errors > 0 ? "has-errors" : "")"
+                            id="@TabId(index)" aria-selected="@(selected ? "true" : "false")" aria-controls="@PanelId"
+                            tabindex="@(selected ? 0 : -1)" @ref="_tabs[index]"
+                            @onclick="() => Select(index, focus: false)" @onkeydown="e => OnTabKey(e, index)">
+                        <span class="bit-borm-tabs__label">@State.StepTitleOf(step)</span>
+                        @if (errors > 0)
+                        {
+                            @* The count is drawn for the eye and said for the ear; colour alone says nothing. *@
+                            <span class="bit-borm-tabs__badge" aria-hidden="true">@errors</span>
+                            <span class="bit-borm-sr-only">@State.Text(BormMessageKeys.StepErrors, errors)</span>
+                        }
+                    </button>
+                }
+            </div>
+            @if (State.CurrentStep is { } current)
+            {
+                <div role="tabpanel" id="@PanelId" aria-labelledby="@TabId(State.CurrentStepIndex)" class="bit-borm-tabs__panel">
+                    @Body(current)
+                </div>
+            }
+        </div>
+        break;
+
+    case BormStepLayout.Accordion:
+        @foreach (var (step, index) in steps)
+        {
+            var errors = ErrorsIn(step);
+            @* The browser's own disclosure widget: keyboard, focus and announcement are the platform's, and
+               the content stays in the page, so a closed section still keeps its values. *@
+            <details class="bit-borm-section bit-borm-section--collapsible @(errors > 0 ? "has-errors" : "")"
+                     open="@_open.Contains(index)" @ontoggle="() => Toggle(index)">
+                <summary class="bit-borm-section__title">
+                    <span role="heading" aria-level="@HeadingLevel">@State.StepTitleOf(step)</span>
+                    @if (errors > 0)
+                    {
+                        <span class="bit-borm-tabs__badge" aria-hidden="true">@errors</span>
+                        <span class="bit-borm-sr-only">@State.Text(BormMessageKeys.StepErrors, errors)</span>
+                    }
+                </summary>
+                <div class="bit-borm-section__body">@Body(step)</div>
+            </details>
+        }
+        break;
+
+    default:
+        @foreach (var (step, index) in steps)
+        {
+            <section class="bit-borm-section" aria-labelledby="@TabId(index)">
+                <div class="bit-borm-section__title" id="@TabId(index)" role="heading" aria-level="@HeadingLevel">@State.StepTitleOf(step)</div>
+                <div class="bit-borm-section__body">@Body(step)</div>
+            </section>
+        }
+        break;
+}
+
+@code {
+    /// <summary>The form whose steps are shown.</summary>
+    [Parameter, EditorRequired] public BormState State { get; set; } = default!;
+
+    /// <summary>How they are shown. <see cref="BormStepLayout.Wizard"/> is <see cref="BormView"/>'s own and renders as sections here.</summary>
+    [Parameter] public BormStepLayout Layout { get; set; } = BormStepLayout.Tabs;
+
+    /// <summary>The accessible name of the tab list.</summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>The heading level of a section's title, 1-6.</summary>
+    [Parameter] public int HeadingLevel { get; set; } = 3;
+
+    private readonly Dictionary<int, ElementReference> _tabs = new();
+    private readonly HashSet<int> _open = [];
+    private bool _seeded;
+    private int _openedForSubmit;
+    private int? _focusTab;
+
+    private string PanelId => BormFieldContext.FormElementId(State, "tabpanel");
+
+    private string TabId(int index) => BormFieldContext.FormElementId(State, "step_" + index);
+
+    private IReadOnlyList<(BormStep Step, int Index)> VisibleSteps
+    {
+        get
+        {
+            var visible = new List<(BormStep, int)>();
+            for (var i = 0; i < State.Definition.Steps.Count; i++)
+                if (State.IsStepVisible(State.Definition.Steps[i])) visible.Add((State.Definition.Steps[i], i));
+            return visible;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        // The first visible section opens; the rest wait to be asked for.
+        if (!_seeded && VisibleSteps is [var first, ..])
+        {
+            _open.Add(first.Index);
+            _seeded = true;
+        }
+
+        // A failed submit opens every section with something to fix, so focus can reach it and the user
+        // can see it — once per submit, so closing one again afterwards is the user's to do.
+        if (Layout == BormStepLayout.Accordion && State.SubmitCount != _openedForSubmit && State.IsSubmitted && !State.IsSubmitting)
+        {
+            _openedForSubmit = State.SubmitCount;
+            foreach (var (step, index) in VisibleSteps)
+                if (ErrorsIn(step) > 0) _open.Add(index);
+        }
+    }
+
+    private RenderFragment Body(BormStep step) => @<div class="bit-borm-step-body @GridClass" style="@GridStyle">
+        @if (State.StepDescriptionOf(step) is { Length: > 0 } description)
+        {
+            <p class="bit-borm-form__description">@description</p>
+        }
+        <BormFieldList State="State" Items="ItemsOf(step)" />
+    </div>;
+
+    private IEnumerable<(BormFieldDefinition Field, string Path)> ItemsOf(BormStep step)
+        => step.Fields
+            .Select(name => (Field: State.FindField(name), Path: name))
+            .Where(x => x.Field is not null)
+            .Select(x => (x.Field!, x.Path));
+
+    private string GridClass => State.Definition.Columns > 1 ? "bit-borm-grid" : "";
+
+    private string? GridStyle => State.Definition.Columns > 1
+        ? $"grid-template-columns: repeat({State.Definition.Columns}, minmax(0, 1fr));"
+        : null;
+
+    /// <summary>
+    /// How many errors the step's fields carry that the user has been shown — after a submit, or on a
+    /// field already visited — so a tab says "something to fix here" no sooner than the field does.
+    /// </summary>
+    private int ErrorsIn(BormStep step)
+    {
+        var count = 0;
+        foreach (var message in State.AllMessages)
+        {
+            if (message.Severity != BormValidationSeverity.Error || !BormState.StepContains(step, message.FieldPath)) continue;
+            if (State.IsSubmitted || State.IsTouched(message.FieldPath)) count++;
+        }
+        return count;
+    }
+
+    private void Select(int index, bool focus)
+    {
+        State.GoToStep(index);
+        if (focus) _focusTab = index;
+    }
+
+    private void Toggle(int index)
+    {
+        if (!_open.Remove(index)) _open.Add(index);
+    }
+
+    private void OnTabKey(KeyboardEventArgs e, int index)
+    {
+        var steps = VisibleSteps;
+        var at = steps.ToList().FindIndex(s => s.Index == index);
+        if (at < 0) return;
+
+        var target = e.Key switch
+        {
+            "ArrowRight" => steps[(at + 1) % steps.Count].Index,
+            "ArrowLeft" => steps[(at - 1 + steps.Count) % steps.Count].Index,
+            "Home" => steps[0].Index,
+            "End" => steps[^1].Index,
+            _ => -1
+        };
+        if (target >= 0) Select(target, focus: true);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusTab is not { } index || !_tabs.TryGetValue(index, out var tab)) return;
+        _focusTab = null;
+        try
+        {
+            await tab.FocusAsync();
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or JSDisconnectedException or ObjectDisposedException)
+        {
+            // Static prerender: nothing to focus.
+        }
+    }
+}

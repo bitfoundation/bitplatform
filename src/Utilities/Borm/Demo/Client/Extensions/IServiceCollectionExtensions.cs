@@ -14,8 +14,12 @@ public static class IServiceCollectionExtensions
 {
     public static IServiceCollection AddDemoServices(this IServiceCollection services)
     {
-        // Borm's rendering services, with a custom renderer ("rating") to show the registry is open.
-        services.AddBorm(registry => registry.RegisterCustom<StarRatingInput>("rating"));
+        // Borm's rendering services, with a custom renderer ("rating") to show the registry is open, and
+        // two made of Blazor's own InputText and InputNumber for the edit context demo.
+        services.AddBorm(registry => registry
+            .RegisterCustom<StarRatingInput>("rating")
+            .RegisterCustom<BlazorTextInput>("blazor-text")
+            .RegisterCustom<BlazorNumberInput>("blazor-number"));
 
         // The FluentValidation validator the FluentValidation demo resolves.
         services.AddScoped<IValidator<JobApplication>, JobApplicationValidator>();
