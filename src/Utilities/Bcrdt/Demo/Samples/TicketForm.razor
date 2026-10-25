@@ -3,9 +3,13 @@
 @using Bit.Bcrdt
 @using Bit.Bcrdt.Blazor
 
-<BcrdtCollaborationScope DocumentId="demo-form" User="_me" Context="document">
+<BcrdtCollaborationScope DocumentId="demo-form" User="_me" OnOpened="Opened" Context="document">
     @{
         BcrdtMap form = document.GetMap("form");
+
+        // Read, never created, while rendering: null until the form's structure exists (see Opened).
+        BcrdtSet? labels = form.GetSet("labels");
+        BcrdtText? notes = form.GetText("notes");
     }
 
     @* Map entries: different keys never conflict; the same key edited at once keeps one value. *@
@@ -36,23 +40,26 @@
 
     @* A nested set: labels ticked by two people at once are both kept. Add and Remove rather than one
        write of the whole selection, because a set merges per member. *@
-    <fieldset>
+    <fieldset disabled="@(labels is null)">
         <legend>Labels</legend>
         @foreach (string label in Labels)
         {
             <label>
-                <input type="checkbox" checked="@form.EnsureSet("labels").Contains(label)"
-                       @onchange="args => ToggleLabel(form, label, args.Value is true)" />
+                <input type="checkbox" checked="@(labels?.Contains(label) is true)"
+                       @onchange="args => ToggleLabel(labels, label, args.Value is true)" />
                 @label
             </label>
         }
     </fieldset>
 
     @* A nested text: two people typing here at once both keep their work. *@
-    <label>
-        Notes
-        <BcrdtTextArea Text="@form.EnsureText("notes")" Presence="document.Presence" Field="notes" Rows="5" />
-    </label>
+    @if (notes is not null)
+    {
+        <label>
+            Notes
+            <BcrdtTextArea Text="notes" Presence="document.Presence" Field="notes" Rows="5" />
+        </label>
+    }
 </BcrdtCollaborationScope>
 
 @code {
@@ -61,13 +68,45 @@
 
     private readonly BcrdtCollaboratorInfo _me = new("u-1", "Ada", BcrdtPresenceService.SuggestColor("u-1"));
 
-    // EnsureSet and EnsureText create the nested type the first time and return it after that. Two
-    // replicas creating it at once on an empty document race like any map entry, so a real application
-    // creates a document's structure once, when the document is first made.
-    private static void ToggleLabel(BcrdtMap form, string label, bool ticked)
+    // A nested type is a map value like any other: two replicas that each create their own race, and
+    // everything written into the losing one goes with it. So the form's set and text are created once -
+    // not on render, where every replica (a read-only one included) would write - and only after this
+    // replica has caught up with its peers, so it finds a structure somebody already made rather than
+    // making a rival one. A real application goes further and creates a document's structure once,
+    // when the document itself is first made.
+    private static void Opened(BcrdtCollaborativeDocument document)
     {
-        BcrdtSet labels = form.EnsureSet("labels");
-        if (ticked) labels.Add(label);
-        else labels.Remove(label);
+        // No transport: this replica is the whole document.
+        if (document.Sync is not { } sync)
+        {
+            CreateStructure(document);
+            return;
+        }
+
+        sync.Synced += OnSynced;
+        if (sync.IsSynced) OnSynced();
+
+        void OnSynced()
+        {
+            sync.Synced -= OnSynced;
+            CreateStructure(document);
+        }
+    }
+
+    private static void CreateStructure(BcrdtCollaborativeDocument document)
+    {
+        BcrdtMap form = document.GetMap("form");
+        if (document.IsReadOnly || (form.GetSet("labels") is not null && form.GetText("notes") is not null)) return;
+
+        // One transaction, so both reach the others as one update.
+        using BcrdtCollaborativeTransaction transaction = document.BeginTransaction();
+        form.EnsureSet("labels");
+        form.EnsureText("notes");
+    }
+
+    private static void ToggleLabel(BcrdtSet? labels, string label, bool ticked)
+    {
+        if (ticked) labels?.Add(label);
+        else labels?.Remove(label);
     }
 }

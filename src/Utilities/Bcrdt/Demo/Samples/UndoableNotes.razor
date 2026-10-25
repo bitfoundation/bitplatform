@@ -2,7 +2,7 @@
    page is this component, opened by a different user. *@
 @using Bit.Bcrdt
 @using Bit.Bcrdt.Blazor
-@implements IDisposable
+@inherits BcrdtComponentBase
 
 <BcrdtCollaborationScope DocumentId="demo-undo" User="_me" OnOpened="Opened" Context="document">
     <BcrdtTextArea Text="@document.Text("body")" Presence="document.Presence" Field="body" Rows="8"
@@ -20,18 +20,24 @@
 @code {
     private readonly BcrdtCollaboratorInfo _me = new("u-1", "Ada", BcrdtPresenceService.SuggestColor("u-1"));
     private BcrdtUndoManager? _undo;
+    private IDisposable? _undoHandle;
 
+    // Called for every document the scope opens, so a stack over the one before is let go first.
     private void Opened(BcrdtCollaborativeDocument document)
     {
+        _undoHandle?.Dispose();
+
         // One stack per editing surface, scoped to the text it edits: a stack over the whole document would
         // undo an edit made in an unrelated field minutes ago. It captures untagged local edits - the
         // textarea's keystrokes - and never the updates that arrive from peers.
         _undo = new BcrdtUndoManager(document.Text("body"));
+        _undoHandle = TrackDisposable(_undo);
 
-        // The buttons enable and disable as the stack changes, not only as the document does.
-        _undo.StackItemAdded += _ => InvokeAsync(StateHasChanged);
-        _undo.StackItemUpdated += _ => InvokeAsync(StateHasChanged);
-        _undo.StackItemPopped += _ => InvokeAsync(StateHasChanged);
+        // The buttons enable and disable as the stack changes, not only as the document does. The stack
+        // raises these inside the edit that changed it; RequestRender renders once it is over, coalesced.
+        _undo.StackItemAdded += _ => RequestRender();
+        _undo.StackItemUpdated += _ => RequestRender();
+        _undo.StackItemPopped += _ => RequestRender();
     }
 
     // Not a rewind: an undo makes new edits that reverse this user's last step, and they sync and merge
@@ -39,6 +45,4 @@
     private void Undo() => _undo?.Undo();
 
     private void Redo() => _undo?.Redo();
-
-    public void Dispose() => _undo?.Dispose();
 }

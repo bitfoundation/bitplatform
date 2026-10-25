@@ -47,18 +47,12 @@
     private bool _online = true;
 
     // A deliberate disconnect. The document stays editable, and the handshake on reconnect sends each
-    // side whatever the other wrote meanwhile.
+    // side whatever the other wrote meanwhile. Disconnecting withdraws this user's presence; connecting
+    // again republishes it.
     private async Task ToggleAsync(BcrdtCollaborativeDocument document)
     {
         _online = !_online;
-        if (_online)
-        {
-            await document.ConnectAsync();
-            document.Presence.SetUser(_me);   // disconnecting withdrew this user's presence
-        }
-        else
-        {
-            await document.DisconnectAsync();
-        }
+        if (_online) await document.ConnectAsync();
+        else await document.DisconnectAsync();
     }
 }

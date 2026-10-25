@@ -102,7 +102,7 @@ public record BcrdtSourceFileDto
     /// <summary>The path to pass to GetBcrdtSourceFile, e.g. "Demo/Client/Pages/ConflictLab.razor".</summary>
     public required string Path { get; init; }
 
-    /// <summary>Page (a working demo page), Shared (the replicas, transports and components the pages share) or Hosting (the wiring of the app).</summary>
+    /// <summary>Page (a working demo page), Sample (the code a page shows under its replicas: the same feature as an application writes it, one participant at a time), Shared (the replicas, transports and components the pages share) or Hosting (the wiring of the app).</summary>
     public required string Kind { get; init; }
 
     /// <summary>The file's own header comment or page introduction, when it has one.</summary>

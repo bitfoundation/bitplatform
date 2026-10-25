@@ -358,6 +358,27 @@ public partial class McpOracleTests
     }
 
     [TestMethod]
+    public void Every_sample_is_embedded()
+    {
+        // The samples are the code each page shows under its replicas, and the closest thing in the index to
+        // what an application writes. Their _Imports.razor only stands in for an application's own.
+        var samples = FindDemoDirectory("Samples");
+        if (samples is null) Assert.Inconclusive("The demo's sources are not next to this build.");
+
+        var expected = Directory.EnumerateFiles(samples, "*.*", SearchOption.TopDirectoryOnly)
+            .Where(path => path.EndsWith(".razor", StringComparison.Ordinal) || path.EndsWith(".cs", StringComparison.Ordinal))
+            .Select(path => $"Demo/Samples/{Path.GetFileName(path)}")
+            .Where(path => path is not "Demo/Samples/_Imports.razor")
+            .ToArray();
+
+        var embedded = BcrdtSourceCatalog.SourceFiles.Where(file => file.Path.StartsWith("Demo/Samples/", StringComparison.Ordinal)).ToArray();
+
+        Assert.IsNotEmpty(expected);
+        CollectionAssert.AreEquivalent(expected, embedded.Select(file => file.Path).ToArray());
+        Assert.IsTrue(embedded.All(file => file.Kind == "Sample"), "Every file of Demo/Samples is indexed as a Sample.");
+    }
+
+    [TestMethod]
     public async Task Every_tool_is_reachable_as_a_plain_get_with_the_same_answer()
     {
         using var http = McpTestHost.CreateHttpClient();

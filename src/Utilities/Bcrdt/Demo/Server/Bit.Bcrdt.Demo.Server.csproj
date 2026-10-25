@@ -41,16 +41,21 @@
     <ItemGroup>
         <EmbeddedResource Include="..\..\README.md" LogicalName="BcrdtDocs/README.md" />
 
-        <!-- Every demo page - each one is a set of real replicas merging for real - plus the samples they
-             show under their replicas, the replicas, transports and components they share and the client
-             half of the hosting. The MCP page describes this server rather than the library, and the
-             not-found page teaches nothing about collaboration. Nor does the site chrome: Layout\ and the
-             DocsCatalog.cs that drives it are the header, docs shell, search and footer every Utilities
-             demo shares, and CodeSnippet.razor with its SyntaxHighlighter.cs only draws a sample's code -
-             the code itself is in Samples\. -->
+        <!-- Every demo page - each one is a set of real replicas merging for real - plus the replicas,
+             transports and components they share and the client half of the hosting. The MCP page
+             describes this server rather than the library, and the not-found page teaches nothing about
+             collaboration. Nor does the site chrome: Layout\ and the DocsCatalog.cs that drives it are the
+             header, docs shell, search and footer every Utilities demo shares, and CodeSnippet.razor with
+             its SyntaxHighlighter.cs only draws a sample's code - the code itself is in Demo\Samples. -->
         <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs"
                           Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Layout\**;..\Client\DocsCatalog.cs;..\Client\Components\CodeSnippet.razor;..\Client\Components\SyntaxHighlighter.cs;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor">
             <LogicalName>BcrdtSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+
+        <!-- The samples the pages show under their replicas: the same features as an application writes
+             them, one participant at a time. Their _Imports.razor only stands in for an application's own. -->
+        <EmbeddedResource Include="..\Samples\*.razor;..\Samples\*.cs" Exclude="..\Samples\_Imports.razor">
+            <LogicalName>BcrdtSource/Demo/Samples/%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
 
         <EmbeddedResource Include="Program.cs" LogicalName="BcrdtSource/Demo/Server/Program.cs" />

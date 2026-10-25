@@ -15,11 +15,12 @@
     <BcrdtTextArea Text="text" Presence="document.Presence" Field="rich" Rows="4"
                    Placeholder="Type, then select some words and format them." />
 
+    @* The selection is resolved again on the click: the range rendered with the buttons may be stale by then. *@
     <div>
-        <button type="button" disabled="@(selected is null)" @onclick="() => Format(text, selected, Bold)"><strong>Bold</strong></button>
-        <button type="button" disabled="@(selected is null)" @onclick="() => Format(text, selected, Italic)"><em>Italic</em></button>
-        <button type="button" disabled="@(selected is null)" @onclick="() => Format(text, selected, Underline)"><u>Underline</u></button>
-        <button type="button" disabled="@(selected is null)" @onclick="() => Format(text, selected, Plain)">Remove formatting</button>
+        <button type="button" disabled="@(selected is null)" @onclick="() => Format(text, Selected(document), Bold)"><strong>Bold</strong></button>
+        <button type="button" disabled="@(selected is null)" @onclick="() => Format(text, Selected(document), Italic)"><em>Italic</em></button>
+        <button type="button" disabled="@(selected is null)" @onclick="() => Format(text, Selected(document), Underline)"><u>Underline</u></button>
+        <button type="button" disabled="@(selected is null)" @onclick="() => Format(text, Selected(document), Plain)">Remove formatting</button>
     </div>
 
     @* The same text drawn from its delta: one step per run of equally formatted characters. *@
@@ -53,8 +54,13 @@
     private BcrdtCollaboratorSelection? _selection;
     private Action? _unsubscribe;
 
+    // Called for every document the scope opens, so the previous one's subscription - and a selection
+    // anchored to its characters - is let go first.
     private void Opened(BcrdtCollaborativeDocument document)
     {
+        _unsubscribe?.Invoke();
+        _selection = null;
+
         // The editor withdraws its selection when it loses focus - which pressing a button does - so the
         // component remembers the last real selection rather than reading the current one.
         void Remember()

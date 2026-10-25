@@ -23,8 +23,14 @@
 @code {
     [CascadingParameter] public BcrdtCollaborativeDocument Document { get; set; } = default!;
 
-    // Re-render, coalesced, whenever somebody joins, leaves or moves their caret.
-    protected override void OnInitialized() => Track(Document.Presence);
+    // Re-render, coalesced, whenever somebody joins, leaves or moves their caret - and whenever the text
+    // changes, which moves a caret nobody touched (text typed before it) and brings in the characters a
+    // caret that arrived first is anchored to.
+    protected override void OnInitialized()
+    {
+        Track(Document.Presence);
+        Track(Document);
+    }
 
     // A selection is anchored to a character rather than to an index, so it is resolved against this
     // replica's own copy of the text - and is null while that character has not arrived here yet,

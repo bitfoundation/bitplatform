@@ -19,10 +19,25 @@ public sealed class CodeSnippetTests : BcrdtTest
     public static IEnumerable<object[]> PagesWithSamples =>
         Directory.EnumerateFiles(RepoLayout.DemoPagesDirectory(), "*.razor", SearchOption.AllDirectories)
             .Select(File.ReadAllText)
-            .Select(source => (Route: Regex.Matches(source, "@page\\s+\"([^\"]+)\"").Last().Groups[1].Value,
+            .Select(source => (Routes: Regex.Matches(source, "@page\\s+\"([^\"]+)\"").Select(route => route.Groups[1].Value).ToArray(),
                                Samples: Regex.Matches(source, "<CodeSnippet\\s").Count))
-            .Where(page => page.Samples > 0)
-            .Select(page => new object[] { Regex.Replace(page.Route, "\\{[^}]+\\}", "e2e-snippets"), page.Samples });
+            // A component without @page is not a page of its own: whatever page renders it counts its samples.
+            .Where(page => page.Samples > 0 && page.Routes.Length > 0)
+            .Select(page => new object[] { PathOf(page.Routes.OrderByDescending(route => route.Contains('{')).First()), page.Samples });
+
+    /// <summary>
+    /// A route with each parameter filled in by a value its constraint accepts - a constrained parameter given a
+    /// word would not match the route at all, and the page would answer 404.
+    /// </summary>
+    private static string PathOf(string route) =>
+        Regex.Replace(route, "\\{\\*{0,2}[^}:?]+(?::([^}?]+))?\\??\\}", parameter => parameter.Groups[1].Value.ToLowerInvariant() switch
+        {
+            "int" or "long" or "decimal" or "double" or "float" => "1",
+            "bool" => "true",
+            "guid" => Guid.Empty.ToString(),
+            "datetime" => "2026-01-01",
+            _ => "e2e-snippets",
+        });
 
     [TestMethod]
     [DynamicData(nameof(PagesWithSamples))]

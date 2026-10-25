@@ -91,7 +91,7 @@ public static class SyntaxHighlighter
 
         public string Run(bool skipMarkup = false)
         {
-            if (!skipMarkup) Markup(false);
+            if (!skipMarkup) Markup();
 
             var outSb = new StringBuilder();
             for (int k = 0; k < lines.Count; k++)
@@ -118,7 +118,7 @@ public static class SyntaxHighlighter
         {
             "abstract","as","async","await","base","bool","break","byte","case","catch","char","class",
             "const","continue","decimal","default","do","double","else","enum","false","finally","float",
-            "for","foreach","get","if","in","init","int","interface","internal","is","lock","long","new",
+            "for","foreach","get","if","in","init","int","interface","internal","is","lock","long","new","not","and","or","when",
             "namespace","null","object","out","override","params","private","protected","public","readonly",
             "record","ref","return","sealed","set","short","static","string","struct","switch","this","throw",
             "true","try","typeof","using","var","virtual","void","while","yield",
@@ -132,6 +132,10 @@ public static class SyntaxHighlighter
         private static readonly HashSet<string> BlockKeywords = new()
         {
             "if","else","for","foreach","while","switch","do","lock",
+        };
+        private static readonly HashSet<string> VoidElements = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "area","base","br","col","embed","hr","img","input","link","meta","source","track","wbr",
         };
 
         // ── Output helpers ────────────────────────────────────────────────────
@@ -190,12 +194,14 @@ public static class SyntaxHighlighter
         }
 
         // ── Markup mode ───────────────────────────────────────────────────────
-        private void Markup(bool untilCloseBrace)
+        // The whole file, or - given an element's name - that element's content, up to the tag that
+        // closes it: a line of markup inside a code block, where C# picks up again after it.
+        private void Markup(string? element = null)
         {
+            int depth = 1;
             while (i < n)
             {
                 char c = s[i];
-                if (untilCloseBrace && c == '}') { Plain('}'); i++; return; }
                 if (c == '@')
                 {
                     if (i + 1 < n && s[i + 1] == '*') RazorComment();
@@ -205,14 +211,56 @@ public static class SyntaxHighlighter
                 if (c == '<')
                 {
                     if (Match("<!--")) { HtmlComment(); continue; }
-                    if (i + 1 < n && (char.IsLetter(s[i + 1]) || s[i + 1] == '/')) { Tag(); continue; }
+                    if (i + 1 < n && (char.IsLetter(s[i + 1]) || s[i + 1] == '/'))
+                    {
+                        var (name, closing, selfClosing) = Tag();
+                        if (element is null || selfClosing || !string.Equals(name, element, StringComparison.OrdinalIgnoreCase)) continue;
+                        if (!closing) depth++;
+                        else if (--depth == 0) return;
+                        continue;
+                    }
                     Plain('<'); i++; continue;
                 }
                 Plain(c); i++;
             }
         }
 
-        private void MarkupGroup() { Plain('{'); i++; Markup(true); }
+        private void Element()
+        {
+            var (name, _, selfClosing) = Tag();
+            if (!selfClosing && !VoidElements.Contains(name)) Markup(name);
+        }
+
+        // The body of @if, @foreach, @{ ... } and the like: C#, in which a statement that starts with a
+        // tag is a line of markup, as Razor reads it - so `is not { } item` or a nested if's braces stay C#.
+        private void CodeBlock()
+        {
+            Plain('{'); i++;
+            int depth = 1, parens = 0;
+            bool statementStart = true;
+            while (i < n)
+            {
+                char c = s[i];
+                if (char.IsWhiteSpace(c)) { Plain(c); i++; continue; }
+                if (c == '@' && i + 1 < n && s[i + 1] == '*') { RazorComment(); continue; }
+                if (c == '/' && i + 1 < n && s[i + 1] == '/') { LineComment(); continue; }
+                if (c == '/' && i + 1 < n && s[i + 1] == '*') { BlockComment(); continue; }
+                if (c == '<' && statementStart && parens == 0 && i + 1 < n && char.IsLetter(s[i + 1])) { Element(); continue; }
+
+                statementStart = c is '{' or '}' or ';';
+                if (c == '{') depth++;
+                if (c == '}' && --depth == 0) { Plain('}'); i++; return; }
+                if (c is '(' or '[') parens++;
+                if (c is ')' or ']' && parens > 0) parens--;
+
+                if (c == '"' || c == '\'') { CSharpString(c); continue; }
+                if (c == '$' && i + 1 < n && s[i + 1] == '"') { InterpString(); continue; }
+                if (c == '@' && i + 1 < n && s[i + 1] == '"') { VerbatimString(); continue; }
+                if (char.IsLetter(c) || c == '_') { EmitIdentCS(ReadIdent()); continue; }
+                if (char.IsDigit(c)) { Number(); continue; }
+                Plain(c); i++;
+            }
+        }
 
         private void RazorComment()
         {
@@ -230,11 +278,12 @@ public static class SyntaxHighlighter
             Span(s.Substring(st, i - st), "tok-com");
         }
 
-        private void Tag()
+        private (string Name, bool Closing, bool SelfClosing) Tag()
         {
             RawHtml("<span class=\"tok-tag\">");
             Out(s[i]); i++;                       // '<'
-            if (i < n && s[i] == '/') { Out('/'); i++; }
+            bool closing = i < n && s[i] == '/';
+            if (closing) { Out('/'); i++; }
             int st = i;
             while (i < n && (char.IsLetterOrDigit(s[i]) || s[i] == '-' || s[i] == ':' || s[i] == '_')) { Out(s[i]); i++; }
             string name = s.Substring(st, i - st);
@@ -246,8 +295,8 @@ public static class SyntaxHighlighter
             while (i < n)
             {
                 char c = s[i];
-                if (c == '>') { Span(">", "tok-tag"); i++; if (bm) tagHl = false; return; }
-                if (c == '/' && i + 1 < n && s[i + 1] == '>') { Span("/>", "tok-tag"); i += 2; if (bm) tagHl = false; return; }
+                if (c == '>') { Span(">", "tok-tag"); i++; if (bm) tagHl = false; return (name, closing, false); }
+                if (c == '/' && i + 1 < n && s[i + 1] == '>') { Span("/>", "tok-tag"); i += 2; if (bm) tagHl = false; return (name, closing, true); }
                 if (char.IsWhiteSpace(c)) { Plain(c); i++; continue; }
                 if (c == '@')
                 {
@@ -267,6 +316,7 @@ public static class SyntaxHighlighter
                 Plain(c); i++;
             }
             if (bm) tagHl = false;
+            return (name, closing, false);
         }
 
         private void AttrValue()
@@ -309,7 +359,8 @@ public static class SyntaxHighlighter
             i++; // consume '@'
             if (i >= n) { Span("@", "tok-raz"); return; }
             char c = s[i];
-            if (c == '(' || c == '{') { Span("@", "tok-raz"); CSharpGroup(); return; }
+            if (c == '(') { Span("@", "tok-raz"); CSharpGroup(); return; }
+            if (c == '{') { Span("@", "tok-raz"); CodeBlock(); return; }
             if (char.IsLetter(c) || c == '_')
             {
                 string w = ReadIdent();
@@ -318,16 +369,39 @@ public static class SyntaxHighlighter
                 if (BlockKeywords.Contains(w))
                 {
                     Span("@" + w, "tok-key");
-                    SkipWs();
-                    if (i < n && s[i] == '(') CSharpGroup();
-                    SkipWs();
-                    if (i < n && s[i] == '{') MarkupGroup();
+                    BlockStatement();
                     return;
                 }
                 Span("@", "tok-raz"); EmitIdentCS(w); MemberTail(); return;
             }
             Span("@", "tok-raz");
         }
+
+        // What follows @if, @foreach and the like: the condition, the body, and any else branches.
+        private void BlockStatement()
+        {
+            while (true)
+            {
+                SkipWs();
+                if (i < n && s[i] == '(') CSharpGroup();
+                SkipWs();
+                if (i < n && s[i] == '{') CodeBlock();
+
+                // An else after the closing brace belongs to the same statement; anything else is markup again.
+                int next = i;
+                while (next < n && char.IsWhiteSpace(s[next])) next++;
+                if (!IsWordAt(next, "else")) return;
+
+                SkipWs();
+                Span("else", "tok-key"); i += 4;
+                SkipWs();
+                if (IsWordAt(i, "if")) { Span("if", "tok-key"); i += 2; }
+            }
+        }
+
+        private bool IsWordAt(int at, string word) =>
+            at + word.Length <= n && string.CompareOrdinal(s, at, word, 0, word.Length) == 0 &&
+            !(at + word.Length < n && (char.IsLetterOrDigit(s[at + word.Length]) || s[at + word.Length] == '_'));
 
         private void MemberTail()
         {

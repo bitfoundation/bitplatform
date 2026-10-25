@@ -257,7 +257,7 @@ public static partial class BcrdtSourceCatalog
     private static string KindOf(string path)
     {
         if (path.StartsWith("Demo/Client/Pages/", StringComparison.OrdinalIgnoreCase)) return "Page";
-        if (path.StartsWith("Demo/Client/Samples/", StringComparison.OrdinalIgnoreCase)) return "Sample";
+        if (path.StartsWith("Demo/Samples/", StringComparison.OrdinalIgnoreCase)) return "Sample";
         if (path.StartsWith("Demo/Server/", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWith("Demo/Client/Extensions/", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/Program.cs", StringComparison.OrdinalIgnoreCase) ||

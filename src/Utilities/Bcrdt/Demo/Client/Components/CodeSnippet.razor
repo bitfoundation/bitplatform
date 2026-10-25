@@ -5,12 +5,14 @@
    A snippet is not the page's own source. The pages run several replicas side by side through the demo's
    own plumbing (DemoReplica, ReplicaPanel); a snippet is what an application writes for the same feature -
    one participant, through BcrdtCollaborationScope and the AddBitBcrdtServices registration. It is a file of
-   Samples\, compiled with the app so it cannot fall behind the library's API, whose source the project embeds
-   for this component to show. *@
+   Demo\Samples, a project of its own that compiles it so it cannot fall behind the library's API; this
+   project embeds only its text, for this component to show. *@
 
 <div class="bb-source demo-snippet">
+    @* aria-controls only while the code exists: it is rendered only when open, and a reference to a
+       missing id is a dangling one. *@
     <button type="button" class="btn btn-secondary" @onclick="Toggle"
-            aria-expanded="@(_show ? "true" : "false")" aria-controls="@_bodyId">
+            aria-expanded="@(_show ? "true" : "false")" aria-controls="@(_show ? _bodyId : null)">
         <span class="demo-snippet-caret" aria-hidden="true">@(_show ? "▾" : "▸")</span>
         @(_show ? "Hide code" : "Show code")
         <span class="demo-snippet-lang">@Sample</span>
@@ -23,7 +25,7 @@
 </div>
 
 @code {
-    /// <summary>The file of Samples\ to show, such as "Notes.razor". A .cs file is shown as C#, anything else as Razor.</summary>
+    /// <summary>The file of Demo\Samples to show, such as "Notes.razor". A .cs file is shown as C#, anything else as Razor.</summary>
     [Parameter, EditorRequired] public string Sample { get; set; } = "";
 
     // The toggle points at the block it opens, so a screen reader following aria-controls lands on
@@ -35,15 +37,25 @@
     private string? _rendered;
     private MarkupString _html;
 
+    // An open snippet follows its Sample, so its code never sits under another sample's name.
+    protected override void OnParametersSet()
+    {
+        if (_show) Highlight();
+    }
+
     private void Toggle()
     {
         _show = !_show;
+        if (_show) Highlight();
+    }
 
-        // Read and highlighted on first opening - a full lexer pass nobody needs until then - and kept after.
-        if (_show is false || _rendered == Sample) return;
+    // Read and highlighted on first opening - a full lexer pass nobody needs until then - and kept after.
+    private void Highlight()
+    {
+        if (_rendered == Sample) return;
 
         _rendered = Sample;
-        _html = (MarkupString)SyntaxHighlighter.Highlight(Read(Sample).ReplaceLineEndings("\n").Trim('\n'),
+        _html = (MarkupString)SyntaxHighlighter.Highlight(Read(Sample).Trim('\r', '\n'),
                                                           Sample.EndsWith(".cs", StringComparison.Ordinal) ? "C#" : "Razor");
     }
 

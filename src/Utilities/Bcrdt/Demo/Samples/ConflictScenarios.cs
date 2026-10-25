@@ -1,7 +1,6 @@
-﻿using System.Text.Json;
-using Bit.Bcrdt;
+﻿using Bit.Bcrdt;
 
-namespace Bit.Bcrdt.Demo.Client.Samples;
+namespace Bit.Bcrdt.Demo.Samples;
 
 /// <summary>
 /// The conflict lab's eight scenarios on the engine alone: two replicas and no network, every update handed over by
@@ -78,8 +77,9 @@ public static class ConflictScenarios
         b.ApplyUpdate(toB);
 
         // 5. Compare. The same updates make the same state, whatever order they arrived in.
-        string json = JsonSerializer.Serialize(a.ToJson());
-        Console.WriteLine($"{title}: {json} (converged: {json == JsonSerializer.Serialize(b.ToJson())})");
+        string json = ProjectionJson.Format(a.ToJson());
+        Console.WriteLine($"{title} (converged: {json == ProjectionJson.Format(b.ToJson())})");
+        Console.WriteLine(json);
     }
 
     // A root's kind is fixed by the first call that names it, so every replica names all four up front.
