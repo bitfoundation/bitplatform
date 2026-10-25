@@ -35,6 +35,7 @@ public class DemoCodeHighlighterTests
             @inject BdndInterop Interop
 
             <div>@Card.Text</div>
+            <span>@Now</span>
 
             @code {
                 private static readonly string[] Columns = ["To do", "Done"];
@@ -53,31 +54,54 @@ public class DemoCodeHighlighterTests
             Assert.DoesNotContain($"[type:{member}].", tokens, $"{member} is coloured as a type");
         }
         Assert.Contains("[type:ItemTypes].", tokens, "a type's static member lost the type's colour");
+        Assert.Contains("[raz:@]Now[pun:</]", tokens, "the markup after an implicit expression is taken for type arguments");
     }
 
     [TestMethod]
     public void A_component_parameter_that_takes_csharp_is_coloured_as_csharp_and_one_that_takes_a_string_as_a_string()
     {
         var tokens = Tokens("""
-            @foreach (var name in _boxes)
+            @foreach (var note in _notes)
             {
-                <BdndDraggable TItem="string" Type="box" Item="name" Context="drag" />
+                <BdndDraggable TItem="string" Type="note" Item="note" Context="drag" class="note" />
             }
-            <BdndDropTarget TItem="SortableCard.DragItem" Accept="box" OnDrop="Store" Disabled="true" Label="Drop here" />
+            <BdndDropTarget TItem="SortableCard.DragItem" Accept="note" OnDrop="Store" Disabled="true" Label="Drop here"
+                            Edges="BdndEdges.Vertical" />
 
             @code {
-                private readonly string[] _boxes = ["Glass"];
+                private readonly string[] _notes = ["Glass"];
 
                 private void Store(BdndDropEventArgs<string> e) { }
             }
             """);
 
-        Assert.Contains("[attr:Type]=[str:\"box\"]", tokens, "a string is not a string");
+        // `Type` takes a string and `Item` does not: the same word is text in one and a variable in the other
+        Assert.Contains("[attr:Type]=[str:\"note\"]", tokens, "a string is not a string");
+        Assert.Contains("[attr:Item]=[str:\"]note[str:\"]", tokens, "a variable is a string");
+        Assert.Contains("[attr:Accept]=[str:\"note\"]", tokens, "a string is not a string");
         Assert.Contains("[attr:Label]=[str:\"Drop here\"]", tokens, "a string is not a string");
-        Assert.Contains("[attr:Item]=[str:\"]name[str:\"]", tokens, "a variable is a string");
+        Assert.Contains("[attr:class]=[str:\"note\"]", tokens, "an attribute passed on to an element is not a string");
         Assert.Contains("[attr:OnDrop]=[str:\"][fn:Store][str:\"]", tokens, "a method group is a string");
         Assert.Contains("[attr:Disabled]=[str:\"][key:true][str:\"]", tokens, "a literal is a string");
+        Assert.Contains("[attr:Edges]=[str:\"][type:BdndEdges].Vertical[str:\"]", tokens, "an enum value is a string");
         Assert.Contains("[attr:TItem]=[str:\"][type:SortableCard].[type:DragItem][str:\"]", tokens, "a type argument is not a type");
+    }
+
+    [TestMethod]
+    public void A_component_that_cannot_be_looked_up_has_its_values_read_by_their_shape()
+    {
+        var tokens = Tokens("""
+            <Chart Points="_points" OnSelect="Pick" Height="240" Title="Sales by month" />
+
+            @code {
+                private readonly double[] _points = [];
+            }
+            """);
+
+        Assert.Contains("[attr:Points]=[str:\"]_points[str:\"]", tokens, "a field is a string");
+        Assert.Contains("[attr:OnSelect]=[str:\"]Pick[str:\"]", tokens, "a callback is a string");
+        Assert.Contains("[attr:Height]=[str:\"][num:240][str:\"]", tokens, "a number is a string");
+        Assert.Contains("[attr:Title]=[str:\"Sales by month\"]", tokens, "text is not a string");
     }
 
     [TestMethod]

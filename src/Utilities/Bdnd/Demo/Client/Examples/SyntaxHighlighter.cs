@@ -1,4 +1,8 @@
-﻿using System.Text;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using System.Text;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Bdnd.Demo.Client.Examples;
 
@@ -11,11 +15,45 @@ namespace Bit.Bdnd.Demo.Client.Examples;
 /// <c>@code</c> block, a control statement whose body switches back to markup on a line that starts with a
 /// tag, an expression inside an attribute value, a render-fragment template. It is pragmatic rather than a
 /// full lexer: it covers the constructs the demo pages use, and tells a type from a member by the shape of
-/// the code around it and by the names the source itself declares, rather than by knowing the types.
+/// the code around it and by the names the source itself declares, rather than by knowing the types. The
+/// one thing it does look up is the parameters of the components it can find, since only those say whether
+/// an attribute's value is text or C#.
 /// </para>
 /// </summary>
 public static class SyntaxHighlighter
 {
+    // The parameters of the components a snippet can render - the library's, the demo's own and the framework's - by
+    // component name, then parameter name: whether each one takes a string. Razor reads a string parameter's value
+    // as text and any other's as C#, so `Type="note"` is text and `Item="note"` is C#, alike as they read.
+    private static readonly Lazy<Dictionary<string, Dictionary<string, bool>>> Components = new(FindComponents);
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The demo renders the components its snippets show, so trimming keeps them; one it removed is coloured by the shape of its values instead.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "A rendered component keeps its public properties: OpenComponent<TComponent> preserves them for parameter binding.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "A rendered component keeps its public properties: OpenComponent<TComponent> preserves them for parameter binding.")]
+    private static Dictionary<string, Dictionary<string, bool>> FindComponents()
+    {
+        var components = new Dictionary<string, Dictionary<string, bool>>(StringComparer.Ordinal);
+        foreach (var assembly in new[] { typeof(BdndProvider).Assembly, typeof(SyntaxHighlighter).Assembly, typeof(PageTitle).Assembly, typeof(ComponentBase).Assembly })
+        {
+            foreach (var type in assembly.GetTypes())
+            {
+                if (type.IsAbstract || !typeof(IComponent).IsAssignableFrom(type)) continue;
+
+                // Like the binding, a parameter's name is matched regardless of case.
+                var parameters = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+                foreach (var property in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
+                {
+                    if (property.IsDefined(typeof(ParameterAttribute), inherit: true)) parameters[property.Name] = property.PropertyType == typeof(string);
+                }
+
+                // A generic component's tag has no arity: BdndDraggable`1 is <BdndDraggable>.
+                var tick = type.Name.IndexOf('`');
+                components.TryAdd(tick < 0 ? type.Name : type.Name[..tick], parameters);
+            }
+        }
+        return components;
+    }
+
     /// <summary>
     /// Highlights <paramref name="code"/> - <c>razor</c> (a .razor file, the default) or <c>csharp</c> (plain C#,
     /// such as a Program.cs excerpt) - and returns HTML that is safe to render verbatim.
@@ -248,7 +286,7 @@ public static class SyntaxHighlighter
                     if (Peek() == '=')
                     {
                         Plain(1);
-                        if (component) ComponentValue(attribute);
+                        if (component) ComponentValue(name, attribute);
                         else AttributeValue(csharp: false);
                     }
                     continue;
@@ -274,11 +312,12 @@ public static class SyntaxHighlighter
             return name;
         }
 
-        // A component parameter's value. Razor reads it as C# unless the parameter is a string, which only the
-        // component knows, so the value is taken for C# when it reads as C#: a type parameter's (`TItem="Card"`), an
-        // event callback's (`OnDrop="Archive"`), or one that names something the source declares (`Item="name"`,
-        // `Node="Node.Children[i]"`) or is a literal or a lambda. Anything else is text, as `Type="box"` is.
-        private void ComponentValue(string attribute)
+        // A component parameter's value. Razor reads it as C# unless the parameter takes a string - and an attribute
+        // that is no parameter at all (`class`) is passed on as text. A type parameter's value, `TItem="Card"`, is a
+        // type. For a component that cannot be looked up, the value is taken for C# when it reads as C#: an event
+        // callback's (`OnDrop="Archive"`), or one that names something the source declares (`Item="name"`) or is a
+        // literal or a lambda; anything else is text.
+        private void ComponentValue(string component, string attribute)
         {
             var quote = Peek();
             var close = quote is '"' or '\'' ? s.IndexOf(quote, _i + 1) : -1;
@@ -298,10 +337,24 @@ public static class SyntaxHighlighter
             }
 
             var typeArgument = attribute[0] == 'T' && (attribute.Length == 1 || char.IsUpper(attribute[1]));
-            var callback = attribute.Length > 2 && attribute.StartsWith("On", StringComparison.Ordinal) && char.IsUpper(attribute[2]);
+            bool csharp;
+            if (Components.Value.TryGetValue(component, out var parameters) && parameters.TryGetValue(attribute, out var text))
+            {
+                csharp = !text;
+                typeArgument = false;
+            }
+            else if (typeArgument || parameters is not null)
+            {
+                csharp = typeArgument;
+            }
+            else
+            {
+                var callback = attribute.Length > 2 && attribute.StartsWith("On", StringComparison.Ordinal) && char.IsUpper(attribute[2]);
+                csharp = callback || IsExpression(value.Trim());
+            }
+
             // A value with a quote or an @ in it is text with expressions in it, or C# too intricate to tell from text.
-            var csharp = value.IndexOfAny(['"', '\'', '@']) < 0 && (typeArgument || callback || IsExpression(value.Trim()));
-            AttributeValue(csharp, typeArgument);
+            AttributeValue(csharp && value.IndexOfAny(['"', '\'', '@']) < 0, typeArgument);
         }
 
         // Whether an attribute value reads as a C# expression rather than as text: a literal, a lambda, a negation,
@@ -553,7 +606,7 @@ public static class SyntaxHighlighter
         // calls and indexers - and nothing after a '.' that is the end of a sentence.
         private void ImplicitExpression()
         {
-            Identifier();
+            Identifier(implicitExpression: true);
             while (_i < s.Length)
             {
                 var c = s[_i];
@@ -567,7 +620,7 @@ public static class SyntaxHighlighter
                 {
                     Plain(dot);
                     _last = '.';
-                    Identifier();
+                    Identifier(implicitExpression: true);
                     continue;
                 }
                 break;
@@ -691,16 +744,19 @@ public static class SyntaxHighlighter
             _prevWord = null;
         }
 
-        // A name: a keyword, a method (a call or a declaration), a type, or a plain member or local.
-        private void Identifier()
+        // A name: a keyword, a method (a call or a declaration), a type, or a plain member or local. In an implicit
+        // expression, `@Now` or `@Card.Text`, the name ends where the expression does: a space or a '<' after it is
+        // markup, never a declared name or type arguments.
+        private void Identifier(bool implicitExpression = false)
         {
             var start = _i;
             var word = ReadIdent(_i);
             _i += word.Length;
 
             var next = _i;
-            while (next < s.Length && s[next] is ' ' or '\t') next++;
+            while (!implicitExpression && next < s.Length && s[next] is ' ' or '\t') next++;
             var nc = next < s.Length ? s[next] : '\0';
+            if (implicitExpression && nc == '<') nc = '\0';
             var upper = char.IsUpper(word[0]);
             // A call, with type arguments or without: `Show(...)`, `Enum.GetValues<Mode>()`.
             var call = nc == '(' || (nc == '<' && IsGenericCall(next));

@@ -379,9 +379,9 @@
     // The snippets the page shows, coloured by CodeBlock.
 
     private const string HeroCode = """
-        @foreach (var item in _cards)
+        @foreach (var card in _cards)
         {
-            <BdndDraggable TItem="Card" Type="card" Item="item">
+            <BdndDraggable TItem="Card" Type="card" Item="card">
                 …
             </BdndDraggable>
         }
@@ -407,10 +407,10 @@
         """;
 
     private const string SourceAndTargetCode = """
-        @foreach (var item in _boxes)
+        @foreach (var box in _boxes)
         {
-            <BdndDraggable TItem="Box" Type="box" Item="item" Context="drag">
-                <div style="opacity: @(drag.IsDragging ? 0.4 : 1)">@item.Name</div>
+            <BdndDraggable TItem="Box" Type="box" Item="box" Context="drag">
+                <div style="opacity: @(drag.IsDragging ? 0.4 : 1)">@box.Name</div>
             </BdndDraggable>
         }
 
@@ -421,9 +421,9 @@
         """;
 
     private const string OutcomeCode = """
-        @foreach (var item in _palette)
+        @foreach (var box in _palette)
         {
-            <BdndDraggable TItem="Box" Type="box" Item="item" OnEnd="Ended">…</BdndDraggable>
+            <BdndDraggable TItem="Box" Type="box" Item="box" OnEnd="Ended">…</BdndDraggable>
         }
 
         @code {
