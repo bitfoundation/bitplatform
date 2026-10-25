@@ -212,6 +212,18 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     public bool? PredictInk { get; set; }
 
     /// <summary>
+    /// Whether the canvas is created with the low-latency (<c>desynchronized</c>) hint, which shortens the path from
+    /// drawing command to pixels on browsers that honor it; <see cref="BinkInputCapabilities.LowLatencyCanvas"/> reports
+    /// whether one did. Off by default, because Chromium (seen on Windows with GPU compositing) shows a desynchronized
+    /// canvas whose pixels are not all opaque - the live stroke's layer always, the document's with a transparent
+    /// background - as solid black once it sits inside an ancestor that clips to rounded corners (<c>overflow: hidden</c>
+    /// with a <c>border-radius</c>, an ordinary card). Turn it on for a canvas with no such ancestor, such as a
+    /// full-screen whiteboard. Read when the canvas attaches; changing it afterwards has no effect.
+    /// </summary>
+    [Parameter]
+    public bool LowLatency { get; set; }
+
+    /// <summary>
     /// What the mouse wheel and a trackpad do over the canvas. The default, <see cref="BinkWheelMode.None"/>,
     /// leaves the wheel to the page, which is right for a canvas embedded in a form that has to stay scrollable.
     /// </summary>
@@ -1038,6 +1050,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
 
     private BinkInteropOptions BuildInteropOptions() => new()
     {
+        LowLatency = LowLatency,
         RejectTouchWhilePen = RejectTouchWhilePen,
         HandleKeyboard = EnableKeyboardShortcuts,
         // Only a tool that shows a preview following the pointer asks for hover; for any other it would be traffic

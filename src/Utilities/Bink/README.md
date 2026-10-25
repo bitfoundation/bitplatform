@@ -43,7 +43,7 @@ re-rendered at any size and edited later, rather than being a picture of a drawi
 - **SVG, PNG, JPEG and WebP export** that match the screen, including a pure .NET PNG path for servers and tests.
 - **Real-time collaboration**: transport-agnostic operation sync, presence and offline queueing.
 - **Touch, stylus, mouse and trackpad**: palm rejection, pinch zoom, wheel and trackpad pan and zoom, coalesced
-  samples, high-DPI and low-latency canvases.
+  samples, high-DPI canvases and an opt-in low-latency canvas.
 - **Retained rendering**: the browser keeps every path it has drawn, so a redraw of a large page costs a few
   numbers per element rather than every coordinate, which is what keeps Blazor Server fast too.
 - **Accessibility**: a labelled, focusable, keyboard-operable canvas, a live text summary of the drawing and
@@ -86,7 +86,7 @@ offers; where one is missing the canvas does without it rather than failing.
 | --- | --- | --- | --- | --- |
 | Coalesced pen samples | Yes | Yes (none on Android) | Yes | Fewer samples on very fast strokes |
 | Predicted samples (`PredictInk`) | Yes | 89+ | 18.2+ | About a frame more latency |
-| Low-latency canvas | Windows, ChromeOS | No | 15+ | Normal latency |
+| Low-latency canvas (`LowLatency`, off by default) | Windows, ChromeOS | No | 15+ | Normal latency |
 | WebP export | Yes | Yes | No | `NotSupportedException`; use PNG or JPEG |
 | A picture on the clipboard with a copy | Yes | 127+ | Yes | The copy pastes into canvases only |
 | Eyedropper (`PickColorAsync`) | Desktop | No | No | Returns null |
@@ -1918,8 +1918,18 @@ redraws at the new size. The document is unaffected: it has its own coordinate s
 
 ### Low-latency canvas
 
-The canvas is requested with the `desynchronized` hint, which shortens the path from drawing command to pixels on
-browsers that support it. `Capabilities.LowLatencyCanvas` reports whether the browser honoured it.
+`LowLatency` asks the browser for the `desynchronized` hint, which shortens the path from drawing command to pixels
+on browsers that support it. `Capabilities.LowLatencyCanvas` reports whether the browser honoured it.
+
+```razor
+<BinkCanvas LowLatency="true" />
+```
+
+It is off by default. Chromium (seen on Windows with GPU compositing) shows a desynchronized canvas that is not
+fully opaque as solid black once it sits inside an element that clips to rounded corners (`overflow: hidden` with
+a `border-radius`, an ordinary card), and the layer the live stroke is drawn on is never fully opaque. Turn it on
+for a canvas with no such ancestor, such as a full-screen whiteboard or a note-taking page. It is read when the
+canvas attaches.
 
 ### Pointer prediction
 

@@ -16,7 +16,7 @@ public enum BinkCanvasLayer
 /// <summary>Options passed to the browser layer when a canvas is attached.</summary>
 internal sealed record BinkInteropOptions
 {
-    public bool LowLatency { get; init; } = true;
+    public bool LowLatency { get; init; }
     public bool RejectTouchWhilePen { get; init; } = true;
     public bool SuppressContextMenu { get; init; } = true;
     public bool TrackHover { get; init; }
