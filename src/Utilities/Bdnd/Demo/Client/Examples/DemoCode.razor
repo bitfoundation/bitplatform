@@ -3,9 +3,8 @@
 
 @* A collapsible "View code" panel under a demo's sample: the .razor source of the current page, then of
    the components beside it that the page renders (a sortable card, a tree node), each under its file
-   name. The sources are resolved from the build-generated DemoSources lookup, keyed by route, and
-   coloured by SyntaxHighlighter (its token colours are in demo.css); every block is the site kit's
-   pre.bb-code, which site.js gives a copy button. *@
+   name. The sources are resolved from the build-generated DemoSources lookup, keyed by route, and each
+   one is a CodeBlock. *@
 
 <div class="bb-source demo-code">
     <button type="button"
@@ -28,7 +27,7 @@
             @foreach (var file in _files)
             {
                 <p class="bb-source-file demo-code__file">@file.Name</p>
-                <pre class="bb-code demo-code__pre"><code class="demo-code__code">@file.Html</code></pre>
+                <CodeBlock Code="@file.Code" Class="demo-code__pre" />
             }
         }
     }
@@ -36,7 +35,7 @@
 
 @code {
     private bool _open;
-    private (string Name, MarkupString Html)[]? _files;
+    private (string Name, string Code)[]? _files;
     private bool _resolved;
 
     private void Toggle()
@@ -44,7 +43,7 @@
         _open = !_open;
         if (_open && !_resolved)
         {
-            _files = Resolve()?.Select(f => (f.Name, (MarkupString)SyntaxHighlighter.Highlight(f.Code))).ToArray();
+            _files = Resolve();
             _resolved = true;
         }
     }

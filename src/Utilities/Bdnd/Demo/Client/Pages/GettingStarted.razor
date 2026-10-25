@@ -49,22 +49,7 @@
 
     <div class="bb-demo">
         <div class="bb-demo-bar"><span class="bb-demo-label">Live</span></div>
-        <BdndProvider>
-            <div class="row-wrap">
-                @foreach (var name in _boxes)
-                {
-                    <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="name" Context="drag">
-                        <div class="box" style="opacity:@(drag.IsDragging ? "0.4" : "1")">@name</div>
-                    </BdndDraggable>
-                }
-            </div>
-
-            <BdndDropTarget TItem="string" Accept="@ItemTypes.Box" OnDrop="HandleDrop" Context="drop" style="display:contents">
-                <div class="dustbin" style="margin-top:1.5rem;background:@(drop.IsOver ? "#15803d" : "#1f2430")">
-                    @(drop.IsOver ? "Release to drop" : _label)
-                </div>
-            </BdndDropTarget>
-        </BdndProvider>
+        <FirstDrop />
 
         <p class="demo-caption">
             Drag a box with the mouse, press and hold one with a finger, or <kbd>Tab</kbd> to it and press
@@ -140,11 +125,6 @@
 </div>
 
 @code {
-    private readonly string[] _boxes = ["Glass", "Banana", "Paper"];
-    private string _label = "Drag a box here";
-
-    private void HandleDrop(BdndDropEventArgs<string> e) => _label = $"Dropped: {e.Item}";
-
     // The snippets the page shows, coloured by CodeBlock.
 
     private const string RegisterCode = """
@@ -154,32 +134,6 @@
 
     private const string ImportsCode = "@using Bit.Bdnd";
 
-    // The live sample's code, under the sample it builds.
-    private const string FirstDropCode = """
-        <BdndProvider>
-            @foreach (var name in _boxes)
-            {
-                <BdndDraggable TItem="string" Type="box" Item="name" Context="drag">
-                    <div class="box" style="opacity: @(drag.IsDragging ? 0.4 : 1)">
-                        @name
-                    </div>
-                </BdndDraggable>
-            }
-
-            <BdndDropTarget TItem="string" Accept="box" OnDrop="HandleDrop" Context="drop">
-                <div class="dustbin"
-                     style="background: @(drop.IsOver ? "#15803d" : "#1f2430")">
-                    @(drop.IsOver ? "Release to drop" : _label)
-                </div>
-            </BdndDropTarget>
-        </BdndProvider>
-
-        @code {
-            private readonly string[] _boxes = ["Glass", "Banana", "Paper"];
-            private string _label = "Drag a box here";
-
-            private void HandleDrop(BdndDropEventArgs<string> e)
-                => _label = $"Dropped: {e.Item}";
-        }
-        """;
+    // The live sample's own source, read at build time, so the code under the sample is the code that runs it.
+    private static readonly string FirstDropCode = DemoSources.Components["FirstDrop.razor"];
 }

@@ -513,6 +513,14 @@ html.bdnd-framed .bb-demo {
     }
 }
 
+/* A walkthrough step shown in two languages - Program.cs, then markup - as two blocks in the one grid cell. */
+.home-code-stack {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    min-width: 0;
+}
+
 /* ---------- Kanban board (keyboard and screen readers) ----------
    The columns follow a drag through the data-bit-bdnd-* attributes Bdnd puts on every drop target's host - no
    class is rendered from the collected state - and the dragged card through data-bit-bdnd-dragging. */
