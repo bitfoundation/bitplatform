@@ -1,0 +1,301 @@
+﻿@page "/hosting"
+@using System.Runtime.InteropServices
+@inject DemoDbService Db
+
+<PageTitle>Hosting models · BlazeDb</PageTitle>
+
+<PageHeader Eyebrow="Hosting models" Title="Where a database can live"
+            Lead="Two facts decide it: the browser backends need the WebAssembly runtime, and the engine assumes one logical writer with no concurrent readers. Everything else - the tables, the queries, the EF Core provider - is the same wherever it runs.">
+    <span class="bb-badge bd-badge-neutral">@(OperatingSystem.IsBrowser() ? "This page: in the browser" : "This page: outside the browser")</span>
+    <span class="bb-badge bd-badge-neutral">@RendererInfo.Name, @(RendererInfo.IsInteractive ? "interactive" : "static")</span>
+</PageHeader>
+
+<Section Title="At a glance">
+    <Panel Flush="true">
+        <div class="bb-scroll">
+            <table class="bb-table">
+                <thead>
+                    <tr><th>Host</th><th>Storage</th><th>Who serializes access</th><th>Setup guide</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="bd-strong">Blazor WebAssembly (standalone)</td>
+                        <td><code>BlazeDbOpfsStorage</code>, or <code>BlazeDbIndexedDbStorage</code> where OPFS cannot be written</td>
+                        <td>WebAssembly has one thread: by construction</td>
+                        <td><a href="/api/mcp/GetBlazeDbSetupGuide?hostingModel=standalone-wasm" target="_blank" rel="noopener">standalone-wasm</a></td>
+                    </tr>
+                    <tr>
+                        <td class="bd-strong">Blazor Web App, InteractiveWebAssembly</td>
+                        <td>The same, from the <code>.Client</code> project</td>
+                        <td>By construction - but never in a prerender</td>
+                        <td><a href="/api/mcp/GetBlazeDbSetupGuide?hostingModel=wasm" target="_blank" rel="noopener">wasm</a></td>
+                    </tr>
+                    <tr>
+                        <td class="bd-strong">Blazor Web App, InteractiveAuto</td>
+                        <td>The same, once the component runs in the browser</td>
+                        <td>By construction, after the first, server-rendered visit</td>
+                        <td><a href="/api/mcp/GetBlazeDbSetupGuide?hostingModel=auto" target="_blank" rel="noopener">auto</a></td>
+                    </tr>
+                    <tr>
+                        <td class="bd-strong">Blazor Server, ASP.NET Core</td>
+                        <td><code>BlazeDbFileStorage</code></td>
+                        <td><strong>You</strong>: one lock around every use, or a database per user</td>
+                        <td><a href="/api/mcp/GetBlazeDbSetupGuide?hostingModel=server" target="_blank" rel="noopener">server</a></td>
+                    </tr>
+                    <tr>
+                        <td class="bd-strong">Blazor Hybrid - MAUI, WPF, Windows Forms</td>
+                        <td><code>BlazeDbFileStorage</code> in the app's data directory</td>
+                        <td>The UI thread the components render on</td>
+                        <td><a href="/api/mcp/GetBlazeDbSetupGuide?hostingModel=hybrid" target="_blank" rel="noopener">hybrid</a></td>
+                    </tr>
+                    <tr>
+                        <td class="bd-strong">Console tools and tests</td>
+                        <td><code>BlazeDbFileStorage</code>, <code>BlazeDbInMemoryStorage</code>, or none</td>
+                        <td>The tool's own single thread</td>
+                        <td><a href="/api/mcp/GetBlazeDbSetupGuide?hostingModel=desktop" target="_blank" rel="noopener">desktop</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </Panel>
+    <p class="bb-muted">
+        Each setup guide is the complete wiring for that host, as this site's <a href="mcp-server">MCP server</a> hands it
+        to an AI agent.
+    </p>
+</Section>
+
+<Section Title="Blazor WebAssembly"
+         Lead="The model the engine is designed for. The database lives in the tab, in managed memory, persisted to OPFS. Open it once per tab and share it.">
+    <div class="bb-split">
+        <CodeBlock Title="AppDatabase.cs" Code="@WasmSnippet" />
+        <Panel Title="This tab's database" IconName="database">
+            <dl class="bb-params">
+                <dt>Opened by</dt>
+                <dd>DemoDbService, a singleton</dd>
+                <dt>Backend</dt>
+                <dd>@(Db.IsOpen ? Db.StorageLabel : "not opened yet")</dd>
+                <dt>OperatingSystem.IsBrowser()</dt>
+                <dd>@OperatingSystem.IsBrowser().ToString().ToLowerInvariant()</dd>
+                <dt>Process architecture</dt>
+                <dd>@RuntimeInformation.ProcessArchitecture</dd>
+                <dt>Current managed thread</dt>
+                <dd>@Environment.CurrentManagedThreadId</dd>
+            </dl>
+            <p class="bd-foot">
+                Every page of this site asks the same singleton for the database, so they all share one instance - and
+                one writer lock. The database does not own its storage: dispose the storage after the database, which
+                is what releases the lock for the next tab.
+            </p>
+        </Panel>
+    </div>
+</Section>
+
+<Section Title="Blazor Web App"
+         Lead="The database still lives in the browser, so the code that opens it belongs in the .Client project. What changes is prerendering: a prerendered component runs on the server first, where there is no OPFS, no IndexedDB and no Web Locks.">
+    <div class="bb-split">
+        <CodeBlock Title="Either: no prerendering where the database is used" Code="@NoPrerenderSnippet" />
+        <CodeBlock Title="Or: open it only once the component runs in the browser" Code="@AfterRenderSnippet" />
+    </div>
+    <Callout Tone="warn" Title="The browser backends throw outside the browser.">
+        Every type in <code>Bit.BlazeDb.Browser</code> is <code>[SupportedOSPlatform("browser")]</code> - the rest of the
+        engine is not. Under <code>InteractiveAuto</code> the same applies to the first visit, which renders on the server
+        while the runtime downloads. This site turns prerendering off for the whole app, since every one of its pages
+        opens the database.
+    </Callout>
+</Section>
+
+<Section Title="Blazor Server and ASP.NET Core"
+         Lead="The engine runs in the server process and persists through BlazeDbFileStorage. Every circuit and every request runs on its own thread, which the engine does not guard against.">
+    <div class="bb-split">
+        <CodeBlock Title="One database, one lock around every use" Code="@ServerSnippet" />
+        <div class="bb-flex">
+            <Callout Tone="err" Title="Not a multi-user database server.">
+                Serialize all access to a shared database yourself, or give each user a database of their own in a
+                directory of their own. For a store many users write at once, a database server is the right tool;
+                BlazeDb is the local store of one user's application.
+            </Callout>
+            <Panel Title="Files on the desktop" IconName="disk">
+                <p>
+                    <code>BlazeDbFileStorage</code> takes an exclusive lock on its directory for as long as it lives - the
+                    same single-writer guarantee the browser gets from Web Locks - so a second writer on the same directory
+                    gets <code>BlazeDbDatabaseLockedException</code>. Dispose it when the database is closed.
+                    <code>BlazeDbFileStorage.OpenReadOnly(directory)</code> opens the same directory for a follower that only
+                    reads, and returns <code>null</code> when there is nothing there yet.
+                    <code>BlazeDbDatabase.DeleteAsync(storage)</code> removes a database from any backend.
+                </p>
+            </Panel>
+        </div>
+    </div>
+</Section>
+
+<Section Title="Blazor Hybrid and desktop"
+         Lead="MAUI, WPF and Windows Forms apps run .NET in-process, so the browser backends do not apply even though the UI is rendered in a WebView.">
+    <div class="bb-split">
+        <CodeBlock Title="MauiProgram.cs and AppDatabase.cs" Code="@HybridSnippet" />
+        <Panel Title="Tools and tests" IconName="cpu">
+            <p>
+                Persist through <code>BlazeDbFileStorage</code> in the app's data directory (<code>FileSystem.AppDataDirectory</code>
+                on MAUI), opened once for the app's lifetime and disposed when it closes. Components render on the UI
+                thread, which serializes their access; marshal work from background threads back to it.
+            </p>
+            <p>
+                Console tools and tests use <code>BlazeDbFileStorage</code> or <code>BlazeDbInMemoryStorage</code> - or no
+                storage at all. In-memory storage is what makes crash and corruption scenarios reproducible: the
+                <a href="durability">durability page</a> runs on it.
+            </p>
+        </Panel>
+    </div>
+</Section>
+
+<Section Title="The threading model"
+         Lead="BlazeDb is built for Blazor WebAssembly, which has one thread, and its guarantees are those of a single logical writer with no concurrent readers.">
+    <div class="bb-grid">
+        <div class="bb-card">
+            <h4 class="bb-card-title">Writes take a lock</h4>
+            <p class="bb-card-desc">Writes are serialized, so the background flusher can snapshot consistently and two writers on different threads cannot both find a key free.</p>
+        </div>
+        <div class="bb-card">
+            <h4 class="bb-card-title">Reads take none</h4>
+            <p class="bb-card-desc"><code>Get</code>, <code>Scan</code>, every index lookup and every LINQ query through EF Core read the live dictionaries directly - on the platform the engine is designed for there is nothing to lock against. A read that overlaps a write on another thread is a data race, and may throw or return garbage.</p>
+        </div>
+        <div class="bb-card">
+            <h4 class="bb-card-title">Notifications run on the committing thread</h4>
+            <p class="bb-card-desc"><code>Changed</code> handlers and live queries run on the thread that committed, so a component hands its re-render to the renderer with <code>InvokeAsync(StateHasChanged)</code>. Each thread delivers its own commits.</p>
+        </div>
+        <div class="bb-card">
+            <h4 class="bb-card-title">Outside the browser, serialize</h4>
+            <p class="bb-card-desc">On ASP.NET Core or Blazor Server, <code>UseBlazeDb</code> shares one engine between every context of a type, and requests run on different threads: that is supported only when the application serializes all access itself.</p>
+        </div>
+    </div>
+    <div class="bb-try">
+        <a href="changes" class="btn btn-outline">Changed events and live queries →</a>
+        <a href="efcore" class="btn btn-outline">The EF Core provider →</a>
+    </div>
+</Section>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await Db.GetDatabaseAsync();
+        }
+        catch
+        {
+            // The panel says "not opened yet"; the other pages report why.
+        }
+    }
+
+    private const string WasmSnippet = """
+        public sealed class AppDatabase : IAsyncDisposable
+        {
+            private Task<BlazeDbDatabase>? _opening;
+            private BlazeDbOpfsStorage? _storage;
+
+            public Task<BlazeDbDatabase> GetAsync() => _opening ??= OpenAsync();
+
+            private async Task<BlazeDbDatabase> OpenAsync()
+            {
+                _storage = await BlazeDbOpfsStorage.CreateAsync("app"); // takes this tab's writer lock
+                return await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = _storage }.AddTable(TodoItem.Table));
+            }
+
+            public async ValueTask DisposeAsync()
+            {
+                if (_opening is not null) await (await _opening).DisposeAsync(); // flushes what is still pending
+                _storage?.Dispose();                                             // and only then releases the lock
+            }
+        }
+
+        // Program.cs
+        builder.Services.AddSingleton<AppDatabase>();
+        """;
+
+    private const string NoPrerenderSnippet = """
+        @* App.razor - what this site does, for every page *@
+        <Routes @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)" />
+
+        @* or per page *@
+        @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+        """;
+
+    private const string AfterRenderSnippet = """
+        @inject AppDatabase Database
+
+        @if (_todos is null)
+        {
+            <p>Loading…</p>   @* what the prerender, and the server-rendered Auto visit, show *@
+        }
+
+        @code {
+            private List<TodoItem>? _todos;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                if (firstRender && OperatingSystem.IsBrowser())
+                {
+                    var db = await Database.GetAsync();
+                    _todos = db.GetTable(TodoItem.Table).Lookup(TodoItem.Indexes.Done, false).ToList();
+                    StateHasChanged();
+                }
+            }
+        }
+        """;
+
+    private const string ServerSnippet = """
+        public sealed class AppDatabase(IWebHostEnvironment environment) : IAsyncDisposable
+        {
+            private readonly SemaphoreSlim _gate = new(1, 1);
+            private BlazeDbFileStorage? _storage;
+            private BlazeDbDatabase? _db;
+
+            public async Task<T> UseAsync<T>(Func<BlazeDbDatabase, T> work)
+            {
+                await _gate.WaitAsync();
+                try
+                {
+                    _db ??= await OpenAsync();
+                    return work(_db);   // copy what you render out of the lock: ToList()
+                }
+                finally
+                {
+                    _gate.Release();
+                }
+            }
+
+            private async Task<BlazeDbDatabase> OpenAsync()
+            {
+                _storage = new BlazeDbFileStorage(Path.Combine(environment.ContentRootPath, "App_Data", "db"));
+                return await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = _storage }.AddTable(TodoItem.Table));
+            }
+
+            public async ValueTask DisposeAsync()
+            {
+                if (_db is not null) await _db.DisposeAsync();   // flushes what is still pending
+                _storage?.Dispose();                              // releases the directory lock
+            }
+        }
+        """;
+
+    private const string HybridSnippet = """
+        // MauiProgram.cs (or the WPF / Windows Forms host)
+        builder.Services.AddMauiBlazorWebView();
+        builder.Services.AddSingleton(_ => new BlazeDbFileStorage(Path.Combine(FileSystem.AppDataDirectory, "db")));
+        builder.Services.AddSingleton<AppDatabase>();
+
+        // Data/AppDatabase.cs
+        public sealed class AppDatabase(BlazeDbFileStorage storage) : IAsyncDisposable
+        {
+            private Task<BlazeDbDatabase>? _opening;
+
+            public Task<BlazeDbDatabase> GetAsync() => _opening ??=
+                BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }.AddTable(TodoItem.Table)).AsTask();
+
+            public async ValueTask DisposeAsync()
+            {
+                if (_opening is not null) await (await _opening).DisposeAsync();
+            }
+        }
+        // The container disposes the storage after the service that depends on it: the lock goes last.
+        """;
+}

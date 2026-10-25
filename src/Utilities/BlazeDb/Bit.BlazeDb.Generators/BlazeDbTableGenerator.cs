@@ -62,12 +62,6 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
             return result;
         }
 
-        if (symbol.TypeKind == TypeKind.Class && !symbol.InstanceConstructors.Any(c => c.Parameters.Length == 0))
-        {
-            result.Diagnostics.Add(new BlazeDbDiagnosticInfo(BlazeDbDiagnostics.NoParameterlessConstructor, location, typeName));
-            return result;
-        }
-
         if (FindInheritedProperty(symbol) is { } inherited)
         {
             result.Diagnostics.Add(new BlazeDbDiagnosticInfo(
@@ -98,26 +92,60 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
         var usedNumbers = new HashSet<int>();
         var pendingAuto = new List<BlazeDbPropModel>();
 
+        // Which properties a row is made of. Settable ones (set or init) are stored. A get-only one is
+        // stored when the constructor the reader calls takes it; otherwise, when it is indexed - or named
+        // by a compound index - it is an index-only property computed from the stored ones, and the rest
+        // are left alone, as they always were.
+        var candidates = new List<IPropertySymbol>();
         foreach (var member in symbol.GetMembers())
         {
             ct.ThrowIfCancellationRequested();
-            if (member is not IPropertySymbol prop ||
-                prop.IsStatic ||
-                prop.IsIndexer ||
-                prop.GetMethod is null ||
-                prop.SetMethod is null ||
-                prop.IsImplicitlyDeclared)
+            if (member is IPropertySymbol prop &&
+                !prop.IsStatic &&
+                !prop.IsIndexer &&
+                prop.GetMethod is not null &&
+                !prop.IsImplicitlyDeclared &&
+                !HasAttribute(prop.GetAttributes(), IgnoreAttributeName))
             {
-                continue;
+                candidates.Add(prop);
             }
+        }
 
+        var constructor = ChooseConstructor(symbol, candidates);
+        if (constructor is null)
+        {
+            result.Diagnostics.Add(new BlazeDbDiagnosticInfo(BlazeDbDiagnostics.NoParameterlessConstructor, location, typeName));
+            return result;
+        }
+        var boundByConstructor = new HashSet<string>();
+        foreach (var parameter in constructor.Parameters)
+        {
+            boundByConstructor.Add(MatchParameter(parameter, candidates)!.Name);
+        }
+        var compoundMembers = CompoundIndexMembers(symbol);
+
+        foreach (var prop in candidates)
+        {
             var attrs = prop.GetAttributes();
-            if (HasAttribute(attrs, IgnoreAttributeName))
+            var bound = boundByConstructor.Contains(prop.Name);
+            var indexOnly = prop.SetMethod is null && !bound;
+            var indexAttr = FindAttribute(attrs, IndexAttributeName);
+            var orderedAttr = FindAttribute(attrs, OrderedIndexAttributeName);
+            if (indexOnly && indexAttr is null && orderedAttr is null && !compoundMembers.Contains(prop.Name))
             {
                 continue;
             }
 
             var propLocation = prop.Locations.FirstOrDefault() ?? location;
+            if (indexOnly && IsAutoProperty(symbol, prop))
+            {
+                // A get-only auto-property holds a value of its own - set by a constructor or an initializer the
+                // reader does not run - so it is not computed from what is stored. Indexing it without storing it
+                // would find the row today and lose the value on the next open.
+                result.Diagnostics.Add(new BlazeDbDiagnosticInfo(
+                    BlazeDbDiagnostics.UnstorableIndexedProperty, propLocation, typeName, prop.Name));
+                continue;
+            }
             var propModel = Categorize(prop.Type);
             if (propModel is null)
             {
@@ -127,19 +155,20 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
             }
 
             propModel.Name = prop.Name;
+            propModel.IndexOnly = indexOnly;
+            propModel.BoundByConstructor = bound;
+            propModel.IsRequired = prop.IsRequired;
             propModel.IsKey = HasAttribute(attrs, KeyAttributeName);
 
             if (propModel.IsKey &&
-                (propModel.Category != BlazeDbPropCategory.Scalar || propModel.Kind == BlazeDbScalarKind.ByteArray))
+                (propModel.Category != BlazeDbPropCategory.Scalar || propModel.Kind == BlazeDbScalarKind.ByteArray || indexOnly))
             {
                 result.Diagnostics.Add(new BlazeDbDiagnosticInfo(
                     BlazeDbDiagnostics.UnsupportedKeyType, propLocation, typeName, prop.Name));
                 continue;
             }
 
-            var indexAttr = FindAttribute(attrs, IndexAttributeName);
-            var orderedAttr = FindAttribute(attrs, OrderedIndexAttributeName);
-            if ((indexAttr != null || orderedAttr != null) && !IsIndexable(propModel))
+            if ((indexAttr != null || orderedAttr != null || indexOnly) && !IsIndexable(propModel))
             {
                 result.Diagnostics.Add(new BlazeDbDiagnosticInfo(
                     BlazeDbDiagnostics.UnindexableProperty, propLocation, typeName, prop.Name, prop.Type.ToDisplayString()));
@@ -149,6 +178,13 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
             propModel.HashIndexUnique = indexAttr != null && GetBoolNamedArg(indexAttr, "Unique");
             propModel.OrderedIndexName = orderedAttr is null ? null : GetIndexName(orderedAttr) ?? prop.Name;
             propModel.OrderedIndexUnique = orderedAttr != null && GetBoolNamedArg(orderedAttr, "Unique");
+
+            if (indexOnly)
+            {
+                // Nothing is stored, so there is no field number to assign - and none to check.
+                model.Props.Add(propModel);
+                continue;
+            }
 
             var fieldAttr = FindAttribute(attrs, FieldAttributeName);
             if (fieldAttr != null && fieldAttr.ConstructorArguments.Length > 0 &&
@@ -178,6 +214,37 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
             model.Props.Add(propModel);
         }
 
+        // A required member has to be set by the reader's object initializer, which only sets what is
+        // stored; one that is not stored would leave generated code that does not compile, unless the
+        // constructor the reader calls says it sets them all.
+        if (!HasSetsRequiredMembers(constructor))
+        {
+            foreach (var member in symbol.GetMembers())
+            {
+                var required = member is IPropertySymbol { IsRequired: true } || member is IFieldSymbol { IsRequired: true };
+                if (required && !model.Props.Any(p => !p.IndexOnly && p.Name == member.Name))
+                {
+                    result.Diagnostics.Add(new BlazeDbDiagnosticInfo(
+                        BlazeDbDiagnostics.RequiredMemberNotStored, member.Locations.FirstOrDefault() ?? location, typeName, member.Name));
+                    return result;
+                }
+            }
+        }
+
+        // The reader passes the constructor its arguments in parameter order. A parameter whose property
+        // could not be modelled has already been reported, and without it the constructor cannot be
+        // called, so nothing is generated.
+        foreach (var parameter in constructor.Parameters)
+        {
+            var name = MatchParameter(parameter, candidates)!.Name;
+            var target = model.Props.FirstOrDefault(p => p.BoundByConstructor && p.Name == name);
+            if (target is null)
+            {
+                return result;
+            }
+            model.ConstructorArguments.Add(target);
+        }
+
         if (pendingAuto.Count > 0 && usedNumbers.Count > 0)
         {
             // Explicit numbers say the author cares about the wire format; the automatic ones beside
@@ -196,7 +263,7 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
             auto.FieldNumber = next;
         }
 
-        var keys = model.Props.Where(p => p.IsKey).ToList();
+        var keys = model.Props.Where(p => p.IsKey && !p.IndexOnly).ToList();
         if (keys.Count != 1)
         {
             result.Diagnostics.Add(new BlazeDbDiagnosticInfo(BlazeDbDiagnostics.MissingOrMultipleKey, location, typeName));
@@ -351,6 +418,64 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
         return null;
     }
 
+    /// <summary>
+    /// The constructor a deserialized row is built with: the parameterless one when there is one (every
+    /// struct has it), otherwise the one with the most parameters that each name a property of the same
+    /// type - a positional record's primary constructor, or a class taking its get-only properties. A
+    /// record's copy constructor never qualifies. Null when no constructor can be called.
+    /// </summary>
+    private static IMethodSymbol? ChooseConstructor(INamedTypeSymbol symbol, List<IPropertySymbol> candidates)
+    {
+        var constructors = symbol.InstanceConstructors
+            .Where(c => !(c.Parameters.Length == 1 && SymbolEqualityComparer.Default.Equals(c.Parameters[0].Type, symbol)))
+            .ToList();
+        var parameterless = constructors.FirstOrDefault(c => c.Parameters.Length == 0);
+        if (parameterless is not null)
+        {
+            return parameterless;
+        }
+        return constructors
+            .Where(c => c.Parameters.All(parameter => MatchParameter(parameter, candidates) is not null))
+            .OrderByDescending(c => c.Parameters.Length)
+            .FirstOrDefault();
+    }
+
+    /// <summary>Whether <paramref name="prop"/> is an auto-property - backed by a compiler-generated field - rather than computed.</summary>
+    private static bool IsAutoProperty(INamedTypeSymbol type, IPropertySymbol prop) =>
+        type.GetMembers().OfType<IFieldSymbol>().Any(f => SymbolEqualityComparer.Default.Equals(f.AssociatedSymbol, prop));
+
+    private static bool HasSetsRequiredMembers(IMethodSymbol constructor) =>
+        constructor.GetAttributes().Any(a =>
+            a.AttributeClass?.ToDisplayString() == "System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute");
+
+    /// <summary>The property a constructor parameter initializes: same name ignoring case, same type ignoring nullability.</summary>
+    private static IPropertySymbol? MatchParameter(IParameterSymbol parameter, List<IPropertySymbol> candidates) =>
+        candidates.FirstOrDefault(p =>
+            string.Equals(p.Name, parameter.Name, System.StringComparison.OrdinalIgnoreCase) &&
+            SymbolEqualityComparer.Default.Equals(p.Type, parameter.Type));
+
+    /// <summary>Every property name a compound index attribute on the type lists.</summary>
+    private static HashSet<string> CompoundIndexMembers(INamedTypeSymbol symbol)
+    {
+        var names = new HashSet<string>();
+        foreach (var attr in symbol.GetAttributes())
+        {
+            var attrName = attr.AttributeClass?.ToDisplayString();
+            if ((attrName == CompoundIndexAttributeName || attrName == CompoundOrderedIndexAttributeName) &&
+                attr.ConstructorArguments.Length > 1 && !attr.ConstructorArguments[1].IsNull)
+            {
+                foreach (var value in attr.ConstructorArguments[1].Values)
+                {
+                    if (value.Value is string name)
+                    {
+                        names.Add(name);
+                    }
+                }
+            }
+        }
+        return names;
+    }
+
     // Protobuf's range: the number shares a varint tag with the 3-bit wire type.
     private const int MinFieldNumber = 1;
     private const int MaxFieldNumber = (1 << 29) - 1;
@@ -362,7 +487,7 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
     /// again or throw on the first insert.
     /// </summary>
     private static bool IsIndexable(BlazeDbPropModel prop) =>
-        prop.Category is not (BlazeDbPropCategory.ListCollection or BlazeDbPropCategory.ArrayCollection) &&
+        prop.Category is not (BlazeDbPropCategory.ListCollection or BlazeDbPropCategory.ArrayCollection or BlazeDbPropCategory.SetCollection) &&
         prop.Kind != BlazeDbScalarKind.ByteArray;
 
     private static BlazeDbPropModel? Categorize(ITypeSymbol type)
@@ -418,8 +543,8 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
             };
         }
 
-        if (type is INamedTypeSymbol named &&
-            named.OriginalDefinition.ToDisplayString() == "System.Collections.Generic.List<T>")
+        if (type is INamedTypeSymbol { IsGenericType: true, TypeArguments.Length: 1 } named &&
+            CollectionCategory(named.OriginalDefinition.ToDisplayString()) is { } category)
         {
             var elementKind = BlazeDbTypeMap.GetScalarKind(named.TypeArguments[0]);
             if (elementKind is null || elementKind == BlazeDbScalarKind.ByteArray || IsNullableAnnotated(named.TypeArguments[0]))
@@ -428,7 +553,7 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
             }
             return new BlazeDbPropModel
             {
-                Category = BlazeDbPropCategory.ListCollection,
+                Category = category,
                 Kind = elementKind.Value,
                 TypeDisplay = BlazeDbTypeMap.Display(type),
                 ScalarTypeDisplay = BlazeDbTypeMap.Display(named.TypeArguments[0]),
@@ -436,6 +561,30 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// How a generic collection type is read back: as a <c>List&lt;T&gt;</c> - which every list-like
+    /// interface accepts - or as a <c>HashSet&lt;T&gt;</c> for the set types. Null for anything else.
+    /// </summary>
+    private static BlazeDbPropCategory? CollectionCategory(string openType)
+    {
+        switch (openType)
+        {
+            case "System.Collections.Generic.List<T>":
+            case "System.Collections.Generic.IList<T>":
+            case "System.Collections.Generic.ICollection<T>":
+            case "System.Collections.Generic.IEnumerable<T>":
+            case "System.Collections.Generic.IReadOnlyList<T>":
+            case "System.Collections.Generic.IReadOnlyCollection<T>":
+                return BlazeDbPropCategory.ListCollection;
+            case "System.Collections.Generic.HashSet<T>":
+            case "System.Collections.Generic.ISet<T>":
+            case "System.Collections.Generic.IReadOnlySet<T>":
+                return BlazeDbPropCategory.SetCollection;
+            default:
+                return null;
+        }
     }
 
     private static bool IsNullableAnnotated(ITypeSymbol type) =>

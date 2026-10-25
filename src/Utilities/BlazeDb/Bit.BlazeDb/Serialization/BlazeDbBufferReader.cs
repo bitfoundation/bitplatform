@@ -148,6 +148,40 @@ public ref struct BlazeDbBufferReader
 
     public TimeSpan ReadTimeSpan() => new((long)ReadFixed64());
 
+    public DateOnly ReadDateOnly()
+    {
+        var dayNumber = ReadVarInt();
+        if (dayNumber < DateOnly.MinValue.DayNumber || dayNumber > DateOnly.MaxValue.DayNumber)
+        {
+            throw new InvalidDataException("Malformed DateOnly.");
+        }
+        return DateOnly.FromDayNumber((int)dayNumber);
+    }
+
+    public TimeOnly ReadTimeOnly()
+    {
+        var ticks = ReadVarInt();
+        if (ticks < TimeOnly.MinValue.Ticks || ticks > TimeOnly.MaxValue.Ticks)
+        {
+            throw new InvalidDataException("Malformed TimeOnly.");
+        }
+        return new TimeOnly(ticks);
+    }
+
+    public Half ReadHalf()
+    {
+        var bits = ReadVarUInt();
+        if (bits > ushort.MaxValue)
+        {
+            throw new InvalidDataException("Malformed Half.");
+        }
+        return BitConverter.UInt16BitsToHalf((ushort)bits);
+    }
+
+    public Int128 ReadInt128() => BinaryPrimitives.ReadInt128LittleEndian(ReadFixedBlock(16));
+
+    public UInt128 ReadUInt128() => BinaryPrimitives.ReadUInt128LittleEndian(ReadFixedBlock(16));
+
     /// <summary>A length prefix; anything longer than what remains is malformed, which also rules out overflow.</summary>
     private int ReadLength()
     {

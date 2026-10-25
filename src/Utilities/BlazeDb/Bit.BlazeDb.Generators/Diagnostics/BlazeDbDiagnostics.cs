@@ -32,8 +32,8 @@ internal static class BlazeDbDiagnostics
 
     public static readonly DiagnosticDescriptor NoParameterlessConstructor = new(
         "BLZ004",
-        "Table type needs a parameterless constructor",
-        "Type '{0}' needs a parameterless constructor so rows can be deserialized (positional-only records are not supported)",
+        "Table type needs a constructor rows can be built with",
+        "Type '{0}' needs a parameterless constructor, or a constructor whose every parameter matches a property by name and type, so rows can be deserialized",
         Category,
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
@@ -122,6 +122,22 @@ internal static class BlazeDbDiagnostics
         "BLZ016",
         "Compound index lists a property twice",
         "Compound index '{0}' on type '{1}' lists property '{2}' more than once",
+        Category,
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor UnstorableIndexedProperty = new(
+        "BLZ017",
+        "Indexed property cannot be stored",
+        "Property '{0}.{1}' is indexed but get-only, and the constructor rows are read back through does not take it, so its value would be lost on reload while the index still held it. Give it a setter or init accessor, take it as a constructor parameter, or make it computed (=> ...) from stored properties.",
+        Category,
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor RequiredMemberNotStored = new(
+        "BLZ018",
+        "Required member is not stored",
+        "Type '{0}' has required member '{1}', which BlazeDb does not store, so the generated reader could not create a row. Store it, or remove 'required'.",
         Category,
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
