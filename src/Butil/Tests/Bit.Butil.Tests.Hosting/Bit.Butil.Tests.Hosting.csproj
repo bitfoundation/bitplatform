@@ -34,8 +34,8 @@
         <ProjectReference Include="..\Bit.Butil.Tests.Harness.Web\Bit.Butil.Tests.Harness.Web.csproj" />
     </ItemGroup>
 
-    <!-- The hosting samples only target net10.0. -->
-    <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <!-- The hosting samples only target net11.0. -->
+    <ItemGroup Condition="'$(TargetFramework)' == 'net11.0'">
         <ProjectReference Include="..\..\Samples\Server\Bit.Butil.Samples.Server.csproj" />
         <ProjectReference Include="..\..\Samples\Wasm\Bit.Butil.Samples.Wasm\Bit.Butil.Samples.Wasm.csproj" />
         <ProjectReference Include="..\..\Samples\Auto\Bit.Butil.Samples.Auto\Bit.Butil.Samples.Auto.csproj" />
