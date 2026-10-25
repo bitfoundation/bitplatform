@@ -607,15 +607,15 @@ html:root[bit-theme="dark"] {
     color: var(--bb-primary);
 }
 
-/* The panel follows the samples it shows the code of and closes their part of the page: it sits as
-   close under the last sample as a sample's frame sits to what follows it - a card's larger bottom
-   margin is pulled back to that - and the sections after it keep their usual gap. */
+/* The panel follows the sample it shows the code of, as close under it as the sample's frame sits to
+   what follows it. A panel that ends a section of the page, rather than a card, keeps the gap the
+   sections have between them. */
 .demo-code {
-    margin: 1.25rem 0 2.5rem;
+    margin: 1.25rem 0;
 }
 
-.bb-docs-content > .bb-card + .demo-code {
-    margin-top: -1.25rem;
+.bb-docs-content > .demo-code {
+    margin-bottom: 2.5rem;
 }
 
 /* ---------- Code: SyntaxHighlighter's tokens on the kit's code surface ----------

@@ -20,13 +20,10 @@
     </p>
 
     <div class="bb-demo">
-        <Bortable @bind-Items="_list" TItem="string" Swap="true" Id="swap-list" AriaLabel="Single list"
-                  Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
-            <ItemTemplate Context="item">@item</ItemTemplate>
-        </Bortable>
-
-        <p class="demo-order"><strong>Order:</strong> <span id="swap-order">@string.Join(", ", _list)</span></p>
+        <SwapList />
     </div>
+
+    <DemoCode For="typeof(SwapList)" />
 </section>
 
 <section class="bb-card">
@@ -37,27 +34,11 @@
     </p>
 
     <div class="bb-demo">
-        <div class="demo-columns">
-            <div class="demo-col">
-                <Bortable @bind-Items="_left" TItem="string" Group="swap-shared" Swap="true" Id="swap-left" AriaLabel="Left"
-                          Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
-                    <ItemTemplate Context="item">@item</ItemTemplate>
-                </Bortable>
-            </div>
-            <div class="demo-col">
-                <Bortable @bind-Items="_right" TItem="string" Group="swap-shared" Swap="true" Id="swap-right" AriaLabel="Right"
-                          Class="demo-list" ItemClass="demo-item tinted" GhostClass="demo-ghost">
-                    <ItemTemplate Context="item">@item</ItemTemplate>
-                </Bortable>
-            </div>
-        </div>
-
-        <p class="demo-order"><strong>Left:</strong> <span id="swap-left-order">@string.Join(", ", _left)</span></p>
-        <p class="demo-order"><strong>Right:</strong> <span id="swap-right-order">@string.Join(", ", _right)</span></p>
+        <SwapAcross />
     </div>
-</section>
 
-<DemoCode />
+    <DemoCode For="typeof(SwapAcross)" />
+</section>
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Try it</h3>
@@ -109,13 +90,3 @@
         </table>
     </div>
 </section>
-
-@code {
-    private IList<string> _list = new List<string>
-    {
-        "Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6"
-    };
-
-    private IList<string> _left = new List<string> { "Item 1", "Item 2", "Item 3", "Item 4" };
-    private IList<string> _right = new List<string> { "Item A", "Item B", "Item C", "Item D" };
-}

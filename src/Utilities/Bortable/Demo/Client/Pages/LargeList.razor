@@ -13,44 +13,10 @@
 </div>
 
 <div class="bb-demo">
-    <div class="demo-controls">
-        <label class="demo-check">
-            <input id="large-isolate" type="checkbox" @bind="_isolate" /> <code>IsolateItems</code> - render each row's template on its own
-        </label>
-        <label class="demo-check">
-            <input id="large-fallback" type="checkbox" @bind="_fallback" /> <code>ForceFallback</code> - the mouse drags like a finger, and Bortable scrolls for it
-        </label>
-        <label class="demo-check">
-            <input id="large-scroll" type="checkbox" @bind="_scroll" /> <code>Scroll</code> - a pointer drag near an edge scrolls
-        </label>
-        <label>
-            <code>ScrollSensitivity</code>: <strong id="large-sensitivity-value">@_sensitivity px</strong>
-            <input id="large-sensitivity" type="range" min="10" max="120" step="5" value="@_sensitivity"
-                   @oninput="e => _sensitivity = Parse(e, _sensitivity)" />
-        </label>
-        <label>
-            <code>ScrollSpeed</code>: <strong id="large-speed-value">@_speed px</strong>
-            <input id="large-speed" type="range" min="2" max="60" step="2" value="@_speed"
-                   @oninput="e => _speed = Parse(e, _speed)" />
-        </label>
-    </div>
-
-    <div class="large-panel" id="large-panel">
-        <Bortable @bind-Items="_rows" TItem="Row" Id="large-list" AriaLabel="Rows"
-                  IsolateItems="_isolate" ForceFallback="_fallback" ItemLabel="r => r.Name"
-                  Scroll="_scroll" ScrollSensitivity="_sensitivity" ScrollSpeed="_speed"
-                  Class="demo-list" ItemClass="demo-item">
-            <ItemTemplate Context="row">
-                <span class="large-name">@row.Name</span>
-                <span class="large-note">@row.Note</span>
-            </ItemTemplate>
-        </Bortable>
-    </div>
-
-    <p class="demo-order"><strong>First five:</strong> <span id="large-order">@string.Join(", ", _rows.Take(5).Select(r => r.Name))</span></p>
+    <ScrollingPanel />
 </div>
 
-<DemoCode />
+<DemoCode For="typeof(ScrollingPanel)" />
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
@@ -120,19 +86,3 @@
         </table>
     </div>
 </section>
-
-@code {
-    private sealed record Row(string Name, string Note);
-
-    private IList<Row> _rows = Enumerable.Range(1, 300)
-        .Select(i => new Row($"Row {i}", $"#{i:000} · {(i % 3 == 0 ? "blocked" : i % 2 == 0 ? "in review" : "open")}"))
-        .ToList();
-
-    private bool _isolate;
-    private bool _fallback;
-    private bool _scroll = true;
-    private int _sensitivity = 40;
-    private int _speed = 16;
-
-    private static int Parse(ChangeEventArgs e, int current) => int.TryParse(e.Value?.ToString(), out var v) ? v : current;
-}

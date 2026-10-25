@@ -19,27 +19,10 @@
     </p>
 
     <div class="bb-demo">
-        <div class="demo-columns">
-            <div class="demo-col">
-                <div class="demo-col-title">Source (no sorting, no put)</div>
-                <Bortable @bind-Items="_left" TItem="string" Group="ds-shared" Id="disable-sort-source"
-                          Sort="false" Put="false"
-                          Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
-                    <ItemTemplate Context="item">@item</ItemTemplate>
-                </Bortable>
-            </div>
-            <div class="demo-col">
-                <div class="demo-col-title">Target</div>
-                <Bortable @bind-Items="_right" TItem="string" Group="ds-shared" Id="disable-sort-target"
-                          Class="demo-list" ItemClass="demo-item tinted" GhostClass="demo-ghost">
-                    <ItemTemplate Context="item">@item</ItemTemplate>
-                </Bortable>
-            </div>
-        </div>
-
-        <p class="demo-order"><strong>Source:</strong> <span id="disable-sort-source-order">@string.Join(", ", _left)</span></p>
-        <p class="demo-order"><strong>Target:</strong> <span id="disable-sort-target-order">@string.Join(", ", _right)</span></p>
+        <PickList />
     </div>
+
+    <DemoCode For="typeof(PickList)" />
 </section>
 
 <section class="bb-card">
@@ -50,27 +33,10 @@
     </p>
 
     <div class="bb-demo">
-        <div class="demo-columns">
-            <div class="demo-col">
-                <div class="demo-col-title">Pinned (Pull = None)</div>
-                <Bortable @bind-Items="_pinned" TItem="string" Group="ds-pull" Id="pull-none-pinned" AriaLabel="Pinned"
-                          Pull="BortablePull.None"
-                          Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
-                    <ItemTemplate Context="item">@item</ItemTemplate>
-                </Bortable>
-            </div>
-            <div class="demo-col">
-                <div class="demo-col-title">Others</div>
-                <Bortable @bind-Items="_others" TItem="string" Group="ds-pull" Id="pull-none-others" AriaLabel="Others"
-                          Class="demo-list" ItemClass="demo-item tinted" GhostClass="demo-ghost">
-                    <ItemTemplate Context="item">@item</ItemTemplate>
-                </Bortable>
-            </div>
-        </div>
-
-        <p class="demo-order"><strong>Pinned:</strong> <span id="pull-none-pinned-order">@string.Join(", ", _pinned)</span></p>
-        <p class="demo-order"><strong>Others:</strong> <span id="pull-none-others-order">@string.Join(", ", _others)</span></p>
+        <PinnedList />
     </div>
+
+    <DemoCode For="typeof(PinnedList)" />
 </section>
 
 <section class="bb-card">
@@ -83,36 +49,11 @@
     </p>
 
     <div class="bb-demo">
-        <div class="demo-controls">
-            <label class="demo-check">
-                <input id="disabled-toggle" type="checkbox" @bind="_disabled" /> <code>Disabled</code> on the Archive
-            </label>
-        </div>
-
-        <div class="demo-columns">
-            <div class="demo-col">
-                <div class="demo-col-title">Archive@(_disabled ? " (disabled)" : "")</div>
-                <Bortable @bind-Items="_archive" TItem="string" Group="ds-disabled" Id="disabled-archive" AriaLabel="Archive"
-                          Disabled="_disabled"
-                          Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
-                    <ItemTemplate Context="item">@item</ItemTemplate>
-                </Bortable>
-            </div>
-            <div class="demo-col">
-                <div class="demo-col-title">Desk</div>
-                <Bortable @bind-Items="_desk" TItem="string" Group="ds-disabled" Id="disabled-desk" AriaLabel="Desk"
-                          Class="demo-list" ItemClass="demo-item tinted" GhostClass="demo-ghost">
-                    <ItemTemplate Context="item">@item</ItemTemplate>
-                </Bortable>
-            </div>
-        </div>
-
-        <p class="demo-order"><strong>Archive:</strong> <span id="disabled-archive-order">@string.Join(", ", _archive)</span></p>
-        <p class="demo-order"><strong>Desk:</strong> <span id="disabled-desk-order">@string.Join(", ", _desk)</span></p>
+        <DisabledList />
     </div>
-</section>
 
-<DemoCode />
+    <DemoCode For="typeof(DisabledList)" />
+</section>
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
@@ -147,15 +88,3 @@
         a <code>Pull</code> of <code>None</code>, except that a <code>Clone</code> pull still copies from it.
     </div>
 </section>
-
-@code {
-    private IList<string> _left = new List<string> { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-    private IList<string> _right = new List<string> { "Item A", "Item B", "Item C" };
-
-    private IList<string> _pinned = new List<string> { "Rent", "Groceries" };
-    private IList<string> _others = new List<string> { "Gym", "Books", "Concert" };
-
-    private IList<string> _archive = new List<string> { "2023 report", "2024 report" };
-    private IList<string> _desk = new List<string> { "Draft", "Notes" };
-    private bool _disabled = true;
-}

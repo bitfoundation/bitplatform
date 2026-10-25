@@ -19,15 +19,10 @@
     </p>
 
     <div class="bb-demo">
-        <Bortable @bind-Items="_items" TItem="int" Id="grid-list"
-                  Class="demo-grid" GhostClass="demo-ghost">
-            <ItemTemplate Context="n">
-                <div class="grid-square">@n</div>
-            </ItemTemplate>
-        </Bortable>
-
-        <p class="demo-order"><strong>Order:</strong> <span id="grid-order">@string.Join(", ", _items)</span></p>
+        <SortableGrid />
     </div>
+
+    <DemoCode For="typeof(SortableGrid)" />
 </section>
 
 <section class="bb-card">
@@ -39,13 +34,10 @@
     </p>
 
     <div class="bb-demo">
-        <Bortable @bind-Items="_tags" TItem="string" Id="layout-tags" AriaLabel="Tags"
-                  Class="demo-strip" ItemClass="demo-chip" GhostClass="demo-ghost">
-            <ItemTemplate Context="tag">@tag</ItemTemplate>
-        </Bortable>
-
-        <p class="demo-order"><strong>Tags:</strong> <span id="layout-tags-order">@string.Join(", ", _tags)</span></p>
+        <TagStrip />
     </div>
+
+    <DemoCode For="typeof(TagStrip)" />
 </section>
 
 <section class="bb-card">
@@ -59,16 +51,11 @@
     </p>
 
     <div class="bb-demo">
-        <Bortable @bind-Items="_steps" TItem="string" Id="layout-rtl" AriaLabel="Steps" dir="rtl"
-                  Class="demo-strip" ItemClass="demo-chip tinted" GhostClass="demo-ghost">
-            <ItemTemplate Context="step">@step</ItemTemplate>
-        </Bortable>
-
-        <p class="demo-order"><strong>Steps:</strong> <span id="layout-rtl-order">@string.Join(", ", _steps)</span></p>
+        <RightToLeftSteps />
     </div>
-</section>
 
-<DemoCode />
+    <DemoCode For="typeof(RightToLeftSteps)" />
+</section>
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
@@ -101,11 +88,3 @@
         <li>For lists inside the items of another list, see <a href="nested">nested sortables</a>.</li>
     </ul>
 </section>
-
-@code {
-    private IList<int> _items = Enumerable.Range(1, 16).ToList();
-
-    private IList<string> _tags = new List<string> { "blazor", "dotnet", "drag-and-drop", "sortable", "css", "a11y" };
-
-    private IList<string> _steps = new List<string> { "Step 1", "Step 2", "Step 3", "Step 4", "Step 5" };
-}

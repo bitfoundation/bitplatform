@@ -1,11 +1,10 @@
 ﻿@namespace Bit.Bortable.Demo.Client.Examples
-@inject NavigationManager Nav
 
-@* A collapsible "View code" panel under a demo's samples that shows the .razor source of the
-   current demo page. The source is resolved from the build-generated DemoSources lookup, keyed
-   by route. A page built from more than one file names the others in Files (paths relative to
-   Pages, separated by commas), and they are shown after it. Each file is a CodeBlock: .razor
-   files are coloured as Razor, .cs files as C#. *@
+@* A collapsible "View code" panel under one demo sample that shows the code of that sample: the
+   component named in For - a file of the Samples folder, the same component the page renders -
+   then the other files it is built from, named in Files (paths relative to Samples, separated by
+   commas). The sources come from the build-generated DemoSources lookup, and each one is a
+   CodeBlock under its file name: .razor files are coloured as Razor, .cs files as C#. *@
 
 <div class="bb-source demo-code">
     <button type="button"
@@ -21,16 +20,13 @@
     {
         @if (_sources.Count == 0)
         {
-            <div class="bb-empty demo-code__empty">Source for this page is not available.</div>
+            <div class="bb-empty demo-code__empty">Source for this sample is not available.</div>
         }
         else
         {
             @foreach (var (path, source) in _sources)
             {
-                @if (_sources.Count > 1)
-                {
-                    <div class="bb-source-file demo-code__file">@path</div>
-                }
+                <div class="bb-source-file demo-code__file">@path</div>
                 <CodeBlock Code="@source" Language="@(path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) ? "csharp" : "razor")" Class="demo-code__pre" />
             }
         }
@@ -42,7 +38,10 @@
     private bool _resolved;
     private List<(string Path, string Source)> _sources = [];
 
-    /// <summary>Other files of the Pages folder this page is built from, separated by commas.</summary>
+    /// <summary>The sample's component, whose .razor file of the Samples folder is shown first.</summary>
+    [Parameter, EditorRequired] public Type For { get; set; } = default!;
+
+    /// <summary>Other files of the Samples folder the sample is built from, separated by commas.</summary>
     [Parameter] public string? Files { get; set; }
 
     private void Toggle()
@@ -57,21 +56,10 @@
 
     private List<(string Path, string Source)> Resolve()
     {
-        var key = Nav.ToBaseRelativePath(Nav.Uri);
-
-        // Drop any query string or fragment so the key matches the @page route. The lookup
-        // itself ignores case, as the router does.
-        var cut = key.IndexOfAny(['?', '#']);
-        if (cut >= 0) key = key[..cut];
-        key = key.TrimEnd('/');
-
         var sources = new List<(string Path, string Source)>();
-        if (!DemoSources.ByRoute.TryGetValue(key, out var page)) return sources;
-
-        sources.Add((DemoSources.PathByRoute.GetValueOrDefault(key, key), page));
-        foreach (var file in (Files ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        foreach (var file in (Files ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Prepend($"{For.Name}.razor"))
         {
-            if (DemoSources.ByFile.TryGetValue(file, out var source)) sources.Add((file, source));
+            if (DemoSources.Files.TryGetValue(file, out var source)) sources.Add((file, source));
         }
         return sources;
     }

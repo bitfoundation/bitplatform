@@ -32,7 +32,7 @@ public partial class McpSearchTests
         ("dragging lags on blazor server", "Blazor Server"),
         ("inspect a drag", "Inspect a Bortable drag"),
         ("coming from sortablejs", "Coming from SortableJS"),
-        ("kanban board", "Shared lists"),
+        ("kanban board", "WorkflowBoard"),
         ("BortablePull clone", "BortablePull.Clone"),
         ("prerendering", "Prerendering"),
     ];
@@ -102,11 +102,11 @@ public partial class McpSearchTests
     {
         var result = await McpCall.StructuredAsync<BortableSearchResultDto>("SearchBortable", new() { ["query"] = "nested list recursive", ["limit"] = 12 });
 
-        var page = result.Hits.Single(hit => hit.Title == "Demo/Client/Pages/NestedList.razor");
+        var page = result.Hits.Single(hit => hit.Title == "Demo/Client/Samples/NestedList.razor");
 
         Assert.AreEqual("Source file", page.Kind);
         Assert.AreEqual("Page", page.Context);
-        Assert.AreEqual("GetBortableSourceFile(path: \"Demo/Client/Pages/NestedList.razor\")", page.Tool);
+        Assert.AreEqual("GetBortableSourceFile(path: \"Demo/Client/Samples/NestedList.razor\")", page.Tool);
     }
 
     [TestMethod]

@@ -7,8 +7,8 @@ namespace Bit.Bortable.Tests.E2E;
 
 /// <summary>
 /// Every page of the demo: each one boots on WebAssembly, loads the browser layer and the stylesheet when it has a
-/// list, shows its own source on request, and does all that without an error; an unknown address answers with the
-/// not-found page; and navigating through the demos in the app leaves working lists behind.
+/// list, shows the code of each of its samples on request, and does all that without an error; an unknown address
+/// answers with the not-found page; and navigating through the demos in the app leaves working lists behind.
 /// </summary>
 [TestClass]
 public sealed class DemoPagesTests : BortableTest
@@ -39,61 +39,89 @@ public sealed class DemoPagesTests : BortableTest
             Assert.IsTrue(await page.Locator($"{ListSelector} > [data-bortable-item]").CountAsync() > 0, $"{path} shows no items");
         }
 
-        // The "View code" panel comes after every sample of the page, outside its frame, opens on the page's own
-        // source, without its routing directive, coloured, and closes again.
-        var toggle = page.Locator(".demo-code__toggle");
-        bool hasCode = await toggle.CountAsync() > 0;
-        if (hasCode)
+        // Every sample of the page is followed by a "View code" panel of its own, outside the sample's frame, which
+        // opens on the code of that sample - its component and the files it names, each under its file name and
+        // coloured, with no page chrome around it - and closes again.
+        var panels = page.Locator(".demo-code");
+        int samples = await page.Locator(".bb-demo").CountAsync();
+        int codePanels = await panels.CountAsync();
+        if (codePanels > 0)
         {
+            Assert.AreEqual(samples, codePanels, $"{path} has {samples} sample(s) but {codePanels} code panel(s)");
             Assert.IsTrue(await page.EvaluateAsync<bool>(
-                """
-                () => {
-                    const code = document.querySelector('.demo-code');
-                    return [...document.querySelectorAll('.bb-demo')].every(demo => {
-                        const position = demo.compareDocumentPosition(code);
-                        return (position & Node.DOCUMENT_POSITION_FOLLOWING) && !(position & Node.DOCUMENT_POSITION_CONTAINED_BY);
-                    });
-                }
-                """),
-                $"the code toggle of {path} is not under its samples");
+                "() => [...document.querySelectorAll('.bb-demo')].every(demo => demo.nextElementSibling?.classList.contains('demo-code'))"),
+                $"a sample of {path} is not followed by its code panel");
 
-            await Expect(toggle).ToHaveTextAsync(new Regex("View code"));
-            await toggle.ClickAsync();
-            await Expect(toggle).ToHaveAttributeAsync("aria-expanded", "true");
-            var code = page.Locator(".demo-code__pre > code");
-            await Expect(code.First).ToBeVisibleAsync();
-            // A page built from several files shows each of them; its lists may be declared in any one of them.
-            var sources = await code.AllTextContentsAsync();
-            if (lists > 0) Assert.IsTrue(sources.Any(s => s.Contains("<Bortable", StringComparison.Ordinal)), $"the code of {path} is not the page's markup");
-            Assert.DoesNotContain("@page", sources[0], $"the code of {path} still carries the routing directive");
-            for (int i = 0; i < sources.Count; i++)
+            var sources = new List<string>();
+            for (int i = 0; i < codePanels; i++)
             {
-                Assert.IsGreaterThan(0, await code.Nth(i).Locator("[class^='tok-']").CountAsync(), $"file {i + 1} of the code of {path} is not coloured");
-            }
+                var panel = panels.Nth(i);
+                var toggle = panel.Locator(".demo-code__toggle");
+                await Expect(toggle).ToHaveTextAsync(new Regex("View code"));
+                await toggle.ClickAsync();
+                await Expect(toggle).ToHaveAttributeAsync("aria-expanded", "true");
 
-            await toggle.ClickAsync();
-            await Expect(code).ToHaveCountAsync(0);
-            await Expect(toggle).ToHaveTextAsync(new Regex("View code"));
+                var code = panel.Locator(".demo-code__pre > code");
+                await Expect(code.First).ToBeVisibleAsync();
+                int files = await code.CountAsync();
+                await Expect(panel.Locator(".demo-code__file")).ToHaveCountAsync(files);
+                for (int j = 0; j < files; j++)
+                {
+                    var name = await panel.Locator(".demo-code__file").Nth(j).TextContentAsync();
+                    var source = await code.Nth(j).TextContentAsync() ?? "";
+                    Assert.IsTrue(source.Length > 100, $"{path}, sample {i + 1}: {name} shows a source of only {source.Length} characters");
+                    Assert.IsGreaterThan(0, await code.Nth(j).Locator("[class^='tok-']").CountAsync(), $"{path}, sample {i + 1}: {name} is not coloured");
+                    Assert.DoesNotContain("bb-card", source, $"{path}, sample {i + 1}: {name} carries the page around the sample");
+                    sources.Add(source);
+                }
+
+                await toggle.ClickAsync();
+                await Expect(code).ToHaveCountAsync(0);
+                await Expect(toggle).ToHaveTextAsync(new Regex("View code"));
+            }
+            // The page's lists are declared in its samples' code.
+            if (lists > 0) Assert.IsTrue(sources.Any(s => s.Contains("<Bortable", StringComparison.Ordinal)), $"the code of {path} declares none of its lists");
         }
         await WaitForQuietAsync(page);
 
         Assert.IsFalse(await page.Locator("#blazor-error-ui").IsVisibleAsync(), $"{path} shows the unhandled-error banner");
 
         var found = Snapshot(problems);
-        TestContext.WriteLine($"{path}: {lists} list(s), code panel: {hasCode}, {found.Length} problem(s)");
+        TestContext.WriteLine($"{path}: {lists} list(s), {codePanels} code panel(s), {found.Length} problem(s)");
         Assert.IsEmpty(found, $"{path} reported:{Environment.NewLine}{string.Join(Environment.NewLine, found)}");
     }
 
     [TestMethod]
-    public async Task A_page_built_from_several_files_shows_each_of_them()
+    public async Task Each_sample_shows_its_own_code_only()
+    {
+        var page = await OpenAsync("/cloning");
+        var panels = page.Locator(".demo-code");
+        await Expect(panels).ToHaveCountAsync(2);
+
+        await panels.Nth(0).Locator(".demo-code__toggle").ClickAsync();
+        await panels.Nth(1).Locator(".demo-code__toggle").ClickAsync();
+
+        await Expect(panels.Nth(0).Locator(".demo-code__file")).ToHaveTextAsync(["CloneSource.razor"]);
+        await Expect(panels.Nth(1).Locator(".demo-code__file")).ToHaveTextAsync(["FormBuilder.razor"]);
+        var first = await panels.Nth(0).Locator(".demo-code__pre > code").TextContentAsync() ?? "";
+        var second = await panels.Nth(1).Locator(".demo-code__pre > code").TextContentAsync() ?? "";
+        StringAssert.Contains(first, "Id=\"clone-source\"", "the first panel is not the clone source's code");
+        Assert.DoesNotContain("clone-palette", first, "the first panel shows the second sample's code too");
+        StringAssert.Contains(second, "Id=\"clone-palette\"", "the second panel is not the palette's code");
+        Assert.DoesNotContain("clone-source", second, "the second panel shows the first sample's code too");
+    }
+
+    [TestMethod]
+    public async Task A_sample_built_from_several_files_shows_each_of_them()
     {
         var page = await OpenAsync("/nested");
 
         await page.Locator(".demo-code__toggle").ClickAsync();
 
-        await Expect(page.Locator(".demo-code__file")).ToHaveTextAsync(["Nested.razor", "NestedList.razor", "NestedItem.cs"]);
+        await Expect(page.Locator(".demo-code__file")).ToHaveTextAsync(["NestedTree.razor", "NestedList.razor", "NestedItem.cs"]);
         var code = page.Locator(".demo-code__pre > code");
         await Expect(code).ToHaveCountAsync(3);
+        StringAssert.Contains(await code.Nth(0).TextContentAsync(), "<NestedList");
         StringAssert.Contains(await code.Nth(1).TextContentAsync(), "<Bortable");
         StringAssert.Contains(await code.Nth(2).TextContentAsync(), "class NestedItem");
 

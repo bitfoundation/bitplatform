@@ -20,26 +20,10 @@
     </p>
 
     <div class="bb-demo">
-        <div class="demo-columns">
-            <div class="demo-col">
-                <div class="demo-col-title">List A</div>
-                <Bortable @bind-Items="_left" TItem="string" Group="shared" Id="shared-a"
-                          Class="demo-list" ItemClass="demo-item" ItemClassSelector="Tint" GhostClass="demo-ghost">
-                    <ItemTemplate Context="item">@item</ItemTemplate>
-                </Bortable>
-            </div>
-            <div class="demo-col">
-                <div class="demo-col-title">List B</div>
-                <Bortable @bind-Items="_right" TItem="string" Group="shared" Id="shared-b"
-                          Class="demo-list" ItemClass="demo-item" ItemClassSelector="Tint" GhostClass="demo-ghost">
-                    <ItemTemplate Context="item">@item</ItemTemplate>
-                </Bortable>
-            </div>
-        </div>
-
-        <p class="demo-order"><strong>A:</strong> <span id="shared-a-order">@string.Join(", ", _left)</span></p>
-        <p class="demo-order"><strong>B:</strong> <span id="shared-b-order">@string.Join(", ", _right)</span></p>
+        <GroupedLists />
     </div>
+
+    <DemoCode For="typeof(GroupedLists)" />
 </section>
 
 <section class="bb-card">
@@ -53,41 +37,11 @@
     </p>
 
     <div class="bb-demo">
-        <div class="demo-columns">
-            <div class="demo-col">
-                <div class="demo-col-title">Inbox</div>
-                <Bortable @bind-Items="_inbox" TItem="string" Group="shared-empty" Id="shared-inbox" AriaLabel="Inbox"
-                          Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
-                    <ItemTemplate Context="item">@item</ItemTemplate>
-                    <ChildContent>
-                        @if (_inbox.Count == 0)
-                        {
-                            <div class="demo-empty" role="listitem">Inbox zero - nothing left to sort.</div>
-                        }
-                    </ChildContent>
-                </Bortable>
-            </div>
-            <div class="demo-col">
-                <div class="demo-col-title">Archive</div>
-                <Bortable @bind-Items="_archive" TItem="string" Group="shared-empty" Id="shared-archive" AriaLabel="Archive"
-                          Class="demo-list" ItemClass="demo-item tinted" GhostClass="demo-ghost">
-                    <ItemTemplate Context="item">@item</ItemTemplate>
-                    <ChildContent>
-                        @if (_archive.Count == 0)
-                        {
-                            <div class="demo-empty" role="listitem">Nothing archived yet - drop a message here.</div>
-                        }
-                    </ChildContent>
-                </Bortable>
-            </div>
-        </div>
-
-        <p class="demo-order"><strong>Inbox:</strong> <span id="shared-inbox-order">@string.Join(", ", _inbox)</span></p>
-        <p class="demo-order"><strong>Archive:</strong> <span id="shared-archive-order">@string.Join(", ", _archive)</span></p>
+        <EmptyListState />
     </div>
-</section>
 
-<DemoCode />
+    <DemoCode For="typeof(EmptyListState)" />
+</section>
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Try it</h3>
@@ -152,14 +106,3 @@
         </table>
     </div>
 </section>
-
-@code {
-    private IList<string> _left = new List<string> { "A1", "A2", "A3", "A4", "A5" };
-    private IList<string> _right = new List<string> { "B1", "B2", "B3", "B4", "B5" };
-
-    private IList<string> _inbox = new List<string> { "Invoice", "Newsletter", "Meeting notes" };
-    private IList<string> _archive = new List<string>();
-
-    // Style follows the item, not the list: "B" items stay tinted after moving.
-    private string? Tint(string item) => item.StartsWith('B') ? "tinted" : null;
-}

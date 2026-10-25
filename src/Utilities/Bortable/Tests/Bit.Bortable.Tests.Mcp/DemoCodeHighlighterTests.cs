@@ -12,14 +12,9 @@ namespace Bit.Bortable.Tests.Mcp;
 [TestClass]
 public class DemoCodeHighlighterTests
 {
-    /// <summary>
-    /// Every source the demo shows: each page, keyed by route, and every other file of the Pages folder a page can
-    /// name, in the language DemoCode colours it in.
-    /// </summary>
+    /// <summary>Every source the demo shows: each file of the Samples folder, in the language DemoCode colours it in.</summary>
     public static IEnumerable<object[]> Sources =>
-        DemoSources.ByRoute
-            .Select(page => new object[] { $"/{page.Key}", page.Value, "razor" })
-            .Concat(DemoSources.ByFile.Select(file => new object[] { file.Key, file.Value, file.Key.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) ? "csharp" : "razor" }));
+        DemoSources.Files.Select(file => new object[] { file.Key, file.Value, file.Key.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) ? "csharp" : "razor" });
 
     [TestMethod]
     [DynamicData(nameof(Sources))]

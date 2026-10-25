@@ -1,5 +1,4 @@
 @page "/styling"
-@using System.Globalization
 
 <PageTitle>Styling · Bortable</PageTitle>
 
@@ -21,45 +20,10 @@
     </p>
 
     <div class="bb-demo">
-        <div class="demo-controls">
-            <div class="demo-control">
-                <span id="styling-accent-label"><code>--bit-bortable-accent-rgb</code></span>
-                <div class="bb-segmented" role="group" aria-labelledby="styling-accent-label">
-                    @foreach (var (name, rgb) in Accents)
-                    {
-                        <button type="button" aria-pressed="@(_accent == rgb ? "true" : "false")" @onclick="() => _accent = rgb">@name</button>
-                    }
-                </div>
-            </div>
-            <label>
-                <code>--bit-bortable-ghost-opacity</code>: <strong id="styling-opacity-value">@Format(_opacity)</strong>
-                <input id="styling-opacity" type="range" min="0.1" max="1" step="0.05" value="@Format(_opacity)" @oninput="OnOpacityChanged" />
-            </label>
-            <label class="demo-check">
-                <input id="styling-targets" type="checkbox" @bind="_targets" />
-                Outline the lists that take the drag (<code>--bit-bortable-accepts-outline</code>, <code>--bit-bortable-over-outline</code>)
-            </label>
-        </div>
-
-        <div class="demo-columns" style="@ThemeStyle">
-            <div class="demo-col">
-                <div class="demo-col-title">Fruit</div>
-                <Bortable @bind-Items="_fruit" TItem="string" Group="styling" Id="styling-fruit" AriaLabel="Fruit"
-                          Class="demo-list" ItemClass="styling-item">
-                    <ItemTemplate Context="item">@item</ItemTemplate>
-                </Bortable>
-            </div>
-            <div class="demo-col">
-                <div class="demo-col-title">Basket</div>
-                <Bortable @bind-Items="_basket" TItem="string" Group="styling" Id="styling-basket" AriaLabel="Basket"
-                          Class="demo-list" ItemClass="styling-item">
-                    <ItemTemplate Context="item">@item</ItemTemplate>
-                </Bortable>
-            </div>
-        </div>
-
-        <pre class="bb-code" id="styling-css">@ThemeCss</pre>
+        <AccentTheme />
     </div>
+
+    <DemoCode For="typeof(AccentTheme)" />
 </section>
 
 <section class="bb-card">
@@ -70,22 +34,16 @@
         item, and a tilted preview. The list has <code>ForceFallback</code>, so the mouse drags with the preview too.
     </p>
 
-    <div class="bb-demo">
-        <Bortable @bind-Items="_own" TItem="string" Id="styling-own" AriaLabel="Own classes"
-                  GhostClass="my-ghost" ChosenClass="my-chosen" DragClass="my-drag" ForceFallback="true"
-                  Class="demo-list" ItemClass="styling-item">
-            <ItemTemplate Context="item">@item</ItemTemplate>
-        </Bortable>
-
-        <pre class="bb-code">.<span class="k">my-ghost</span>  { opacity: .55; outline: 2px dashed var(--bb-warning); outline-offset: -2px; }
+    <pre class="bb-code">.<span class="k">my-ghost</span>  { opacity: .55; outline: 2px dashed var(--bb-warning); outline-offset: -2px; }
 .<span class="k">my-chosen</span> { background-color: var(--bb-warning-soft); }
 .<span class="k">my-drag</span>   { rotate: -3deg; opacity: .95; outline: 2px solid var(--bb-warning); box-shadow: 0 18px 36px rgba(0, 0, 0, .25); }</pre>
 
-        <p class="demo-order"><strong>Order:</strong> <span id="styling-own-order">@string.Join(", ", _own)</span></p>
+    <div class="bb-demo">
+        <OwnClasses />
     </div>
-</section>
 
-<DemoCode />
+    <DemoCode For="typeof(OwnClasses)" />
+</section>
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Try it</h3>
@@ -171,35 +129,3 @@
         <a href="getting-started">the app-wide defaults</a>.
     </div>
 </section>
-
-@code {
-    private static readonly (string Name, string Rgb)[] Accents =
-    [
-        ("Blue", "13, 110, 253"),
-        ("Violet", "109, 40, 217"),
-        ("Green", "22, 163, 74"),
-        ("Orange", "234, 88, 12"),
-    ];
-
-    private IList<string> _fruit = new List<string> { "Apple", "Banana", "Cherry", "Date" };
-    private IList<string> _basket = new List<string> { "Fig", "Grape" };
-    private IList<string> _own = new List<string> { "One", "Two", "Three", "Four" };
-
-    private string _accent = "13, 110, 253";
-    private double _opacity = 0.4;
-    private bool _targets = true;
-
-    private string ThemeStyle =>
-        $"--bit-bortable-accent-rgb: {_accent}; --bit-bortable-ghost-opacity: {Format(_opacity)};" +
-        (_targets ? $" --bit-bortable-accepts-outline: 2px dashed rgba({_accent}, .5); --bit-bortable-over-outline: 2px solid rgb({_accent});" : "");
-
-    // The same declarations, as they would be written in a stylesheet.
-    private string ThemeCss => ".board {\n    " + ThemeStyle.Replace("; ", ";\n    ", StringComparison.Ordinal) + "\n}";
-
-    private static string Format(double value) => value.ToString("0.00", CultureInfo.InvariantCulture);
-
-    private void OnOpacityChanged(ChangeEventArgs e)
-    {
-        if (double.TryParse(e.Value?.ToString(), CultureInfo.InvariantCulture, out var v)) _opacity = v;
-    }
-}

@@ -12,23 +12,10 @@
 </div>
 
 <div class="bb-demo">
-    <div class="demo-controls">
-        <label>
-            <code>Animation</code>: <strong id="simple-animation-value">@_animation ms</strong>
-            <input id="simple-animation" type="range" min="0" max="1000" step="50"
-                   value="@_animation" @oninput="OnAnimationChanged" />
-        </label>
-    </div>
-
-    <Bortable @bind-Items="_items" TItem="string" Id="simple-list" Animation="_animation"
-              Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
-        <ItemTemplate Context="item">@item</ItemTemplate>
-    </Bortable>
-
-    <p class="demo-order"><strong>Order:</strong> <span id="simple-order">@string.Join(", ", _items)</span></p>
+    <SimpleSortable />
 </div>
 
-<DemoCode />
+<DemoCode For="typeof(SimpleSortable)" />
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
@@ -103,17 +90,3 @@
         </table>
     </div>
 </section>
-
-@code {
-    private IList<string> _items = new List<string>
-    {
-        "Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6"
-    };
-
-    private int _animation = 150;
-
-    private void OnAnimationChanged(ChangeEventArgs e)
-    {
-        if (int.TryParse(e.Value?.ToString(), out var ms)) _animation = ms;
-    }
-}
