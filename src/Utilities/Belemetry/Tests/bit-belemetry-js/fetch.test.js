@@ -68,6 +68,15 @@ describe('fetch instrumentation', () => {
         expect(fetch.calls.every(c => headerOf(c) === null)).toBe(true);
     });
 
+    it('skips the exports .NET marks in WebAssembly, whatever their URL', async () => {
+        // The script a server started lists none of a WebAssembly client's exporter URLs.
+        const ctx = setup({ dependencies: { ignoreUrls: [] } }, []);
+        await window.fetch('https://otel.internal.test/v1/metrics', { method: 'POST', bitBelemetryExport: true });
+        await window.fetch('https://otel.internal.test/v1/metrics', { method: 'POST', bitBelemetryExport: 'yes' });
+        expect(ctx.records).toHaveLength(1); // only the one marked exactly as .NET does
+        expect(headerOf(fetch.calls[0])).toBeNull();
+    });
+
     it('skips requests that already carry traceparent', async () => {
         const ctx = setup();
         const existing = '00-11111111111111111111111111111111-2222222222222222-01';
@@ -87,6 +96,19 @@ describe('fetch instrumentation', () => {
         await expect(window.fetch('/b')).rejects.toThrow('Failed to fetch');
         expect(ctx.records[0]).toMatchObject({ status: { code: 2 }, attributes: { 'error.type': '500' } });
         expect(ctx.records[1]).toMatchObject({ status: { code: 2, message: 'Failed to fetch' }, attributes: { 'error.type': 'TypeError' } });
+    });
+
+    it('does not count a request the app aborted as a failure, and folds unknown methods into _OTHER', async () => {
+        const ctx = setup();
+        fetch = mockFetch(Object.assign(new Error('The operation was aborted.'), { name: 'AbortError' }), 200);
+        vi.stubGlobal('fetch', fetch);
+        uninstall();
+        uninstall = installFetch(ctx);
+        await expect(window.fetch('/search?q=a')).rejects.toThrow('aborted');
+        await window.fetch('/cache', { method: 'purge' });
+        expect(ctx.records[0].status.code).toBe(0);
+        expect(ctx.records[0].attributes['error.type']).toBe('AbortError');
+        expect(ctx.records[1]).toMatchObject({ name: 'HTTP', attributes: { 'http.request.method': '_OTHER', 'http.request.method_original': 'PURGE' } });
     });
 
     it('keeps the request headers of a Request input when propagating', async () => {
@@ -137,5 +159,27 @@ describe('XHR instrumentation', () => {
         expect(headers).toHaveLength(2);
         expect(send).toHaveBeenCalledTimes(2);
         expect(spy).toHaveBeenCalledTimes(2);
+    });
+
+    it('tells an aborted or timed-out request from a network failure', () => {
+        const proto = XMLHttpRequest.prototype;
+        vi.spyOn(proto, 'open').mockImplementation(() => { });
+        vi.spyOn(proto, 'setRequestHeader').mockImplementation(() => { });
+        let outcome = 'error';
+        vi.spyOn(proto, 'send').mockImplementation(function () {
+            this.dispatchEvent(new Event(outcome));
+            this.dispatchEvent(new Event('loadend'));
+        });
+        const ctx = fakeContext();
+        restore = installXhr(ctx);
+
+        for (const next of ['abort', 'timeout', 'error']) {
+            outcome = next;
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', '/x');
+            xhr.send();
+        }
+
+        expect(ctx.records.map(r => [r.attributes['error.type'], r.status.code])).toEqual([['AbortError', 0], ['TimeoutError', 2], ['NetworkError', 2]]);
     });
 });
