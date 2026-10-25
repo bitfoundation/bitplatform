@@ -73,6 +73,7 @@ internal static class BevRuntimeInfo
         {
             BevValueAccess.Full => "Parameters, fields and state are read and shown, with redaction.",
             BevValueAccess.Shallow => "Only scalar values are shown; objects show their type. Forced re-render detection is off.",
+            _ when session.ValueAccessIsConfigured => "No application value is read: BitBevToolsOptions.ValueAccess is set to None.",
             _ => "No application value is read: this process serves many users outside Development. Set BitBevToolsOptions.ValueAccess to change it.",
         }, session.ValueAccess == BevValueAccess.Full ? BevToolsSeverity.Info : BevToolsSeverity.Warning));
         return new BevRuntimeSection("Rendering", "this session", facts);

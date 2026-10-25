@@ -44,6 +44,7 @@ public sealed class BevToolsSession : IDisposable
         Registry = registry;
         IsEnabled = registry.IsEnabled;
         Redactor = new BevRedactor(options.SensitiveNamePatterns);
+        ValueAccessIsConfigured = options.ValueAccess is not null;
         ValueAccess = options.ValueAccess ?? (IsEnabled && IsInMultiUserHost && !IsDevelopmentHost(services) ? BevValueAccess.None : BevValueAccess.Full);
         Inspector = new BevObjectInspector(options, Redactor, registry.Formatters, ValueAccess);
         Overhead = new BevOverheadMeter();
@@ -103,6 +104,12 @@ public sealed class BevToolsSession : IDisposable
     /// otherwise Full, except outside Development in a process that serves many users, where it is None.
     /// </summary>
     public BevValueAccess ValueAccess { get; }
+
+    /// <summary>
+    /// True when <see cref="ValueAccess"/> comes from <see cref="BitBevToolsOptions.ValueAccess"/> rather than the
+    /// default: a None the app chose must not be explained as the multi-user default it did not hit.
+    /// </summary>
+    internal bool ValueAccessIsConfigured { get; }
 
     public BevObjectInspector Inspector { get; }
 

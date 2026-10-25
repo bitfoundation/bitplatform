@@ -390,6 +390,9 @@ function unwrapDotNet() {
 const RECORD_SEPARATOR = "\x1e";
 const LARGE_MESSAGE = 64 * 1024;
 const sockets = new Map<any, BevSocketStats>();
+// The listeners each tracked socket was given, removed when it stops being tracked: a socket outliving a detach (the
+// circuit itself) would otherwise keep decoding every frame for a session that is gone.
+const socketCleanups = new Map<any, () => void>();
 let nextSocketId = 0;
 // A Blazor event raised in BevTools' own UI (a click on a tab, typing in a filter) reaches a circuit as an ordinary
 // DispatchEventAsync message. It is marked while the browser dispatches the event; Blazor sends it before any timer
@@ -564,7 +567,7 @@ function socketStats(socket: any, observedFromOpen: boolean): BevSocketStats {
         };
         sockets.set(socket, s);
         const stats = s;
-        socket.addEventListener("message", (e: MessageEvent) => {
+        const onMessage = (e: MessageEvent) => {
             // When the frame arrived: an existing socket's own handler (SignalR's) runs before this listener and has
             // already applied a render batch by now, so the time the batch took is measured from the event's time.
             frameArrivedAt = typeof e.timeStamp === "number" && e.timeStamp > 0 ? e.timeStamp : performance.now();
@@ -573,21 +576,34 @@ function socketStats(socket: any, observedFromOpen: boolean): BevSocketStats {
             } finally {
                 frameArrivedAt = null;
             }
-        });
-        socket.addEventListener("close", (e: CloseEvent) => {
+        };
+        const onClose = (e: CloseEvent) => {
             stats.closedAt = Date.now();
             stats.closeCode = e.code;
             stats.closeReason = e.reason ? String(e.reason).slice(0, 200) : null;
             trafficVersion++;
+        };
+        socket.addEventListener("message", onMessage);
+        socket.addEventListener("close", onClose);
+        socketCleanups.set(socket, () => {
+            socket.removeEventListener("message", onMessage);
+            socket.removeEventListener("close", onClose);
         });
         // Bounded: a page that opens sockets in a loop keeps the most recent ones.
         if (sockets.size > 50) {
             const oldest = sockets.keys().next().value;
-            sockets.delete(oldest);
+            forgetSocket(oldest);
         }
         trafficVersion++;
     }
     return s;
+}
+
+function forgetSocket(socket: any) {
+    const cleanup = socketCleanups.get(socket);
+    socketCleanups.delete(socket);
+    sockets.delete(socket);
+    try { cleanup?.(); } catch { /* never break the app's socket */ }
 }
 
 function byteLength(data: any): number {
@@ -1824,7 +1840,7 @@ export function detach(targetId?: string) {
         unwrapWebSockets();
         stopObservingDom();
         if (trafficTimer) { clearInterval(trafficTimer); trafficTimer = null; }
-        sockets.clear();
+        for (const socket of Array.from(sockets.keys())) forgetSocket(socket);
         ownInvocations.clear();
         ownJsCalls.clear();
         pendingRenderBatches.clear();

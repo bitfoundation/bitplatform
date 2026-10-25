@@ -30,6 +30,10 @@ class FakeSocket {
         (this.listeners[type] ||= []).push(handler);
     }
 
+    removeEventListener(type, handler) {
+        this.listeners[type] = (this.listeners[type] || []).filter(h => h !== handler);
+    }
+
     receive(data) {
         for (const handler of this.listeners.message || []) handler({ data });
     }
@@ -355,6 +359,22 @@ describe('WebSocket traffic', () => {
         expect(window.WebSocket).toBe(FakeSocket);
         expect(FakeSocket.prototype.send).toBe(originalSend);
         expect(hub.traffic()).toHaveLength(0);
+    });
+
+    it('stops listening to a socket it no longer tracks: on detach, and when the bound evicts it', async () => {
+        installPage();
+        const hub = await loadHub();
+        hub.attach(runtime(1), {});
+        const first = new window.WebSocket('wss://app.example/_blazor?id=first');
+        expect(first.listeners.message).toHaveLength(1);
+
+        const later = Array.from({ length: 50 }, (_, i) => new window.WebSocket('wss://app.example/hub?id=' + i));
+
+        expect(hub.traffic()).toHaveLength(50);
+        expect(first.listeners.message, 'evicted by the bound').toHaveLength(0);
+        expect(first.listeners.close).toHaveLength(0);
+        hub.detach();
+        expect(later.every(s => s.listeners.message.length === 0 && s.listeners.close.length === 0), 'a socket outliving the session is left as it was').toBe(true);
     });
 });
 

@@ -75,6 +75,7 @@ internal static class CapabilityReport
             {
                 BevValueAccess.Full => "Read with redaction (names, [BevToolsSensitive], credential shapes); configuration and key material are never read.",
                 BevValueAccess.Shallow => "ValueAccess is Shallow: scalars only, objects show their type; forced re-render detection is off.",
+                _ when session.ValueAccessIsConfigured => "ValueAccess is None, as BitBevToolsOptions.ValueAccess sets it: names and types only.",
                 _ => "ValueAccess is None: names and types only, because this process serves many users outside Development. Set BitBevToolsOptions.ValueAccess to read more.",
             }),
             new("Components", "Disposal", BevCapabilityStatus.Partial, "Detected when the renderer forgets the instance (checked on each refresh), so timing is approximate."),

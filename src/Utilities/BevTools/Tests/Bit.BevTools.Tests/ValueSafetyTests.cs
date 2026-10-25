@@ -133,7 +133,26 @@ public class ValueSafetyTests
         Assert.AreEqual("string", name.TypeName, "the type is structure, not data");
         Assert.AreEqual("\"ParentRender\"", cause.Display);
         Assert.AreEqual("Customer", bag.Display, "an extension's object in an event is not printed either");
-        Assert.IsTrue(session.Inspector.Flatten(new Customer("Ada", 36)).Values.All(v => v == BevRedactor.HiddenValue));
+
+        var flat = new Dictionary<string, string>();
+        session.Inspector.FlattenNamed(flat, "Customer", new Customer("Ada", 36), member: null, maxDepth: 3, maxItems: 25, maxEntries: 400, BevObjectInspector.FlattenDeadline());
+        Assert.AreEqual(BevRedactor.HiddenValue, flat["Customer"]);
+        Assert.HasCount(1, flat, "nothing below a value that is not read");
+    }
+
+    [TestMethod]
+    public void No_access_the_app_chose_is_not_explained_as_the_multi_user_default()
+    {
+        var (session, scope) = TestHelpers.CreateSession(o => o.ValueAccess = BevValueAccess.None);
+        using var _ = scope;
+
+        var capability = CapabilityReport.Build(session).Single(c => c.Name == "Values (parameters, fields, state, claims)");
+        var fact = BevRuntimeInfo.Build(session).SelectMany(s => s.Facts).Single(f => f.Name == "Value access");
+
+        StringAssert.Contains(capability.Explanation, "as BitBevToolsOptions.ValueAccess sets it");
+        Assert.IsFalse(capability.Explanation.Contains("serves many users", StringComparison.Ordinal), capability.Explanation);
+        StringAssert.Contains(fact.Hint, "BitBevToolsOptions.ValueAccess is set to None");
+        Assert.IsFalse(fact.Hint!.Contains("serves many users", StringComparison.Ordinal), fact.Hint);
     }
 
     [TestMethod]

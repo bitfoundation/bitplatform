@@ -88,6 +88,29 @@ describe('companion', () => {
         companion.stop();
     });
 
+    it('polls on one timer however often it is restarted, and on none once a pending start is stopped', async () => {
+        const { Companion } = await loadCompanion();
+        const setIntervalSpy = vi.spyOn(globalThis, 'setInterval');
+        try {
+            const companion = new Companion(liveSource({ t1: session(3, 'Server', [counter]) }), document.body);
+
+            const superseded = companion.start();
+            companion.use(liveSource({ t1: session(4, 'Server', [counter]) }));
+            await superseded;
+            await flush();
+            await flush();
+            expect(setIntervalSpy, 'the start a new source took over from installs none').toHaveBeenCalledTimes(1);
+
+            const closed = companion.start();
+            companion.stop();
+            await closed;
+            await flush();
+            expect(setIntervalSpy, 'a start the window closed during installs none').toHaveBeenCalledTimes(1);
+        } finally {
+            setIntervalSpy.mockRestore();
+        }
+    });
+
     it('inspects a component live and expands its values on demand', async () => {
         const { Companion } = await loadCompanion();
         const source = liveSource({ t1: session(3, 'Server', [counter]) });

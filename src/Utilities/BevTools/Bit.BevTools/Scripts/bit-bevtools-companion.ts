@@ -267,6 +267,9 @@ export class Companion {
     private polls = 0;
     private notice: string | null = null;
     private pickTimer: ReturnType<typeof setInterval> | null = null;
+    // Bumped by every start and stop: a start still awaiting its first poll when another source took over (use) or
+    // the window closed (stop) must not install a timer of its own.
+    private generation = 0;
     private readonly root: HTMLElement;
     private header!: HTMLElement;
     private toolbar!: HTMLElement;
@@ -275,16 +278,28 @@ export class Companion {
 
     constructor(private source: CompanionSource, root?: HTMLElement) {
         this.root = root || document.body;
+        // Here rather than in layout, which runs on every start: a file dropped after a few sources would open once per start.
+        this.root.addEventListener("dragover", e => { e.preventDefault(); });
+        this.root.addEventListener("drop", e => {
+            e.preventDefault();
+            const file = e.dataTransfer && e.dataTransfer.files[0];
+            if (file) this.openFile(file);
+        });
     }
 
     async start() {
+        const generation = ++this.generation;
         this.layout();
         await this.refreshTargets();
+        if (generation !== this.generation) return;
         await this.poll(true);
+        if (generation !== this.generation) return;
+        if (this.timer) clearInterval(this.timer);
         this.timer = setInterval(() => { if (!document.hidden) this.poll(false); }, POLL_MS);
     }
 
     stop() {
+        this.generation++;
         if (this.timer) clearInterval(this.timer);
         this.timer = null;
         this.endPick(true);
@@ -311,12 +326,6 @@ export class Companion {
         this.content = h("main", { class: "bc-content" });
         this.status = h("footer", { class: "bc-status" });
         this.root.replaceChildren(this.header, this.toolbar, this.content, this.status);
-        this.root.addEventListener("dragover", e => { e.preventDefault(); });
-        this.root.addEventListener("drop", e => {
-            e.preventDefault();
-            const file = e.dataTransfer && e.dataTransfer.files[0];
-            if (file) this.openFile(file);
-        });
     }
 
     private async refreshTargets() {

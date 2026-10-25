@@ -530,17 +530,23 @@ public sealed class BevObjectInspector
 
     private static object? GetValue(MemberInfo member, object target) => member is PropertyInfo p ? p.GetValue(target) : ((FieldInfo)member).GetValue(target);
 
+    /// <summary>
+    /// Walks <paramref name="path"/> under the same rules <see cref="Describe(string, object?, string, MemberInfo?)"/>
+    /// applies: a caller holding a crafted path (a frontend speaking the protocol) must not reach a value the panels
+    /// show as not expandable, so configuration and key material end the walk wherever they appear, and so does the
+    /// value of a pair whose name is sensitive.
+    /// </summary>
     private object? Resolve(object? root, string path, List<object> ancestors)
     {
         var current = root;
         if (string.IsNullOrEmpty(path))
         {
-            return current;
+            return NeverWalked(current) ? null : current;
         }
 
         foreach (var segment in ParsePath(path))
         {
-            if (current is null)
+            if (current is null || NeverWalked(current))
             {
                 return null;
             }
@@ -559,7 +565,7 @@ public sealed class BevObjectInspector
             {
                 var member = GetMembers(current.GetType()).FirstOrDefault(m => m.Name == segment.Value)
                     ?? throw new InvalidOperationException($"Member '{segment.Value}' not found on {current.GetType().Name}.");
-                if (_redactor.IsSensitive(member))
+                if (_redactor.IsSensitive(member) || (IsPairValueMember(member) && PairNameIsSensitive(current)))
                 {
                     return null;
                 }
@@ -568,8 +574,10 @@ public sealed class BevObjectInspector
             }
         }
 
-        return current;
+        return NeverWalked(current) ? null : current;
     }
+
+    private static bool NeverWalked(object? value) => value is not null && ConfigurationDisplay(value.GetType()) is not null;
 
     private static object? Index(object target, string key)
     {

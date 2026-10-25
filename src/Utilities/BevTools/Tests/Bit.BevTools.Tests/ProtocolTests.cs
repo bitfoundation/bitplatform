@@ -2,6 +2,7 @@
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 
@@ -112,6 +113,20 @@ public class ProtocolTests : BunitContext
     }
 
     [TestMethod]
+    public void Expand_never_walks_configuration_or_a_sensitive_pair_value_whatever_the_path()
+    {
+        Render<WiringHolder>();
+        var record = Session.Components.All.Single(r => r.Type == typeof(WiringHolder));
+
+        JsonElement Expand(string path) => Ask("expand", new { instanceId = record.InstanceId, section = "parameters", name = nameof(WiringHolder.Wiring), path }).GetProperty("children");
+
+        Assert.AreEqual(0, Expand(nameof(Wiring.Configuration)).GetArrayLength(), "configuration is never walked");
+        Assert.AreEqual(0, Expand(nameof(Wiring.Configuration) + ".Providers[0]").GetArrayLength(), "nor anything below it");
+        Assert.AreEqual(0, Expand(nameof(Wiring.Accounts) + "[0].Value").GetArrayLength(), "the value of a pair keyed Authorization");
+        Assert.IsGreaterThan(0, Expand(nameof(Wiring.Accounts) + "[1].Value").GetArrayLength(), "the value of an ordinary pair still expands");
+    }
+
+    [TestMethod]
     public void Commands_and_exports_do_what_the_panel_buttons_do()
     {
         Render<ParentComponent>(ps => ps.Add(p => p.Value, 1));
@@ -209,5 +224,19 @@ public class ProtocolTests : BunitContext
         public string Host { get; set; } = "smtp.example.com";
 
         public string Password { get; set; } = "hunter2";
+    }
+
+    public sealed class WiringHolder : ComponentBase
+    {
+        [Parameter] public Wiring Wiring { get; set; } = new();
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder) => builder.AddContent(0, "holder");
+    }
+
+    public sealed class Wiring
+    {
+        public IConfiguration Configuration { get; set; } = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["Smtp:Host"] = "smtp.example.com" }).Build();
+
+        public List<KeyValuePair<string, MailSettings>> Accounts { get; set; } = [new("Authorization", new()), new("Primary", new())];
     }
 }
