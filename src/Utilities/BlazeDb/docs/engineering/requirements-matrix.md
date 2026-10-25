@@ -124,7 +124,7 @@ valuable, P3 nice to have. **New** marks work done in this pass; everything else
 
 | Requirement | Status | Pri | Implementation | Evidence | Limitations |
 | --- | --- | --- | --- | --- | --- |
-| Blazor WebAssembly (OPFS, IndexedDB, Web Locks, tabs) | verified | P1 | `Browser/` | E2E `PersistenceTests`, `BrowserModuleTests`, `DemoPageTests`, `ChangeFeedTests` | Chromium only in CI |
+| Blazor WebAssembly (OPFS, IndexedDB, Web Locks, tabs) | verified | P1 | `Browser/` | E2E `PersistenceTests`, `BrowserModuleTests`, `DemoPageTests`, `DemoScenarioTests`, `ChangeFeedTests` | Chromium, Firefox and WebKit in CI, against the published demo; no OPFS in WebKit's Playwright contexts |
 | net8.0 / net9.0 / net10.0 | verified | P1 | multi-targeting | unit suite on all three | - |
 | Blazor Server / ASP.NET Core | implemented (documented) | P2 | file storage | README "Hosting models" | Application serializes access (ADR-001) |
 | MAUI / desktop | implemented | P2 | file storage | `DurabilityTests` (file backend) | Not run on devices here |

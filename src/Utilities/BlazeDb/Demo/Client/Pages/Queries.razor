@@ -53,7 +53,7 @@ else
                         {
                             <div class="bb-field">
                                 <label for="q-days">Created within the last</label>
-                                <input id="q-days" class="bb-mono" type="number" min="1" max="365" disabled="@_fromUnbounded"
+                                <input id="q-days" class="bb-mono" type="number" min="1" disabled="@_fromUnbounded"
                                        @bind="_days" @bind:after="Run" />
                                 <span class="bb-field-hint">days</span>
                             </div>
@@ -371,6 +371,10 @@ else
     {
         await Db.GetDatabaseAsync();
         _todos = Db.Todos;
+        if (DemoData.MedianCreatedAt(_todos) is { } median)
+        {
+            _days = Math.Max(1, (int)Math.Ceiling((DateTime.UtcNow - median).TotalDays));
+        }
         Run();
     }
 

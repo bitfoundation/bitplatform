@@ -493,15 +493,15 @@ else
         }
     }
 
-    private Task RunTrackAsync(TrackKind kind)
+    private async Task RunTrackAsync(TrackKind kind)
     {
         _trackKind = kind;
         _running = true;
         _log.Clear();
 
+        await using var context = CreateContext();
         try
         {
-            using var context = CreateContext();
             context.Todos.Add(Row("Design the WAL record layout", category: "engine"));
             context.Todos.Add(Row("Wire OPFS handles", done: true, category: "browser"));
             context.Todos.Add(Row("Write the getting-started guide", category: "docs"));
@@ -512,6 +512,12 @@ else
                 UpdatedAt = DateTime.UtcNow,
             });
             context.SaveChanges();
+
+            // Each scenario starts the way a context created over an existing database would: with
+            // nothing tracked. Left tracked, the rows above would show up in AsNoTracking's tracker
+            // count, and adding one of their keys again would clash in EF Core's identity map
+            // before the engine ever saw the duplicate.
+            context.ChangeTracker.Clear();
 
             var todos = context.Database.GetBlazeDb().GetTable(TodoEntry.Table);
             switch (kind)
@@ -542,9 +548,11 @@ else
         finally
         {
             _running = false;
-        }
 
-        return Task.CompletedTask;
+            // A named store outlives its contexts, the way UseInMemoryDatabase's does; this one was
+            // only ever for this run.
+            await context.Database.EnsureDeletedAsync();
+        }
     }
 
     private void TrackLiveRow(DemoDbContext context, BlazeDbTable<Guid, TodoEntry> todos)
@@ -627,11 +635,13 @@ else
             context.SaveChanges();
             _log.Error("No exception", "unexpected");
         }
-        catch (BlazeDbDuplicateKeyException ex)
+        catch (DbUpdateException ex) when (ex.InnerException is BlazeDbDuplicateKeyException duplicate)
         {
+            // The provider reports a constraint violation the way every EF Core provider does; the
+            // engine's own exception is the inner one.
             _log.Error("SaveChanges threw",
-                $"{ex.GetType().Name}(table: \"{ex.TableName}\")",
-                ex.Message);
+                $"DbUpdateException ← {duplicate.GetType().Name}(table: \"{duplicate.TableName}\")",
+                duplicate.Message);
         }
 
         _log.Ok("Nothing stuck",
@@ -724,7 +734,7 @@ else
     private const string FailedSaveSnippet = """
         context.Todos.Add(newRow);
         context.Todos.Add(new TodoEntry { Id = existing.Id, ... });
-        context.SaveChanges(); // throws; newRow is not kept
+        context.SaveChanges(); // DbUpdateException; newRow is not kept
         """;
 
     private const string NoTrackingSnippet = """

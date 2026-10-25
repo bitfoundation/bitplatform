@@ -486,7 +486,9 @@
                     "Small thresholds so the behaviour is visible in a second or two.");
             }
 
-            var snapshotsBefore = _storage.FileNames.Count(f => f.StartsWith("snapshot-"));
+            // By name, not by count: a checkpoint deletes the snapshot it supersedes, so the number of
+            // snapshot files stays at one however many checkpoints run.
+            var snapshotsBefore = Snapshots().ToHashSet();
 
             using (var txn = _db.BeginTransaction())
             {
@@ -512,20 +514,22 @@
             {
                 await Task.Delay(100);
                 Refresh();
-                if (_storage.FileNames.Count(f => f.StartsWith("snapshot-")) > snapshotsBefore)
+                if (Snapshots().Any(f => !snapshotsBefore.Contains(f)))
                 {
                     break;
                 }
             }
 
             Refresh();
-            var snapshots = _storage.FileNames.Where(f => f.StartsWith("snapshot-")).OrderBy(f => f).ToList();
+            var snapshots = Snapshots().ToList();
 
-            if (snapshots.Count > snapshotsBefore)
+            if (snapshots.Any(f => !snapshotsBefore.Contains(f)))
             {
                 _log.Ok(
                     "The engine checkpointed itself",
-                    string.Join(", ", snapshots),
+                    snapshotsBefore.Count == 0
+                        ? string.Join(", ", snapshots)
+                        : $"{string.Join(", ", snapshotsBefore.OrderBy(FileIndex))} → {string.Join(", ", snapshots)}",
                     "No application code asked for it - the flush loop noticed the log had outgrown CheckpointWalSize.");
             }
             else
@@ -669,14 +673,8 @@
         try
         {
             await _db.FlushAsync();
+            var wal = await WalWithRecordsAsync();
             var before = _table?.Count ?? 0;
-            var wal = NewestWal();
-
-            if (wal is null)
-            {
-                _log.Error("No log file yet", "flush something first");
-                return;
-            }
 
             var bytes = _storage.GetFile(wal)!;
             // A complete 16-byte record header (length 4096, a sequence number, a checksum) followed
@@ -738,21 +736,10 @@
         try
         {
             await _db.FlushAsync();
+            var wal = await WalWithRecordsAsync();
             var before = _table?.Count ?? 0;
-            var wal = NewestWal();
-
-            if (wal is null)
-            {
-                _log.Error("No log file yet", "flush something first");
-                return;
-            }
 
             var bytes = _storage.GetFile(wal)!;
-            if (bytes.Length == 0)
-            {
-                _log.Error("The log is empty", "insert some rows and flush first");
-                return;
-            }
             bytes[^1] ^= 0xFF;
             _storage.SetFile(wal, bytes);
 
@@ -838,6 +825,38 @@
         .Where(f => f.StartsWith("wal-"))
         .OrderByDescending(FileIndex)
         .FirstOrDefault();
+
+    private IEnumerable<string> Snapshots() => _storage.FileNames
+        .Where(f => f.StartsWith("snapshot-"))
+        .OrderBy(FileIndex);
+
+    /// <summary>
+    /// The log file a failure-injection scenario damages. A database that has just been opened or
+    /// checkpointed has no records in its log yet - the file only appears with the first append -
+    /// so one row is written and flushed first, rather than leaving nothing to break.
+    /// </summary>
+    private async Task<string> WalWithRecordsAsync()
+    {
+        if (NewestWal() is { } wal && _storage.GetFile(wal) is { Length: > 0 })
+        {
+            return wal;
+        }
+
+        _table!.Insert(new TodoEntry
+        {
+            Id = Guid.NewGuid(),
+            Title = $"durable row {_nextRow++}",
+            CreatedAt = DateTime.UtcNow,
+        });
+        await _db!.FlushAsync();
+        Refresh();
+
+        wal = NewestWal()!;
+        _log.Add("The log was empty, so one row was written first",
+            "todos.Insert(row); await db.FlushAsync()",
+            $"{wal} now holds a record to damage.");
+        return wal;
+    }
 
     /// <summary>Extracts the generation number from <c>wal-12.blz</c>.</summary>
     private static int FileIndex(string name)

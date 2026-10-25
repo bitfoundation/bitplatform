@@ -157,4 +157,13 @@ public static class DemoData
     }
 
     public static readonly string[] Categories = ["engine", "browser", "bench", "codegen", "docs"];
+
+    /// <summary>
+    /// When the middle row by CreatedAt was created, or null for an empty table. The rows are as old as
+    /// the tab's database - seeded over a few days some weeks back, and on OPFS possibly long before this
+    /// visit - so a date range that opens with a fixed "last N days" can match nothing at all. Starting
+    /// it here puts about half the table inside the range and half outside it.
+    /// </summary>
+    public static DateTime? MedianCreatedAt(BlazeDbTable<Guid, TodoEntry> table) =>
+        table.OrderBy(TodoEntry.Indexes.CreatedAt, descending: true).ElementAtOrDefault(table.Count / 2)?.CreatedAt;
 }

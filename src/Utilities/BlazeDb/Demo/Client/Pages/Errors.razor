@@ -223,8 +223,8 @@
             static p => p.MissingSnapshotAsync()),
 
         new("unknown-wal-table", "Persistence", "A log referencing a table you dropped",
-            "BlazeDbDatabase.OpenAsync(options)", nameof(BlazeDbException),
-            "Replay names tables as strings. Removing a table from BlazeDbDatabaseOptions while its records are still in the log is caught rather than skipped.",
+            "BlazeDbDatabase.OpenAsync(options)", "opens, keeps the rows",
+            "Replay names tables as strings. A table the options no longer register still opens - its rows carried as raw bytes through every checkpoint and named by db.UnregisteredTables - so dropping a type from the model loses nothing, and registering it again brings the rows back.",
             static p => p.UnknownWalTableAsync()),
 
         new("truncated-row", "Persistence", "A row buffer that ends mid-field",
@@ -509,9 +509,20 @@
 
         // The log still names "settings", but this schema no longer has it.
         var narrowed = new BlazeDbDatabaseOptions { Storage = storage }.AddTable(TodoEntry.Table);
-        await using var reopened = await BlazeDbDatabase.OpenAsync(narrowed);
+        string unregistered;
+        await using (var reopened = await BlazeDbDatabase.OpenAsync(narrowed))
+        {
+            unregistered = string.Join(", ", reopened.UnregisteredTables);
 
-        return "Recovery skipped the unknown table.";
+            // The snapshot is written from this narrower schema, the table it does not know included.
+            await reopened.CheckpointAsync();
+        }
+
+        await using var restored = await DemoSandbox.OpenAsync(storage);
+        var flag = restored.GetTable(Setting.Table).Get("demo.flag")
+            ?? throw new InvalidOperationException("The dropped table's row did not survive a checkpoint taken without it.");
+
+        return $"db.UnregisteredTables → [{unregistered}]. Checkpointed without the table, then reopened with it registered again: settings.Get(\"demo.flag\").Value → \"{flag.Value}\".";
     }
 
     private Task<string> TruncatedRowAsync()

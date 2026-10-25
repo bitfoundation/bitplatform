@@ -416,6 +416,10 @@ else
     {
         await Db.GetDatabaseAsync();
         _todos = Db.Todos;
+        if (DemoData.MedianCreatedAt(_todos) is { } median)
+        {
+            _dateFrom = median;
+        }
 
         _sandbox = await DemoSandbox.OpenAsync();
         _sandboxTable = _sandbox.GetTable(TodoEntry.Table);

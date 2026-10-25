@@ -914,4 +914,4 @@ dotnet test --project Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.Mcp    # the dem
 dotnet run --project Utilities/BlazeDb/Demo/Server                     # the demo site
 ```
 
-The browser suite (`Tests/Bit.BlazeDb.Tests.E2E`) runs the demo in Chromium; its README says how.
+The browser suite (`Tests/Bit.BlazeDb.Tests.E2E`) runs the demo in Chromium, Firefox or WebKit; its README says how.
