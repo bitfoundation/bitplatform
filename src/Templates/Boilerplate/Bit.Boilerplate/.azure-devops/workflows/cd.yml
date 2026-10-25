@@ -37,7 +37,7 @@ jobs:
 
   - pwsh: |
       Write-Host "##vso[task.prependpath]$(Agent.ToolsDirectory)/bit-cli"
-      dotnet tool install Bit.Cli --tool-path "$(Agent.ToolsDirectory)/bit-cli"
+      dotnet tool install Bit.Cli --version 10.7.0-pre-04 --tool-path "$(Agent.ToolsDirectory)/bit-cli"
     displayName: 'Install the bit CLI'
 
   - script: bit setup --yes
@@ -72,7 +72,7 @@ jobs:
 
   - pwsh: |
       Write-Host "##vso[task.prependpath]$(Agent.ToolsDirectory)/bit-cli"
-      dotnet tool install Bit.Cli --tool-path "$(Agent.ToolsDirectory)/bit-cli"
+      dotnet tool install Bit.Cli --version 10.7.0-pre-04 --tool-path "$(Agent.ToolsDirectory)/bit-cli"
     displayName: 'Install the bit CLI'
 
   - script: bit setup --no-build --yes
@@ -205,7 +205,7 @@ jobs:
 
   - pwsh: |
       Write-Host "##vso[task.prependpath]$(Agent.ToolsDirectory)/bit-cli"
-      dotnet tool install Bit.Cli --tool-path "$(Agent.ToolsDirectory)/bit-cli"
+      dotnet tool install Bit.Cli --version 10.7.0-pre-04 --tool-path "$(Agent.ToolsDirectory)/bit-cli"
     displayName: 'Install the bit CLI'
 
   - script: bit setup --platforms windows --no-build --yes
@@ -241,7 +241,7 @@ jobs:
       targetType: 'inline'
       script: |
         cd src/Client/Boilerplate.Client.Windows
-        dnx vpk@1.2.161 -- pack -u $(APP_ID) -v "$(APP_VERSION)" -p ./publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon ./wwwroot/favicon.ico --packTitle '$(APP_TITLE)'
+        dnx vpk@1.3.39-g8d2844f -- pack -u $(APP_ID) -v "$(APP_VERSION)" -p ./publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon ./wwwroot/favicon.ico --packTitle '$(APP_TITLE)'
 
   - task: AzureCLI@3
     displayName: 'Pack and sign with Artifact Signing'
@@ -257,7 +257,7 @@ jobs:
         @{ Endpoint = '$(CODE_SIGNING_ENDPOINT)'; CodeSigningAccountName = '$(CODE_SIGNING_ACCOUNT)'; CertificateProfileName = '$(CODE_SIGNING_CERTIFICATE_PROFILE)'; ExcludeCredentials = @('ManagedIdentityCredential', 'WorkloadIdentityCredential', 'SharedTokenCacheCredential', 'VisualStudioCredential', 'VisualStudioCodeCredential') } | ConvertTo-Json | Set-Content '$(Agent.TempDirectory)/code-signing.json'
         $env:VPK_AZURE_TRUSTED_SIGN_FILE = '$(Agent.TempDirectory)/code-signing.json'
         cd src/Client/Boilerplate.Client.Windows
-        dnx vpk@1.2.161 -- pack -u $(APP_ID) -v "$(APP_VERSION)" -p ./publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon ./wwwroot/favicon.ico --packTitle '$(APP_TITLE)'
+        dnx vpk@1.3.39-g8d2844f -- pack -u $(APP_ID) -v "$(APP_VERSION)" -p ./publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon ./wwwroot/favicon.ico --packTitle '$(APP_TITLE)'
 
   - task: PublishPipelineArtifact@1
     displayName: Upload artifact
@@ -281,7 +281,7 @@ jobs:
 
   - pwsh: |
       Write-Host "##vso[task.prependpath]$(Agent.ToolsDirectory)/bit-cli"
-      dotnet tool install Bit.Cli --tool-path "$(Agent.ToolsDirectory)/bit-cli"
+      dotnet tool install Bit.Cli --version 10.7.0-pre-04 --tool-path "$(Agent.ToolsDirectory)/bit-cli"
     displayName: 'Install the bit CLI'
 
   - script: bit setup --platforms android --no-build --yes

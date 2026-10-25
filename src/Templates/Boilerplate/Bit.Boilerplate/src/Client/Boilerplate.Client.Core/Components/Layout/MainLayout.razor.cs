@@ -104,6 +104,7 @@ public partial class MainLayout : IAsyncDisposable
                 if (updatedUser.Id != currentUser?.Id) return;
 
                 currentUser = updatedUser;
+                authManager.SetActiveAccountProfile(updatedUser);
 
                 await InvokeAsync(StateHasChanged);
             }));
@@ -207,6 +208,7 @@ public partial class MainLayout : IAsyncDisposable
         if (currentUser is null || authUser.IsTheSame(lastAuthUser) is false)
         {
             currentUser = await userController.GetCurrentUser(cancellationToken);
+            authManager.SetActiveAccountProfile(currentUser);
         }
     }
 

@@ -285,20 +285,20 @@
   <Folder Name="/Butil/Samples/Web/">
     <Project Path="Butil/Samples/Web/Bit.Butil.Samples.Web.csproj" />
   </Folder>
-  <Folder Name="/Cli/">
-    <File Path="Cli/README.md" />
-    <Project Path="Cli/Bit.Cli/Bit.Cli.csproj" />
-  </Folder>
-  <Folder Name="/Cli/Minifier/">
-    <Project Path="Cli/Minifier/Bit.Minifier/Bit.Minifier.csproj" />
-  </Folder>
   <Folder Name="/Toolings/" />
   <Folder Name="/Toolings/BlazorES2019/">
     <Project Path="Toolings/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj" />
   </Folder>
+  <Folder Name="/Toolings/Cli/">
+    <File Path="Toolings/Cli/README.md" />
+    <Project Path="Toolings/Cli/Bit.Cli/Bit.Cli.csproj" />
+  </Folder>
   <Folder Name="/Toolings/CodeAnalyzers/">
     <File Path="Toolings/CodeAnalyzers/README.md" />
     <Project Path="Toolings/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj" />
+  </Folder>
+  <Folder Name="/Toolings/Minifier/">
+    <Project Path="Toolings/Minifier/Bit.Minifier/Bit.Minifier.csproj" />
   </Folder>
   <Folder Name="/Toolings/SourceGenerators/">
     <File Path="Toolings/SourceGenerators/README.md" />

@@ -2090,4 +2090,10 @@
     <data name="AccountAlreadyExistsShortText" xml:space="preserve">
     <value>您已经使用此电话号码注册了 Boilerplate 账户。如果您刚才是想注册，请直接登录。</value>
   </data>
+    <data name="AddAnotherAccount" xml:space="preserve">
+    <value>添加其他账户</value>
+  </data>
+    <data name="SignOutOfAllAccounts" xml:space="preserve">
+    <value>退出此设备上的所有账户</value>
+  </data>
 </root>

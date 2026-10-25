@@ -22,8 +22,20 @@ public static class TestAccountUtils
     /// three steps the magic-link UI performs, driven through the API so no browser is needed. Returns the account's
     /// e-mail and id.
     /// </summary>
-    public static async Task<(string email, Guid userId)> CreateAndSignIn(
+    public static Task<(string email, Guid userId)> CreateAndSignIn(
         AppClient client, CancellationToken cancellationToken)
+    {
+        return CreateAccount(client, tokens => client.AuthManager.StoreTokens(tokens), cancellationToken);
+    }
+
+    public static Task<(string email, Guid userId)> CreateAndAddAccount(
+        AppClient client, CancellationToken cancellationToken)
+    {
+        return CreateAccount(client, tokens => client.AuthManager.CompleteSignIn(tokens, rememberMe: true), cancellationToken);
+    }
+
+    private static async Task<(string email, Guid userId)> CreateAccount(
+        AppClient client, Func<Shared.Features.Identity.Dtos.TokenResponseDto, Task> signIn, CancellationToken cancellationToken)
     {
         var identityController = client.GetController<IIdentityController>();
 
@@ -40,7 +52,7 @@ public static class TestAccountUtils
         // Confirming returns the token pair, exactly as ConfirmPage receives it; AuthManager is what persists it.
         var tokens = await identityController.ConfirmEmail(new() { Email = email, Token = captured.Token }, cancellationToken);
 
-        await client.AuthManager.StoreTokens(tokens);
+        await signIn(tokens);
 
         var userId = await ReadUserId(client.Server, email, cancellationToken);
 

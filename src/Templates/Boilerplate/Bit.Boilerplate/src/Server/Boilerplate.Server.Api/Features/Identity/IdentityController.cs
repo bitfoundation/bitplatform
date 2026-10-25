@@ -399,9 +399,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 // The privileged flag is earned against the claims of ONE tenant: MAX_PRIVILEGED_SESSIONS lives on a
                 // role, and roles are tenant scoped (See UserClaimsService.GetClaims). It is also sticky, so without
                 // clearing it here a session that became privileged under one tenant's claims keeps it under every
-                // other tenant's - and since creating a tenant is self service and makes the creator its t-admin with
-                // an unlimited claim, that turns "mint a tenant, switch in, switch back" into a way for any account to
-                // lift its own session cap, once per device. Cleared so it is re-earned below against the tenant the
+                // other tenant's - so a higher cap in one tenant (the seeded tenant's t-admins are unlimited) would
+                // lift it in every tenant, once per device. Cleared so it is re-earned below against the tenant the
                 // session is actually moving into (See UpdateUserSessionPrivilegeStatus).
                 userSession.Privileged = false;
             }
@@ -446,6 +445,25 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             await DbContext.SaveChangesAsync(cancellationToken);
             throw;
         }
+    }
+
+    [HttpPost]
+    public async Task RevokeRefreshToken(RefreshTokenRequestDto request, CancellationToken cancellationToken)
+    {
+        var refreshTicket = bearerTokenOptions.Get(IdentityConstants.BearerScheme).RefreshTokenProtector.Unprotect(request.RefreshToken);
+
+        if (refreshTicket?.Principal?.IsAuthenticated() is not true)
+            return;
+
+        var sessionId = refreshTicket.Principal.GetSessionId();
+
+        var userSession = await DbContext.UserSessions.FirstOrDefaultAsync(us => us.Id == sessionId, cancellationToken);
+
+        if (userSession is null)
+            return;
+
+        DbContext.UserSessions.Remove(userSession);
+        await DbContext.SaveChangesAsync(cancellationToken);
     }
 
     /// <summary>

@@ -2090,4 +2090,10 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="AccountAlreadyExistsShortText" xml:space="preserve">
     <value>Je hebt al een Boilerplate-account met dit telefoonnummer. Probeerde je je net te registreren? Log dan in.</value>
   </data>
+    <data name="AddAnotherAccount" xml:space="preserve">
+    <value>Nog een account toevoegen</value>
+  </data>
+    <data name="SignOutOfAllAccounts" xml:space="preserve">
+    <value>Afmelden bij alle accounts op dit apparaat</value>
+  </data>
 </root>

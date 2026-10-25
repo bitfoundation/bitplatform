@@ -4,7 +4,7 @@ namespace Boilerplate.Tests.Features.Identity;
 public partial class SignInAsAnotherUserUITests : AppPageTest
 {
     [TestMethod]
-    public async Task SigningInAsAnotherUser_Should_EndTheFirstSession_AndUpdateTheOtherTabs()
+    public async Task SigningInAsAnotherUser_Should_KeepBothAccounts_AndSwitchingBetweenThem_Should_UpdateTheOtherTabs()
     {
         await using var server = new AppTestServer(Context);
         await server.Build().Start(TestContext.CancellationToken);
@@ -15,23 +15,35 @@ public partial class SignInAsAnotherUserUITests : AppPageTest
         await MagicLinkSignInUtils.SignInViaMagicLinkOtp(Page, server, firstEmail, TestContext.CancellationToken);
         await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(firstEmail);
 
-        Assert.AreEqual(1, await CountUserSessions(server, firstEmail));
-
         var otherTab = await Context.NewPageAsync();
         await otherTab.GotoAsync(server.WebAppAddress.ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
         await Expect(otherTab.Locator(".bit-prs.persona").First).ToContainTextAsync(firstEmail);
 
         await MagicLinkSignInUtils.SignInViaMagicLinkOtp(Page, server, secondEmail, TestContext.CancellationToken);
         await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(secondEmail);
-
-        Assert.AreEqual(0, await CountUserSessions(server, firstEmail),
-            "Signing in as somebody else must end the session it replaces instead of leaving it behind in the sessions list.");
-
         await Expect(otherTab.Locator(".bit-prs.persona").First).ToContainTextAsync(secondEmail);
+
+        Assert.AreEqual(1, await CountUserSessions(server, firstEmail),
+            "Signing in as somebody else must keep the first account on the device, signed in.");
+
+        await AppMenuUtils.ClickItem(Page, callout => callout.Locator(".account-button", new() { HasText = firstEmail }));
+
+        await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(firstEmail);
+        await Expect(otherTab.Locator(".bit-prs.persona").First).ToContainTextAsync(firstEmail);
+
+        await AppMenuUtils.ClickItem(Page, AppStrings.SignOut);
+        await Page.GetByText(AppStrings.SignOutOfAllAccounts).ClickAsync();
+        await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut }).Last.ClickAsync();
+
+        await Expect(Page.Locator("header .bit-drm-btn").First).Not.ToContainTextAsync(firstEmail);
+        await Expect(otherTab.Locator("header .bit-drm-btn").First).Not.ToContainTextAsync(firstEmail);
+
+        Assert.AreEqual(0, await CountUserSessions(server, firstEmail));
+        Assert.AreEqual(0, await CountUserSessions(server, secondEmail), "Signing out of all accounts must end the session of the account that was not active too.");
     }
 
     [TestMethod]
-    public async Task ConfirmingAnotherAccount_Should_EndTheSessionItReplaces()
+    public async Task ConfirmingAnotherAccount_Should_KeepTheAccountThatWasSignedIn()
     {
         await using var server = new AppTestServer(Context);
         await server.Build().Start(TestContext.CancellationToken);
@@ -49,8 +61,8 @@ public partial class SignInAsAnotherUserUITests : AppPageTest
         await Page.GotoAsync(new Uri(server.WebAppAddress, confirmation.Link!.PathAndQuery).ToString());
         await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(secondEmail);
 
-        Assert.AreEqual(0, await CountUserSessions(server, firstEmail),
-            "Confirming another account signs it in, so it must end the session it replaces instead of leaving it behind.");
+        Assert.AreEqual(1, await CountUserSessions(server, firstEmail),
+            "Confirming another account signs it in next to the one that was signed in, which must stay signed in.");
     }
 
     [TestMethod]

@@ -59,6 +59,15 @@ public partial class MainLayout : IDisposable
         new BitNavItem { Text = "Usage", Url = "/besql/usage" },
     ];
 
+    private readonly List<BitNavItem> toolingsNavItems =
+    [
+        new BitNavItem { Text = "bit CLI", Url = Urls.Cli },
+        new BitNavItem { Text = "Minifier", Url = Urls.Minifier },
+        new BitNavItem { Text = "BlazorES2019", Url = Urls.BlazorES2019 },
+        new BitNavItem { Text = "Code Analyzers", Url = Urls.CodeAnalyzers },
+        new BitNavItem { Text = "Source Generators", Url = Urls.SourceGenerators },
+    ];
+
     protected override Task OnInitializedAsync()
     {
         SetNavItems();
@@ -83,6 +92,7 @@ public partial class MainLayout : IDisposable
 
         navItems = navMenuService.IsTemplateDocRoute ? templatesNavItems
                  : navMenuService.IsBesqlDocRoute ? besqlNavItems
+                 : navMenuService.IsToolingsDocRoute ? toolingsNavItems
                  : [];
     }
 

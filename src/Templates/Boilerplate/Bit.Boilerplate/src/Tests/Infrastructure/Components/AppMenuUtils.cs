@@ -16,10 +16,15 @@ public static class AppMenuUtils
     /// closed, so the entry is only waited for briefly before the menu is opened again.
     /// </para>
     /// </summary>
-    public static async Task ClickItem(IPage page, string itemName)
+    public static Task ClickItem(IPage page, string itemName)
+    {
+        return ClickItem(page, callout => callout.GetByRole(AriaRole.Button, new() { Name = itemName, Exact = true }));
+    }
+
+    public static async Task ClickItem(IPage page, Func<ILocator, ILocator> findItem)
     {
         var menuButton = page.Locator("header .bit-drm-btn").First;
-        var item = page.Locator(".app-menu-callout").GetByRole(AriaRole.Button, new() { Name = itemName, Exact = true });
+        var item = findItem(page.Locator(".app-menu-callout"));
 
         var deadline = DateTimeOffset.UtcNow + TimeSpan.FromMinutes(1);
 

@@ -503,7 +503,7 @@ jobs:
     - name: Install vpk
       shell: pwsh
       run: |
-        dotnet tool install vpk --version 1.2.161 --tool-path "$env:RUNNER_TEMP/vpk"
+        dotnet tool install vpk --version 1.3.39-g8d2844f --tool-path "$env:RUNNER_TEMP/vpk"
         Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/vpk"
 
     # Needed for delta packages. Fails on the first run, when the bucket is empty.
@@ -765,7 +765,7 @@ jobs:
 
     # App Store submission stays manual.
     - name: Upload to TestFlight
-      uses: apple-actions/upload-testflight-build@155ea93be9ee6d5186c71f660a612f5eddb14510 # v5.6.0
+      uses: apple-actions/upload-testflight-build@acf1166e95edc302069b74b258a788004fe39a08 # v5.7.0
       with:
         app-path: ${{ steps.ipa.outputs.path }}
         app-type: ios

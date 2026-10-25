@@ -24,7 +24,7 @@ public static class BuildInfo
 
     public static bool IsOfficialBuild => RunUrl is not null;
 
-    public static string SourceUrl => $"{RepositoryUrl}/tree/{Commit?[..12] ?? "develop"}/src/Cli";
+    public static string SourceUrl => $"{RepositoryUrl}/tree/{Commit?[..12] ?? "develop"}/src/Toolings/Cli";
 
     public static string PackageUrl => $"https://www.nuget.org/packages/{PackageId}/{Version}";
 
