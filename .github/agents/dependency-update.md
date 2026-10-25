@@ -83,7 +83,7 @@ consumes a test project, so every band takes the newest patch of its own band. L
 
 **Version ranges stay.** `[8.0.0,9.0.0)` is a compatibility contract, not a pin.
 
-**`Bit.*` self-references track the in-development version**, currently `10.7.0-pre-03`. Never read
+**`Bit.*` self-references track the in-development version**, currently `10.7.0-pre-04`. Never read
 these off nuget.org — the published `latest` is behind the working tree by design, and unrelated
 higher-numbered lines exist there.
 
@@ -148,6 +148,14 @@ grep -rhoE '<Package(Reference|Version)[^>]*/?>' --include=*.csproj --include=*.
 A `Condition="..."` attribute sits between `PackageVersion` and `Include` on many
 `Directory.Packages.props` lines — a naive `Include="X" Version="Y"` regex silently drops ~60
 packages, including everything Aspire, FusionCache, and Agents.AI.
+
+The Boilerplate AppHost's `<Project Sdk="Aspire.AppHost.Sdk/<version>">` is a NuGet pin the grep
+doesn't see. Keep it equal to the `Aspire.Hosting.*` packages; it stayed two patches behind them once.
+
+NuGet audit warnings (NU1902/NU1903) on a transitive package whose DLL the shared framework also
+carries, such as `System.Security.Cryptography.Pkcs` in `Microsoft.AspNetCore.App`, are noise: the
+framework's copy wins and the package's file never reaches the output. Check `bin` before adding a
+direct reference to silence one.
 
 Then per package (`https://api.nuget.org/v3-flatcontainer/<lowercased-id>/index.json` returns
 versions ascending):

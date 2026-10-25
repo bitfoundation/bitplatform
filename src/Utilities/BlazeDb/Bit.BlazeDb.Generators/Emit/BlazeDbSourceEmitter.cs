@@ -188,7 +188,7 @@ internal static class BlazeDbSourceEmitter
     {
         sb.AppendLine($"{indent}    private static void __BlazeWriteRow({Writer} writer, {self} row)");
         sb.AppendLine($"{indent}    {{");
-        foreach (var prop in model.Props)
+        foreach (var prop in model.Props.Where(p => !p.IndexOnly))
         {
             var tag = $"writer.WriteTag({prop.FieldNumber}, {BlazeDbTypeMap.WireType(prop.Kind)});";
             switch (prop.Category)
@@ -217,6 +217,7 @@ internal static class BlazeDbSourceEmitter
 
                 case BlazeDbPropCategory.ListCollection:
                 case BlazeDbPropCategory.ArrayCollection:
+                case BlazeDbPropCategory.SetCollection:
                     sb.AppendLine($"{indent}        if (row.{prop.Name} is not null)");
                     sb.AppendLine($"{indent}        {{");
                     sb.AppendLine($"{indent}            foreach (var __element in row.{prop.Name})");
@@ -236,7 +237,8 @@ internal static class BlazeDbSourceEmitter
         sb.AppendLine($"{indent}    private static {self} __BlazeReadRow(ref {Reader} reader)");
         sb.AppendLine($"{indent}    {{");
 
-        foreach (var prop in model.Props)
+        var stored = model.Props.Where(p => !p.IndexOnly).ToList();
+        foreach (var prop in stored)
         {
             var local = "__v" + prop.FieldNumber;
             switch (prop.Category)
@@ -250,6 +252,7 @@ internal static class BlazeDbSourceEmitter
                     break;
                 case BlazeDbPropCategory.ListCollection:
                 case BlazeDbPropCategory.ArrayCollection:
+                case BlazeDbPropCategory.SetCollection:
                     sb.AppendLine($"{indent}        global::System.Collections.Generic.List<{prop.ScalarTypeDisplay}>? {local} = null;");
                     break;
             }
@@ -260,7 +263,7 @@ internal static class BlazeDbSourceEmitter
         sb.AppendLine($"{indent}            var (__field, __wire) = reader.ReadTag();");
         sb.AppendLine($"{indent}            switch (__field)");
         sb.AppendLine($"{indent}            {{");
-        foreach (var prop in model.Props)
+        foreach (var prop in stored)
         {
             var local = "__v" + prop.FieldNumber;
             var read = BlazeDbTypeMap.ReadExpr(prop.Kind, "reader", prop.ScalarTypeDisplay);
@@ -273,6 +276,7 @@ internal static class BlazeDbSourceEmitter
             {
                 case BlazeDbPropCategory.ListCollection:
                 case BlazeDbPropCategory.ArrayCollection:
+                case BlazeDbPropCategory.SetCollection:
                     sb.AppendLine($"{indent}                    ({local} ??= new global::System.Collections.Generic.List<{prop.ScalarTypeDisplay}>()).Add({read});");
                     break;
                 default:
@@ -287,25 +291,38 @@ internal static class BlazeDbSourceEmitter
         sb.AppendLine($"{indent}            }}");
         sb.AppendLine($"{indent}        }}");
 
-        sb.AppendLine($"{indent}        return new {self}");
+        // A type without a parameterless constructor - a positional record, say - is built through the
+        // constructor whose parameters name its properties; whatever that constructor does not take is
+        // set in the initializer, as for every other type.
+        var arguments = string.Join(", ", model.ConstructorArguments.Select(p => Value(p, "__v" + p.FieldNumber)));
+        sb.AppendLine($"{indent}        return new {self}({arguments})");
         sb.AppendLine($"{indent}        {{");
-        foreach (var prop in model.Props)
+        // A required member is set here even when the constructor took it, because the compiler insists
+        // unless the constructor is marked [SetsRequiredMembers]; setting it twice to the same value is harmless.
+        foreach (var prop in stored.Where(p => !p.BoundByConstructor || p.IsRequired))
         {
-            var local = "__v" + prop.FieldNumber;
-            var nullableCollection = prop.TypeDisplay.EndsWith("?");
-            var assignment = prop.Category switch
-            {
-                BlazeDbPropCategory.ListCollection => nullableCollection
-                    ? local
-                    : $"{local} ?? new global::System.Collections.Generic.List<{prop.ScalarTypeDisplay}>()",
-                BlazeDbPropCategory.ArrayCollection => nullableCollection
-                    ? $"{local}?.ToArray()"
-                    : $"{local} is null ? global::System.Array.Empty<{prop.ScalarTypeDisplay}>() : {local}.ToArray()",
-                _ => local,
-            };
-            sb.AppendLine($"{indent}            {prop.Name} = {assignment},");
+            sb.AppendLine($"{indent}            {prop.Name} = {Value(prop, "__v" + prop.FieldNumber)},");
         }
         sb.AppendLine($"{indent}        }};");
         sb.AppendLine($"{indent}    }}");
+    }
+
+    /// <summary>The expression that turns a read local into the value the property is given.</summary>
+    private static string Value(BlazeDbPropModel prop, string local)
+    {
+        var nullableCollection = prop.TypeDisplay.EndsWith("?");
+        return prop.Category switch
+        {
+            BlazeDbPropCategory.ListCollection => nullableCollection
+                ? local
+                : $"{local} ?? new global::System.Collections.Generic.List<{prop.ScalarTypeDisplay}>()",
+            BlazeDbPropCategory.ArrayCollection => nullableCollection
+                ? $"{local}?.ToArray()"
+                : $"{local} is null ? global::System.Array.Empty<{prop.ScalarTypeDisplay}>() : {local}.ToArray()",
+            BlazeDbPropCategory.SetCollection => nullableCollection
+                ? $"{local} is null ? null : new global::System.Collections.Generic.HashSet<{prop.ScalarTypeDisplay}>({local})"
+                : $"{local} is null ? new global::System.Collections.Generic.HashSet<{prop.ScalarTypeDisplay}>() : new global::System.Collections.Generic.HashSet<{prop.ScalarTypeDisplay}>({local})",
+            _ => local,
+        };
     }
 }

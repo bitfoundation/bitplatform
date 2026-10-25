@@ -137,7 +137,7 @@ public partial class SignInPanel
                 if (requiresTwoFactor is false)
                 {
                     successfulSignIn = true;
-                    await AuthManager.StoreTokens(response!, model.RememberMe);
+                    await AuthManager.CompleteSignIn(response!, model.RememberMe);
                 }
             }
             else
@@ -160,7 +160,7 @@ public partial class SignInPanel
                         ? await identityController.ConfirmEmail(new() { Token = model.Otp, Email = model.Email }, CurrentCancellationToken)
                         : await identityController.ConfirmPhone(new() { Token = model.Otp, PhoneNumber = model.PhoneNumber }, CurrentCancellationToken);
 
-                    await AuthManager.StoreTokens(signInResponse, model.RememberMe);
+                    await AuthManager.CompleteSignIn(signInResponse, model.RememberMe);
                 }
 
                 if (requiresTwoFactor is false)

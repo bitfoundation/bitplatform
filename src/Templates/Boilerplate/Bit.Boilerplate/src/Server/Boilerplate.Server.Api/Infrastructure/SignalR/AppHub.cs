@@ -107,8 +107,11 @@ public partial class AppHub : Hub
 
         if (user?.IsAuthenticated() is true)
         {
-            await dbContext.UserSessions.Where(us => us.Id == user.GetSessionId())
-                                        .ExecuteUpdateAsync(us => us.SetProperty(x => x.SignalRConnectionId, Context.ConnectionId), Context.ConnectionAborted);
+            var userSessionId = user.GetSessionId();
+            var connectionId = Context.ConnectionId;
+
+            await dbContext.UserSessions.Where(us => us.Id == userSessionId || us.SignalRConnectionId == connectionId)
+                                        .ExecuteUpdateAsync(us => us.SetProperty(x => x.SignalRConnectionId, x => x.Id == userSessionId ? connectionId : null), Context.ConnectionAborted);
             await Groups.AddToGroupAsync(Context.ConnectionId, "AuthenticatedClients", Context.ConnectionAborted);
 
             //#if (multitenant == true)

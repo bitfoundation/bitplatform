@@ -19,6 +19,9 @@ public sealed class LoopbackHub
         return client;
     }
 
+    /// <summary>Detaches an endpoint, as a server forgets a connection that closed: nothing more is delivered to it.</summary>
+    public void Remove(LoopbackTransport client) => _clients.Remove(client);
+
     internal async Task BroadcastAsync(LoopbackTransport sender, BinkCollaborationMessage message)
     {
         if (LatencyMilliseconds > 0) await Task.Delay(LatencyMilliseconds).ConfigureAwait(false);

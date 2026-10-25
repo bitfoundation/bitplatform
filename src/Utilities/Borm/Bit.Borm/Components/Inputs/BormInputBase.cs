@@ -14,6 +14,8 @@ public abstract class BormInputBase : ComponentBase, IDisposable
     private BormFieldContext? _pendingContext;
     private int? _liveLength;
     private string? _lastCommitted;
+    private string? _typed;
+    private BormFieldContext? _typedInto;
 
     /// <summary>The render context for the field being displayed.</summary>
     [Parameter, EditorRequired] public BormFieldContext Context { get; set; } = default!;
@@ -111,12 +113,32 @@ public abstract class BormInputBase : ComponentBase, IDisposable
     /// <see cref="InputHandler"/>), so a change-driven field costs no round-trip per keystroke; when it
     /// is wired only for the character counter, the keystroke updates the counter and nothing else.
     /// </summary>
-    protected Task OnInput(ChangeEventArgs e)
+    protected Task OnInput(ChangeEventArgs e) => OnTyped(e.Value?.ToString());
+
+    /// <summary>
+    /// The setter of a control bound on <c>input</c> (<c>@bind:set</c>, with <see cref="LiveValue"/> as the
+    /// getter), for a field that writes as the user types. Such a control is a binding rather than <c>value</c>
+    /// plus an <c>oninput</c> handler: written as an attribute, the value each render carries is put back into the
+    /// box, and on Blazor Server a render arrives after the keys typed since it was asked for - so fast typing over
+    /// a slow link lost characters. A binding takes the box to hold what the browser last sent, and writes only a
+    /// value that differs from it.
+    /// </summary>
+    protected Task OnTyped(string? raw)
     {
-        var raw = e.Value?.ToString();
+        _typed = raw ?? "";
+        _typedInto = Context;
         _liveLength = raw?.Length ?? 0;
         return UpdatesOnInput ? Debounced(raw) : Task.CompletedTask;
     }
+
+    /// <summary>
+    /// What a control bound on <c>input</c> shows (its <c>@bind:get</c>): the text typed into it, else
+    /// <paramref name="committed"/>. The renderer writes the bound value into the box whenever it differs from
+    /// what the browser sent, so it stays the user's text for as long as that stands for what the model holds
+    /// (see <see cref="OnParametersSet"/>): the model's own text would erase a debounced word not written yet,
+    /// or the "." of a "1." the model holds as 1.
+    /// </summary>
+    protected string LiveValue(string committed) => _typed ?? committed;
 
     /// <summary>
     /// The <c>input</c> handler to bind, or a callback with no delegate — which Blazor omits from the
@@ -203,6 +225,9 @@ public abstract class BormInputBase : ComponentBase, IDisposable
         try
         {
             await Task.Delay(delay, cts.Token);
+            // The timer can fire just as the next keystroke arrives, too late for that keystroke to stop the
+            // delay: the newer text is the one pending now, and this older one must not land over it.
+            if (!ReferenceEquals(_debounce, cts)) return;
             // Read again rather than trusting the one captured above: a repeater row that moved while
             // the timer ran has been retargeted to its new path (see OnParametersSet).
             context = _pendingContext ?? context;
@@ -307,10 +332,24 @@ public abstract class BormInputBase : ComponentBase, IDisposable
         // A value that changed underneath us — a reset, a computed update, another field's cascade —
         // supersedes whatever the user had half-typed, so the counter goes back to tracking the model.
         var committed = Context.StringValue;
-        if (!string.Equals(_lastCommitted, committed, StringComparison.Ordinal))
+        var changed = !string.Equals(_lastCommitted, committed, StringComparison.Ordinal);
+        if (changed)
         {
             _lastCommitted = committed;
             _liveLength = null;
+        }
+
+        // A bound box keeps the text typed into it while the model holds what that text says - "1." is the 1
+        // the model holds, and a debounced word not written yet changed nothing - and while it is still that
+        // field's box (a repeater row that moved is). Anything else put a value there that the user did not
+        // type: a reset, a formula, the field's own tidying on blur, the next wizard step's field.
+        if (_typed is not null)
+        {
+            if (!ReferenceEquals(_typedInto!.State, Context.State) || !ReferenceEquals(_typedInto.Field, Context.Field)
+                || (changed && !string.Equals(ReadBack(_typed), committed, StringComparison.Ordinal)))
+                _typed = null;
+            else
+                _typedInto = Context;
         }
 
         if (_autofocusApplied || !Field.Autofocus || DisabledOrReadOnly) return;
@@ -374,6 +413,10 @@ public abstract class BormInputBase : ComponentBase, IDisposable
         if (raw is T typed) return typed;
         return BormValueConverter.TryCoerce(raw, typeof(T), out var converted) && converted is T c ? c : fallback;
     }
+
+    /// <summary>How the model's value reads once <paramref name="text"/> is written to this field: "1." as "1".</summary>
+    private string ReadBack(string text) => BormValueConverter.ToInputString(
+        BormValueConverter.FromInputString(text, Field.ValueType, Field.Type, Context.Value), Field.Type);
 
     private void CancelDebounce()
     {

@@ -9,6 +9,7 @@ name: Boilerplate CI
 
 on:
   workflow_dispatch:
+  workflow_call:
   pull_request:
 
 env:
@@ -41,7 +42,7 @@ jobs:
     - name: Install the bit CLI
       shell: pwsh
       run: |
-        dotnet tool install Bit.Cli --prerelease --tool-path "$env:RUNNER_TEMP/bit-cli"
+        dotnet tool install Bit.Cli --version 10.7.0-pre-04 --tool-path "$env:RUNNER_TEMP/bit-cli"
         Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
 
     - name: Set up and build with bit setup
@@ -66,7 +67,7 @@ jobs:
     - name: Install the bit CLI
       shell: pwsh
       run: |
-        dotnet tool install Bit.Cli --prerelease --tool-path "$env:RUNNER_TEMP/bit-cli"
+        dotnet tool install Bit.Cli --version 10.7.0-pre-04 --tool-path "$env:RUNNER_TEMP/bit-cli"
         Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
 
     - name: Prepare this machine and build with bit setup

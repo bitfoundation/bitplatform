@@ -173,15 +173,16 @@ public static class BlazeDbTableInspector
 
             tables.Add(output.SyntaxTree is null
                 ? new BlazeDbInspectedTableDto { TypeName = type.Name, Generated = false, Fields = [], Indexes = [], GeneratedMembers = [] }
-                : Describe(type, output.SyntaxTree.GetRoot()));
+                : Describe(type, compilation, output.SyntaxTree));
         }
 
         return [.. tables];
     }
 
     /// <summary>The table the generated partial of <paramref name="type"/> describes, read off its syntax.</summary>
-    private static BlazeDbInspectedTableDto Describe(INamedTypeSymbol type, SyntaxNode generated)
+    private static BlazeDbInspectedTableDto Describe(INamedTypeSymbol type, Compilation compilation, SyntaxTree generatedTree)
     {
+        var generated = generatedTree.GetRoot();
         var tableField = generated.DescendantNodes().OfType<VariableDeclaratorSyntax>().FirstOrDefault(v => v.Identifier.ValueText == "Table");
         var tableArguments = (tableField?.Initializer?.Value as BaseObjectCreationExpressionSyntax)?.ArgumentList?.Arguments;
 
@@ -192,7 +193,7 @@ public static class BlazeDbTableInspector
 
         var keyProperty = keyName is null ? null : type.GetMembers(keyName).OfType<IPropertySymbol>().FirstOrDefault();
 
-        var fields = ReadFields(type, generated);
+        var fields = ReadFields(type, compilation, generatedTree);
         var indexes = ReadIndexes(type, generated);
 
         string[] members =
@@ -220,9 +221,9 @@ public static class BlazeDbTableInspector
     /// (<c>Title = __v2</c>), and its switch decodes each field number only under the wire type the
     /// property is written with (<c>case 2 when __wire == ...BlazeDbWireType.LengthDelimited:</c>).
     /// </summary>
-    private static BlazeDbInspectedFieldDto[] ReadFields(INamedTypeSymbol type, SyntaxNode generated)
+    private static BlazeDbInspectedFieldDto[] ReadFields(INamedTypeSymbol type, Compilation compilation, SyntaxTree generatedTree)
     {
-        var reader = generated.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault(m => m.Identifier.ValueText == "__BlazeReadRow");
+        var reader = generatedTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault(m => m.Identifier.ValueText == "__BlazeReadRow");
         if (reader is null) return [];
 
         var wireTypes = new Dictionary<int, string>();
@@ -235,27 +236,57 @@ public static class BlazeDbTableInspector
             wireTypes[number] = wire.Name.Identifier.ValueText;
         }
 
-        var initializer = reader.DescendantNodes().OfType<InitializerExpressionSyntax>().LastOrDefault(i => i.IsKind(SyntaxKind.ObjectInitializerExpression));
-        if (initializer is null) return [];
+        // The reader ends in `return new T(...) { ... }`: properties set in the initializer, and - for a
+        // type built through a constructor, a positional record say - the rest passed as its arguments.
+        if (reader.Body?.Statements.OfType<ReturnStatementSyntax>().LastOrDefault()?.Expression is not ObjectCreationExpressionSyntax creation) return [];
+
+        var assigned = new List<(string Property, ExpressionSyntax Value)>();
+
+        if (creation.ArgumentList is { Arguments.Count: > 0 } arguments)
+        {
+            // The constructor the reader actually calls, as the compiler binds it - not one picked by its
+            // parameter count, which a record's copy constructor can share with a one-parameter primary one.
+            var count = arguments.Arguments.Count;
+            var constructor = (compilation.ContainsSyntaxTree(generatedTree)
+                    ? compilation.GetSemanticModel(generatedTree).GetSymbolInfo(creation).Symbol as IMethodSymbol
+                    : null)
+                ?? type.InstanceConstructors.FirstOrDefault(c => c.Parameters.Length == count &&
+                    !(count == 1 && SymbolEqualityComparer.Default.Equals(c.Parameters[0].Type, type)));
+            for (var i = 0; constructor is not null && i < arguments.Arguments.Count && i < constructor.Parameters.Length; i++)
+            {
+                var parameter = constructor.Parameters[i];
+                var property = type.GetMembers().OfType<IPropertySymbol>()
+                    .FirstOrDefault(p => string.Equals(p.Name, parameter.Name, StringComparison.OrdinalIgnoreCase));
+                if (property is not null) assigned.Add((property.Name, arguments.Arguments[i].Expression));
+            }
+        }
+
+        foreach (var assignment in creation.Initializer?.Expressions.OfType<AssignmentExpressionSyntax>() ?? [])
+        {
+            // A required property the constructor takes is set again in the initializer, from the same local;
+            // it is one field, reported once.
+            if (assignment.Left is IdentifierNameSyntax target && assigned.All(existing => existing.Property != target.Identifier.ValueText))
+            {
+                assigned.Add((target.Identifier.ValueText, assignment.Right));
+            }
+        }
 
         var fields = new List<BlazeDbInspectedFieldDto>();
 
-        foreach (var assignment in initializer.Expressions.OfType<AssignmentExpressionSyntax>())
+        foreach (var (name, value) in assigned)
         {
-            if (assignment.Left is not IdentifierNameSyntax target) continue;
-
-            var local = assignment.Right.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>()
+            var local = value.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>()
                 .Select(identifier => identifier.Identifier.ValueText)
                 .FirstOrDefault(name => name.StartsWith("__v", StringComparison.Ordinal));
 
             if (local is null || int.TryParse(local.AsSpan(3), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var number) is false) continue;
 
-            var property = type.GetMembers(target.Identifier.ValueText).OfType<IPropertySymbol>().FirstOrDefault();
+            var property = type.GetMembers(name).OfType<IPropertySymbol>().FirstOrDefault();
             var attributes = property?.GetAttributes() ?? [];
 
             fields.Add(new BlazeDbInspectedFieldDto
             {
-                Property = target.Identifier.ValueText,
+                Property = name,
                 Type = property?.Type.ToDisplayString(_typeFormat) ?? "?",
                 FieldNumber = number,
                 Explicit = attributes.Any(attribute => attribute.AttributeClass?.ToDisplayString() == FieldAttribute),

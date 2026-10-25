@@ -1,11 +1,13 @@
-﻿
+﻿using Microsoft.Extensions.DependencyInjection;
+
 namespace Bit.BevTools.Tests;
 
 [TestClass]
 public class DiagnosticsRulesTests
 {
-    private static BevToolsEvent Render(long componentId, string name, string cause, double ms = 1) => new()
+    private static BevToolsEvent Render(long componentId, string name, string cause, double ms = 1, long? at = null) => new()
     {
+        StartTicks = at ?? System.Diagnostics.Stopwatch.GetTimestamp(),
         Kind = BevToolsEventKind.Render,
         Category = "render",
         Title = name + " re-rendered",
@@ -41,6 +43,57 @@ public class DiagnosticsRulesTests
             Assert.Contains("ShouldRender", finding.Diagnostic.Suggestion!);
         }
     }
+
+    /// <summary>
+    /// The rules run when the panel is shown. A storm measured over the window that ends "now" was gone by the time a
+    /// developer opened Diagnostics to look for it; the busiest window of the last half minute is what they came for.
+    /// </summary>
+    [TestMethod]
+    public void A_render_storm_is_still_reported_when_the_rules_run_seconds_later()
+    {
+        var (session, scope) = TestHelpers.CreateSession(o => o.Diagnostics.RenderStormCount = 10);
+        using (scope)
+        {
+            var fiveSecondsAgo = System.Diagnostics.Stopwatch.GetTimestamp() - 5 * System.Diagnostics.Stopwatch.Frequency;
+            for (var i = 0; i < 12; i++)
+            {
+                session.Timeline.Record(Render(7, "ProductList", "UiEvent", at: fiveSecondsAgo + i * System.Diagnostics.Stopwatch.Frequency / 20));
+            }
+
+            session.Diagnostics.Evaluate(force: true);
+            var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "render.storm", session.Diagnostics.Findings);
+            Assert.Contains("ProductList rendered 12 times in 2 s", finding.Diagnostic.Title);
+        }
+    }
+
+    [TestMethod]
+    public void A_burst_of_interop_calls_is_reported_after_other_calls_followed_it()
+    {
+        var (session, scope) = TestHelpers.CreateSession(o => o.Diagnostics.ExcessiveJsInteropCount = 50);
+        using (scope)
+        {
+            var now = System.Diagnostics.Stopwatch.GetTimestamp();
+            var freq = System.Diagnostics.Stopwatch.Frequency;
+            for (var i = 0; i < 60; i++)
+            {
+                session.Timeline.Record(Interop("→ JS module.ping", now - 6 * freq + i * freq / 200));
+            }
+
+            // The same number of calls to another function, spread over half a minute: no burst.
+            for (var i = 0; i < 60; i++)
+            {
+                session.Timeline.Record(Interop("→ JS module.tick", now - 29 * freq + i * freq / 2));
+            }
+
+            session.Timeline.Record(Interop("→ JS module.slowCall"));
+            session.Diagnostics.Evaluate(force: true);
+            var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "jsinterop.excessive", session.Diagnostics.Findings);
+            Assert.AreEqual("→ JS module.ping called 60 times in 1 s", finding.Diagnostic.Title);
+        }
+    }
+
+    private static BevToolsEvent Interop(string title, long? at = null) =>
+        new() { Kind = BevToolsEventKind.JsInterop, Category = "js", Title = title, DurationMs = 1, StartTicks = at ?? System.Diagnostics.Stopwatch.GetTimestamp() };
 
     [TestMethod]
     public void Below_threshold_produces_no_storm_finding()
@@ -229,6 +282,74 @@ public class DiagnosticsRulesTests
             Assert.Contains("test.occurrence:steady", fingerprints);
             Assert.Contains("test.occurrence:11", fingerprints);
             Assert.DoesNotContain("test.occurrence:0", fingerprints);
+        }
+    }
+
+    [TestMethod]
+    public void Service_graph_findings_survive_a_flood_of_per_occurrence_findings()
+    {
+        // The DI analysis runs once; its findings used to be the least recently seen and so the first to go, for good.
+        var rule = new PerOccurrenceRule();
+        var (session, scope) = TestHelpers.CreateSession(
+            o =>
+            {
+                o.MaxFindings = 5;
+                o.Extensions.Add(new RuleExtension(rule));
+            },
+            services =>
+            {
+                services.AddSingleton<ServiceGraphTests.IRepo, ServiceGraphTests.Repo>();
+                services.AddScoped<ServiceGraphTests.ScopedThing>();
+                services.AddSingleton<ServiceGraphTests.Captor>();
+            });
+        using (scope)
+        {
+            for (var i = 0; i < 20; i++)
+            {
+                rule.Occurrence = i;
+                session.Diagnostics.Evaluate(force: true);
+            }
+
+            Assert.Contains(f => f.Diagnostic.RuleId == "di.captive", session.Diagnostics.Findings);
+            Assert.AreEqual(1, session.Timeline.Snapshot().Count(e => e.Category == "diagnostic:di.captive"), "re-reporting is not news");
+        }
+    }
+
+    [TestMethod]
+    public void A_request_per_keystroke_is_a_burst_and_overlapping_requests_are_called_a_race()
+    {
+        var (session, scope) = TestHelpers.CreateSession(o => o.Diagnostics.HttpBurstCount = 4);
+        using (scope)
+        {
+            var start = DateTimeOffset.UtcNow.AddSeconds(-2);
+            foreach (var (query, offsetMs, durationMs) in new[] { ("s", 0, 400), ("sh", 150, 400), ("sho", 300, 400), ("shoe", 450, 50) })
+            {
+                session.Http.Add(new BevHttpRecord
+                {
+                    Id = session.Http.NextId(),
+                    StartedAt = start.AddMilliseconds(offsetMs),
+                    Method = "GET",
+                    Url = "/api/products?q=" + query,
+                    StatusCode = 200,
+                    DurationMs = durationMs,
+                    TriggerDescription = "oninput → FilterBar.OnQuery",
+                });
+            }
+
+            // A steady poll of one URL is the duplicate rule's business, not a burst.
+            for (var i = 0; i < 5; i++)
+            {
+                session.Http.Add(new BevHttpRecord { Id = session.Http.NextId(), StartedAt = start.AddMilliseconds(i * 100), Method = "GET", Url = "/api/status", StatusCode = 200, DurationMs = 5 });
+            }
+
+            session.Diagnostics.Evaluate(force: true);
+
+            var burst = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "http.burst", session.Diagnostics.Findings).Diagnostic;
+            StringAssert.StartsWith(burst.Title, "GET /api/products?q: 4 requests");
+            StringAssert.Contains(burst.Evidence, "oninput → FilterBar.OnQuery");
+            StringAssert.Contains(burst.Evidence, "3 started while the previous one was still running");
+            Assert.AreEqual(BevDiagnosticSeverity.Warning, burst.Severity);
+            StringAssert.Contains(burst.Suggestion, "cancel the superseded request");
         }
     }
 

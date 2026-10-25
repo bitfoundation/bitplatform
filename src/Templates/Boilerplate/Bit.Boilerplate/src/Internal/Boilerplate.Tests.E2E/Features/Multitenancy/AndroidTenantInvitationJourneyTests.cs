@@ -9,8 +9,8 @@ namespace Boilerplate.Tests.E2E.Features.Multitenancy;
 [TestClass, TestCategory(TestCategories.Android), Retry(2), DoNotParallelize]
 public partial class AndroidTenantInvitationJourneyTests : TenantInvitationJourneyTestBase
 {
-    /// <summary>The link opens the app at its root, which Routes.OpenUniversalLink may culture prefix.</summary>
-    private static readonly Regex appRoot = new(@"^/([A-Za-z]{2}-[A-Za-z]{2}/?)?$");
+    /// <summary>The link opens the app at the manage my tenants page, which Routes.OpenUniversalLink may culture prefix.</summary>
+    private static readonly Regex manageMyTenantsPage = new(@"^/([A-Za-z]{2}-[A-Za-z]{2}/)?manage-my-tenants/?$");
 
     protected override IAppOpener AppOpener => new AndroidAppOpener();
 
@@ -20,7 +20,7 @@ public partial class AndroidTenantInvitationJourneyTests : TenantInvitationJourn
 
         // The assertion, not a wait: the app leaving the route it was parked on is what proves the intent reached it
         // instead of a browser.
-        await page.WaitForURLAsync(url => appRoot.IsMatch(new Uri(url).AbsolutePath),
+        await page.WaitForURLAsync(url => manageMyTenantsPage.IsMatch(new Uri(url).AbsolutePath),
             new() { WaitUntil = WaitUntilState.NetworkIdle });
     }
 }

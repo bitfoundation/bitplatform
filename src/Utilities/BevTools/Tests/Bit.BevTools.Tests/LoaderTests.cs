@@ -154,7 +154,11 @@ public class LoaderTests : BunitContext
     {
         var services = ScopeServices(environment: "Production");
         services.AddBitBevToolsServices();
-        services.AddBitBevToolsLoaderServices(o => o.AllowInMultiUserHost = true);
+        services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.AllowInMultiUserHost = true;
+            o.Authorize = _ => ValueTask.FromResult(true);
+        });
         using var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
         var loader = scope.ServiceProvider.GetRequiredService<BevToolsLoader>();
@@ -355,6 +359,10 @@ public class LoaderTests : BunitContext
         {
             o.RegisterAtStartup = false;
             o.AllowInMultiUserHost = allow;
+            if (allow)
+            {
+                o.Authorize = _ => ValueTask.FromResult(true);
+            }
         });
         using var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
@@ -363,6 +371,76 @@ public class LoaderTests : BunitContext
         Assert.IsTrue(loader.CanOpen);
         Assert.IsTrue(await loader.OpenAsync());
         Assert.IsTrue(RuntimeAttachment.Resolve(scope.ServiceProvider)!.IsEnabled);
+    }
+
+    [TestMethod]
+    public async Task Allowing_it_in_a_server_process_outside_Development_takes_an_Authorize_callback_too()
+    {
+        var services = ScopeServices(environment: "Production");
+        services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.RegisterAtStartup = false;
+            o.AllowInMultiUserHost = true;
+        });
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var loader = scope.ServiceProvider.GetRequiredService<BevToolsLoader>();
+
+        Assert.IsFalse(loader.CanOpen);
+        Assert.IsFalse(await loader.OpenAsync());
+        StringAssert.Contains(loader.Problem, "Authorize");
+        Assert.IsNull(RuntimeAttachment.Resolve(scope.ServiceProvider));
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task Authorize_refusing_or_throwing_leaves_BevTools_unloaded(bool throws)
+    {
+        var asked = 0;
+        var services = ScopeServices(environment: "Production");
+        services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.RegisterAtStartup = false;
+            o.AllowInMultiUserHost = true;
+            o.Authorize = _ =>
+            {
+                asked++;
+                return throws ? throw new InvalidOperationException("no user") : ValueTask.FromResult(false);
+            };
+        });
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var loader = scope.ServiceProvider.GetRequiredService<BevToolsLoader>();
+
+        Assert.IsTrue(loader.CanOpen, "the policy allows it; the callback is what refuses");
+        Assert.IsFalse(await loader.IsAuthorizedAsync());
+        Assert.IsFalse(await loader.OpenAsync());
+        StringAssert.Contains(loader.Problem, throws ? "threw InvalidOperationException" : "did not accept");
+        Assert.AreEqual(2, asked, "asked again on open, never answered from a cache");
+        Assert.IsNull(RuntimeAttachment.Resolve(scope.ServiceProvider));
+    }
+
+    [TestMethod]
+    public async Task A_session_opened_outside_Development_in_a_server_process_reads_no_values_unless_told_to()
+    {
+        var services = ScopeServices(environment: "Production");
+        services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.RegisterAtStartup = false;
+            o.AllowInMultiUserHost = true;
+            o.Authorize = _ => ValueTask.FromResult(true);
+        });
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+
+        Assert.IsTrue(await scope.ServiceProvider.GetRequiredService<BevToolsLoader>().OpenAsync());
+        var session = RuntimeAttachment.Resolve(scope.ServiceProvider)!;
+
+        Assert.AreEqual(BevValueAccess.None, session.ValueAccess);
+        var node = session.Inspector.Describe("Customer", new { Name = "Ada" });
+        Assert.AreEqual(BevRedactor.HiddenValue, node.Display);
+        Assert.IsFalse(node.IsExpandable);
     }
 
     [TestMethod]

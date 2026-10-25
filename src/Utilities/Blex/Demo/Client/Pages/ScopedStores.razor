@@ -1,0 +1,284 @@
+﻿@page "/scoped-stores"
+
+<DocPage Href="scoped-stores" Title="Scoped stores"
+         Lead="Most state belongs to the app. Some belongs to one part of the page - and needs its own instance for every part that shows it.">
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> One instance is not always enough</h2>
+        <p>
+            <code>AddBitBlexStore&lt;T&gt;</code> gives each DI scope one instance of a store, keyed in the
+            state tree, in DevTools and in storage by its name. That is right for a cart or a profile. It is
+            wrong for the form inside each of two open dialogs, one editor per tab, or a wizard that must
+            start fresh every time it opens: a second instance under the same name would share the first
+            one's slice, its DevTools entry and its storage key - and creating it by hand means remembering
+            to register it, unregister it and dispose it.
+        </p>
+        <p>
+            A <em>scoped</em> store is one instance among several, registered under its own name -
+            <code>"{name}:{key}"</code> - for as long as the part of the page that owns it is alive.
+        </p>
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> &lt;BlexScope&gt;</h2>
+        <p>
+            Wrap the part of the page that owns the state. The scope creates an instance from DI when it
+            appears (constructor dependencies are resolved as usual), registers it with the manager,
+            cascades it to every descendant, and unregisters and disposes it when it goes away - cancelling
+            any effect still in flight.
+        </p>
+
+        <CodeBlock Code="@Usage" Language="razor" />
+        <CodeBlock Code="@Descendant" Language="razor" Title="A descendant" />
+
+        <DemoCard Title="Two instances side by side"
+                  Description="The same store, the same editor component, two scopes. Each keeps its own state; the Inspector's feed shows draft:left/Write and draft:right/Write as separate slices of the tree."
+                  Source="@SideBySideSource" SourceLanguage="razor">
+            <div class="bb-grid">
+                <BlexScope TStore="DraftStore" Key="left">
+                    <DraftEditor />
+                </BlexScope>
+                <BlexScope TStore="DraftStore" Key="right">
+                    <DraftEditor />
+                </BlexScope>
+            </div>
+        </DemoCard>
+
+        <Callout Kind="Callout.CalloutKind.Note" Title="Do not register it with AddBitBlexStore">
+            <p>
+                A scoped store type is created by its scopes, not resolved from the container, so it has no
+                <code>AddBitBlexStore</code> registration. Its constructor dependencies still come from DI;
+                for one that needs an argument from the page, pass a <code>Factory</code>.
+            </p>
+        </Callout>
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Keys</h2>
+        <p>
+            The key is an id of whatever the store is about - an order id, a document id, a tab index.
+            Changing <code>Key</code> replaces the instance: the outgoing one is unregistered (writing any
+            debounced save it still owes first) and a new one is created for the new key. The descendants
+            are keyed to the instance too, so per-instance state of their own does not leak from one
+            document to the next. Without a <code>Key</code>, a key unique within the manager is assigned
+            and kept for the scope's lifetime - and the instance is not persisted, since no later scope
+            could find its state.
+        </p>
+
+        <DemoCard Title="One store per document"
+                  Description="Switch documents and type: each document has its own draft. The store persists and the keys are stable, so reload the page and every draft comes back - hydrated the moment its scope registers it."
+                  Source="@PerDocumentSource" SourceLanguage="razor">
+            <div class="bb-toolbar" role="group" aria-label="Document">
+                @for (var i = 1; i <= 3; i++)
+                {
+                    var doc = i;
+                    <button type="button" class="btn @(doc == _document ? "btn-primary" : "btn-secondary")"
+                            aria-pressed="@(doc == _document ? "true" : "false")" @onclick="() => _document = doc">Document @doc</button>
+                }
+            </div>
+            <BlexScope TStore="DraftStore" Key="@($"doc-{_document}")">
+                <DraftEditor />
+            </BlexScope>
+        </DemoCard>
+
+        <DemoCard Title="A fresh instance every time"
+                  Description="A wizard, a dialog that must start empty: no Key at all. Open the scratchpad and write something; close it and the instance is unregistered and disposed; open it again and it is a new one, under a newly assigned key, with nothing in it - an instance whose key was assigned for it is never persisted."
+                  Source="@UnkeyedSource" SourceLanguage="razor">
+            <div class="bb-toolbar">
+                <button type="button" class="btn btn-primary" aria-pressed="@(_scratchpadOpen ? "true" : "false")"
+                        @onclick="() => _scratchpadOpen = !_scratchpadOpen">
+                    @(_scratchpadOpen ? "Close the scratchpad" : "Open the scratchpad")
+                </button>
+            </div>
+            @if (_scratchpadOpen)
+            {
+                <BlexScope TStore="DraftStore">
+                    <DraftEditor />
+                </BlexScope>
+            }
+            else
+            {
+                <p class="bb-card-desc">Closed - no <code>draft:…</code> instance exists for it now. Check the Inspector's state tree.</p>
+            }
+        </DemoCard>
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Without Blazor: CreateScope</h2>
+        <p>
+            <code>&lt;BlexScope&gt;</code> is a thin layer over <code>BlexManager.CreateScope</code>, which
+            works anywhere - a MAUI page, a worker, a test.
+        </p>
+        <CodeBlock Code="@CreateScope" />
+
+        <ApiTable Title="BlexManager" Rows="@ManagerRows" />
+        <ApiTable Title="BlexStoreScope&lt;TStore&gt;" Rows="@ScopeRows" />
+        <ApiTable Title="&lt;BlexScope TStore&gt;" Rows="@ComponentRows" MemberHeader="Parameter" />
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Persistence</h2>
+        <p>
+            A scoped store marked <code>Persist = true</code> is saved under its keyed name and hydrated as
+            soon as it registers - not only at startup, which is when every other store is hydrated. The
+            storage key is that name after the <code>KeyPrefix</code> (<code>blex:</code> by default); this
+            site sets <code>blex-docs:</code>, so the second document above is saved as
+            <code>blex-docs:draft:doc-2</code>.
+        </p>
+        <ul class="bb-detail-list">
+            <li><strong>Give it a stable key.</strong> The next scope for the same entity finds the state the last one left. An assigned key counts from 1 again in every session and every tab, so an instance keyed that way is not persisted at all - its state could only ever be found by an unrelated instance that drew the same number.</li>
+            <li><strong>Its saves wait for hydration.</strong> Until its stored state has been read, nothing it does is written - writing its declared defaults first would overwrite the user's data. This mirrors startup, where the stored state wins over anything dispatched before it landed. If the read finds nothing stored, what was changed meanwhile is written then; if it fails, the saves keep waiting until <code>RehydrateAsync</code> reads it.</li>
+            <li><strong>Leaving writes what it owes.</strong> With a debounce interval, a scope disposed before the interval elapses still has its last changes written as it unregisters.</li>
+            <li><code>OnRehydrated</code> fires for a late store too, with its keyed name. With <code>SkipHydration</code>, a late store waits for <code>RehydrateAsync</code> like every other.</li>
+        </ul>
+    </div>
+
+    <div class="bb-card">
+        <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> A full citizen</h2>
+        <p>
+            Scoping changes the name and the lifetime, nothing else. A scoped instance's actions pass the
+            filters, reach middleware and subscribers, stream to DevTools as <code>draft:left/Write</code>
+            and become undo steps.
+        </p>
+        <ul class="bb-detail-list">
+            <li>A generated descriptor matches <em>every</em> instance: <code>DraftStore.Actions.Write.Matches(ctx)</code> is true for the left draft and the right one, and <code>ctx.Store</code> says which.</li>
+            <li><code>BlexHistory&lt;DraftStore&gt;</code> covers all instances. An undo cannot revert an instance to a state from before it registered - a snapshot taken then has no slice for it, so it is left alone.</li>
+            <li>Dispatch by name uses the keyed name: <code>manager.DispatchAsync("draft:left/Write", ...)</code>.</li>
+            <li><code>manager.GetStore&lt;DraftStore&gt;()</code> returns <em>one</em> of the instances; look a specific one up by name instead - <code>manager.GetStore("draft:left")</code>.</li>
+        </ul>
+
+        <Callout Kind="Callout.CalloutKind.Gotcha" Title="Not part of the prerender handoff">
+            <p>
+                The handoff from a prerendered page to the interactive one covers the stores
+                <code>&lt;BlexProvider&gt;</code> knows about at startup. A scoped instance is created again by
+                the interactive render, so it starts from its declared state - or, when it persists, from
+                storage.
+            </p>
+        </Callout>
+
+        <Callout Kind="Callout.CalloutKind.Note" Title="Hand-written stores">
+            <p>
+                A generated store's <code>Name</code> includes the instance key. A hand-written
+                <code>BlexStoreBase</code> subclass must return <code>WithInstanceKey("its-name")</code> from
+                <code>Name</code> to be scopable; <code>CreateScope</code> throws
+                <code>NotSupportedException</code> otherwise, rather than letting every instance share one slice.
+            </p>
+        </Callout>
+    </div>
+
+</DocPage>
+
+@code {
+    private int _document = 1;
+    private bool _scratchpadOpen;
+
+    private const string UnkeyedSource = """
+        @if (_open)
+        {
+            @* No Key: one is assigned ("draft:1", "draft:2", ...), kept for the scope's lifetime, never persisted. *@
+            <BlexScope TStore="DraftStore">
+                <DraftEditor />
+            </BlexScope>
+        }
+
+        @* Closing it disposes the scope: the instance is unregistered and disposed with it. *@
+        <button @onclick="() => _open = !_open">Open / close</button>
+        """;
+
+    private static readonly IReadOnlyList<ApiTable.Row> ManagerRows =
+    [
+        new("BlexStoreScope&lt;TStore&gt; CreateScope&lt;TStore&gt;(TStore store, string? key = null)", "Registers a not-yet-registered store as <code>\"{name}:{key}\"</code>. Without a key, one unique within the manager is assigned, and the instance is not persisted. Throws for an empty key, a store that is already registered, and a hand-written store whose name ignores the key."),
+        new("IBlexStore? GetStore(string name)", "The store registered under that name - <code>\"draft:left\"</code>."),
+        new("event Action&lt;IBlexStore&gt;? StoreRegistered / StoreUnregistered", "Raised as stores join and leave the manager. Persistence uses them."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> ScopeRows =
+    [
+        new("TStore Store", "The scoped instance."),
+        new("string Key", "Its instance key; the store's name is <code>\"{name}:{Key}\"</code>."),
+        new("bool IsDisposed", "Whether the scope has been disposed."),
+        new("void Dispose()", "Unregisters the store - persistence writes its pending save - and then disposes it, cancelling its effects. Idempotent."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> ComponentRows =
+    [
+        new("string? Key", "The instance key. Changing it replaces the instance and its subtree. Omitted: a unique key, kept for the scope's lifetime, and no persistence."),
+        new("Func&lt;IServiceProvider, TStore&gt;? Factory", "Creates the store when DI alone cannot. Defaults to constructing <code>TStore</code> with its dependencies from DI."),
+        new("RenderFragment&lt;TStore&gt;? ChildContent", "The content, with the instance as its <code>context</code>. Descendants receive it as a <code>[CascadingParameter]</code> too."),
+        new("TStore Store", "Not a parameter: the instance, for code holding a <code>@ref</code> to the scope."),
+    ];
+
+    private const string Usage = """
+        <BlexScope TStore="CheckoutStore" Key="@OrderId">
+            <CheckoutSteps />
+        </BlexScope>
+
+        @* Or use the instance inline, through the content's context: *@
+        <BlexScope TStore="DraftStore" Key="notes" Context="draft">
+            <p>@draft.Words words</p>
+        </BlexScope>
+
+        @* A store that needs an argument from the page: *@
+        <BlexScope TStore="DocumentStore" Key="@DocumentId"
+                   Factory="sp => new DocumentStore(sp.GetRequiredService<DocumentsApi>(), DocumentId)">
+            <Editor />
+        </BlexScope>
+        """;
+
+    private const string Descendant = """
+        @inherits BlexComponentBase
+
+        <input value="@Checkout.Email" @oninput="e => Checkout.SetEmail(e.Value?.ToString() ?? string.Empty)" />
+
+        @code {
+            // Whichever instance the enclosing scope created.
+            [CascadingParameter] public CheckoutStore Checkout { get; set; } = default!;
+
+            protected override void OnInitialized() => Subscribe(Checkout);
+        }
+        """;
+
+    private const string SideBySideSource = """
+        <BlexScope TStore="DraftStore" Key="left">
+            <DraftEditor />
+        </BlexScope>
+        <BlexScope TStore="DraftStore" Key="right">
+            <DraftEditor />
+        </BlexScope>
+
+        @* DraftEditor.razor *@
+        @inherits BlexComponentBase
+
+        <p>@Draft.Name</p>    @* draft:left / draft:right *@
+        <input value="@Draft.Text" @oninput="e => Draft.Write(e.Value?.ToString() ?? string.Empty)" />
+
+        @code {
+            [CascadingParameter] public DraftStore Draft { get; set; } = default!;
+
+            protected override void OnInitialized() => Subscribe(Draft);
+        }
+        """;
+
+    private const string PerDocumentSource = """
+        @* DraftStore is [BlexStore(Name = "draft", Persist = true)] -- and not registered with AddBitBlexStore. *@
+
+        <button @onclick="() => _document = 2">Document 2</button>
+
+        <BlexScope TStore="DraftStore" Key="@($"doc-{_document}")">
+            <DraftEditor />
+        </BlexScope>
+
+        @code {
+            private int _document = 1;
+        }
+        """;
+
+    private const string CreateScope = """
+        using var editor = manager.CreateScope(new DocumentStore(api), key: documentId);
+
+        editor.Store.Rename("Draft");          // recorded as "document:42/Rename"
+        manager.GetStore("document:42");       // the same instance
+
+        // Dispose (or leave the using block): unregistered, pending save written, effects cancelled.
+        """;
+}

@@ -39,7 +39,12 @@
     <HeadOutlet @rendermode="InteractiveWebAssembly" />
 </head>
 
-<body>
+@* data-enhance-nav="false": a link followed before the WebAssembly runtime has started is a plain
+   page load rather than an enhanced one. Enhanced navigation fetches and merges the next page while
+   the runtime is still starting, and the router the runtime then attaches can render the address
+   it read before the merge - the URL says /getting-started and the page is the landing page. Once
+   the app is interactive its router handles every link itself and this attribute is not consulted. *@
+<body data-enhance-nav="false">
     @* Prerendered on the server, then hydrated by the WebAssembly runtime. Bmage's image work is
        C# running on the user's device, so none of it can happen during the prerender pass: every
        page is readable straight from the served HTML, and its drop zones, sliders and editors come

@@ -58,8 +58,31 @@ public abstract partial class PrerenderedWebModeTests : WebModeTests
         await Expect(Page.Locator("#token")).ToHaveAttributeAsync("data-token", prerendered);
     }
 
+    [TestMethod]
+    public async Task A_query_the_prerender_fetched_is_handed_over_rather_than_fetched_again()
+    {
+        var response = await GotoAsync("/query");
+
+        // The page awaits the query while prerendering, so the first response carries the server's answer.
+        var prerendered = QuoteRegex().Match(await response!.TextAsync()).Groups["quote"].Value;
+        StringAssert.StartsWith(prerendered, "dotnet-", "The prerendered page carries no quote.");
+
+        await WaitForInteractiveAsync();
+
+        // <BlexProvider> handed the cached answer to the interactive render: it shows the same quote, and the
+        // interactive runtime sent no request of its own - not at once, and not a moment later either.
+        var requests = Page.Locator("#quote-requests");
+        await Expect(requests).ToHaveAttributeAsync("data-requests", "0");
+        await Page.WaitForTimeoutAsync(500);
+        await Expect(requests).ToHaveAttributeAsync("data-requests", "0");
+        await Expect(Page.Locator("#quote")).ToHaveAttributeAsync("data-quote", prerendered);
+    }
+
     [GeneratedRegex("id=\"token\" data-token=\"(?<token>[0-9a-f]{32})\"")]
     private static partial Regex TokenRegex();
+
+    [GeneratedRegex("id=\"quote\" data-quote=\"(?<quote>[^\"]+)\"")]
+    private static partial Regex QuoteRegex();
 }
 
 [TestClass]
@@ -70,6 +93,33 @@ public class ServerModeTests : PrerenderedWebModeTests
     protected override IReadOnlyList<string> ExpectedRenderers => ["Server"];
 
     protected override IReadOnlyList<string> ExpectedPlatforms => ["dotnet"];
+
+    [TestMethod]
+    public async Task Stores_survive_the_circuit_being_paused_and_resumed()
+    {
+        if (Framework != "net10.0")
+            Assert.Inconclusive("Circuit pause and resume arrived in .NET 10.");
+
+        await GotoAsync("/");
+        await WaitForInteractiveAsync();
+        var token = await Page.Locator("#token").GetAttributeAsync("data-token");
+        Assert.AreEqual(32, token?.Length, "The page has no token to lose.");
+
+        // .NET 10 persists a paused circuit's component state and restores it into the circuit that resumes it.
+        // <BlexProvider> hands its stores over through that same PersistentComponentState, so the token -
+        // held by a store nothing else persists - is still the one issued before the pause.
+        Assert.IsTrue(await Page.EvaluateAsync<bool>("() => Blazor.pauseCircuit()"), "The circuit did not pause.");
+
+        // The paused circuit's last render left the page marked interactive; only the resumed circuit's first render
+        // marks it again, so the wait below waits for the circuit that will handle the click, not the one that left.
+        await Page.EvaluateAsync("() => document.getElementById('status').setAttribute('data-interactive', 'false')");
+        Assert.IsTrue(await Page.EvaluateAsync<bool>("() => Blazor.resumeCircuit()"), "The circuit did not resume.");
+        await WaitForInteractiveAsync();
+
+        await Expect(Page.Locator("#token")).ToHaveAttributeAsync("data-token", token!);
+        await IncrementAsync(1);
+        await ExpectCountAsync(1);
+    }
 }
 
 [TestClass]

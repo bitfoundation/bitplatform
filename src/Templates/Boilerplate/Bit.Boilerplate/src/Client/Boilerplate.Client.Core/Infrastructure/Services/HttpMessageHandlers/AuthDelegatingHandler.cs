@@ -54,14 +54,24 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
             var refreshToken = await storageService.GetItem("refresh_token");
             if (string.IsNullOrWhiteSpace(refreshToken)) throw;
 
+            var requestSessionId = GetSessionId(request.Headers.Authorization?.Parameter);
+            if (requestSessionId is not null && requestSessionId != GetSessionId(await tokenProvider.GetAccessToken())) throw;
+
             var authManager = serviceProvider.GetRequiredService<AuthManager>();
 
             logScopeData["RefreshTokenRequested"] = true;
             var accessToken = await authManager.RefreshToken(requestedBy: nameof(AuthDelegatingHandler));
 
+            if (requestSessionId is not null && accessToken is not null && GetSessionId(accessToken) != requestSessionId) throw;
+
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
             return await base.SendAsync(request, cancellationToken);
         }
+    }
+
+    private static string? GetSessionId(string? accessToken)
+    {
+        return IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: false).FindFirst(AppClaimTypes.SESSION_ID)?.Value;
     }
 }

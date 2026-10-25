@@ -22,7 +22,9 @@ public static partial class Program
 
         var app = builder.Build();
 
+        //#if (database != "Sqlite")
         if (builder.Environment.IsDevelopment())
+        //#endif
         {
             await using var scope = app.Services.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();

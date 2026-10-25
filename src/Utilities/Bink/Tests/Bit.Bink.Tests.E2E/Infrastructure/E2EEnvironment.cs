@@ -25,12 +25,21 @@ public static class E2EEnvironment
     public static string? BaseUrl { get; } = Read("BINK_E2E_BASE_URL")?.TrimEnd('/');
 
     /// <summary>
+    /// <c>BINK_E2E_BROWSER</c>: the engine to run in, <c>chromium</c> (the default), <c>firefox</c> or
+    /// <c>webkit</c>, each the build Playwright installs.
+    /// </summary>
+    public static string Browser { get; } = Read("BINK_E2E_BROWSER")?.ToLowerInvariant() ?? "chromium";
+
+    /// <summary>True when the suite runs in Chromium, the only engine channels and the Chromium flags apply to.</summary>
+    public static bool IsChromium => Browser == "chromium";
+
+    /// <summary>
     /// <c>BINK_E2E_CHANNEL</c>: e.g. chrome / msedge, to use an installed browser. Without it the suite
-    /// uses the Chromium Playwright installed and falls back to an installed Chrome, then Edge.
+    /// uses the Chromium Playwright installed and falls back to an installed Chrome, then Edge. Chromium only.
     /// </summary>
     public static string? Channel { get; } = Read("BINK_E2E_CHANNEL");
 
-    /// <summary><c>BINK_E2E_EXECUTABLE</c>: full path to a chromium-family executable.</summary>
+    /// <summary><c>BINK_E2E_EXECUTABLE</c>: full path to a browser executable of the engine <see cref="Browser"/> names.</summary>
     public static string? Executable { get; } = Read("BINK_E2E_EXECUTABLE");
 
     /// <summary><c>BINK_E2E_HEADED=1</c>: show the browser.</summary>

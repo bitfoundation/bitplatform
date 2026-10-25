@@ -157,7 +157,10 @@ websites - is checked. Every command prints what it checked and exits non-zero o
 
    - The template tree's tests start its Aspire app host first, with every container it has (SQL Server, PostgreSQL,
      MySQL, Keycloak, both Redis, the S3 storage, MailPit), so they need Docker and are slow to start; that
-     start once hung for over 15 minutes. A generated project starts only its own few containers.
+     start once hung for over 15 minutes. A test process at 0% CPU that has printed nothing is that hang: stop it and
+     run again once the containers are up. A generated project starts only its own few containers.
+   - The template tree's tests keep their Sqlite database in `%TEMP%\BoilerplateDb.db`, which every worktree shares.
+     After testing a branch that edited a migration in place, delete it, or its old schema fails unrelated tests.
    - Install a packed template with `--debug:custom-hive <folder>` on both `dotnet new install` and `dotnet new`, so
      the machine's own Bit.Boilerplate template stays as it is; `bit new` already uses a private hive in its home
      (`BIT_CLI_HOME`).
@@ -205,15 +208,15 @@ websites - is checked. Every command prints what it checked and exits non-zero o
    `.editorconfig` says so - and CI's `dotnet format` fails on a BOM; check new files with
    `dotnet format whitespace <slnx> --verify-no-changes --include <folder>`.
 
-5. Commit on the run's branch. Push to a branch of your own without asking, for the user to review with the report;
-   ask before pushing to anyone else's. A CI run on the pushed branch is the final proof:
-   `gh workflow run all.ci.yml -R bitfoundation/bitplatform --ref <branch>`. Re-running a failed job
-   (`gh run rerun <run-id> --failed`) tells flaky from broken, and proves nothing about a fix.
+5. Put the run's fixes in one issue and one PR, cut from develop when they apply there and from bit11 otherwise, not
+   on the branch under test: only a fix to that branch's own changes goes on it. Push to a branch of your own without
+   asking, for the user to review with the report; ask before pushing to anyone else's. A CI run on the pushed branch
+   is the final proof: `gh workflow run all.ci.yml -R bitfoundation/bitplatform --ref <branch>`. Re-running a failed
+   job (`gh run rerun <run-id> --failed`) tells flaky from broken, and proves nothing about a fix.
 
    A fix in a bit library - any `Bit.*` project other than the Boilerplate template, its tests, demos and samples
-   included - also gets an issue and a PR of its own, cut from develop when the fix applies there and from bit11
-   otherwise, so its owners review it; the commit on the run's branch only proves that it works. Fixes to the
-   Boilerplate and to the websites need nothing beyond the run's branch.
+   included - gets an issue and a PR of its own instead, so its owners review it. Fixes to the Boilerplate, to the
+   websites and to this procedure all go in the run's one PR.
 
 This machine has four cores and serves the demos too, so a local build or test run never overlaps step 3.
 
@@ -298,13 +301,18 @@ What it needs, all of it already on this machine:
   `Microsoft.Playwright.MSTest.v4` in `src/Templates/Boilerplate/Bit.Boilerplate/src/Directory.Packages.props`: any
   other version fails every test of both mac stages at connect. `.runsettings` has the command that starts it. The
   helper checks both before those stages and skips them when the server is down or on another version - ask the
-  user to (re)start it rather than swapping in a local webkit.
+  user to (re)start it rather than swapping in a local webkit. A server started without the `install` half of that
+  command takes the connection but has no browsers, and then every test of both mac stages fails within seconds with
+  "Executable doesn't exist".
 - **Firefox** for Playwright, which the helper installs when it is missing.
 - **User secrets** (`UserSecretsId` 154C08DF-...): the tenant and global admin accounts, the global admin's
   authenticator key and the demos' PostgreSQL connection string. Never print them. They must match the deployments:
   every test that needs the global admin signs in again after a failed attempt, so a wrong password locks the live
   account out within a minute. The helper therefore signs it in once before any stage (`GlobalAdminTwoFactorCodeTests`)
-  and starts nothing when that fails; the account's password is the user's to fix.
+  and starts nothing when that fails; the account's password is the user's to fix. After the demos' database is
+  rebuilt, the global admin needs the global `g-admin` role and two-factor sign-in on the secrets' authenticator key
+  back (stored the way Identity keeps it: upper case, without the spaces); without them that sign-in stops with a 403
+  from `/dev-mcp`.
 - **The apps to itself.** The Android and Windows stages clear the apps' data, and the Windows stage moves the
   machine's own app data aside and puts it back at the end. The Android stage also clears the emulator's Chrome and
   texts the emulator the SMS the deployment sent. Don't run the helper's `android` or `windows` while those stages run.
@@ -536,12 +544,14 @@ a request. `agents` checks that the way a user meets them, with an agent that kn
   per turn. Nothing tells it that it is being tested. Its memory already holds the user's role, as a returning user's
   does, except in `trivial-edit`, which watches the role question of AGENTS.md section 6.
 - `design-chat` then hands its folder to a new session with no memory of the first, which has to pick the product
-  decisions up from `specs/`, as the team's other tools and the next session would.
+  decisions up from `specs/`, as the team's other tools and the next session would. A scripted user answers that
+  session's questions too, so it can get as far as its plan.
 - The checks are mechanical: the skills it read, the tools it called (a `ToolSearch` that only loads a tool doesn't
   count), the files changed after each turn, words in its final message. They say whether it followed the
   instructions, not how good its work is: for that, read each scenario's final messages and changed files in
   `results` against its request. A check that fails once and passes on the next run or with the other model is
-  variance; one that fails twice is a finding.
+  variance; one that fails twice is a finding. A run whose session started with the bit platform MCP server failed,
+  because the platform website was down, counts for neither: run it again.
 - `-Model sonnet,opus` runs every scenario with both, and their habits differ: Sonnet tends to write the plan before
   its questions are answered, Opus asks first. `-Long` also lets `crud-feature` build the whole feature after the
   approval, which takes up to an hour. The two baselines run only when named: the same requests in the same project

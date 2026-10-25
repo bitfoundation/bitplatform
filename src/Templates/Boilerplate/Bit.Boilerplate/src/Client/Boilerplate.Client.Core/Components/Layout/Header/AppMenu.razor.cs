@@ -32,6 +32,7 @@ public partial class AppMenu
     private bool isOpen;
     private bool showCultures;
     private bool isSignOutConfirmOpen;
+    private DeviceAccountDto[] otherAccounts = [];
     private BitChoiceGroupItem<string>[] cultures = default!;
     //#if (signalR == true || notification == true)
     private bool notificationsEnabled;
@@ -269,6 +270,8 @@ public partial class AppMenu
     /// </summary>
     private async Task OnDropMenuOpen()
     {
+        otherAccounts = await AuthManager.GetOtherAccounts();
+
         //#if (signalR == true || notification == true)
         await RefreshNotificationsState();
         //#endif
@@ -319,5 +322,21 @@ public partial class AppMenu
     {
         CloseMenu();
         await signInModalService.SignIn();
+    }
+
+    private async Task SwitchAccount(DeviceAccountDto account)
+    {
+        CloseMenu();
+        await AuthManager.SwitchAccount(account.User.Id);
+    }
+
+    private async Task AddAccount()
+    {
+        CloseMenu();
+
+        if (await signInModalService.SignIn())
+        {
+            PubSubService.Publish(ClientAppMessages.SOFT_RESTART);
+        }
     }
 }

@@ -10,7 +10,8 @@ namespace Bit.Blex.Demo.Server.Services;
 
 /// <summary>
 /// Builds the API reference the MCP tools serve, by reflecting over the public surface of the three
-/// Bit.Blex runtime assemblies and pairing every type and member with its XML documentation.
+/// Bit.Blex runtime assemblies - protected members included, for a type meant to be derived from - and
+/// pairing every type and member with its XML documentation.
 /// <para>
 /// Reflection rather than a hand-maintained table: the reference then cannot drift from the shipped
 /// library - a new option shows up the moment it is written, with the default value it actually has
@@ -22,7 +23,9 @@ namespace Bit.Blex.Demo.Server.Services;
 /// </summary>
 public static class BlexApiCatalog
 {
-    private const BindingFlags Declared = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
+    // Non-public too, so the protected members a derived class calls are found - BlexComponentBase's Subscribe and
+    // UseQuery are its whole API. IsVisible narrows what comes back to the members a user of the type can reach.
+    private const BindingFlags Declared = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
 
     /// <summary>The runtime assemblies whose public surface is the Bit.Blex API, in package order.</summary>
     public static readonly Assembly[] Assemblies =
@@ -229,6 +232,10 @@ public static class BlexApiCatalog
         foreach (var property in Hierarchy(type).SelectMany(t => t.GetProperties(Declared)))
         {
             if (property.GetIndexParameters().Length > 0) continue;
+
+            // The more accessible accessor decides: a protected getter with a private setter is still read by a subclass.
+            var accessor = Accessor(property.GetMethod, property.SetMethod);
+            if (accessor is null || IsVisible(type, accessor) is false) continue;
             if (seen.Add(property.Name) is false) continue;
 
             var isParameter = property.IsDefined(typeof(ParameterAttribute), inherit: true);
@@ -236,7 +243,7 @@ public static class BlexApiCatalog
             yield return new BlexApiMemberDto
             {
                 Name = property.Name,
-                Kind = isParameter ? "Parameter" : "Property",
+                Kind = isParameter ? "Parameter" : MemberKind("Property", accessor.IsPublic),
                 Type = FriendlyName(property.PropertyType),
                 Default = DefaultValueOf(property, instance),
                 Required = property.IsDefined(typeof(EditorRequiredAttribute), inherit: true),
@@ -253,12 +260,13 @@ public static class BlexApiCatalog
         foreach (var field in Hierarchy(type).SelectMany(t => t.GetFields(Declared)))
         {
             if (field.Name.Contains('<', StringComparison.Ordinal)) continue;
+            if (field.IsPublic is false && (IsInheritable(type) is false || (field.IsFamily || field.IsFamilyOrAssembly) is false)) continue;
             if (seen.Add(field.Name) is false) continue;
 
             yield return new BlexApiMemberDto
             {
                 Name = field.Name,
-                Kind = "Field",
+                Kind = MemberKind("Field", field.IsPublic),
                 Type = FriendlyName(field.FieldType),
                 Default = field.IsLiteral ? Format(field.GetRawConstantValue()) : null,
                 Summary = BlexXmlDocs.GetSummary(DocumentationId(field)),
@@ -276,6 +284,12 @@ public static class BlexApiCatalog
             if (method.IsSpecialName) continue;
             if (method.Name.Contains('<', StringComparison.Ordinal)) continue;
             if (method.DeclaringType == typeof(object)) continue;
+            if (IsVisible(type, method) is false) continue;
+
+            // A protected override of a framework hook (ComponentBase.OnInitialized) is the framework's member, not
+            // Blex's: a subclass overrides it the same way whether or not Blex did. A public one stays - it is
+            // callable on the Blex type and its documentation says what Blex does there.
+            if (method.IsPublic is false && Assemblies.Contains(method.GetBaseDefinition().DeclaringType!.Assembly) is false) continue;
 
             var signature = Signature(method);
             if (seen.Add($"{method.Name}{signature}") is false) continue;
@@ -285,7 +299,7 @@ public static class BlexApiCatalog
                 Name = method.IsGenericMethodDefinition
                     ? $"{method.Name}<{string.Join(", ", method.GetGenericArguments().Select(a => a.Name))}>"
                     : method.Name,
-                Kind = "Method",
+                Kind = MemberKind("Method", method.IsPublic),
                 Type = FriendlyName(method.ReturnType),
                 Signature = signature,
                 Summary = BlexXmlDocs.GetSummary(DocumentationId(method)),
@@ -300,17 +314,46 @@ public static class BlexApiCatalog
 
         foreach (var member in Hierarchy(type).SelectMany(t => t.GetEvents(Declared)))
         {
+            if (member.AddMethod is not { } add || IsVisible(type, add) is false) continue;
             if (seen.Add(member.Name) is false) continue;
 
             yield return new BlexApiMemberDto
             {
                 Name = member.Name,
-                Kind = "Event",
+                Kind = MemberKind("Event", add.IsPublic),
                 Type = FriendlyName(member.EventHandlerType ?? typeof(void)),
                 Summary = BlexXmlDocs.GetSummary(DocumentationId(member)),
                 Remarks = BlexXmlDocs.GetRemarks(DocumentationId(member))
             };
         }
+    }
+
+    /// <summary>
+    /// Whether a user of <paramref name="type"/> can reach the member: anything public, and a protected member when
+    /// the type can be derived from - a store or a component deriving from BlexStoreBase or BlexComponentBase calls
+    /// those. A sealed or static type's protected members are reachable by nobody outside Blex.
+    /// </summary>
+    private static bool IsVisible(Type type, MethodBase member)
+        => member.IsPublic || (IsInheritable(type) && (member.IsFamily || member.IsFamilyOrAssembly) && RecordPlumbing.Contains(member.Name) is false);
+
+    /// <summary>The protected members the compiler gives every non-sealed record (and the accessor of one): nobody's API.</summary>
+    private static readonly HashSet<string> RecordPlumbing = new(StringComparer.Ordinal) { "PrintMembers", "get_EqualityContract" };
+
+    private static bool IsInheritable(Type type) => type.IsSealed is false && type.IsInterface is false;
+
+    /// <summary>
+    /// A protected member is listed under a kind of its own ("Protected method"), so the reference says in its
+    /// heading what an agent would otherwise find out from a compiler error: only a derived class can call it.
+    /// </summary>
+    private static string MemberKind(string kind, bool isPublic) => isPublic ? kind : $"Protected {kind.ToLowerInvariant()}";
+
+    /// <summary>The more accessible of a property's two accessors.</summary>
+    private static MethodInfo? Accessor(MethodInfo? getter, MethodInfo? setter)
+    {
+        if (getter is null) return setter;
+        if (setter is null || getter.IsPublic) return getter;
+
+        return setter.IsPublic || (getter.IsFamily is false && getter.IsFamilyOrAssembly is false) ? setter : getter;
     }
 
     /// <summary>The value a property holds on a newly constructed instance - the default a caller gets when it is left unset.</summary>
@@ -385,10 +428,23 @@ public static class BlexApiCatalog
 
             builder.Append(FriendlyName(parameter.ParameterType)).Append(' ').Append(parameter.Name);
 
-            if (parameter.HasDefaultValue) builder.Append(" = ").Append(Format(parameter.DefaultValue) ?? "null");
+            if (parameter.HasDefaultValue) builder.Append(" = ").Append(DefaultOf(parameter));
         }
 
         return builder.Append(')').ToString();
+    }
+
+    /// <summary>
+    /// A parameter's default as C# spells it. Reflection reports <c>CancellationToken ct = default</c> - a struct with no
+    /// constant to store - as a null default value, and "= null" there is not code that compiles.
+    /// </summary>
+    private static string DefaultOf(ParameterInfo parameter)
+    {
+        if (Format(parameter.DefaultValue) is string value) return value;
+
+        var type = parameter.ParameterType;
+
+        return type.IsValueType && Nullable.GetUnderlyingType(type) is null ? "default" : "null";
     }
 
     private static string PackageOf(Type type) => type.Assembly.GetName().Name ?? "Bit.Blex";
@@ -411,11 +467,15 @@ public static class BlexApiCatalog
     {
         "Parameter" => 0,
         "Property" => 1,
-        "Field" => 2,
-        "EnumValue" => 3,
-        "Method" => 4,
-        "Event" => 5,
-        _ => 6
+        "Protected property" => 2,
+        "Field" => 3,
+        "Protected field" => 4,
+        "EnumValue" => 5,
+        "Method" => 6,
+        "Protected method" => 7,
+        "Event" => 8,
+        "Protected event" => 9,
+        _ => 10
     };
 
     /// <summary>The C# spelling of a type: "int?", "string[]", "Func&lt;BlexActionContext, bool&gt;".</summary>

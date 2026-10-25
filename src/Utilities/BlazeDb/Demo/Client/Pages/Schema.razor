@@ -1,4 +1,5 @@
 ﻿@page "/schema"
+@implements IAsyncDisposable
 @inject DemoDbService Db
 
 <PageTitle>Schema &amp; codegen · BlazeDb</PageTitle>
@@ -87,7 +88,7 @@
                 <tbody>
                     <tr>
                         <td class="bd-strong">[BlazeDbTable(name?)]</td>
-                        <td>class · struct</td>
+                        <td>class · record · struct</td>
                         <td>Marks a <code>partial</code> type as a table. The name defaults to the type name and becomes the persisted table identity.</td>
                     </tr>
                     <tr>
@@ -98,7 +99,7 @@
                     <tr>
                         <td class="bd-strong">[BlazeDbIndex]</td>
                         <td>property</td>
-                        <td>Hash equality index for O(1) <code>Lookup</code> and <code>CountBy</code>. Optional <code>Name</code>.</td>
+                        <td>Hash equality index for O(1) <code>Lookup</code> and <code>CountBy</code>. Optional <code>Name</code>. On a computed get-only property it makes the property <em>index-only</em>: indexed, never stored.</td>
                     </tr>
                     <tr>
                         <td class="bd-strong">[BlazeDbOrderedIndex]</td>
@@ -108,17 +109,17 @@
                     <tr>
                         <td class="bd-strong">[BlazeDbField(n)]</td>
                         <td>property</td>
-                        <td>Pins the wire field number. Without it numbers follow declaration order, so reordering properties would break existing data.</td>
+                        <td>Pins the wire field number, 1 to 536,870,911. Without it numbers follow declaration order, so reordering properties would break existing data - pin every one before real data exists (BLZ013 warns about a type that pins only some).</td>
                     </tr>
                     <tr>
                         <td class="bd-strong">[BlazeDbIgnore]</td>
                         <td>property</td>
-                        <td>Excluded from serialization entirely. Still a normal property in memory.</td>
+                        <td>Excluded from serialization entirely - and, through EF Core, from the entity type. Still a normal property in memory.</td>
                     </tr>
                     <tr>
                         <td class="bd-strong">[BlazeDbIndex(Unique = true)]</td>
                         <td>property</td>
-                        <td>Either index attribute can be unique: a write that would duplicate a non-null value throws <code>BlazeDbUniqueConstraintViolationException</code> before anything is changed.</td>
+                        <td>Either index attribute can be unique: a write that would duplicate a non-null value throws <code>BlazeDbUniqueConstraintViolationException</code> before anything is changed. On a compound index the value is the whole tuple, so null members are not exempt there.</td>
                     </tr>
                     <tr>
                         <td class="bd-strong">[BlazeDbCompoundIndex(name, props…)]</td>
@@ -143,7 +144,7 @@
 </Section>
 
 <Section Title="Supported property types"
-         Lead="Anything in this table can be a column. Index keys may be any supported scalar; collections cannot be indexed.">
+         Lead="Anything in this table can be a column, and every scalar may be nullable. Index keys may be any supported scalar; a primary key must be a non-nullable scalar other than byte[]; collections and byte[] cannot be indexed.">
     <div class="bb-flex">
         <Panel Title="Scalars" IconName="check" Flush="true">
             <div class="bb-scroll">
@@ -153,14 +154,18 @@
                         <tr><td class="bb-mono">bool</td><td class="bb-mono">varint</td></tr>
                         <tr><td class="bb-mono">sbyte · short · int · long</td><td class="bb-mono">zig-zag varint</td></tr>
                         <tr><td class="bb-mono">byte · ushort · uint · ulong · char</td><td class="bb-mono">varint</td></tr>
+                        <tr><td class="bb-mono">Int128 · UInt128</td><td class="bb-mono">length-delimited, 16 bytes</td></tr>
+                        <tr><td class="bb-mono">Half</td><td class="bb-mono">varint of its 16 bits</td></tr>
                         <tr><td class="bb-mono">float</td><td class="bb-mono">fixed32</td></tr>
                         <tr><td class="bb-mono">double</td><td class="bb-mono">fixed64</td></tr>
-                        <tr><td class="bb-mono">decimal</td><td class="bb-mono">length-delimited</td></tr>
+                        <tr><td class="bb-mono">decimal</td><td class="bb-mono">length-delimited, 16 bytes</td></tr>
                         <tr><td class="bb-mono">string</td><td class="bb-mono">length-delimited UTF-8</td></tr>
                         <tr><td class="bb-mono">Guid</td><td class="bb-mono">length-delimited, 16 bytes</td></tr>
                         <tr><td class="bb-mono">DateTime</td><td class="bb-mono">fixed64, Kind preserved</td></tr>
                         <tr><td class="bb-mono">DateTimeOffset</td><td class="bb-mono">length-delimited, 16 bytes</td></tr>
                         <tr><td class="bb-mono">TimeSpan</td><td class="bb-mono">fixed64 ticks</td></tr>
+                        <tr><td class="bb-mono">DateOnly</td><td class="bb-mono">zig-zag varint day number</td></tr>
+                        <tr><td class="bb-mono">TimeOnly</td><td class="bb-mono">zig-zag varint ticks</td></tr>
                         <tr><td class="bb-mono">any enum</td><td class="bb-mono">varint</td></tr>
                         <tr><td class="bb-mono">byte[]</td><td class="bb-mono">length-delimited blob</td></tr>
                     </tbody>
@@ -172,8 +177,14 @@
             <Panel Title="Nullable and repeated" IconName="layers">
                 <ul class="bb-detail-list">
                     <li><code>T?</code> for any supported value scalar - omitted from the wire when null.</li>
-                    <li><code>string?</code> - omitted when null.</li>
-                    <li><code>T[]</code> and <code>List&lt;T&gt;</code> of any supported scalar - written as repeated tags.</li>
+                    <li><code>string?</code> and <code>byte[]?</code> - omitted when null.</li>
+                    <li>
+                        <code>T[]</code> (read back as an array); <code>List&lt;T&gt;</code>, <code>IList&lt;T&gt;</code>,
+                        <code>ICollection&lt;T&gt;</code>, <code>IEnumerable&lt;T&gt;</code>, <code>IReadOnlyList&lt;T&gt;</code> and
+                        <code>IReadOnlyCollection&lt;T&gt;</code> (read back as a <code>List&lt;T&gt;</code>); and <code>HashSet&lt;T&gt;</code>,
+                        <code>ISet&lt;T&gt;</code> and <code>IReadOnlySet&lt;T&gt;</code> (read back as a <code>HashSet&lt;T&gt;</code>) - of a
+                        non-nullable scalar, written as repeated tags. The wire format has no encoding for a null element, only for an absent field.
+                    </li>
                     <li>
                         An empty collection writes no tags, so it is indistinguishable from a null one
                         on the wire. A non-nullable property therefore reads back empty, and a
@@ -185,53 +196,120 @@
 
             <Panel Title="Not supported" IconName="alert">
                 <ul class="bb-detail-list">
-                    <li>Nested or complex property types (another class, struct or record).</li>
-                    <li><code>Dictionary&lt;,&gt;</code>, <code>HashSet&lt;T&gt;</code>, <code>IEnumerable&lt;T&gt;</code>.</li>
+                    <li>
+                        Nested or complex property types (another class, struct or record). Model a one-to-many
+                        relationship as a second table keyed by the parent's key, with a hash index on it - or keep a small
+                        value object in a <code>string</code> or <code>byte[]</code> property you encode yourself.
+                    </li>
+                    <li><code>Dictionary&lt;,&gt;</code>, and collections of nullable elements - <code>List&lt;int?&gt;</code> is out.</li>
                     <li><code>byte[]</code> as a collection element - <code>List&lt;byte[]&gt;</code> is out.</li>
                     <li>Generic or nested table types.</li>
-                    <li>Inherited properties - only a table type's own properties are serialized.</li>
-                    <li>Properties without both a getter and a setter - silently skipped.</li>
-                    <li>Indexing a collection property.</li>
+                    <li>Inherited properties - a table type has to declare what it stores (BLZ012).</li>
+                    <li>Indexing a collection or a <code>byte[]</code> (BLZ015).</li>
+                    <li>
+                        An indexed get-only <em>auto</em>-property the constructor does not take (BLZ017): it holds a value of
+                        its own a reload could not restore. A <code>required</code> member BlazeDb does not store is refused
+                        too (BLZ018).
+                    </li>
                 </ul>
                 <p class="bb-muted">
-                    Everything in this list is a compile error or a deliberate omission, never a
-                    silent runtime failure.
+                    Properties with a setter or an <code>init</code> are stored, and so are get-only properties the
+                    constructor rows are built through takes. A computed get-only property (<code>=&gt; …</code>) is not -
+                    unless an index names it, which makes it index-only.
                 </p>
+                <Callout Tone="warn" Title="One omission is silent.">
+                    A get-only <em>auto</em>-property that no index names and the constructor does not take - say
+                    <code>public DateTime Created { get; } = DateTime.UtcNow;</code> on a type with a parameterless
+                    constructor - is not stored either, and reads back as its default or initializer after a reload. Give
+                    it a setter or an <code>init</code>, or take it in the constructor. Everything else in this list is a
+                    compile error on the property at fault.
+                </Callout>
             </Panel>
         </div>
     </div>
 </Section>
 
 <Section Title="Generator diagnostics"
-         Lead="Misuse is caught at build time, on the attribute or property at fault. These are the diagnostics the generator can report.">
-    <Panel Flush="true">
-        <div class="bb-scroll">
-            <table class="bb-table">
-                <thead>
-                    <tr><th>ID</th><th>Meaning</th><th>Triggered by</th></tr>
-                </thead>
-                <tbody>
-                    @foreach (var diagnostic in DiagnosticsCatalog.All)
-                    {
-                        <tr>
-                            <td class="bd-strong">@diagnostic.Code @(diagnostic.IsError ? null : "(warning)")</td>
-                            <td>@diagnostic.Title</td>
-                            <td class="bb-mono">@diagnostic.Trigger</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </Panel>
+         Lead="Misuse is caught at build time, on the attribute or property at fault. An error on the type itself - BLZ001, 002, 004, 006, 007, 010, 011, 012 or 018, or a BLZ003 on a property its constructor takes - leaves it with no generated partial at all, so the diagnostic arrives together with errors saying the type does not contain a definition for Table wherever it is used: fix the BLZ one first. The other errors leave out only the property or index at fault. Open any row for the cause, a rejected table type and the fix.">
+    <div class="bb-faq bd-diagnostics">
+        @foreach (var diagnostic in DiagnosticsCatalog.All)
+        {
+            <details>
+                <summary>
+                    <span class="bd-strong">@diagnostic.Code</span>
+                    <span class="@Tones.Badge(diagnostic.IsError ? "err" : "warn")">@(diagnostic.IsError ? "error" : "warning")</span>
+                    @diagnostic.Title
+                    <span class="bb-mono bd-small bb-muted">@diagnostic.Trigger</span>
+                </summary>
+                <p>@((MarkupString)diagnostic.Cause)</p>
+                <div class="bb-split">
+                    <CodeBlock Title="Rejected" Code="@diagnostic.Bad" />
+                    <CodeBlock Title="Fixed" Code="@diagnostic.Good" />
+                </div>
+            </details>
+        }
+    </div>
     <Callout Tone="info" Title="Requirements at a glance.">
-        A table type must be <code>partial</code>, top level, non-generic, have exactly one
-        <code>[BlazeDbKey]</code> and - if it is a class - a parameterless constructor. Records work as long
-        as they are not positional-only.
+        A table type must be <code>partial</code>, top level, non-generic and have exactly one
+        <code>[BlazeDbKey]</code>. Rows are built through a parameterless constructor, or else through the
+        constructor whose parameters all name properties - so positional records work, and so do classes that
+        take their get-only properties in the constructor.
+    </Callout>
+</Section>
+
+<Section Title="Records, constructors and index-only properties"
+         Lead="A table does not need a parameterless constructor. A positional record - or a class that takes its get-only properties in its constructor - is built through the constructor whose parameters all name its properties, and whatever that constructor does not take is set afterwards. A computed property with an index attribute is indexed but never stored.">
+    <div class="bb-flex">
+        <CodeBlock Title="Data/DemoModels.cs" Code="@ContactSource" />
+        <Panel Title="contacts - a private database" IconName="layers">
+            @if (_contacts is null)
+            {
+                <div class="bb-empty">Opening…</div>
+            }
+            else
+            {
+                <div class="bb-fields">
+                    <div class="bb-field">
+                        <label for="contact-initial">Lookup(Contact.Indexes.Initial, …)</label>
+                        <select id="contact-initial" @bind="_initial">
+                            @foreach (var facet in _contacts.CountBy(Contact.Indexes.Initial).OrderBy(f => f.Key))
+                            {
+                                <option value="@facet.Key">"@facet.Key" - @facet.Value row(s)</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="bb-scroll">
+                    <table class="bb-table bb-compare">
+                        <thead><tr><th class="bd-num">Id</th><th>Name</th><th>Birthday</th><th>Nickname</th><th>Initial</th></tr></thead>
+                        <tbody>
+                            @foreach (var contact in _contacts.Lookup(Contact.Indexes.Initial, _initial))
+                            {
+                                <tr>
+                                    <td class="bd-num">@contact.Id</td>
+                                    <td class="bd-strong">@contact.Name</td>
+                                    <td class="bb-mono bd-small">@contact.Birthday.ToString("yyyy-MM-dd")</td>
+                                    <td>@(contact.Nickname ?? "null")</td>
+                                    <td class="bb-mono">@contact.Initial</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="bb-log bd-out">@_contactNote</div>
+            }
+        </Panel>
+    </div>
+    <Callout Tone="info" Title="Derived values become something an index can find.">
+        A domain from an e-mail address, a normalized search key, a value from inside a collection: compute it in a get-only
+        property, put an index attribute on it, and the index keys on it while the row bytes leave it out. The usual rule for
+        live rows applies - change the stored property through a new row, and the index moves with it. Records compare by
+        value, so <code>TryUpdate(row, comparisonValue)</code> on a record table compares by value too.
     </Callout>
 </Section>
 
 <Section Title="The generator is optional"
-         Lead="A BlazeDbTableDescriptor is a plain object. Write one by hand and positional records, custom comparers and computed keys all become available.">
+         Lead="A BlazeDbTableDescriptor is a plain object. Write one by hand and custom serializers, custom comparers and computed keys all become available.">
     <div class="bb-flex">
         <CodeBlock Title="Hand-written descriptor" Code="@ManualSource" />
 
@@ -282,6 +360,10 @@
     private const string IgnoreProbeInput = "this value is never persisted";
 
     private BlazeDbTable<int, Metric>? _metrics;
+    private BlazeDbDatabase? _contactsDb;
+    private BlazeDbTable<int, Contact>? _contacts;
+    private string _initial = "A";
+    private string _contactNote = "";
     private List<Metric> _metricRows = [];
     private string _metricNote = "";
     private string _ignoreProbeResult = "";
@@ -294,6 +376,49 @@
         _nextMetricId = _metrics.Count == 0 ? 1 : _metrics.Scan().Max(m => m.Id) + 1;
         RefreshMetrics();
         _ignoreProbeResult = ProbeIgnoredProperty();
+
+        _contactsDb = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(Contact.Table));
+        _contacts = _contactsDb.GetTable(Contact.Table);
+        _contacts.InsertMany(
+        [
+            new Contact(1, "Ada Lovelace", new DateOnly(1815, 12, 10)) { Nickname = "The Enchantress of Numbers" },
+            new Contact(2, "Alan Turing", new DateOnly(1912, 6, 23)),
+            new Contact(3, "Grace Hopper", new DateOnly(1906, 12, 9)) { Nickname = "Amazing Grace" },
+            new Contact(4, "Katherine Johnson", new DateOnly(1918, 8, 26)),
+            new Contact(5, "Annie Easley", new DateOnly(1933, 4, 23)),
+        ]);
+        _contactNote = DescribeContactRow(_contacts.Get(1)!);
+    }
+
+    /// <summary>Encodes a contact with the generated writer and lists the field numbers that reached the bytes.</summary>
+    private string DescribeContactRow(Contact contact)
+    {
+        var writer = new BlazeDbBufferWriter();
+        Contact.Table.RowWriter(writer, contact);
+        var reader = new BlazeDbBufferReader(writer.WrittenSpan);
+        var fields = new List<int>();
+        while (reader.Remaining > 0)
+        {
+            var (number, wire) = reader.ReadTag();
+            fields.Add(number);
+            reader.SkipField(wire);
+        }
+
+        var reread = new BlazeDbBufferReader(writer.WrittenSpan);
+        var decoded = Contact.Table.RowReader(ref reread);
+        var born = _contacts!.Range(Contact.Indexes.Birthday, BlazeDbBound<DateOnly>.Unbounded, new DateOnly(1910, 1, 1)).Count();
+
+        return $"Contact.Table.RowWriter(writer, contacts.Get(1)) → {writer.Length} bytes, fields [{string.Join(", ", fields)}]: Id, Name, Birthday, Nickname - no Initial\n" +
+               $"Contact.Table.RowReader(ref reader) → {decoded} (built through the primary constructor, Nickname set after)\n" +
+               $"contacts.Range(Contact.Indexes.Birthday, Unbounded, new DateOnly(1910, 1, 1)) → {born} rows";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_contactsDb is not null)
+        {
+            await _contactsDb.DisposeAsync();
+        }
     }
 
     private void AddMetric()
@@ -476,6 +601,20 @@
                     return new TodoEntry { /* … */ };
                 }
             }
+        }
+        """;
+
+    private const string ContactSource = """
+        [BlazeDbTable("contacts")]
+        public partial record Contact(
+            [property: BlazeDbKey] int Id,
+            string Name,
+            [property: BlazeDbOrderedIndex] DateOnly Birthday)
+        {
+            public string? Nickname { get; init; }   // stored, set after the constructor
+
+            [BlazeDbIndex]                              // computed: indexed, not stored
+            public string Initial => Name.Length == 0 ? "" : Name[..1];
         }
         """;
 

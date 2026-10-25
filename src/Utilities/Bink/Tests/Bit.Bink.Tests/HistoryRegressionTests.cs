@@ -243,12 +243,23 @@ public class HistoryRegressionTests(TestContext output)
         Assert.AreEqual(before.Version, after.Version);
     }
 
+    private static List<int> ReportedVersions(BinkDrawingOperation operation)
+    {
+        var versions = new List<int>();
+        void Collect(BinkDrawingOperation op)
+        {
+            if (op is BinkReplaceElementOperation replace) versions.Add(replace.Element.Version);
+            else if (op is BinkBatchOperation batch) foreach (BinkDrawingOperation inner in batch.Operations) Collect(inner);
+        }
+        Collect(operation);
+        return versions;
+    }
+
     [TestMethod]
     public void Redoing_a_drag_reports_the_versions_it_stores()
     {
-        // Redo replays every frame of the drag in one batch. Each frame was reported with the version the document
-        // had before the batch, while the document stored a higher one per frame, so what collaborators received
-        // did not match what the sender kept.
+        // What collaborators receive for a redo must match what the sender keeps, or the replicas disagree about
+        // which version is newest.
         var document = new BinkDocument();
         using var history = new BinkHistoryManager(document);
         BinkStroke stroke = TestData.Stroke(new Vector2(0, 0), new Vector2(10, 10));
@@ -263,17 +274,162 @@ public class HistoryRegressionTests(TestContext output)
         document.Changed += (_, e) => reported = e.Operation;
         Assert.IsTrue(history.Redo());
 
-        var versions = new List<int>();
-        void Collect(BinkDrawingOperation operation)
-        {
-            if (operation is BinkReplaceElementOperation replace) versions.Add(replace.Element.Version);
-            else if (operation is BinkBatchOperation batch) foreach (BinkDrawingOperation inner in batch.Operations) Collect(inner);
-        }
-        Collect(reported!);
+        List<int> versions = ReportedVersions(reported!);
+        Assert.AreEqual(document.GetElement(stroke.Id).Version, versions[^1]);
+        Assert.AreEqual(Matrix3x2.CreateTranslation(30, 0), document.GetElement(stroke.Id).Transform);
+    }
 
+    [TestMethod]
+    public void A_batch_replacing_one_element_several_times_reports_the_versions_it_stores()
+    {
+        // Each replacement in the batch is stored one version above the previous one. Deciding every version from
+        // the state before the batch reported the same version for each, which did not match what was stored.
+        var document = new BinkDocument();
+        BinkStroke stroke = TestData.Stroke(new Vector2(0, 0), new Vector2(10, 10));
+        document.AddElement(stroke);
+        var frames = Enumerable.Range(1, 3)
+            .Select(i => (BinkDrawingOperation)new BinkReplaceElementOperation(stroke with { Transform = Matrix3x2.CreateTranslation(i * 10, 0) }))
+            .ToList();
+
+        BinkDrawingOperation? reported = null;
+        document.Changed += (_, e) => reported = e.Operation;
+        document.Apply(new BinkBatchOperation(frames, "Move"));
+
+        List<int> versions = ReportedVersions(reported!);
         Assert.AreEqual(3, versions.Count);
         Assert.AreEqual(versions.Distinct().Count(), versions.Count);
         Assert.AreEqual(document.GetElement(stroke.Id).Version, versions[^1]);
+    }
+
+    [TestMethod]
+    public void A_drag_is_one_replacement_per_element_however_many_frames_it_took()
+    {
+        // Undoing a drag replayed every frame of it. A two-second drag of a large selection made undo take seconds
+        // and kept every frame's elements alive in the history.
+        var document = new BinkDocument();
+        using var history = new BinkHistoryManager(document);
+        BinkStroke a = TestData.Stroke(new Vector2(0, 0), new Vector2(10, 10));
+        BinkStroke b = TestData.Stroke(new Vector2(20, 0), new Vector2(30, 10));
+        document.AddElement(a);
+        document.AddElement(b);
+        using (history.BeginGroup("Move"))
+        {
+            for (int i = 1; i <= 100; i++)
+            {
+                Matrix3x2 m = Matrix3x2.CreateTranslation(i, 0);
+                document.ReplaceElements([a with { Transform = m }, b with { Transform = m }], "Move");
+            }
+        }
+
+        BinkHistoryEntry entry = history.UndoStack[^1];
+        Assert.AreEqual("Move", entry.Label);
+        Assert.AreEqual(2, ((BinkBatchOperation)entry.Forward).Operations.Count);
+        Assert.AreEqual(2, ((BinkBatchOperation)entry.Inverse).Operations.Count);
+
+        Assert.IsTrue(history.Undo());
+        Assert.AreEqual(Matrix3x2.Identity, document.GetElement(a.Id).Transform);
+        Assert.AreEqual(Matrix3x2.Identity, document.GetElement(b.Id).Transform);
+        Assert.IsTrue(history.Redo());
+        Assert.AreEqual(Matrix3x2.CreateTranslation(100, 0), document.GetElement(a.Id).Transform);
+        Assert.AreEqual(Matrix3x2.CreateTranslation(100, 0), document.GetElement(b.Id).Transform);
+    }
+
+    [TestMethod]
+    public void A_group_that_adds_or_removes_is_kept_as_recorded()
+    {
+        // Only replacements commute into one per element. A group that also adds an element replays in order.
+        var document = new BinkDocument();
+        using var history = new BinkHistoryManager(document);
+        BinkStroke a = TestData.Stroke(new Vector2(0, 0), new Vector2(10, 10));
+        document.AddElement(a);
+        BinkStroke added = TestData.Stroke(new Vector2(40, 0), new Vector2(50, 10));
+        using (history.BeginGroup("Edit"))
+        {
+            for (int i = 1; i <= 40; i++) document.ReplaceElement(document.GetElement(a.Id) with { Transform = Matrix3x2.CreateTranslation(i, 0) });
+            document.AddElement(added);
+            document.ReplaceElement(document.GetElement(added.Id) with { Description = "moved" });
+        }
+
+        Assert.IsTrue(history.Undo());
+        Assert.IsFalse(document.ContainsElement(added.Id));
+        Assert.AreEqual(Matrix3x2.Identity, document.GetElement(a.Id).Transform);
+        Assert.IsTrue(history.Redo());
+        Assert.AreEqual("moved", document.GetElement(added.Id).Description);
+        Assert.AreEqual(Matrix3x2.CreateTranslation(40, 0), document.GetElement(a.Id).Transform);
+    }
+
+    [TestMethod]
+    public void Deleting_a_selection_in_any_order_undoes_to_the_original_order()
+    {
+        var document = new BinkDocument();
+        using var history = new BinkHistoryManager(document);
+        BinkLayer second = document.AddLayer("Second");
+        var first = new List<Guid>();
+        var other = new List<Guid>();
+        for (int i = 0; i < 12; i++)
+        {
+            BinkStroke s = TestData.Stroke(new Vector2(i, 0), new Vector2(i + 5, 5));
+            document.AddElement(s, i % 3 == 0 ? second.Id : document.Layers[0].Id);
+            (i % 3 == 0 ? other : first).Add(s.Id);
+        }
+        List<Guid> before = document.AllElements.Select(e => e.Id).ToList();
+
+        var random = new Random(5);
+        List<Guid> doomed = before.Where((_, i) => i % 2 == 0).OrderBy(_ => random.Next()).ToList();
+        document.RemoveElements(doomed);
+        Assert.IsTrue(doomed.All(id => !document.ContainsElement(id)));
+
+        Assert.IsTrue(history.Undo());
+        CollectionAssert.AreEqual(before, document.AllElements.Select(e => e.Id).ToList());
+        foreach (Guid id in first) Assert.AreEqual(document.Layers[0].Id, document.GetLayerOf(id)!.Id);
+        foreach (Guid id in other) Assert.AreEqual(second.Id, document.GetLayerOf(id)!.Id);
+    }
+
+    [TestMethod]
+    public void Element_lookups_stay_correct_through_inserts_removals_and_reorders()
+    {
+        // The layer keeps a position index; every structural change must leave lookups exact.
+        var document = new BinkDocument();
+        Guid layer = document.Layers[0].Id;
+        var random = new Random(11);
+        var expected = new List<Guid>();
+        for (int step = 0; step < 400; step++)
+        {
+            int action = random.Next(4);
+            if (action == 0 || expected.Count < 3)
+            {
+                BinkStroke s = TestData.Stroke(new Vector2(step, 0), new Vector2(step + 1, 1));
+                int at = random.Next(expected.Count + 1);
+                document.Apply(new BinkAddElementOperation(layer, s, at));
+                expected.Insert(at, s.Id);
+            }
+            else if (action == 1)
+            {
+                int at = random.Next(expected.Count);
+                document.RemoveElement(expected[at]);
+                expected.RemoveAt(at);
+            }
+            else if (action == 2)
+            {
+                int from = random.Next(expected.Count);
+                int to = random.Next(expected.Count);
+                Guid id = expected[from];
+                document.Apply(new BinkReorderElementOperation(id, layer, to));
+                expected.RemoveAt(from);
+                expected.Insert(Math.Clamp(to, 0, expected.Count), id);
+            }
+            else
+            {
+                Guid id = expected[random.Next(expected.Count)];
+                document.ReplaceElement(document.GetElement(id) with { Description = "v" + step });
+            }
+
+            Guid probe = expected[random.Next(expected.Count)];
+            Assert.AreEqual(expected.IndexOf(probe), document.Layers[0].IndexOf(probe));
+            Assert.AreEqual(-1, document.Layers[0].IndexOf(Guid.NewGuid()));
+        }
+        CollectionAssert.AreEqual(expected, document.Layers[0].Elements.Select(e => e.Id).ToList());
+        foreach (Guid id in expected) Assert.AreEqual(expected.IndexOf(id), document.Layers[0].IndexOf(id));
     }
 
     [TestMethod]

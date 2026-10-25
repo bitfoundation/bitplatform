@@ -15,6 +15,13 @@ public sealed record BinkLayerProperties
     /// <summary>Opacity 0..1 applied to the composited layer.</summary>
     public float Opacity { get; init; } = 1f;
 
+    /// <summary>
+    /// How the finished layer combines with the layers below it: <see cref="BinkBlendMode.Multiply"/> darkens like ink
+    /// on paper, which is what a layer of markup over a scanned page wants, <see cref="BinkBlendMode.Screen"/> lightens.
+    /// <see cref="BinkBlendMode.DestinationOut"/> is an element's eraser, not a layer's, and reads as Normal.
+    /// </summary>
+    public BinkBlendMode BlendMode { get; init; } = BinkBlendMode.Normal;
+
     /// <summary>Optional application metadata.</summary>
     public IReadOnlyDictionary<string, string>? Metadata { get; init; }
 }
@@ -26,6 +33,14 @@ public sealed record BinkLayerProperties
 public sealed class BinkLayer
 {
     private readonly List<BinkElement> _elements;
+
+    // Where each element sits, by id. Every lookup of an element by id (moving a selection, replacing, removing,
+    // the selection's own bounds) needs its index, and a linear scan made dragging a large selection quadratic:
+    // ten thousand selected strokes cost hundreds of milliseconds a frame. Positions below _indexedUpTo are
+    // exact; an insertion or removal only invalidates the positions from where it happened, and the next lookup
+    // that needs one of those re-reads the tail. A drag only replaces elements in place, so it never invalidates.
+    private readonly Dictionary<Guid, int> _positions = new();
+    private int _indexedUpTo;
 
     internal BinkLayer(Guid id, BinkLayerProperties properties, IEnumerable<BinkElement>? elements)
     {
@@ -52,6 +67,9 @@ public sealed class BinkLayer
     /// <summary>Opacity 0..1.</summary>
     public float Opacity => Properties.Opacity;
 
+    /// <summary>How the layer combines with the layers below it.</summary>
+    public BinkBlendMode BlendMode => Properties.BlendMode;
+
     /// <summary>Elements in z-order (first is bottom-most).</summary>
     public IReadOnlyList<BinkElement> Elements => _elements;
 
@@ -72,11 +90,42 @@ public sealed class BinkLayer
     /// <summary>Index of the element with the given id, or -1.</summary>
     public int IndexOf(Guid elementId)
     {
-        for (int i = _elements.Count - 1; i >= 0; i--) if (_elements[i].Id == elementId) return i;
-        return -1;
+        if (_positions.TryGetValue(elementId, out int index) && index < _indexedUpTo) return index;
+        if (_indexedUpTo == _elements.Count) return -1;
+        for (int i = _indexedUpTo; i < _elements.Count; i++) _positions[_elements[i].Id] = i;
+        _indexedUpTo = _elements.Count;
+        return _positions.TryGetValue(elementId, out index) ? index : -1;
     }
 
-    internal List<BinkElement> MutableElements => _elements;
+    /// <summary>Inserts an element at an index (clamped by the caller).</summary>
+    internal void InsertAt(int index, BinkElement element)
+    {
+        if (index == _elements.Count && _indexedUpTo == index)
+        {
+            // Appending, the common case of drawing, keeps the whole index exact.
+            _elements.Add(element);
+            _positions[element.Id] = index;
+            _indexedUpTo = index + 1;
+            return;
+        }
+        _elements.Insert(index, element);
+        _indexedUpTo = Math.Min(_indexedUpTo, index);
+    }
+
+    /// <summary>Removes the element at an index.</summary>
+    internal void RemoveAt(int index)
+    {
+        _positions.Remove(_elements[index].Id);
+        _elements.RemoveAt(index);
+        _indexedUpTo = Math.Min(_indexedUpTo, index);
+    }
+
+    /// <summary>Replaces the element at an index with another version of the same element.</summary>
+    internal void SetAt(int index, BinkElement element)
+    {
+        System.Diagnostics.Debug.Assert(_elements[index].Id == element.Id, "A replacement keeps the element's id.");
+        _elements[index] = element;
+    }
 
     /// <inheritdoc />
     public override string ToString() => $"Layer \"{Name}\" ({_elements.Count} elements)";

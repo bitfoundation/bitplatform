@@ -938,7 +938,8 @@ function Install-BitUnderTest([string] $lab) {
             throw "$Sha isn't a commit of this repository."
         }
 
-        dotnet pack (Join-Path $source 'src\Cli\Bit.Cli\Bit.Cli.csproj') -c Release -o $feed -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0 -nologo -v q > (Join-Path $lab 'pack.log')
+        $cliProject = 'src\Toolings\Cli\Bit.Cli\Bit.Cli.csproj', 'src\Cli\Bit.Cli\Bit.Cli.csproj' | ForEach-Object { Join-Path $source $_ } | Where-Object { Test-Path $_ } | Select-Object -First 1
+        dotnet pack $cliProject -c Release -o $feed -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0 -nologo -v q > (Join-Path $lab 'pack.log')
 
         if ($LASTEXITCODE -ne 0) {
             throw "bit doesn't pack from $Sha; see $(Join-Path $lab 'pack.log')."
@@ -953,7 +954,7 @@ function Install-BitUnderTest([string] $lab) {
     }
     else {
         Write-Host 'Installing bit from nuget.org...'
-        dotnet tool install Bit.Cli --tool-path $tools --prerelease | Out-Null
+        dotnet tool install Bit.Cli --tool-path $tools --version 10.7.0-pre-04 | Out-Null
     }
 
     if ($LASTEXITCODE -ne 0) {
@@ -1651,7 +1652,16 @@ function Invoke-AgentScenario([string] $lab, [string] $id, [string] $model) {
     $handoff = $null
 
     if ($scenario.handoff) {
-        $handoff = Invoke-AgentTurn $folder $model $scenario.handoff.prompt $null $budget (Join-Path $results 'handoff.jsonl')
+        $handoffPrompts = @($scenario.handoff.prompt) + @($scenario.handoff.turns | Where-Object { $_ })
+        $handoff = [Collections.Generic.List[object]]::new()
+        $handoffSession = $null
+
+        for ($i = 0; $i -lt $handoffPrompts.Count; $i++) {
+            $turn = Invoke-AgentTurn $folder $model $handoffPrompts[$i] $handoffSession $budget (Join-Path $results "handoff$(if ($i) { $i + 1 }).jsonl")
+            $handoffSession = $turn.Session ?? $handoffSession
+            $handoff.Add($turn)
+        }
+
         $states['handoff'] = @(Get-ChangedPaths $folder $since)
     }
 

@@ -75,8 +75,9 @@
                                aria-controls="@(_id)-list"
                                aria-activedescendant="@ActiveDescendant"
                                placeholder="@EffectivePlaceholder"
-                               value="@_query"
-                               @oninput="OnInput" />
+                               @bind:get="_query"
+                               @bind:set="OnInput"
+                               @bind:event="oninput" />
                         @if (frame.MultiSelect && frame.Selected.Count > 0)
                         {
                             <span class="bit-balette-selected-count" data-balette="selected-count">@S.Format(S.SelectedCount, frame.Selected.Count)</span>

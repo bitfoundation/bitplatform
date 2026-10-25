@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Bit.Blex;
 
@@ -57,6 +58,14 @@ public sealed class BlexEntityState<TEntity, TKey>
     /// <see cref="BlexEntityAdapter{TEntity, TKey}"/> operation maintains that invariant by
     /// construction, so the adapter must not pay an O(n) verification on each call.
     /// </summary>
+    /// <remarks>
+    /// The dependency keeps the JSON constructor alive in a trimmed publish (the Blazor WebAssembly release
+    /// default). Nothing calls it from code -- only System.Text.Json does, through reflection -- so without
+    /// this the trimmer removes it and every restore of an entity state (rehydration, undo, time travel, the
+    /// prerender handoff) fails with "DeserializeNoConstructor". This constructor is reached by
+    /// <see cref="Empty"/> and by every adapter operation, so it is kept whenever the type is in use.
+    /// </remarks>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties, typeof(BlexEntityState<,>))]
     internal BlexEntityState(IReadOnlyList<TKey> ids, IReadOnlyDictionary<TKey, TEntity> entities, bool consistent)
     {
         _ = consistent;

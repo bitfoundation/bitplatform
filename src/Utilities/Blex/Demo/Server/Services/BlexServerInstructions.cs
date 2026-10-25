@@ -27,7 +27,8 @@ public static class BlexServerInstructions
         Bit.Blex is reactive state management for Blazor and .NET MAUI. A source generator (shipped inside the Bit.Blex
         package) turns a `partial class` marked [BlexStore] - state in [BlexState] fields, actions in [BlexAction] OnXxx
         methods, derived values in [BlexComputed] ComputeXxx methods, async work in [BlexEffect] methods - into an
-        observable store with middleware, persistence, undo/redo and Redux DevTools time-travel.
+        observable store with middleware, persistence, undo/redo and Redux DevTools time-travel. Server data the app
+        shows but does not own belongs in the query cache (BlexQueryClient, UseQuery, <BlexQueryView>), not in a store.
 
         Every answer here is read out of Bit.Blex {BlexVersion} as it is loaded in this server - its compiled XML
         documentation, its README, this documentation site's own pages, the generator's own diagnostics and the demo's
@@ -47,8 +48,14 @@ public static class BlexServerInstructions
         - Call `GetBlexSetupGuide` before writing any wiring: which DI container registers the stores, and with which lifetime,
           depends on the hosting model, and a store registered in only one of a Web App's two containers fails during prerendering.
         - Prefer the library's own mechanism to a hand-rolled one: [BlexEffect] over manual loading/error flags, [BlexComputed]
-          over recomputing in the component, a selector subscription over re-rendering on every change, BlexEntityAdapter over a
-          hand-maintained dictionary, middleware over wrapping every action.
+          over recomputing in the component, a selector subscription or <BlexSelect> over re-rendering on every change,
+          BlexEntityAdapter over a hand-maintained dictionary, middleware over wrapping every action, the generated
+          `Store.Actions.Xxx` descriptors over matching action names as strings, <BlexScope> over registering a second
+          instance by hand, `RetryCount`/`TimeoutMilliseconds` on an effect over a hand-written retry loop, a query
+          (`UseQuery`, `UseInfiniteQuery` for paged lists, mutations with `Optimistic`) over caching server responses in
+          [BlexState] fields, `manager.Transaction` over undoing a multi-store change by hand, `CreateSelectorFamily` over a
+          dictionary of selectors per id, `RenderInterval` over a hand-rolled render timer, and `manager.InvokeAsync` over
+          changing a store from a timer or SignalR handler directly.
 
         Every tool on this server is read-only and cheap: none of them changes anything, anywhere, so there is no reason to
         ration them or to ask before calling one.

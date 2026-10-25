@@ -4,10 +4,14 @@ This document explains how the application uses cryptographic certificates for s
 
 ## Overview
 
-The application uses asymmetric cryptography (public/private key pairs) for two critical security functions:
+The application uses asymmetric cryptography (public/private key pairs) for these security functions:
 
 1. **JWT Token Signing & Validation** - Securely issue and verify access tokens
 2. **Data Protection API** - Encrypt sensitive data (cookies, anti-forgery tokens, etc.) at rest
+3. **One-time codes** - The 6-digit sign-in, reset, step-up and 2FA codes are keyed on a secret derived from the active
+   certificate's private key (See `AppUserManager`), so the security stamp inside a token is not enough to compute
+   them. Rotating the active certificate invalidates the codes sent in the last few minutes, and a leaked private key
+   brings that ability back to whoever also reads a token.
 
 ## Benefits of Public/Private Key Pairs
 

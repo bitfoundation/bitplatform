@@ -46,11 +46,12 @@
                id="@(Context.ElementId)_entry"
                form="@(Context.ElementId)_none"
                type="text"
-               value="@_draft"
+               @bind:get="_draft"
+               @bind:set="OnDraftChanged"
+               @bind:event="oninput"
                placeholder="@EntryPlaceholder"
                maxlength="@Field.MaxLength"
                aria-label="@EntryLabel"
-               @oninput="OnDraftChanged"
                @onkeydown="OnKeyDown"
                @onblur="OnEntryBlur" />
     }
@@ -99,9 +100,12 @@
     /// </summary>
     private string Separators => Attr("tagSeparators", ",")!;
 
-    private async Task OnDraftChanged(ChangeEventArgs e)
+    // Bound rather than value="@_draft" with an oninput handler, so the draft each render carries is not put back
+    // over keys typed since (see BormInputBase.OnTyped). What the server does change - the remainder after a
+    // separator, the empty box after Enter - differs from what the browser sent, and is written.
+    private async Task OnDraftChanged(string? value)
     {
-        var raw = e.Value?.ToString() ?? "";
+        var raw = value ?? "";
 
         // A separator commits everything before it, so typing and pasting behave the same way.
         if (Separators.Length > 0 && raw.IndexOfAny(Separators.ToCharArray()) >= 0)

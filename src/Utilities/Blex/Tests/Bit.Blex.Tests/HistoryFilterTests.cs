@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Nodes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Blex.Tests;
@@ -256,5 +257,46 @@ public class HistoryFilterTests
 
         history.Undo();
         Assert.AreEqual(5, counter.Count);
+    }
+
+
+    [TestMethod]
+    public void AStoreJoiningAfterFilteredWrites_DoesNotMakeACheckpointOutOfNothing()
+    {
+        var (manager, counter, history) = Setup(ctx => !ctx.ActionName.StartsWith("Set ", StringComparison.Ordinal));
+
+        counter.Count = 5;   // filtered: the present moves, the boundary stays
+        counter.Count = 0;   // filtered: back to where the boundary is
+
+        // A scoped instance hydrating from storage as its dialog opens: it joins the present -- and the boundary,
+        // which trails the present after the filtered writes.
+        var late = new SettingsStore();
+        manager.Register(late);
+        late.RestoreState(new JsonObject { ["Theme"] = "dark", ["FontSize"] = 14 });
+
+        history.Checkpoint("Edit");
+        Assert.AreEqual(0, history.UndoCount, "nothing the user did moved since the last boundary");
+    }
+
+    [TestMethod]
+    public void AnActionThatChangesNothing_RecordsNoStep()
+    {
+        var (_, counter, history) = Setup(null);
+
+        counter.Increment();
+        counter.Add(0);
+
+        Assert.AreEqual(1, history.UndoCount, "Add(0) left the state as it was");
+        Assert.AreEqual("counter/Increment", history.NextUndoLabel);
+
+        history.Undo();
+        Assert.AreEqual(0, counter.Count);
+        Assert.IsFalse(history.CanUndo);
+
+        // Nor does it cost the redo stack: nothing was done that a redo would conflict with.
+        counter.Add(0);
+        Assert.IsTrue(history.CanRedo);
+        history.Redo();
+        Assert.AreEqual(1, counter.Count);
     }
 }

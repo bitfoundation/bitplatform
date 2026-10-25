@@ -6,6 +6,7 @@
 
 using System.IO.IsolatedStorage;
 using System.Collections.Concurrent;
+using System.Security.Cryptography;
 
 using Microsoft.Extensions.Logging;
 
@@ -105,10 +106,12 @@ public partial class WindowsStorageService : IStorageService
             using IsolatedStorageFileStream stream = new IsolatedStorageFileStream(WindowsStorageFilename, FileMode.OpenOrCreate, storage);
             if (stream.Length == 0)
                 return [];
-            var restored = await JsonSerializer.DeserializeAsync(stream, AppJsonContext.Default.DictionaryStringString);
+            var content = new byte[stream.Length];
+            await stream.ReadExactlyAsync(content);
+            var restored = JsonSerializer.Deserialize(ProtectedData.Unprotect(content, null, DataProtectionScope.CurrentUser), AppJsonContext.Default.DictionaryStringString);
             return restored is null ? [] : new(restored);
         }
-        catch (Exception exp) when (exp is JsonException or IsolatedStorageException or IOException)
+        catch (Exception exp) when (exp is JsonException or IsolatedStorageException or IOException or CryptographicException)
         {
             // Save() truncates the file at open, so a process killed mid-write leaves it empty (handled above) or, for
             // a payload past the stream buffer, cut short. Without this the throw escapes the synchronous
@@ -170,8 +173,7 @@ public partial class WindowsStorageService : IStorageService
 
             using IsolatedStorageFile storage = IsolatedStorageFile.GetUserStoreForDomain();
             using IsolatedStorageFileStream stream = new IsolatedStorageFileStream(WindowsStorageFilename, FileMode.Create, storage);
-            using StreamWriter writer = new StreamWriter(stream);
-            await writer.WriteAsync(JsonSerializer.Serialize(snapshot, AppJsonContext.Default.DictionaryStringString));
+            await stream.WriteAsync(ProtectedData.Protect(JsonSerializer.SerializeToUtf8Bytes(snapshot, AppJsonContext.Default.DictionaryStringString), null, DataProtectionScope.CurrentUser));
         }
         finally
         {

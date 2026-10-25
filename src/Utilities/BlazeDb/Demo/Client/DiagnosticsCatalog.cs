@@ -68,7 +68,7 @@ public static class DiagnosticsCatalog
 
         new("BLZ003", "Unsupported property type", true,
             "Dictionary<string, string> Map { get; set; }",
-            "The binary format encodes scalars - <code>bool</code>, the integer types, <code>char</code>, <code>float</code>, <code>double</code>, <code>decimal</code>, <code>string</code>, <code>byte[]</code>, enums, <code>Guid</code>, <code>DateTime</code>, <code>DateTimeOffset</code>, <code>TimeSpan</code> and their nullable forms - plus <code>List&lt;T&gt;</code> and <code>T[]</code> of a non-nullable scalar. Anything else has no encoding: mark it <code>[BlazeDbIgnore]</code>, or store it in a shape the format has.",
+            "The binary format encodes scalars - <code>bool</code>, the integer types, <code>char</code>, <code>float</code>, <code>double</code>, <code>decimal</code>, <code>string</code>, <code>byte[]</code>, enums, <code>Guid</code>, <code>DateTime</code>, <code>DateTimeOffset</code>, <code>TimeSpan</code>, <code>DateOnly</code>, <code>TimeOnly</code>, <code>Half</code>, <code>Int128</code>, <code>UInt128</code> and their nullable forms - plus <code>T[]</code>, <code>List&lt;T&gt;</code>, <code>IList&lt;T&gt;</code>, <code>ICollection&lt;T&gt;</code>, <code>IEnumerable&lt;T&gt;</code>, <code>IReadOnlyList&lt;T&gt;</code>, <code>IReadOnlyCollection&lt;T&gt;</code>, <code>HashSet&lt;T&gt;</code>, <code>ISet&lt;T&gt;</code> and <code>IReadOnlySet&lt;T&gt;</code> of a non-nullable scalar. Anything else has no encoding: mark it <code>[BlazeDbIgnore]</code>, or store it in a shape the format has.",
             """
             [BlazeDbTable("profiles")]
             public partial class Profile
@@ -93,20 +93,21 @@ public static class DiagnosticsCatalog
             }
             """),
 
-        new("BLZ004", "Needs a parameterless constructor", true,
-            "record Foo(int Id) - positional only",
-            "The generated reader creates a row with <code>new T { ... }</code> and sets each property it decodes, so a class needs a parameterless constructor and settable properties. A positional record has neither; write the record with ordinary properties instead.",
+        new("BLZ004", "Needs a constructor rows can be built with", true,
+            "constructor parameter with no matching property",
+            "The generated reader decodes every stored property and then creates the row: through the parameterless constructor when the type has one, setting each property, or otherwise through the constructor whose parameters all name a property of the same type - a positional record's primary constructor, or a class taking its get-only properties. A constructor with a parameter no property matches cannot be called with stored values, so the type cannot be read back.",
             """
             [BlazeDbTable("tags")]
-            public partial record Tag([property: BlazeDbKey] string Slug, string Label);   // BLZ004
+            public partial class Tag
+            {
+                public Tag(string slug, int weight) { Slug = slug; }   // BLZ004: no property 'Weight'
+                [BlazeDbKey] public string Slug { get; }
+                public string Label { get; set; } = "";
+            }
             """,
             """
             [BlazeDbTable("tags")]
-            public partial record Tag
-            {
-                [BlazeDbKey] public string Slug { get; set; } = "";
-                public string Label { get; set; } = "";
-            }
+            public partial record Tag([property: BlazeDbKey] string Slug, string Label);
             """),
 
         new("BLZ005", "Duplicate field number", true,
@@ -361,6 +362,46 @@ public static class DiagnosticsCatalog
             {
                 [BlazeDbKey] public Guid Id { get; set; }
                 [BlazeDbIndex] public bool Done { get; set; }
+            }
+            """),
+
+        new("BLZ017", "Indexed property cannot be stored", true,
+            "[BlazeDbIndex] string Sku { get; } = \"\"",
+            "A get-only property is stored only when the constructor rows are read back through takes it. Otherwise an indexed one has to be computed from stored properties (<code>=&gt; ...</code>), so it comes back on its own after a reload. A get-only auto-property holds a value of its own - set by an initializer or a constructor the reader does not run - which the index would find today and the next open would lose.",
+            """
+            [BlazeDbTable("gadgets")]
+            public partial class Gadget
+            {
+                [BlazeDbKey] public int Id { get; set; }
+                [BlazeDbIndex] public string Sku { get; } = "";   // BLZ017
+            }
+            """,
+            """
+            [BlazeDbTable("gadgets")]
+            public partial class Gadget
+            {
+                [BlazeDbKey] public int Id { get; set; }
+                [BlazeDbIndex] public string Sku { get; init; } = "";
+            }
+            """),
+
+        new("BLZ018", "Required member is not stored", true,
+            "[BlazeDbIgnore] required string Label",
+            "The generated reader creates a row with an object initializer that sets what is stored, and the compiler refuses to create a type without setting its <code>required</code> members. A required member BlazeDb does not store - ignored, or of a type it cannot serialize - would leave generated code that does not compile, unless the constructor the reader calls is marked <code>[SetsRequiredMembers]</code>.",
+            """
+            [BlazeDbTable("gadgets")]
+            public partial class Gadget
+            {
+                [BlazeDbKey] public int Id { get; set; }
+                [BlazeDbIgnore] public required string Label { get; set; }   // BLZ018
+            }
+            """,
+            """
+            [BlazeDbTable("gadgets")]
+            public partial class Gadget
+            {
+                [BlazeDbKey] public int Id { get; set; }
+                [BlazeDbIgnore] public string Label { get; set; } = "";
             }
             """),
     ];

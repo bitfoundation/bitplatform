@@ -27,8 +27,10 @@ Read the `.razor`, `.razor.cs`, and `.razor.scss` files in parallel. Identify:
 ### Step 2: Find the Replacement for Each Element
 
 Search for each element or hand-written control by what it does - "button with a loading state", "numeric input
-with a spinner", "date range picker" - and batch the searches in parallel. If you would rather browse,
-`GetBitBlazorUIComponent` with **no argument** returns the full catalog.
+with a spinner", "date range picker" - and batch the searches in parallel. Search for the ones you think you already
+know a component for too: the search is what turns up the closer fit, a `BitChoiceGroup` for three fixed options
+where a `BitDropdown` came to mind. If you would rather browse, `GetBitBlazorUIComponent` with **no argument** returns
+the full catalog.
 
 Layout containers are components too: `BitStack`, `BitGrid`, `BitCard`, `BitSeparator`, `BitSpacer` and `BitText`
 replace nearly every `<div>` written for flexbox, grid, spacing or typography.

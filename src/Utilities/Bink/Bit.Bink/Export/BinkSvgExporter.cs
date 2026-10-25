@@ -181,7 +181,8 @@ public static class BinkSvgExporter
         if (options.IncludeXmlDeclaration) writer.Write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 
         float scale = options.Scale > 0 && float.IsFinite(options.Scale) ? options.Scale : 1f;
-        writer.Write("<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" width=\"");
+        // The file declares SVG 1.1, whose consumers only know xlink:href, so the prefix is declared for images.
+        writer.Write("<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" width=\"");
         WriteNumber(writer, region.Width * scale, decimals);
         writer.Write("\" height=\"");
         WriteNumber(writer, region.Height * scale, decimals);
@@ -231,7 +232,7 @@ public static class BinkSvgExporter
             writer.Write("/>");
         }
 
-        var context = new BinkSvgRenderContext(writer, decimals) { IdPrefix = options.IdPrefix };
+        var context = new BinkSvgRenderContext(writer, decimals) { IdPrefix = options.IdPrefix, XlinkDeclared = true };
         var state = new ExportState(options, region, decimals);
         foreach (BinkLayer layer in document.Layers)
         {
@@ -270,65 +271,103 @@ public static class BinkSvgExporter
             WriteNumber(writer, layer.Opacity, 3);
             writer.Write('"');
         }
-        writer.Write(" style=\"isolation:isolate\">");
+        // Isolated exactly when BinkDocumentRenderer isolates the layer on canvas and in the rasterizer. An
+        // isolated group is what keeps a multiply highlight from reaching the layers below, so isolating every
+        // layer made a highlight over a page image composite normally in SVG while it multiplied everywhere else.
+        if (layer.BlendMode != BinkBlendMode.Normal)
+        {
+            writer.Write(" style=\"mix-blend-mode:");
+            writer.Write(layer.BlendMode == BinkBlendMode.Multiply ? "multiply" : "screen");
+            writer.Write(";isolation:isolate\"");
+        }
+        else if (layer.Opacity < 1f || HasEraser(layer)) writer.Write(" style=\"isolation:isolate\"");
+        writer.Write('>');
 
         WriteRun(writer, context, elements, elements.Count, state);
 
         writer.Write("</g>");
     }
 
+    private static bool HasEraser(BinkLayer layer)
+    {
+        foreach (BinkElement element in layer.Elements)
+        {
+            if (element is BinkStroke { IsEraser: true }) return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Most masks nested inside one another in a layer. XML parsers limit element depth (libxml2 refuses a
+    /// document nested deeper than 256 elements unless told otherwise), so nesting deeper makes the file
+    /// unreadable rather than wrong. The margin leaves room for the root, the layer and an element's own groups.
+    /// </summary>
+    private const int MaxMaskNesting = 240;
+
     /// <summary>
     /// Writes a layer's elements. Eraser strokes become masks that apply to everything drawn before them, which
     /// is exactly the sequential destination-out semantics used on canvas.
     /// </summary>
     /// <remarks>
+    /// <para>
+    /// Consecutive eraser strokes share one mask: erasing twice with nothing drawn in between multiplies what is
+    /// left by both, which is exactly what a mask holding both strokes does. Nesting therefore counts how often
+    /// drawing and erasing alternate, not how many eraser strokes there are, and the pen's eraser end, which makes
+    /// one eraser stroke per pointer-up, adds nesting only when ink is drawn between erasures.
+    /// </para>
+    /// <para>
+    /// Past <see cref="MaxMaskNesting"/> alternations, every later eraser goes into one outermost mask applied to
+    /// everything drawn before the last of them. Ink drawn between those later erasers is then also masked by the
+    /// ones before it, so part of it can be hidden; erased ink can never reappear.
+    /// </para>
+    /// <para>
     /// Nesting is built iteratively. A recursive formulation would nest once per eraser stroke, and a document
     /// can contain hundreds of thousands of those, which would overflow the stack in a way .NET cannot catch.
+    /// </para>
     /// </remarks>
     private static void WriteRun(TextWriter writer, BinkSvgRenderContext context, List<BinkElement> elements, int count, ExportState state)
     {
-        // Find the eraser positions once, then open one group per eraser from the outside in.
-        var erasers = new List<int>();
+        // Each run of consecutive erasers, as [Start, End) in elements.
+        var runs = new List<(int Start, int End)>();
         for (int i = 0; i < count; i++)
         {
-            if (elements[i] is BinkStroke { IsEraser: true }) erasers.Add(i);
+            if (elements[i] is not BinkStroke { IsEraser: true }) continue;
+            int start = i;
+            while (i + 1 < count && elements[i + 1] is BinkStroke { IsEraser: true }) i++;
+            runs.Add((start, i + 1));
         }
 
-        if (erasers.Count == 0)
+        if (runs.Count == 0)
         {
             for (int i = 0; i < count; i++) WriteElement(writer, context, elements[i], state);
             return;
         }
 
-        // Beyond this depth the nesting itself becomes the problem; flattening loses the erasing but keeps the
-        // file valid and finite. Reaching it needs a pathological document, not a real drawing.
-        const int maxNesting = 256;
-        if (erasers.Count > maxNesting)
+        // One mask per run, opened from the outside in. Past the limit the outermost mask holds every eraser from
+        // its run to the last one; below the limit it is just the last run's.
+        int outermost = Math.Min(runs.Count, MaxMaskNesting) - 1;
+        for (int m = outermost; m >= 0; m--)
         {
-            for (int i = 0; i < count; i++) WriteElement(writer, context, elements[i], state);
-            return;
-        }
-
-        for (int e = erasers.Count - 1; e >= 0; e--)
-        {
-            WriteMask(writer, (BinkStroke)elements[erasers[e]], state, out string maskId);
+            WriteMask(writer, elements, runs[m].Start, m == outermost ? runs[^1].End : runs[m].End, state, out string maskId);
             writer.Write("<g mask=\"url(#");
             writer.Write(maskId);
             writer.Write(")\">");
         }
 
-        // Innermost first: everything before the first eraser, then each run between erasers as a group closes.
-        for (int i = 0; i < erasers[0]; i++) WriteElement(writer, context, elements[i], state);
-        for (int e = 0; e < erasers.Count; e++)
+        // Innermost first: everything before the first eraser, then the content after each run as its group
+        // closes. The outermost group stays open until the last run, so the content between the runs it holds
+        // stays under it.
+        for (int i = 0; i < runs[0].Start; i++) WriteElement(writer, context, elements[i], state);
+        for (int r = 0; r < runs.Count; r++)
         {
-            writer.Write("</g>");
-            int from = erasers[e] + 1;
-            int to = e + 1 < erasers.Count ? erasers[e + 1] : count;
+            if (r < outermost || r == runs.Count - 1) writer.Write("</g>");
+            int from = runs[r].End;
+            int to = r + 1 < runs.Count ? runs[r + 1].Start : count;
             for (int i = from; i < to; i++) WriteElement(writer, context, elements[i], state);
         }
     }
 
-    private static void WriteMask(TextWriter writer, BinkStroke eraser, ExportState state, out string maskId)
+    private static void WriteMask(TextWriter writer, List<BinkElement> elements, int start, int end, ExportState state, out string maskId)
     {
         maskId = state.Options.IdPrefix + "-mask-" + state.MaskCounter++.ToString(CultureInfo.InvariantCulture);
 
@@ -352,12 +391,17 @@ public static class BinkSvgExporter
         WriteNumber(writer, state.Region.Height, state.Decimals);
         writer.Write("\" fill=\"#fff\"/>");
 
-        // Black where the eraser passed: luminance 0 makes the masked content transparent there.
-        var maskContext = new BinkSvgRenderContext(writer, state.Decimals) { IdPrefix = state.Options.IdPrefix + "-m" + state.MaskCounter.ToString(CultureInfo.InvariantCulture) };
-        maskContext.Save();
-        if (!eraser.Transform.IsIdentity) maskContext.Transform(eraser.Transform);
-        StrokeGeometryToMask(maskContext, eraser);
-        maskContext.Restore();
+        // Black where an eraser passed: luminance 0 makes the masked content transparent there. Each eraser is
+        // painted over the ones before it, so where two overlap the mask keeps the product of what each leaves.
+        var maskContext = new BinkSvgRenderContext(writer, state.Decimals) { IdPrefix = state.Options.IdPrefix + "-m" + state.MaskCounter.ToString(CultureInfo.InvariantCulture), XlinkDeclared = true };
+        for (int i = start; i < end; i++)
+        {
+            if (elements[i] is not BinkStroke { IsEraser: true } eraser) continue;
+            maskContext.Save();
+            if (!eraser.Transform.IsIdentity) maskContext.Transform(eraser.Transform);
+            StrokeGeometryToMask(maskContext, eraser);
+            maskContext.Restore();
+        }
         writer.Write("</mask>");
     }
 

@@ -41,6 +41,8 @@ BlazeDb eliminates all three:
 - **Built for the browser's constraints**: cooperative yielding so long scans do not freeze the
   UI, storage-quota awareness instead of surprise write failures, encryption through WebCrypto,
   and a single-writer model with read-only replica tabs.
+- **Reactive**: every table reports the net change of each commit, and a live query re-runs only
+  when a commit concerns it - so a component re-renders when its data changed, and only then.
 
 ## Install
 
@@ -97,18 +99,24 @@ fonts. Every page drives the real engine in your browser rather than describing 
 | --- | --- |
 | `/` | The landing page: what the engine is, a live insert into the tab's database, and how it compares with SQLite. |
 | `/getting-started` | Install, declare a table, open a database once per tab, and how a read and a write travel. |
-| `/todos` | A working CRUD app: index-backed filters, sorting, paging and persisted preferences. |
-| `/schema` | Attributes, the generated descriptor inspected at runtime, supported types, diagnostics. |
-| `/indexes` | Hash lookups, ordered ranges, `BlazeDbBound<T>`, and indexed versus scanned counting. |
-| `/queries` | A query composer that shows the generated C#, the plan and the results. |
-| `/efcore` | The EF Core provider: `UseBlazeDb`, live LINQ, SaveChanges, and what the translator absorbs. |
-| `/transactions` | Commit, rollback, dispose-without-commit, nesting errors and crash-recovery proof. |
-| `/durability` | WAL, snapshots, checkpoints, and simulated crashes including torn tails and corruption. |
-| `/storage` | The `IBlazeDbStorage` contract, a live trace of engine I/O, OPFS and Web Locks notes. |
+| `/hosting` | Every hosting model - WebAssembly, a Blazor Web App and prerendering, Blazor Server, MAUI, the desktop - and the threading model. |
+| `/todos` | A working CRUD app: index-backed filters and facets, sorting, paging, optimistic edits, bulk deletes and persisted preferences. |
+| `/schema` | Attributes, the generated descriptor inspected at runtime, supported types, records and index-only properties, every diagnostic with its fix. |
+| `/writes` | Every write: the `Try` forms, optimistic concurrency, atomic bulk writes, unique indexes, rows changed in place and `VerifyIntegrity`. |
+| `/indexes` | Hash lookups, facets, ordered ranges with inclusive and exclusive bounds, compound and unique indexes, prefix scans and keyset paging. |
+| `/queries` | A query composer that shows the generated C#, `Explain()` and the results, and a large result streamed with `ExecuteAsync`. |
+| `/efcore` | The EF Core provider: every `UseBlazeDb`, live LINQ, SaveChanges, concurrency, transactions, a persistent store, and what the translator absorbs. |
+| `/transactions` | Commit, rollback, dispose-without-commit, savepoints, `RunInTransaction` and crash-recovery proof. |
+| `/changes` | `Changed` events and a live query over a private database: what each kind of commit reports, what is never reported, and handlers that write or throw. |
+| `/durability` | WAL, snapshots, checkpoints, what survives, and simulated crashes including torn tails and corruption. |
+| `/backups` | `ExportAsync` and `ImportAsync` - a download of the tab's own database included - `UserVersion`, migrations, and tables the model does not register. |
+| `/storage` | The `IBlazeDbStorage` contract and the backends that ship, a live trace of engine I/O, OPFS and Web Locks, and the storage quota run into live. |
+| `/tabs` | A writer tab and read-only replicas following its checkpoints through `BlazeDbTabSync`, and the OPFS-or-IndexedDB choice. |
+| `/encryption` | `BlazeDbEncryptedStorage` with WebCrypto: the ciphertext next to the plaintext, a wrong key, tampering, a torn frame and key rotation. |
 | `/serialization` | Build a row and inspect the exact bytes, field by field, with a hex dump. |
 | `/errors` | Every exception the engine raises, triggered live against throwaway databases. |
-| `/bench` | Read, write and encoding benchmarks measured in your own browser. |
-| `/roadmap` | What ships, what never will, and how the repository is laid out. |
+| `/bench` | Read, write and encoding benchmarks measured in your own browser, next to the desktop BenchmarkDotNet figures. |
+| `/roadmap` | What ships - each item linked to the page that drives it - what never will, and how the repository is laid out. |
 | `/mcp-server` | The MCP server this site hosts for AI agents. |
 
 ## MCP server
@@ -190,7 +198,8 @@ leaving the row indexed twice.
 
 Null values are indexed like any other: `todos.Lookup(TodoItem.Indexes.Category, null)` returns
 the uncategorized rows, ordering by an index puts them first (as `OrderBy` does), and a bounded
-`Range` excludes them. A unique index still allows any number of nulls.
+`Range` excludes them. A single-property unique index still allows any number of nulls; a compound one
+compares the whole tuple, so null members are not exempt there.
 
 ### Files on the desktop
 
@@ -202,7 +211,8 @@ from any backend.
 ### Threading model
 
 BlazeDb is built for Blazor WebAssembly, which has one thread, and its guarantees are those of a
-**single logical writer with no concurrent readers**. Writes are serialized by a lock so the
+**single logical writer with no concurrent readers**. `Changed` handlers and live queries run on the
+thread that committed - each thread delivers its own commits - so a Blazor component hands its re-render to the renderer with `InvokeAsync`. Writes are serialized by a lock so the
 background flusher can snapshot consistently, but reads - `Get`, `Scan`, index lookups, every LINQ
 query through EF Core - take no lock at all, because on the platform the engine is designed for
 there is nothing to lock against. A read that overlaps a write on another thread is a data race on
@@ -237,6 +247,320 @@ await foreach (var todo in BlazeDbQuery<Guid, TodoItem>.From(todos)
     Render(todo);
 }
 ```
+
+Between batches the stream hands control back, and other code - another event handler - may run. If
+that code writes to the table, the rest of the stream would describe neither the table as it was nor as
+it is, so the stream throws `InvalidOperationException` naming the table instead. Writes made while the
+loop body runs - by the body itself, or by other code while the body awaits - are the loop's business,
+as in a `foreach` over `Execute()`: the stream carries on past those the source tolerates (replacing a
+row it has already reached, say) and reports the rest with the same exception. Run the query again, or
+materialize it first, when other code may write meanwhile.
+
+## Writing rows
+
+`Insert`, `Update`, `Upsert` and `Delete` are the basic writes. The `Try` forms report instead of throwing,
+and the bulk forms are atomic:
+
+| Call | What it does |
+| --- | --- |
+| `Insert(row)` / `TryInsert(row)` | Adds a row; a duplicate key throws `BlazeDbDuplicateKeyException` / returns false. |
+| `Update(row)` / `TryUpdate(row)` | Replaces the row with that key; a missing one throws `KeyNotFoundException` / returns false. |
+| `Upsert(row)` | Inserts or replaces. |
+| `Delete(key)` | Removes a row; false when there was none. |
+| `TryUpdate(row, comparisonValue)` / `TryDelete(key, comparisonValue)` | Writes only while the table still holds `comparisonValue` for the key - optimistic concurrency. |
+| `InsertMany`, `UpsertMany`, `DeleteMany(keys)`, `DeleteWhere(predicate)`, `DeleteAll()` | Atomic: every row or none, one log record. The input is read in full first, so it may be a query over the same table. |
+
+A unique index is enforced by every one of them - `TryInsert` decides on the key alone, so a duplicate
+unique value still throws `BlazeDbUniqueConstraintViolationException`. Null rows and null keys are refused
+with the table named.
+
+Optimistic concurrency fits the way rows are replaced rather than mutated: read a row, build its
+replacement, and write it with the row you read as the comparison. If anything replaced or deleted the row
+meanwhile, nothing is written and the call returns false. Rows compare with `EqualityComparer<T>.Default`
+- by reference for a class, so the check is exact because every write installs a new instance; by value
+for a record.
+
+```csharp
+var read = todos.Get(id)!;
+var edited = new TodoItem { Id = id, Slug = read.Slug, Title = newTitle, Category = read.Category, Done = read.Done, CreatedAt = read.CreatedAt };
+if (!todos.TryUpdate(edited, comparisonValue: read))
+{
+    // Someone changed it since the form opened: re-read and ask the user.
+}
+```
+
+`DeleteMany` reads its keys in full before it deletes, so they can come straight from a query over the
+same table - a retention sweep is one line:
+
+```csharp
+todos.DeleteMany(todos.Range(TodoItem.Indexes.CreatedAt, BlazeDbBound<DateTime>.Unbounded, cutoff).Select(t => t.Id));
+```
+
+## Transactions
+
+A transaction makes a group of writes atomic: they are applied to memory as they are made, reverted -
+rows and index entries alike - if it rolls back, and journaled as one log record when it commits. One is
+open at a time, and while it is, every write on the database joins it (ambient). Two ways to use one:
+
+```csharp
+// The unit of work as a block: commits as one record, or - when it throws - leaves nothing behind.
+db.RunInTransaction(() =>
+{
+    orders.Insert(order);
+    stock.Update(lowered);
+});
+
+// Or explicitly, with savepoints to undo part of it.
+using (var txn = db.BeginTransaction())
+{
+    todos.Insert(first);
+    var savepoint = txn.CreateSavepoint();
+    todos.Insert(second);
+    txn.RollbackTo(savepoint);   // second is gone, first stays
+    txn.Commit();                // disposing without Commit rolls back
+}
+```
+
+`RunInTransaction` composes: inside an open transaction it joins it behind a savepoint, so a failure takes
+back only its own writes - even after the unit rolled the transaction back past its own start - and the
+outer transaction carries on. A second `BeginTransaction` while one is
+open throws instead - compose with `RunInTransaction` or a savepoint. Rolling back to a savepoint
+discards the ones taken after it.
+
+What the engine guarantees, and what it does not:
+
+- **Atomic**: a transaction commits whole or not at all - in memory, in the log, and after a crash.
+  A commit the log cannot record (a row that will not serialize) is undone and throws.
+- **Consistent**: duplicate keys and unique-index violations are refused before anything changes, and
+  index maintenance either completes or is unwound, even when a hand-written index definition throws.
+  If a rollback itself cannot undo a write (only such an index can make it fail), a database with storage
+  refuses further writes, checkpoints and exports until it is reopened, rather than let one of them persist
+  a write the log never recorded; the exception that made the rollback happen is still the one you see. A
+  database without storage has nothing to reopen from, so it carries on, and `VerifyIntegrity()` reports
+  the write it could not take back. Either way, a transaction that part of could not be rolled back (a
+  failed `RunInTransaction` unit or EF Core save inside it, or a savepoint) refuses to commit and rolls back.
+- **No isolation from the open transaction**: there is one writer, and its writes are visible to every
+  reader as soon as they are made, before the commit. There is nothing else to isolate from.
+- **Durable when flushed**: see [Persistence](#persistence-guarantees).
+
+There is deliberately no asynchronous `RunInTransaction`, and a transaction should not span an `await`:
+while it waits, other code runs - another event handler on WebAssembly - and its writes join the
+transaction, to commit or roll back with it. Disposing the database rolls back a transaction left open.
+
+## Querying
+
+Every read is a method call on live objects, and which one decides the cost:
+
+| Read | Cost |
+| --- | --- |
+| `Get(key)`, `TryGet`, `Contains` | O(1) |
+| `Lookup(hashIndex, value)`, `CountBy(hashIndex, value)` | O(1) to find, then the matching rows |
+| `CountBy(hashIndex)` | every distinct value with its row count, one step per value - filter facets |
+| `OrderBy(orderedIndex, descending)` | O(log n) to start, then rows in order |
+| `Range(orderedIndex, from, to, descending)` | O(log n) to start; bounds inclusive, `BlazeDbBound<T>.Exclusive(v)` or `Unbounded` |
+| `StartsWith(orderedStringIndex, prefix)` | a range scan over an ordinal string index |
+| `Scan()` | every row |
+
+Aggregates, grouping, projections and joins are LINQ to Objects over those reads - the rows are already
+objects, so there is nothing to materialize. Indexes return their rows lazily; materialize with `ToList()`
+before writing to the same table in a loop over an ordered index.
+
+Keyset paging uses an exclusive bound: the next page starts strictly after the last row of this one.
+When the sort value can repeat, page over a compound ordered index that ends in something unique:
+
+```csharp
+[BlazeDbCompoundOrderedIndex("CreatedId", nameof(CreatedAt), nameof(Id))]
+// ...
+var page = todos.Range(TodoItem.Indexes.CreatedId, BlazeDbBound<(DateTime, Guid)>.Exclusive((last.CreatedAt, last.Id)),
+                       BlazeDbBound<(DateTime, Guid)>.Unbounded).Take(20).ToList();
+```
+
+`BlazeDbQuery<TKey, TRow>` composes one index source with filters, ordering (`OrderBy`, `ThenBy`) and
+paging, and `Explain()` says how it will run - which index, what is filtered and sorted in memory - without
+the values it compares against:
+
+```csharp
+var query = BlazeDbQuery<Guid, TodoItem>.From(todos)
+    .UseIndex(TodoItem.Indexes.CreatedAt, from, BlazeDbBound<DateTime>.Unbounded, descending: true)
+    .Where(t => !t.Done)
+    .Take(20);
+Console.WriteLine(query.Explain());
+// source: ordered index 'CreatedAt' range [from, unbounded) descending
+// filter: 1 predicate, evaluated on each source row
+// order: index order, no sort
+// take: 20
+```
+
+## Reacting to changes
+
+Every table raises `Changed` after each commit that changed it, and the database raises `Changed` after
+each commit with the changes to every table:
+
+```csharp
+todos.Changed += (_, e) =>
+{
+    foreach (var change in e.Changes)
+    {
+        // change.Kind (Inserted, Updated, Deleted), change.Key, change.OldRow, change.NewRow
+    }
+};
+db.Changed += (_, e) => outbox.Enqueue(e.Changes);   // every table, rows as objects - audit logs, sync outboxes
+```
+
+- **Once per commit, net**: a transaction that updates a row three times reports one update, from the
+  row before the commit to the row after it; a row inserted and deleted again inside one commit is not
+  reported at all.
+- **Committed states only**: nothing is reported before the commit, for a rollback, a savepoint rolled
+  back to, or a commit the log refused.
+- **After the lock**: handlers run synchronously on the thread that committed, once the commit has
+  completed and the write lock is released. A handler may read and write; a write it makes is reported
+  after the current notification has reached every subscriber, so a thread's notifications arrive in the
+  order it committed. On a multi-threaded host each thread delivers its own commits, so handlers for
+  commits made on different threads may run at the same time and in either order - one thread never waits
+  for another's handlers. A database-wide subscriber that needs one ordered stream (an outbox) has to
+  serialize itself there, as the host has to serialize access anyway (see [Threading model](#threading-model)).
+- **Isolated**: every subscriber hears of a commit even if one throws; the exceptions then surface from
+  the write that committed, as a `BlazeDbChangeHandlerException` - the write did commit, so do not retry
+  it. Through EF Core, `SaveChanges` completes first (the tracker accepts what was saved) and then throws it.
+- **Free when unused**: a commit collects changes only for tables somebody subscribed to.
+- A read-only replica raises `Changed` with `IsReset` after `ReloadAsync`: the whole table was replaced.
+
+A live query keeps a result current. It re-runs after each commit to its table - or, given a relevance
+test, only after commits that changed a row the test accepts, before or after the change:
+
+```csharp
+@implements IDisposable
+
+@code {
+    private BlazeDbLiveQuery<List<TodoItem>> _open = null!;
+
+    protected override void OnInitialized()
+    {
+        _open = Todos.Watch(t => t.Lookup(TodoItem.Indexes.Done, false).ToList(), relevantTo: t => !t.Done);
+        _open.Changed += (_, _) => InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose() => _open.Dispose();
+}
+```
+
+`_open.Result` is the current list. Return a materialized result from the query (`ToList()`, a count, a
+row): a lazy sequence would be enumerated later, against whatever the table holds by then.
+
+## Modeling data
+
+A table is a `partial` class, record or struct with one `[BlazeDbKey]`. Properties with a setter (or
+`init`) are stored, in the binary format described under [Schema evolution](#schema-evolution):
+
+| Kind | Types |
+| --- | --- |
+| Numbers | `bool`, `byte`, `sbyte`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `Int128`, `UInt128`, `float`, `double`, `Half`, `decimal`, `char`, enums |
+| Text and bytes | `string`, `byte[]` |
+| Time | `DateTime` (kind kept), `DateTimeOffset`, `TimeSpan`, `DateOnly`, `TimeOnly` |
+| Identity | `Guid` |
+| Collections | `List<T>`, `T[]`, `IList<T>`, `ICollection<T>`, `IEnumerable<T>`, `IReadOnlyList<T>`, `IReadOnlyCollection<T>` (read back as a `List<T>`), `HashSet<T>`, `ISet<T>`, `IReadOnlySet<T>` (read back as a `HashSet<T>`) of a non-nullable scalar |
+
+Every scalar may be nullable. A key must be a non-nullable scalar other than `byte[]`.
+
+Rows are built through the parameterless constructor when the type has one. A type without one - a
+positional record, or a class that takes its get-only properties in its constructor - is built through the
+constructor whose parameters all name its properties, and whatever that constructor does not take is set
+afterwards:
+
+```csharp
+[BlazeDbTable("contacts")]
+public partial record Contact([property: BlazeDbKey] int Id, string Name, [property: BlazeDbOrderedIndex] DateOnly Birthday)
+{
+    public string? Nickname { get; init; }
+
+    [BlazeDbIndex] public string Initial => Name.Length == 0 ? "" : Name[..1];   // computed: indexed, not stored
+}
+```
+
+A computed get-only property (`=> ...`) with an index attribute - or named by a compound index - is
+**index-only**: its value is computed from the stored ones, the index keys on it, and the row bytes leave it
+out. A get-only *auto*-property holds a value of its own that a reload could not restore, so indexing one the
+constructor does not take is refused (BLZ017), and so is a `required` member BlazeDb does not store (BLZ018). That is how a
+derived value (a domain from an e-mail address, a normalized search key, a value from inside a collection)
+becomes something an index can find. The usual rule for live rows applies: change the stored property
+through a new row, and the index moves with it.
+
+Nested objects are not stored: model a one-to-many relationship as a second table keyed by the parent's
+key (with a hash index on it), or keep a small value object in a string or `byte[]` property you encode
+yourself.
+
+## Backups, versions and migrations
+
+`ExportAsync` writes the whole database - every table, unregistered ones included, and the user version -
+to a stream as one checksummed file; `ImportAsync` turns that file into a database on any backend:
+
+```csharp
+await using var file = File.Create("backup.blazedb");
+await db.ExportAsync(file);                                    // a consistent state, captured at once
+
+await using var source = File.OpenRead("backup.blazedb");
+using var restored = new BlazeDbFileStorage(restoreDirectory);
+await BlazeDbDatabase.ImportAsync(source, restored);           // then OpenAsync over it as usual
+```
+
+An import verifies the checksum before it writes anything, refuses a file that was truncated or altered
+(`BlazeDbCorruptDatabaseException`), and refuses a destination that already holds a database. Export
+refuses while a transaction is open, since its writes are not committed, and - like a checkpoint - after
+a rollback that could not undo a write. The file is not encrypted.
+
+`UserVersion` is a number stored with the data for the application to record which shape the data is in -
+0 until something sets it, like SQLite's `user_version`. Migrations registered on the options bring a
+database forward when it opens:
+
+```csharp
+var options = new BlazeDbDatabaseOptions { Storage = storage }
+    .AddTable(TodoItem.Table)
+    .AddMigration(1, db =>
+    {
+        // Version 1 gave every todo a slug; rows written before it have none.
+        var todos = db.GetTable(TodoItem.Table);
+        todos.UpsertMany(todos.Scan().Where(t => t.Slug == "").Select(t => new TodoItem
+        {
+            Id = t.Id, Slug = $"todo-{t.Id:N}", Title = t.Title, Category = t.Category, Done = t.Done, CreatedAt = t.CreatedAt,
+        }).ToList());
+    })
+    .AddMigration(2, db => { /* ... */ });
+```
+
+Each migration whose version is above the database's runs once, lowest first, inside a transaction that
+also moves `UserVersion` to its version - so it either completes and never runs again, or fails the open
+and leaves the database at the version before it, to be retried. A read-only replica does not run them.
+Field-level changes need no migration ([Schema evolution](#schema-evolution)); a migration is for changing
+the data itself.
+
+## Checking integrity
+
+`db.VerifyIntegrity()` compares every row with every index entry and returns what disagrees - an empty list
+on a healthy database. The engine keeps them in step itself; the one thing it cannot see is a row object
+changed in place after it was written (its key, or a property an index covers), which leaves lookups
+returning rows that no longer match them. It also reports a rollback that could not undo a write - which
+on a database without storage nothing else reports once the rollback has thrown. Run it in tests, or from
+a support tool, to find such code:
+
+```csharp
+foreach (var issue in db.VerifyIntegrity())
+{
+    Console.WriteLine($"{issue.Table} / {issue.Index ?? "primary key"}: {issue.Description}");
+}
+```
+
+## Persistence guarantees
+
+| Configuration | What survives |
+| --- | --- |
+| `Storage = null` | Nothing: the database is memory only, gone with the instance. |
+| A storage backend | Every commit flushed to it. Commits reach storage on the background flusher within `FlushInterval` (100 ms by default), or at once with `await db.FlushAsync()`; a crash loses what was committed since the last flush, never part of a commit. |
+| After a flush fails | Committed data stays in memory and the flusher retries; `db.LastBackgroundError` reports the standing failure. |
+
+Recovery replays the log up to its first torn or corrupt record and stops there, so the database comes back
+as of a commit boundary. Browser storage is the origin's to keep or evict: it can be cleared by the user,
+evicted under storage pressure, or unavailable in a private window - ask for persistence with
+`BlazeDbOpfsStorage.RequestPersistenceAsync()`, and keep exports of what must not be lost.
 
 ## Hosting models
 
@@ -332,9 +656,9 @@ file name as associated data, so contents cannot be read or altered without the 
 cannot be moved between files. It does not prevent *rollback* - someone with access to the files
 can put back an older, internally consistent manifest, snapshot and log - and there is no key
 rotation: to change the key, open the database, checkpoint, and write it out through a storage
-wrapped with the new cipher. Random nonces are safe for about 2^32 frames per key; at the default
-flush interval that is decades of continuous writing, but a long-lived database should rotate
-before then.
+wrapped with the new cipher. Random nonces are safe for about 2^32 frames per key; every flush
+writes one and every checkpoint two, so at the default flush interval that is about a decade of
+continuous writing, and a long-lived database should rotate before then.
 
 ## Storage quota
 
@@ -538,15 +862,17 @@ generated code fail to compile or the index throw on its first insert.
 
 The source generator in `Bit.BlazeDb` reports every table shape it cannot generate as a build diagnostic on the type
 or property at fault, rather than emitting code that fails to compile or a descriptor that throws at
-runtime. A type with an error gets no generated partial at all, so its own diagnostic arrives together
-with "does not contain a definition for 'Table'" errors wherever the type is used - fix the `BLZ` one first.
+runtime. An error on the type itself - BLZ001, 002, 004, 006, 007, 010, 011, 012 or 018, or a BLZ003 on a
+property its constructor takes - leaves it with no generated partial at all, so its own diagnostic arrives
+together with "does not contain a definition for 'Table'" errors wherever the type is used - fix the `BLZ`
+one first. The other errors leave out only the property or index at fault.
 
 | Id | Severity | Title |
 | --- | --- | --- |
 | BLZ001 | Error | Table type must be partial |
 | BLZ002 | Error | Table type must have exactly one [BlazeDbKey] property |
 | BLZ003 | Error | Unsupported property type |
-| BLZ004 | Error | Table type needs a parameterless constructor |
+| BLZ004 | Error | Table type needs a constructor rows can be built with |
 | BLZ005 | Error | Duplicate field number |
 | BLZ006 | Error | Unsupported key type |
 | BLZ007 | Error | Unsupported table type shape |
@@ -559,20 +885,27 @@ with "does not contain a definition for 'Table'" errors wherever the type is use
 | BLZ014 | Error | Field number out of range |
 | BLZ015 | Error | Property cannot be indexed |
 | BLZ016 | Error | Compound index lists a property twice |
+| BLZ017 | Error | Indexed property cannot be stored |
+| BLZ018 | Error | Required member is not stored |
 
 ## Performance
 
-BenchmarkDotNet, .NET 10, 10,000-row table, vs native SQLite (in-memory, prepared statements).
-Native SQLite is a *favorable* proxy for sqlite-wasm solutions, which additionally pay JS
-interop, worker round-trips and wasm execution overhead on every query.
+BenchmarkDotNet, .NET 10, a 10,000-row table, against native SQLite (in memory, prepared statements).
+Native SQLite is a *favorable* proxy for sqlite-wasm solutions, which additionally pay JS interop, worker
+round-trips and wasm execution overhead on every query.
 
 | Operation | BlazeDb | SQLite | Notes |
 | --- | ---: | ---: | --- |
-| Point get by key | 2.6 ns (0 alloc) | 876 ns | ~340x |
-| Count by hash index | 2.7 ns (0 alloc) | 67,649 ns | O(1) vs table scan |
-| Ordered range scan (~5,100 rows) | 55.6 us | 69.3 us | comparable; both index-driven |
-| Upsert (autocommit) | 462 ns (with WAL) | 752 ns | memory-only: 328 ns |
-| Upsert in 1,000-op transaction | 487 ns/op | 682 ns/op | with WAL journaling |
+| Point get by key | 1.2 ns (0 alloc) | 743 ns | ~600x |
+| Count by hash index | 2.1 ns (0 alloc) | 63,020 ns | O(1) vs table scan |
+| Ordered range scan (~5,100 rows) | 45.4 us | 69.2 us | comparable; both index-driven |
+| Upsert (autocommit) | 413 ns (with WAL) | 706 ns | memory-only: 311 ns |
+| Upsert in 1,000-op transaction | 369 ns/op | 620 ns/op | with WAL journaling |
+
+As the table grows, the first page of an ordered index stays flat - 283 ns at 100,000 rows against
+274 ns at 10,000 - and the cost of persistence grows with the data: a checkpoint of 100,000 small rows
+takes about 4 ms and opening that database (decoding the snapshot and rebuilding every index) about 22 ms
+on a desktop CPU; expect several times that in WebAssembly.
 
 Reproduce with the suite in `Tests/Bit.BlazeDb.Benchmarks` (see its README). The demo app also has an
 in-browser micro-benchmark page (`/bench`) that measures the same operations in the WebAssembly
@@ -589,4 +922,4 @@ dotnet test --project Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.Mcp    # the dem
 dotnet run --project Utilities/BlazeDb/Demo/Server                     # the demo site
 ```
 
-The browser suite (`Tests/Bit.BlazeDb.Tests.E2E`) runs the demo in Chromium; its README says how.
+The browser suite (`Tests/Bit.BlazeDb.Tests.E2E`) runs the demo in Chromium, Firefox or WebKit; its README says how.

@@ -29,6 +29,8 @@ internal sealed class TestToolContext : IBinkToolContext, IDisposable
 
     public Vector2 ViewSize { get; set; } = new(800, 600);
 
+    public BinkSnapOptions Snapping { get; set; } = BinkSnapOptions.None;
+
     public int OverlayInvalidations { get; private set; }
 
     public int DocumentInvalidations { get; private set; }

@@ -2,7 +2,7 @@
 @inherits AppComponentBase
 
 <section>
-    <BitDropMenu Transparent @bind-IsOpen="isOpen" Responsive
+    <BitDropMenu Transparent @bind-IsOpen="isOpen" Responsive LazyRender
                  Width="20rem"
                  MaxWidth="calc(100vw - 1rem)"
                  OnDismiss="OnDropMenuDismiss"
@@ -49,12 +49,6 @@
                                             SecondaryText="@(CurrentUser?.Email ?? CurrentUser?.PhoneNumber)"
                                             ImageOverlayText="@Localizer[nameof(AppStrings.Edit)]"
                                             Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
-
-                                <BitSeparator />
-
-                                <BitActionButton IconName="@BitIconName.Contact" Href="@($"{PageUrls.Settings}/{PageUrls.SettingsSections.Profile}")" FullWidth OnClick="CloseMenu">
-                                    @Localizer[nameof(AppStrings.ProfileTitle)]
-                                </BitActionButton>
                             </Authorized>
                             <NotAuthorized>
                                 <BitActionButton FullWidth
@@ -73,6 +67,28 @@
                                     @Localizer[nameof(AppStrings.SignUp)]
                                 </BitActionButton>
                             </NotAuthorized>
+                        </AuthorizeView>
+
+                        @foreach (var account in otherAccounts)
+                        {
+                            <BitActionButton FullWidth Class="account-button" OnClick="WrapHandled(() => SwitchAccount(account))">
+                                <BitPersona Size="BitPersonaSize.Size32"
+                                            ImageUrl="@account.User.GetProfileImageUrl(AbsoluteServerAddress)"
+                                            PrimaryText="@account.User.DisplayName"
+                                            SecondaryText="@(account.User.Email ?? account.User.PhoneNumber)" />
+                            </BitActionButton>
+                        }
+
+                        <AuthorizeView>
+                            <BitActionButton FullWidth IconName="@BitIconName.AddFriend" OnClick="WrapHandled(AddAccount)">
+                                @Localizer[nameof(AppStrings.AddAnotherAccount)]
+                            </BitActionButton>
+
+                            <BitSeparator />
+
+                            <BitActionButton IconName="@BitIconName.Contact" Href="@($"{PageUrls.Settings}/{PageUrls.SettingsSections.Profile}")" FullWidth OnClick="CloseMenu">
+                                @Localizer[nameof(AppStrings.ProfileTitle)]
+                            </BitActionButton>
                         </AuthorizeView>
 
                         @if (CultureInfoManager.InvariantGlobalization is false)
@@ -247,4 +263,4 @@
     </BitDropMenu>
 </section>
 
-<SignOutConfirmDialog @bind-IsOpen="isSignOutConfirmOpen" />
+<SignOutConfirmDialog @bind-IsOpen="isSignOutConfirmOpen" CanSignOutOfAllAccounts="otherAccounts.Length > 0" />

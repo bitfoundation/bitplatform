@@ -631,5 +631,12 @@ load, lists its tools, and lets you call one and read both halves of the exchang
 request, the response, and the text a model would be handed. It is the fastest way to see what a
 tool actually returns before wiring an agent up to it.
 
+[`Samples`](Samples/) is the hosting-model harness rather than the docs: one shared
+[Core](Samples/Core/) project of sample pages, hosted unchanged under [Server](Samples/Server/),
+[WASM](Samples/Wasm/) and [Auto](Samples/Auto/) so the same Butil calls can be exercised in each
+Blazor render mode, under [Web](Samples/Web/) as a standalone WebAssembly app (the host the
+end-to-end suite and the benchmarks drive), and under [MAUI](Samples/Maui/) (Android, iOS,
+Mac Catalyst and Windows), where a `BlazorWebView` runs it as a Blazor Hybrid app.
+
 Every public member carries XML documentation with a link to the corresponding MDN page, so IntelliSense
 is the reference of record.

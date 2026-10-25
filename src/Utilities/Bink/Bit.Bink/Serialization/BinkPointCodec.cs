@@ -24,6 +24,20 @@ public static class BinkPointCodec
     /// <summary>Default quantization: 64 steps per document unit (about 0.016 units of precision).</summary>
     public const int DefaultQuantization = 64;
 
+    /// <summary>
+    /// The largest time, in milliseconds either side of the stroke start, a point can carry: more than eleven days.
+    /// Times beyond it are clamped on write and on read, so the delta between two points always fits the 32-bit
+    /// varint the format stores it in. Without the bound a file or a collaborator could hand over a point that
+    /// loads but can never be saved or sent again.
+    /// </summary>
+    internal const float MaxTime = 1_000_000_000f;
+
+    /// <summary>The largest tilt, in degrees either way, a point can carry: the range pointer events report.</summary>
+    internal const float MaxTilt = 90f;
+
+    /// <summary>The largest twist, in degrees, a point can carry.</summary>
+    internal const float MaxTwist = 360f;
+
     [Flags]
     private enum Flags : byte
     {
@@ -46,6 +60,8 @@ public static class BinkPointCodec
         if (!points.TiltX.IsEmpty) flags |= Flags.Tilt;
         if (!points.Twist.IsEmpty) flags |= Flags.Twist;
 
+        if (n > 0) quantization = FitQuantization(points.Bounds, quantization);
+
         buffer.WriteByte(Version);
         buffer.WriteByte((byte)flags);
         buffer.WriteVarInt((uint)quantization);
@@ -62,9 +78,8 @@ public static class BinkPointCodec
         long previous = 0;
         for (int i = 0; i < n; i++)
         {
-            long t = (long)MathF.Round(time[i]);
-            buffer.WriteVarInt(ZigZag(t - previous));
-            previous = t;
+            long t = (long)Math.Round(Math.Clamp(Finite(time[i]), -MaxTime, MaxTime));
+            previous += WriteDelta(buffer, t - previous);
         }
 
         if ((flags & Flags.Tilt) != 0)
@@ -90,11 +105,43 @@ public static class BinkPointCodec
         long previous = 0;
         for (int i = 0; i < values.Length; i++)
         {
-            long q = (long)MathF.Round(values[i] * quantization);
-            buffer.WriteVarInt(ZigZag(q - previous));
-            previous = q;
+            // In double: a float product drops the low bits of a large coordinate on a fine grid.
+            long q = (long)Math.Round(Math.Clamp(Finite(values[i]) * quantization, -4.0 * int.MaxValue, 4.0 * int.MaxValue));
+            previous += WriteDelta(buffer, q - previous);
         }
     }
+
+    /// <summary>
+    /// The grid a stroke is written on. Every delta has to fit in 32 bits and two points can be up to twice the
+    /// largest coordinate apart, so a stroke too large for the requested grid is written on the finest coarser one
+    /// that fits. The grid is stored with the stroke, so every reader decodes it. Only a document whose
+    /// <see cref="BinkDocumentLimits.MaxCoordinate"/> or <see cref="BinkSerializerOptions.Quantization"/> was raised
+    /// far past the defaults gets here; saving one used to throw.
+    /// </summary>
+    private static int FitQuantization(BinkRect bounds, int quantization)
+    {
+        double reach = Math.Max(
+            Math.Max(Math.Abs((double)bounds.Left), Math.Abs((double)bounds.Right)),
+            Math.Max(Math.Abs((double)bounds.Top), Math.Abs((double)bounds.Bottom)));
+        const double budget = int.MaxValue - 2;
+        if (!double.IsFinite(reach) || 2 * reach * quantization <= budget) return quantization;
+        return (int)Math.Max(1, Math.Floor(budget / (2 * reach)));
+    }
+
+    /// <summary>
+    /// Writes a delta saturated to the 32-bit range a varint carries here, and returns the delta written, which is
+    /// what a reader will add. Callers track that rather than the true value, so a point that had to be clamped
+    /// does not shift every point after it. Throwing instead made a document that loaded impossible to save, and a
+    /// collaborator holding it unable to send anything or to answer a snapshot request.
+    /// </summary>
+    private static long WriteDelta(ArrayBufferWriter buffer, long delta)
+    {
+        delta = Math.Clamp(delta, int.MinValue, int.MaxValue);
+        buffer.WriteVarInt(ZigZag(delta));
+        return delta;
+    }
+
+    private static double Finite(float value) => float.IsFinite(value) ? value : 0;
 
     /// <summary>Decodes points previously written by <see cref="Encode"/>.</summary>
     /// <param name="data">The encoded bytes.</param>
@@ -128,11 +175,13 @@ public static class BinkPointCodec
         if (offset + n > data.Length) throw new FormatException("Point data is truncated (pressure).");
         for (int i = 0; i < n; i++) ps[i] = data[offset++] / 255f;
 
+        // Untrusted deltas can add up to any time, and a signed byte holds tilts past 90 degrees. Both are clamped
+        // to what the encoder writes, so a point read here can always be written back.
         long time = 0;
         for (int i = 0; i < n; i++)
         {
             time += UnZigZag(ReadVarInt(data, ref offset));
-            ts[i] = time;
+            ts[i] = Math.Clamp(time, -MaxTime, MaxTime);
         }
 
         float[]? tiltX = null, tiltY = null, twist = null;
@@ -143,8 +192,8 @@ public static class BinkPointCodec
             tiltY = new float[n];
             for (int i = 0; i < n; i++)
             {
-                tiltX[i] = (sbyte)data[offset++];
-                tiltY[i] = (sbyte)data[offset++];
+                tiltX[i] = Math.Clamp((sbyte)data[offset++], -MaxTilt, MaxTilt);
+                tiltY[i] = Math.Clamp((sbyte)data[offset++], -MaxTilt, MaxTilt);
             }
         }
         if ((flags & Flags.Twist) != 0)
@@ -168,12 +217,8 @@ public static class BinkPointCodec
         }
     }
 
-    private static uint ZigZag(long value)
-    {
-        long z = (value << 1) ^ (value >> 63);
-        if (z is < 0 or > uint.MaxValue) throw new FormatException("A coordinate delta is out of range.");
-        return (uint)z;
-    }
+    // Only called with a value in the 32-bit range (see WriteDelta), whose zigzag form always fits a uint.
+    private static uint ZigZag(long value) => (uint)((value << 1) ^ (value >> 63));
 
     // The XOR must happen in signed 64-bit arithmetic: doing it on uint turns every negative delta into a
     // large positive number, which would corrupt any stroke that moves left or up.
