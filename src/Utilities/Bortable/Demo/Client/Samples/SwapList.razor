@@ -1,0 +1,15 @@
+﻿@* A list in swap mode: the item dropped on trades places with the dragged one, and nothing moves meanwhile. *@
+
+<Bortable @bind-Items="_list" TItem="string" Swap="true" Id="swap-list" AriaLabel="Single list"
+          Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+    <ItemTemplate Context="item">@item</ItemTemplate>
+</Bortable>
+
+<p class="demo-order"><strong>Order:</strong> <span id="swap-order">@string.Join(", ", _list)</span></p>
+
+@code {
+    private IList<string> _list = new List<string>
+    {
+        "Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6"
+    };
+}
