@@ -16,7 +16,6 @@ public enum BinkCanvasLayer
 /// <summary>Options passed to the browser layer when a canvas is attached.</summary>
 internal sealed record BinkInteropOptions
 {
-    public bool LowLatency { get; init; } = true;
     public bool RejectTouchWhilePen { get; init; } = true;
     public bool SuppressContextMenu { get; init; } = true;
     public bool TrackHover { get; init; }
@@ -43,7 +42,6 @@ internal sealed record BinkAttachResult
     public bool Tilt { get; init; }
     public bool Twist { get; init; }
     public bool OffscreenCanvas { get; init; }
-    public bool LowLatency { get; init; }
 
     public BinkInputCapabilities ToCapabilities() => new()
     {
@@ -55,7 +53,6 @@ internal sealed record BinkAttachResult
         MaxTouchPoints = MaxTouchPoints,
         DevicePixelRatio = DevicePixelRatio <= 0 ? 1 : DevicePixelRatio,
         OffscreenCanvas = OffscreenCanvas,
-        LowLatencyCanvas = LowLatency,
     };
 }
 

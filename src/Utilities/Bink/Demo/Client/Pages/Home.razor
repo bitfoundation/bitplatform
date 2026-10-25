@@ -48,8 +48,9 @@
                 <div class="bink-hero-live">
                     <div class="bink-surface">
                         @* A host that reads canvas state (such as the undo button below) re-renders on these
-                           callbacks. Pointer input itself never re-renders anything. *@
-                        <BinkCanvas @ref="_canvas" Height="240px" Brush="_pen" EnableTouchGestures="true"
+                           callbacks. Pointer input itself never re-renders anything. The document has no
+                           background, so the sketch sits on the theme's surface (demo.css). *@
+                        <BinkCanvas @ref="_canvas" Document="_sketch" Height="240px" Brush="_pen" EnableTouchGestures="true"
                                     AriaLabel="Try drawing here"
                                     HistoryChanged="() => StateHasChanged()"
                                     DocumentChanged="() => StateHasChanged()" />
@@ -334,6 +335,7 @@ _canvas.LoadDocument(BinkSerializer.Deserialize(json));
 
 @code {
     private BinkCanvas? _canvas;
+    private readonly BinkDocument _sketch = new(BinkDocumentSettings.Default with { Background = BinkColor.Transparent });
     private readonly BinkBrush _pen = new BinkPenBrush { Width = 4f };
 
     private void Undo() => _canvas?.Undo();

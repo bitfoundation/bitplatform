@@ -20,7 +20,6 @@ interface DotNetObjectReference {
 
 // camelCase JSON of BinkInteropOptions. Every field is optional because setOptions merges partial updates.
 interface BinkSurfaceOptions {
-    lowLatency?: boolean;
     rejectTouchWhilePen?: boolean;
     suppressContextMenu?: boolean;
     trackHover?: boolean;
@@ -93,7 +92,6 @@ interface BinkAttachResult {
     tilt: boolean;
     twist: boolean;
     offscreenCanvas: boolean;
-    lowLatency: boolean;
 }
 
 interface BinkSizeResult {
@@ -344,7 +342,6 @@ class Surface {
     // Assigned after construction (or lazily) rather than in the constructor.
     callback?: BinkSurfaceCallbacks | null;
     wetInkStyle?: WetInkStyle | null;
-    lowLatency?: boolean;
 
     onPointerDown: (event: PointerEvent) => void;
     onPointerMove: (event: PointerEvent) => void;
@@ -463,13 +460,12 @@ class Surface {
 
     createContext(canvas: HTMLCanvasElement | null): CanvasRenderingContext2D | null {
         if (!canvas) return null;
-        const attributes: CanvasRenderingContext2DSettings = { alpha: true, desynchronized: this.options.lowLatency !== false };
-        const ctx = canvas.getContext('2d', attributes);
-        if (ctx && typeof ctx.getContextAttributes === 'function') {
-            const actual = ctx.getContextAttributes();
-            this.lowLatency = !!(actual && actual.desynchronized);
-        }
-        return ctx;
+        // Never `desynchronized`. Chromium (seen on Windows with GPU compositing) shows a desynchronized canvas whose
+        // pixels are not all opaque - the overlay always, the document with a transparent background - as solid black
+        // once it sits inside an ancestor that clips to rounded corners: overflow: hidden with a border-radius, an
+        // ordinary card. The live stroke is drawn on the overlay, so that is also the only layer where the hint would
+        // have shortened the latency a user feels.
+        return canvas.getContext('2d', { alpha: true });
     }
 
     watchPixelRatio(): void {
@@ -1603,7 +1599,6 @@ export function attach(id: string, root: HTMLElement, options?: BinkSurfaceOptio
         tilt: typeof PointerEvent !== 'undefined' && 'tiltX' in PointerEvent.prototype,
         twist: typeof PointerEvent !== 'undefined' && 'twist' in PointerEvent.prototype,
         offscreenCanvas: typeof OffscreenCanvas !== 'undefined',
-        lowLatency: !!surface.lowLatency,
     };
 }
 

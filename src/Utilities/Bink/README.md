@@ -43,7 +43,7 @@ re-rendered at any size and edited later, rather than being a picture of a drawi
 - **SVG, PNG, JPEG and WebP export** that match the screen, including a pure .NET PNG path for servers and tests.
 - **Real-time collaboration**: transport-agnostic operation sync, presence and offline queueing.
 - **Touch, stylus, mouse and trackpad**: palm rejection, pinch zoom, wheel and trackpad pan and zoom, coalesced
-  samples, high-DPI and low-latency canvases.
+  samples and high-DPI canvases.
 - **Retained rendering**: the browser keeps every path it has drawn, so a redraw of a large page costs a few
   numbers per element rather than every coordinate, which is what keeps Blazor Server fast too.
 - **Accessibility**: a labelled, focusable, keyboard-operable canvas, a live text summary of the drawing and
@@ -86,7 +86,6 @@ offers; where one is missing the canvas does without it rather than failing.
 | --- | --- | --- | --- | --- |
 | Coalesced pen samples | Yes | Yes (none on Android) | Yes | Fewer samples on very fast strokes |
 | Predicted samples (`PredictInk`) | Yes | 89+ | 18.2+ | About a frame more latency |
-| Low-latency canvas | Windows, ChromeOS | No | 15+ | Normal latency |
 | WebP export | Yes | Yes | No | `NotSupportedException`; use PNG or JPEG |
 | A picture on the clipboard with a copy | Yes | 127+ | Yes | The copy pastes into canvases only |
 | Eyedropper (`PickColorAsync`) | Desktop | No | No | Returns null |
@@ -662,7 +661,7 @@ tell the two apart after the fact.
 @code {
     private void OnReady(BinkInputCapabilities capabilities)
     {
-        // capabilities.CoalescedEvents, .Tilt, .Twist, .MaxTouchPoints, .DevicePixelRatio, .LowLatencyCanvas
+        // capabilities.CoalescedEvents, .Tilt, .Twist, .MaxTouchPoints, .DevicePixelRatio
     }
 }
 ```
@@ -1915,11 +1914,6 @@ straight lines between frame positions.
 
 The canvas observes its own element. Rotating a phone or resizing a split view resizes the backing store and
 redraws at the new size. The document is unaffected: it has its own coordinate space.
-
-### Low-latency canvas
-
-The canvas is requested with the `desynchronized` hint, which shortens the path from drawing command to pixels on
-browsers that support it. `Capabilities.LowLatencyCanvas` reports whether the browser honoured it.
 
 ### Pointer prediction
 

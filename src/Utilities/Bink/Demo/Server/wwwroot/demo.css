@@ -9,8 +9,9 @@
 
    The paper is the one deliberate exception. A drawing's background and its ink are content: they
    are saved with the document and exported exactly as drawn, and the palettes offer dark inks
-   chosen for a light page. So every canvas is a white sheet in both themes - the way a word
-   processor keeps its page white in dark mode - and whatever is printed ON the paper (a signature
+   chosen for a light page. So every canvas but the landing page's sketch (see "The landing page's
+   live canvas" below) is a white sheet in both themes - the way a word processor keeps its page
+   white in dark mode - and whatever is printed ON the paper (a signature
    line, ruled lines, a hint) takes the paper's own colours below rather than the theme's.
    ============================================================================================ */
 
@@ -473,6 +474,22 @@
 .bink-hero-live {
     background: var(--bb-surface);
     border-top: 1px solid var(--bb-border);
+}
+
+/* The one canvas that follows the theme instead of being a white sheet: it has a single black pen
+   and nothing drawn on it is saved or exported, so there is no palette chosen for a light page to
+   keep. Its document has no background, so the theme's surface shows through, and in the dark
+   theme its layers are shown inverted - the ink stays black in the document and reads white. */
+.bink-hero-live .bink-surface {
+    background: var(--bb-surface);
+}
+
+.bink-hero-live .bink-surface-hint {
+    color: var(--bb-text-muted);
+}
+
+:root[bit-theme="dark"] .bink-hero-live .bit-bink-layer {
+    filter: invert(1);
 }
 
 /* ---------- Narrow editors ---------- */

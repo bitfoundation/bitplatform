@@ -56,8 +56,7 @@ Pick what pointer input does with `Tool` (`BinkDrawTool`, `BinkEraserTool`, `Bin
 - SVG, PNG, JPEG and WebP export that match the screen, including a pure .NET PNG path for servers and tests.
 - Ink measurements (length, stroke count, duration) for validating signatures.
 - Real-time collaboration over any transport, with presence and offline queueing.
-- Palm rejection, pinch zoom, mouse wheel and trackpad pan and zoom, coalesced samples and high-DPI, low-latency
-  canvases.
+- Palm rejection, pinch zoom, mouse wheel and trackpad pan and zoom, coalesced samples and high-DPI canvases.
 - Retained rendering: the browser keeps every path it has drawn, so redrawing a large page costs a few numbers per
   element, over WebAssembly and over a Blazor Server circuit alike.
 - A labelled, keyboard-operable canvas with a live text summary for screen readers.
