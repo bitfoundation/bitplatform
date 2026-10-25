@@ -188,7 +188,7 @@ The project includes a complete CI/CD pipeline setup using GitHub Actions with *
 **Key Configuration**:
 - **Runner**: Ubuntu 24.04
 - **SDK Version**: Automatically detected from `global.json`
-- **Machine setup**: the bit CLI, installed once per job with `dotnet tool install Bit.Cli --version 10.7.0`, then `bit setup`,
+- **Machine setup**: the bit CLI, installed once per job with `dotnet tool install Bit.Cli --version 11.0.0-pre-11`, then `bit setup`,
   which installs only what the runner is missing
 - **Test Artifacts**: Retained for 14 days on failure
 
@@ -460,7 +460,7 @@ Each signed file counts against the account's monthly quota. To sign only the ex
 ```bash
 # Install the bit CLI once, then let it install Node.js when missing, the MAUI Android workload
 # and what the Android SDK lacks; the publish below generates the CSS/JS files in its own build
-dotnet tool install --global Bit.Cli --version 10.7.0
+dotnet tool install --global Bit.Cli --version 11.0.0-pre-11
 bit setup --platforms android --no-build --yes
    
 # Publish signed AAB (Or APK if needed)
@@ -614,7 +614,7 @@ build_api_blazor:
   steps:
     - uses: actions/checkout@v7
     - uses: actions/setup-dotnet@v6
-    - run: dotnet tool install --global Bit.Cli --version 10.7.0
+    - run: dotnet tool install --global Bit.Cli --version 11.0.0-pre-11
     - run: bit setup --no-build --yes
     - run: dotnet publish ...
     - uses: actions/upload-artifact@v7  # Save artifact
