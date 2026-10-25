@@ -329,14 +329,23 @@ public abstract class BmotionPageTest
         return (box.X + (box.Width / 2), box.Y + (box.Height / 2));
     }
 
-    /// <summary>A pointer drag from the element's centre by (dx, dy), in <paramref name="steps"/> moves.</summary>
+    /// <summary>
+    /// A pointer drag from the element's centre by (dx, dy), in <paramref name="steps"/> moves, one a frame - as a
+    /// hand makes them. Chromium and Firefox hand pointer moves to the page once a frame on their own; WebKit passes
+    /// on every one as soon as it arrives, so a drag there waits a frame between moves, or a flick would cross the
+    /// screen in a millisecond.
+    /// </summary>
     protected async Task DragByAsync(string selector, double dx, double dy, int steps = 12, bool release = true)
     {
         var (x, y) = await CentreAsync(selector);
         await Page.Mouse.MoveAsync((float)x, (float)y);
         await Page.Mouse.DownAsync();
         for (var i = 1; i <= steps; i++)
+        {
+            if (BrowserLaunch.Browser == "webkit")
+                await Page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(() => resolve()))");
             await Page.Mouse.MoveAsync((float)(x + (dx * i / steps)), (float)(y + (dy * i / steps)));
+        }
         if (release) await Page.Mouse.UpAsync();
     }
 

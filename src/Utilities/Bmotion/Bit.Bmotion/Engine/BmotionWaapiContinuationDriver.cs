@@ -12,7 +12,7 @@ internal sealed class BmotionWaapiContinuationDriver : IBmotionAnimationDriver
     private readonly double _playedAtHandoff;
     private readonly Action<double>? _apply;
     private readonly Action<string>? _applyString;
-    private double _startTs = -1;
+    private double _startTs = double.NaN; // NaN = not started (timestamps near clock 0 can be negative)
     private bool _cancelled;
 
     /// <param name="plan">The interrupted plan.</param>
@@ -34,7 +34,7 @@ internal sealed class BmotionWaapiContinuationDriver : IBmotionAnimationDriver
     public bool Tick(double timestamp)
     {
         if (_cancelled) return true;
-        if (_startTs < 0) _startTs = timestamp;
+        if (double.IsNaN(_startTs)) _startTs = timestamp;
 
         // The element's clock already runs at its playback rate, so its time is animation time.
         double played = _playedAtHandoff + (timestamp - _startTs);

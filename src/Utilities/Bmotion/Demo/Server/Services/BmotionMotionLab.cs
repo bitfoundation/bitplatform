@@ -329,16 +329,27 @@ public static class BmotionMotionLab
 
         var controls = await service.AnimateAsync(".bmotion-target", target, transition);
 
-        // The hand-off to the browser is asynchronous; give its continuations a turn before reading it.
-        await Task.Yield();
-        await Task.Yield();
-
+        // The hand-off is asynchronous - continuations that can run on the thread pool, later on a busy machine - so
+        // wait until the engine has handed the animation to the browser or to a frame-loop driver, or long enough
+        // that it did neither (a property that lands at once). A fixed couple of yields read nothing under load, and
+        // the catalog, which caches its verdicts for the life of the process, kept the wrong one.
         // Read before anything ticks: a frame-loop driver is registered from the moment the animation
         // starts until its last frame, and no frame is ever drawn here.
-        var loopKeys = engine.GetDiagnostics()
-                             .SelectMany(element => element.ActiveProperties)
-                             .Distinct(StringComparer.OrdinalIgnoreCase)
-                             .ToArray();
+        string[] LoopKeys() => engine.GetDiagnostics()
+                                     .SelectMany(element => element.ActiveProperties)
+                                     .Distinct(StringComparer.OrdinalIgnoreCase)
+                                     .ToArray();
+        var loopKeys = LoopKeys();
+        var deadline = Environment.TickCount64 + 500;
+        while (interop.WaapiCalls.Count == 0 && loopKeys.Length == 0 && Environment.TickCount64 < deadline)
+        {
+            await Task.Delay(1);
+            loopKeys = LoopKeys();
+        }
+        // A target split between the two paths: the other part a turn or two behind.
+        await Task.Yield();
+        await Task.Yield();
+        loopKeys = LoopKeys();
 
         controls.Stop();
 

@@ -919,6 +919,13 @@ internal sealed class BmotionElementAnimationState
         _transformDirty = true;
     }
 
+    /// <summary>A drag starts: it owns the transform from the press on, before its first move arrives.</summary>
+    public void BeginDrag()
+    {
+        _isDragging = true;
+        _transformDirty = true;
+    }
+
     public void EndDrag() => _isDragging = false;
 
     public (double x, double y) GetCurrentXY()
@@ -1237,6 +1244,11 @@ internal sealed class BmotionElementAnimationState
             _activeAnims[key] = new BmotionTweenDriver(fromNum, toNum, config,
                 v => ApplyString(key, BmotionCssFormat.Num(v) + toUnit));
         }
+        // A length whose ends are in different units ("100px" → "50%") goes through calc(), as CSS interpolates it.
+        else if (MixedLengthMix(fromRaw, toValue) is { } lengths)
+        {
+            _activeAnims[key] = CreateProgressDriver(config, p => ApplyString(key, lengths(p)));
+        }
         // Complex strings with a matching shape ("blur(0px)" → "blur(8px)", multi-part shadows,
         // matching gradients) interpolate token-wise via the string mixer, driven by an eased /
         // sprung progress track.
@@ -1263,6 +1275,37 @@ internal sealed class BmotionElementAnimationState
         => config.Type == BmotionTransitionType.Spring
             ? new BmotionSpringDriver(0, 1, config, apply)
             : new BmotionTweenDriver(0, 1, config, apply);
+
+    // The units of a CSS <length-percentage>: what a length in one of them can interpolate with a length in another.
+    private static readonly HashSet<string> _lengthUnits = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "px", "%", "em", "rem", "ex", "rex", "ch", "rch", "cap", "rcap", "ic", "ric", "lh", "rlh",
+        "vw", "vh", "vi", "vb", "vmin", "vmax", "svw", "svh", "svi", "svb", "svmin", "svmax",
+        "lvw", "lvh", "lvi", "lvb", "lvmin", "lvmax", "dvw", "dvh", "dvi", "dvb", "dvmin", "dvmax",
+        "cqw", "cqh", "cqi", "cqb", "cqmin", "cqmax", "cm", "mm", "q", "in", "pt", "pc",
+    };
+
+    /// <summary>
+    /// A length whose two ends are in different units (<c>"100px"</c> → <c>"50%"</c>, <c>"2rem"</c> →
+    /// <c>"40vw"</c>), interpolated the way CSS does: <c>calc()</c> of both ends weighted by progress - exact in any
+    /// unit, with nothing to measure. The ends themselves are the authored strings; a spring's overshoot carries on
+    /// past them. <c>null</c> unless both ends are lengths or percentages (a bare <c>0</c> counts) in different units.
+    /// </summary>
+    internal static Func<double, string>? MixedLengthMix(string from, string to)
+    {
+        if (!TryParseLength(from, out double a, out string aUnit) || !TryParseLength(to, out double b, out string bUnit)) return null;
+        if (string.Equals(aUnit, bUnit, StringComparison.OrdinalIgnoreCase)) return null;
+        return p => p == 0 ? from
+            : p == 1 ? to
+            : $"calc({BmotionCssFormat.Num(a * (1 - p))}{aUnit} + {BmotionCssFormat.Num(b * p)}{bUnit})";
+
+        static bool TryParseLength(string value, out double number, out string unit)
+        {
+            if (!TryParseCssDimension(value.Trim(), out number, out unit) || !double.IsFinite(number)) return false;
+            if (unit.Length == 0 && number == 0) unit = "px";
+            return _lengthUnits.Contains(unit);
+        }
+    }
 
     internal static bool TryParseCssDimension(string value, out double number, out string unit)
     {
@@ -1430,6 +1473,13 @@ internal sealed class BmotionElementAnimationState
             Rate = rate;
         }
 
+        /// <summary>Puts the playhead at <paramref name="playedMs"/> of animation time as of <paramref name="nowMs"/>.</summary>
+        public void SeekTo(long nowMs, double playedMs)
+        {
+            _playedBeforeMs = playedMs;
+            _rateSinceMs = nowMs;
+        }
+
         /// <summary>The whole animation's length in ms of animation time, delay included; infinity when it repeats forever.</summary>
         public double TotalMs => Iterations < 0 ? double.PositiveInfinity : DelayMs + (Math.Max(DurationMs, 1) * (Iterations + 1));
 
@@ -1446,7 +1496,7 @@ internal sealed class BmotionElementAnimationState
         /// <summary>Eased progress (may exceed [0,1] for springs) and velocity factor at elapsed wall time.</summary>
         public (double Progress, double VelocityPerMs) SampleAt(long nowMs) => SampleAtPlayed(PlayedMs(nowMs));
 
-        private (double Progress, double VelocityPerMs) SampleAtPlayed(double playedMs)
+        internal (double Progress, double VelocityPerMs) SampleAtPlayed(double playedMs)
         {
             double elapsed = playedMs - DelayMs;
             if (elapsed <= 0) return (Progress[0], 0);
@@ -1484,6 +1534,22 @@ internal sealed class BmotionElementAnimationState
     private readonly List<WaapiPlan> _waapiPlans = new();
 
     internal bool HasWaapiPlans => _waapiPlans.Count > 0;
+
+    /// <summary>Moves every browser animation's mirror to <paramref name="playedMs"/> of animation time (a seek).</summary>
+    internal void SeekWaapiPlans(long nowMs, double playedMs)
+    {
+        foreach (var plan in _waapiPlans) plan.SeekTo(nowMs, playedMs);
+    }
+
+    /// <summary>
+    /// Forgets the velocities interrupted animations left behind, so what starts next starts from rest - an animation
+    /// replayed from part-way in (a seek) must not inherit the speed of the one it replaces.
+    /// </summary>
+    internal void ForgetVelocity()
+    {
+        _handoff.Clear();
+        _samples.Clear();
+    }
 
     /// <summary>Every key a browser-played animation currently owns (diagnostics).</summary>
     internal IEnumerable<string> WaapiPlanKeys => _waapiPlans.SelectMany(p => p.Keys).Distinct(StringComparer.OrdinalIgnoreCase);
@@ -1691,19 +1757,19 @@ internal sealed class BmotionElementAnimationState
             long now = Environment.TickCount64;
             elapsedMs = now - plan.StartMs;
             // Rejected before it could ever have played (within neverStartedWithinMs): nothing was shown, so the state
-            // goes back to where the plan started, not to where it would have got to by now - the replay that follows
-            // starts from there.
-            RealizePlanValues(plan, elapsedMs < neverStartedWithinMs ? plan.StartMs : now);
+            // goes back to the plan's first frame - not to where it would have got to by now, nor, for one that starts
+            // part-way in (a negative delay), to that point - and the replay that follows starts from there.
+            RealizePlanValues(plan, now, elapsedMs < neverStartedWithinMs ? plan.DelayMs : null);
             _waapiPlans.RemoveAt(i);
             return true;
         }
         return false;
     }
 
-    private void RealizePlanValues(WaapiPlan plan, long nowMs)
+    private void RealizePlanValues(WaapiPlan plan, long nowMs, double? atPlayedMs = null)
     {
-        var (progress, _) = plan.SampleAt(nowMs);
-        double played = plan.PlayedMs(nowMs);
+        double played = atPlayedMs ?? plan.PlayedMs(nowMs);
+        var (progress, _) = plan.SampleAtPlayed(played);
         foreach (var (key, (from, to)) in plan.Values)
         {
             double value = plan.Frames != null && plan.Frames.TryGetValue(key, out var frames)
@@ -1713,7 +1779,7 @@ internal sealed class BmotionElementAnimationState
             // Whatever takes the key over next (a retargeted spring) carries on at the speed the browser had it at -
             // in animation time, the clock the replacing driver runs on too.
             double velocity = plan.VelocityAt(key, played);
-            if (velocity != 0) _handoff[key] = (velocity, nowMs);
+            if (velocity != 0 && atPlayedMs is null) _handoff[key] = (velocity, nowMs); // one never shown left no motion
         }
         if (plan.Strings is { } strings)
             foreach (var key in strings.Keys)

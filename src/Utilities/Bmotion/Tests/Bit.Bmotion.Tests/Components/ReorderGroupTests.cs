@@ -67,6 +67,24 @@ public class ReorderGroupTests
                 .Last(c => c.Method == "attachEventListeners" && (string?)c.Args[0] == id).Args[1]!;
             Assert.AreEqual(true, flags["drag"]);
             Assert.AreEqual("y", flags["dragAxis"], "the default axis is vertical");
+            Assert.AreEqual(true, flags["dragAutoScroll"], "a row carried to the edge of its scroller scrolls it");
+        }
+    }
+
+    [TestMethod]
+    public void AutoScroll_CanBeTurnedOff()
+    {
+        using var ctx = new BmotionTestContext();
+        var cut = ctx.Render<BmotionReorderGroup<string>>(ps => ps
+            .Add(p => p.Items, new List<string> { "a", "b" })
+            .Add(p => p.AutoScroll, false)
+            .Add(p => p.ChildContent, Row));
+
+        foreach (var id in RowIds(cut))
+        {
+            var flags = (IReadOnlyDictionary<string, object?>)ctx.Interop.Calls
+                .Last(c => c.Method == "attachEventListeners" && (string?)c.Args[0] == id).Args[1]!;
+            Assert.IsFalse(flags.ContainsKey("dragAutoScroll"));
         }
     }
 
@@ -164,7 +182,7 @@ public class ReorderGroupTests
 
         var attached = ctx.Interop.ArgsOf("attachReorderKeys");
         CollectionAssert.AreEquivalent(RowIds(cut), attached.Select(a => (string)a[0]!).ToArray());
-        Assert.IsTrue(attached.All(a => (bool)a[1]! == false), "vertical: up and down");
+        Assert.IsTrue(attached.All(a => (string)a[1]! == "y"), "vertical: up and down");
     }
 
     [TestMethod]
@@ -264,5 +282,63 @@ public class ReorderGroupTests
         await cut.InvokeAsync(() => KeysOf(ctx, ids[0]).OnReorderMove(ids[0], 1));
 
         CollectionAssert.AreEqual(new[] { "a: PickedUp 1/2", "a: Moved 2/2" }, Announced(ctx));
+    }
+
+    // ── Grids ─────────────────────────────────────────────────────────────────
+
+    // Three columns of 60x40 cells, 4px apart, in the order the items were first rendered.
+    private static void UseGridLayout(BmotionTestContext ctx, string[] ids)
+        => ctx.Interop.BoundingRectProvider = id =>
+        {
+            int index = Array.IndexOf(ids, id);
+            return index < 0 ? null : new BmotionBoundingRect { Left = (index % 3) * 64, Top = (index / 3) * 44, Width = 60, Height = 40 };
+        };
+
+    [TestMethod]
+    public async Task AGridItem_TakesTheCellNearestItsCentre()
+    {
+        using var ctx = new BmotionTestContext();
+        List<string>? committed = null;
+        var cut = ctx.Render<BmotionReorderGroup<string>>(ps => ps
+            .Add(p => p.Items, new List<string> { "1", "2", "3", "4", "5", "6" })
+            .Add(p => p.Axis, BmDragAxis.Both)
+            .Add(p => p.ItemsChanged, EventCallback.Factory.Create<List<string>>(this, l => committed = l))
+            .Add(p => p.ChildContent, Row));
+        var ids = RowIds(cut);
+        UseGridLayout(ctx, ids);
+        var flags = (IReadOnlyDictionary<string, object?>)ctx.Interop.Calls.Last(c => c.Method == "attachEventListeners").Args[1]!;
+        Assert.IsNull(flags.GetValueOrDefault("dragAxis"), "a grid item drags freely");
+
+        // "1" dragged a cell right and a cell down: its centre sits in what was "5"'s cell.
+        var row = (Bmotion)ctx.Interop.EventListenerRefs[ids[0]];
+        await cut.InvokeAsync(row.OnPointerDown_Drag);
+        await cut.InvokeAsync(() => row.SetDragPosition(64, 44));
+        await cut.InvokeAsync(row.OnDragMove);
+        var release = cut.InvokeAsync(() => row.OnPointerUp_Drag(0, 0));
+        await Settle(ctx, release);
+
+        cut.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "2", "3", "4", "5", "1", "6" }, committed));
+    }
+
+    [TestMethod]
+    public async Task AGridItem_MovesARowAtATime_FromTheKeyboard()
+    {
+        using var ctx = new BmotionTestContext();
+        List<string>? committed = null;
+        var cut = ctx.Render<BmotionReorderGroup<string>>(ps => ps
+            .Add(p => p.Items, new List<string> { "1", "2", "3", "4", "5", "6" })
+            .Add(p => p.Axis, BmDragAxis.Both)
+            .Add(p => p.ItemsChanged, EventCallback.Factory.Create<List<string>>(this, l => committed = l))
+            .Add(p => p.ChildContent, Row));
+        var ids = RowIds(cut);
+        UseGridLayout(ctx, ids);
+        Assert.AreEqual("both", ctx.Interop.ArgsOf("attachReorderKeys").First()[1]);
+        var keys = KeysOf(ctx, ids[5]);
+
+        await cut.InvokeAsync(() => keys.OnReorderPickUp(ids[5]));
+        await cut.InvokeAsync(() => keys.OnReorderMoveRow(ids[5], -1));
+        await Settle(ctx, cut.InvokeAsync(() => keys.OnReorderDrop(ids[5])));
+
+        cut.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "1", "2", "6", "3", "4", "5" }, committed));
     }
 }

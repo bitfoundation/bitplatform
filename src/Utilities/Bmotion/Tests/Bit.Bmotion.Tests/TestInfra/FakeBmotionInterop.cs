@@ -194,9 +194,9 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
     public readonly Dictionary<string, object> ReorderKeyRefs = new();
 
     public ValueTask AttachReorderKeysAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(
-        string elementId, DotNetObjectReference<T> dotnetRef, bool horizontal, string? handleSelector) where T : class
+        string elementId, DotNetObjectReference<T> dotnetRef, string axis, string? handleSelector) where T : class
     {
-        Record("attachReorderKeys", elementId, horizontal, handleSelector);
+        Record("attachReorderKeys", elementId, axis, handleSelector);
         ReorderKeyRefs[elementId] = dotnetRef.Value;
         return ValueTask.CompletedTask;
     }
@@ -309,6 +309,33 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
             FlipReferences[elementId] = dotnetRef;
         }
         Record("playWaapiFlip", elementId, dx, dy, sx, sy, durationMs, easingStr, finalTransform, originX, originY);
+        return ValueTask.CompletedTask;
+    }
+
+    public async ValueTask<BmotionBoundingRect?> MeasureAndHoldLayoutAsync(string elementId, BmotionMeasureOptions options,
+        bool translate, bool scale, double anchorX, double anchorY)
+    {
+        Record("measureAndHoldLayout", elementId, options, translate, scale, anchorX, anchorY);
+        if (BoundingRectGate is { } gate) await gate;
+        return BoundingRectProvider?.Invoke(elementId);
+    }
+
+    public ValueTask ReleaseLayoutHoldAsync(string elementId)
+    {
+        Record("releaseLayoutHold", elementId);
+        return ValueTask.CompletedTask;
+    }
+
+    public ValueTask PlayLayoutCrossfadeAsync(string leadId, string followId, double dx, double dy, double sx, double sy,
+        double durationMs, string easingStr, double originX, double originY)
+    {
+        Record("playLayoutCrossfade", leadId, followId, dx, dy, sx, sy, durationMs, easingStr, originX, originY);
+        return ValueTask.CompletedTask;
+    }
+
+    public ValueTask CancelLayoutCrossfadeAsync(string elementId)
+    {
+        Record("cancelLayoutCrossfade", elementId);
         return ValueTask.CompletedTask;
     }
 
@@ -426,6 +453,12 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
 
     // Implemented (rather than left to the interface's no-op default) so a test can see the rate
     // the engine handed the browser's compositor animations.
+    public ValueTask SeekWaapiAnimationsAsync(string elementId, double playedMs)
+    {
+        Record("seekWaapiAnimations", elementId, playedMs);
+        return ValueTask.CompletedTask;
+    }
+
     public ValueTask SetWaapiPlaybackRateAsync(string elementId, double rate)
     {
         Record("setWaapiPlaybackRate", elementId, rate);

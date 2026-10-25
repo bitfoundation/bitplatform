@@ -61,11 +61,12 @@ public interface IBmotionInterop : IAsyncDisposable
     // ── Keyboard reordering and announcements ─────────────────────────────────
     /// <summary>
     /// Lets a keyboard user reorder the item: Space/Enter on it calls <c>OnReorderPickUp</c> / <c>OnReorderDrop</c>
-    /// on <paramref name="dotnetRef"/>, the arrow keys along the list's axis <c>OnReorderMove</c> while it is held,
+    /// on <paramref name="dotnetRef"/>, the arrow keys along <paramref name="axis"/> <c>OnReorderMove</c> while it is
+    /// held (<c>x</c>, <c>y</c>, or <c>both</c> for a grid, whose up and down keys call <c>OnReorderMoveRow</c>), and
     /// Escape <c>OnReorderCancel</c>. Makes the item focusable when it isn't. Defaults to a no-op.
     /// </summary>
     ValueTask AttachReorderKeysAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(
-        string elementId, DotNetObjectReference<T> dotnetRef, bool horizontal, string? handleSelector) where T : class
+        string elementId, DotNetObjectReference<T> dotnetRef, string axis, string? handleSelector) where T : class
         => ValueTask.CompletedTask;
 
     /// <summary>Moves focus to the element (without scrolling it into view). Defaults to a no-op.</summary>
@@ -96,6 +97,21 @@ public interface IBmotionInterop : IAsyncDisposable
     ValueTask<BmotionBoundingRect?> GetBoundingRectAsync(string elementId, BmotionMeasureOptions options = default);
 
     /// <summary>
+    /// <see cref="GetBoundingRectAsync"/> for the snapshot taken before a re-render, which also holds the element
+    /// where it is through that render until its FLIP arrives - or <see cref="ReleaseLayoutHoldAsync"/>. Without
+    /// synchronous interop the FLIP is a round trip behind the render, and the element would show at its new place
+    /// in between. The hold measures the new box the way the FLIP will: with <paramref name="translate"/> and
+    /// <paramref name="scale"/> (the layout mode) about the anchor (<paramref name="anchorX"/>,
+    /// <paramref name="anchorY"/>). Defaults to <see cref="GetBoundingRectAsync"/>, holding nothing.
+    /// </summary>
+    ValueTask<BmotionBoundingRect?> MeasureAndHoldLayoutAsync(string elementId, BmotionMeasureOptions options,
+        bool translate, bool scale, double anchorX, double anchorY)
+        => GetBoundingRectAsync(elementId, options);
+
+    /// <summary>Lets go of a layout hold (see <see cref="MeasureAndHoldLayoutAsync"/>) whose FLIP didn't play. Defaults to doing nothing.</summary>
+    ValueTask ReleaseLayoutHoldAsync(string elementId) => ValueTask.CompletedTask;
+
+    /// <summary>
     /// Plays the FLIP animation. <paramref name="originX"/>/<paramref name="originY"/> are the
     /// projection anchor (0-1 of the element's box) the deltas were measured from, and
     /// <paramref name="dotnetRef"/> - when given - receives <c>OnLayoutAnimationCompleted</c> once
@@ -104,6 +120,19 @@ public interface IBmotionInterop : IAsyncDisposable
     ValueTask PlayWaapiFlipAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(
         string elementId, double dx, double dy, double sx, double sy, double durationMs, string easingStr,
         string? finalTransform, double originX, double originY, DotNetObjectReference<T>? dotnetRef) where T : class;
+
+    /// <summary>
+    /// Crossfades two holders of a LayoutId as the layout animation plays: <paramref name="leadId"/>, the one taking
+    /// it over, fades in; <paramref name="followId"/>, the one on its way out, fades out while it travels onto the
+    /// lead's box - by (<paramref name="dx"/>, <paramref name="dy"/>) and (<paramref name="sx"/>,
+    /// <paramref name="sy"/>) about the anchor (<paramref name="originX"/>, <paramref name="originY"/>) - and stays
+    /// there until it is removed. Defaults to doing nothing.
+    /// </summary>
+    ValueTask PlayLayoutCrossfadeAsync(string leadId, string followId, double dx, double dy, double sx, double sy,
+        double durationMs, string easingStr, double originX, double originY) => ValueTask.CompletedTask;
+
+    /// <summary>Takes an element that came back off its crossfade out (see <see cref="PlayLayoutCrossfadeAsync"/>). Defaults to doing nothing.</summary>
+    ValueTask CancelLayoutCrossfadeAsync(string elementId) => ValueTask.CompletedTask;
 
     // ── Reading the page ──────────────────────────────────────────────────────
     /// <summary>
@@ -128,8 +157,8 @@ public interface IBmotionInterop : IAsyncDisposable
     ValueTask<bool> SupportsLinearEasingAsync();
 
     /// <summary>
-    /// Whether the browser supports <c>oklab()</c> colours - which lets an OKLab colour transition play in the
-    /// browser (it interpolates them in OKLab). Defaults to <c>false</c>.
+    /// Whether the browser animates between <c>oklab()</c> colours in OKLab, not just parses them - which lets an
+    /// OKLab colour transition play in the browser. Defaults to <c>false</c>.
     /// </summary>
     ValueTask<bool> SupportsOklabColorAsync() => ValueTask.FromResult(false);
     ValueTask<bool> PlayWaapiAnimationAsync(string elementId, int token, object keyframes, object timing);
@@ -141,6 +170,12 @@ public interface IBmotionInterop : IAsyncDisposable
     /// Defaults to a no-op for interop implementations without a browser.
     /// </summary>
     ValueTask SetWaapiPlaybackRateAsync(string elementId, double rate) => ValueTask.CompletedTask;
+
+    /// <summary>
+    /// Moves every compositor animation playing on the element to <paramref name="playedMs"/> of its own time (delay
+    /// included) - a seek. Defaults to a no-op for interop implementations without a browser.
+    /// </summary>
+    ValueTask SeekWaapiAnimationsAsync(string elementId, double playedMs) => ValueTask.CompletedTask;
 
     // ── Scroll-driven timelines ───────────────────────────────────────────────
     /// <summary>

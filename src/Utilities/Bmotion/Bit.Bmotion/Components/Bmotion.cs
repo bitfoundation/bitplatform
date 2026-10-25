@@ -238,6 +238,14 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     [Parameter] public bool DragDirectionLock { get; set; }
 
     /// <summary>
+    /// Scroll the nearest scrollable container - or the page - while the pointer is near its edge during a drag,
+    /// faster the closer it gets, and carry the element along: a drag down a list longer than its scroller. A drag
+    /// stays under the pointer through any scroll, this one or another. Default: false
+    /// (<see cref="BmotionReorderGroup{TItem}"/> turns it on for its items).
+    /// </summary>
+    [Parameter] public bool DragAutoScroll { get; set; }
+
+    /// <summary>
     /// Whether this element's pointer gestures (tap and pan) also reach gesture-enabled ancestors -
     /// the tap/pan counterpart of <see cref="DragPropagation"/>, and motion.dev's <c>propagate</c>.
     /// Default <c>true</c> (the platform's bubbling behaviour, and motion.dev's default for these
@@ -273,6 +281,15 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// the tab-underline / card-to-detail idiom. Namespace ids with <see cref="BmotionLayoutGroup"/>.
     /// </summary>
     [Parameter] public string? LayoutId { get; set; }
+
+    /// <summary>
+    /// When this element takes over a <see cref="LayoutId"/> from one that is still on screen on its way out (an
+    /// exit under <see cref="BmotionAnimatePresence"/>), the two crossfade as the layout animation plays - this one
+    /// fades in as it grows out of the other's box, the other travels onto this one's box as it fades out -
+    /// motion.dev's <c>layoutCrossfade</c>. The fade multiplies with the elements' own opacity (it is a
+    /// <c>filter: opacity()</c>), so an enter or exit fade of their own plays on underneath. Default: <c>true</c>.
+    /// </summary>
+    [Parameter] public bool LayoutCrossfade { get; set; } = true;
 
     /// <summary>
     /// Re-measures for a layout animation only when this value changes - motion.dev's
@@ -552,6 +569,11 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             style = ResolveInitialProps()?.ToCssStyleString(TransformTemplate) ?? string.Empty;
         }
         if (_isStaticRender && _prerenderMode != BmPrerenderMode.Initial && EffectiveWhileInView != null) style += BuildNoScriptInView();
+        if (!_initialized && WillCrossfadeIn())
+        {
+            style = style.Length == 0 || style.TrimEnd().EndsWith(';') ? style + CrossfadeHiddenStyle : $"{style};{CrossfadeHiddenStyle}";
+            _hiddenForCrossfade = true;
+        }
         return _initialStyleCache = style;
     }
     private string? _initialStyleCache;
@@ -874,7 +896,12 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
             // FLIP: play layout animation after DOM settles
             if (snapshot is not null && measured is not null)
-                await PlayFlipAsync(snapshot, measured);
+            {
+                bool held = _layoutHeld;
+                _layoutHeld = false;
+                if (!await PlayFlipAsync(snapshot, measured) && held)
+                    try { await Interop.ReleaseLayoutHoldAsync(_id); } catch { /* the element is going */ }
+            }
 
             // If a re-render rewrote the inline style attribute (the consumer authored a dynamic
             // style on the animated element), Blazor will have wiped the engine's live
@@ -915,6 +942,8 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             // layout flow now that the exit is cancelled (no-op when it was never popped).
             if (_initialized)
             {
+                // Back, so no longer fading onto the element that took its LayoutId over.
+                await CancelCrossfadeOutAsync();
                 try { await Interop.UnpopLayoutAsync(_id); } catch { /* cosmetic restore only */ }
                 if (Options.InertWhileExiting)
                     try { await Interop.SetInertAsync(_id, false); } catch { /* the element is being removed */ }
@@ -931,8 +960,22 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // earlier render this one follows holds the older layout, so it is kept.
         bool dependencyChanged = LayoutDependencyChanged();
         if (_initialized && Layout.Enabled && !_isExiting && dependencyChanged)
-            _layoutSnapshot ??= Interop.GetBoundingRectAsync(_id, MeasureOptions).AsTask();
+            _layoutSnapshot ??= MeasureBeforeRenderAsync().AsTask();
     }
+
+    // The snapshot before a re-render. Without synchronous interop (Blazor Server) the FLIP comes a round trip after
+    // the render, so the bridge also holds the element where it is through the render until then (and the FLIP, or
+    // a FLIP that doesn't play, lets go of it).
+    private ValueTask<BmotionBoundingRect?> MeasureBeforeRenderAsync()
+    {
+        if (Interop.IsInProcess) return Interop.GetBoundingRectAsync(_id, MeasureOptions);
+        _layoutHeld = true;
+        var anchor = LayoutAnchor.Sanitized();
+        return Interop.MeasureAndHoldLayoutAsync(_id, MeasureOptions,
+            translate: Layout.Mode != BmLayoutMode.Size, scale: Layout.Mode != BmLayoutMode.Position, anchor.X, anchor.Y);
+    }
+
+    private bool _layoutHeld;
 
     // Null (the default) means "no dependency declared": measure on every render, as before.
     private object? _prevLayoutDependency;
@@ -1231,15 +1274,20 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             await Engine.AnimateToAsync(_id, restore, BuildEffectiveTransition());
     }
 
-    private async Task PlayFlipAsync(Task<BmotionBoundingRect?> snapshot, Task<BmotionBoundingRect?> measured)
+    // Whether a FLIP played.
+    private async Task<bool> PlayFlipAsync(Task<BmotionBoundingRect?> snapshot, Task<BmotionBoundingRect?> measured)
     {
         var snap = await snapshot;
         var cur = await measured;
-        if (snap == null || cur == null) return;
-        await PlayFlipFromAsync(snap, cur);
+        if (snap == null || cur == null) return false;
+        return (await PlayFlipFromAsync(snap, cur)).Played;
     }
 
-    private async Task PlayFlipFromAsync(BmotionBoundingRect snap, BmotionBoundingRect cur)
+    /// <summary>
+    /// FLIPs from <paramref name="snap"/> to <paramref name="cur"/>, crossfading with <paramref name="crossfadeWith"/>
+    /// when given (a LayoutId holder on its way out). Returns whether the FLIP and the crossfade played.
+    /// </summary>
+    private async Task<(bool Played, bool Crossfaded)> PlayFlipFromAsync(BmotionBoundingRect snap, BmotionBoundingRect cur, Bmotion? crossfadeWith = null)
     {
         // Position mode animates translation only, avoiding scale distortion on text/aspect-
         // ratio-sensitive content (motion.dev's layout="position"); Size mode is the mirror image -
@@ -1260,29 +1308,39 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         double sx = scaleToo && cur.Width > 0 ? snap.Width / cur.Width : 1;
         double sy = scaleToo && cur.Height > 0 ? snap.Height / cur.Height : 1;
 
-        if (Math.Abs(dx) < 0.5 && Math.Abs(dy) < 0.5 && Math.Abs(sx - 1) < 0.005 && Math.Abs(sy - 1) < 0.005)
-            return;
+        bool moves = !(Math.Abs(dx) < 0.5 && Math.Abs(dy) < 0.5 && Math.Abs(sx - 1) < 0.005 && Math.Abs(sy - 1) < 0.005);
+        if (!moves && crossfadeWith is null) return (false, false);
 
         var t = BuildEffectiveTransition();
         double dur = t?.Type == BmotionTransitionType.Spring ? 600 : (t?.Duration ?? 0.5) * 1000;
         string easing = t?.Type == BmotionTransitionType.Spring
             ? "cubic-bezier(0.14,1,0.34,1)"
             : BmEaseFunctions.ToCssString(t);
-        // The transform the element shows when the FLIP ends, compositor animations advanced by its length.
-        string? finalT = Engine.GetTransformStringAfter(_id, dur);
+        if (moves)
+        {
+            // The transform the element shows when the FLIP ends, compositor animations advanced by its length.
+            string? finalT = Engine.GetTransformStringAfter(_id, dur);
 
-        // Pause the engine's per-frame transform writes for the duration of the FLIP so the rAF
-        // loop and the WAAPI layout animation don't both write `transform` and tear each other.
-        Engine.SuspendTransformWrites(_id, dur);
-        // Rects measured while the FLIP transform is in flight would be skewed; pause registry
-        // recording until it settles.
-        _flipUntilMs = Environment.TickCount64 + (long)dur + 50;
+            // Pause the engine's per-frame transform writes for the duration of the FLIP so the rAF
+            // loop and the WAAPI layout animation don't both write `transform` and tear each other.
+            Engine.SuspendTransformWrites(_id, dur);
+            // Rects measured while the FLIP transform is in flight would be skewed; pause registry
+            // recording until it settles.
+            _flipUntilMs = Environment.TickCount64 + (long)dur + 50;
 
-        await OnLayoutAnimationStart.InvokeAsync();
-        // The ref is only handed over when someone is listening, so the common case costs no
-        // JS→.NET callback at the end of every layout animation.
-        await Interop.PlayWaapiFlipAsync(_id, dx, dy, sx, sy, dur, easing, finalT,
-            anchor.X, anchor.Y, OnLayoutAnimationComplete.HasDelegate ? _dotnet : null);
+            await OnLayoutAnimationStart.InvokeAsync();
+            // The ref is only handed over when someone is listening, so the common case costs no
+            // JS→.NET callback at the end of every layout animation.
+            await Interop.PlayWaapiFlipAsync(_id, dx, dy, sx, sy, dur, easing, finalT,
+                anchor.X, anchor.Y, OnLayoutAnimationComplete.HasDelegate ? _dotnet : null);
+        }
+
+        if (crossfadeWith is not { _disposed: false }) return (moves, false);
+        // The one leaving travels the other way, from its box onto this one's, over the same time and curve.
+        crossfadeWith._crossfadingOut = true;
+        await Interop.PlayLayoutCrossfadeAsync(_id, crossfadeWith._id, -dx, -dy,
+            sx > 0 ? 1 / sx : 1, sy > 0 ? 1 / sy : 1, dur, easing, anchor.X, anchor.Y);
+        return (moves, true);
     }
 
     /// <summary>Invoked by JS when a FLIP animation finishes or is superseded. Not for direct use.</summary>
@@ -1309,11 +1367,61 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         var layoutId = EffectiveLayoutId;
         if (layoutId is null) return;
         var cur = await Interop.GetBoundingRectAsync(_id, MeasureOptions);
-        if (cur == null) return;
-        var prev = LayoutRegistry.Get(layoutId);
+        if (cur == null)
+        {
+            await RevealIfHiddenForCrossfadeAsync();
+            return;
+        }
+        // The element that held the id until now, still here on its way out: this one grows out of where it is
+        // now - not where it was last recorded - and the two crossfade.
+        var leaving = WillCrossfadeIn() ? LayoutRegistry.HolderOf(layoutId) : null;
+        var prev = leaving is null ? null : await Interop.GetBoundingRectAsync(leaving._id, leaving.MeasureOptions);
+        if (prev is null || leaving is { _disposed: true }) leaving = null;
+        prev ??= LayoutRegistry.Get(layoutId);
         LayoutRegistry.Record(layoutId, cur);
-        if (prev != null)
-            await PlayFlipFromAsync(prev, cur);
+        LayoutRegistry.Hold(layoutId, this);
+        bool crossfaded = prev != null && (await PlayFlipFromAsync(prev, cur, leaving)).Crossfaded;
+        // The crossfade, when it played, took the hidden start over; otherwise it is shown now.
+        if (crossfaded) ForgetCrossfadeHiddenStyle();
+        else await RevealIfHiddenForCrossfadeAsync();
+    }
+
+    // Whether this element, mounting, takes its LayoutId over from one that is still on screen on its way out - and so
+    // crossfades in.
+    private bool WillCrossfadeIn()
+        => LayoutCrossfade && EffectiveLayoutId is { } layoutId
+           && LayoutRegistry.HolderOf(layoutId) is { _isExiting: true, _disposed: false } holder
+           && !ReferenceEquals(holder, this);
+
+    // An element that will crossfade in renders hidden: on Blazor Server its crossfade starts a few round trips after
+    // the first paint, and it would show at its new place, at full strength, until then. The bridge's crossfade (or
+    // its cancellation) clears it; the first render's cached style forgets it, so no later render brings it back.
+    private const string CrossfadeHiddenStyle = "filter:opacity(0);";
+    private bool _hiddenForCrossfade;
+
+    private void ForgetCrossfadeHiddenStyle()
+    {
+        if (!_hiddenForCrossfade) return;
+        _hiddenForCrossfade = false;
+        _initialStyleCache = _initialStyleCache?.Replace(CrossfadeHiddenStyle, string.Empty);
+    }
+
+    private async Task RevealIfHiddenForCrossfadeAsync()
+    {
+        if (!_hiddenForCrossfade) return;
+        ForgetCrossfadeHiddenStyle();
+        try { await Interop.CancelLayoutCrossfadeAsync(_id); } catch { /* the element is going */ }
+    }
+
+    // Set while this element, on its way out, crossfades onto the element that took its LayoutId over: a re-entry
+    // takes it back.
+    private bool _crossfadingOut;
+
+    private async Task CancelCrossfadeOutAsync()
+    {
+        if (!_crossfadingOut) return;
+        _crossfadingOut = false;
+        try { await Interop.CancelLayoutCrossfadeAsync(_id); } catch { /* the element is going */ }
     }
 
     private async Task RecordLayoutRectAsync()
@@ -1321,6 +1429,8 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         var layoutId = EffectiveLayoutId;
         if (layoutId is null) return;
         if (Environment.TickCount64 < _flipUntilMs) return;
+        // Another element has taken the id over (this one is on its way out): where this one is no longer counts.
+        if (LayoutRegistry.HolderOf(layoutId) is { } holder && !ReferenceEquals(holder, this)) return;
         var cur = await Interop.GetBoundingRectAsync(_id, MeasureOptions);
         if (cur != null) LayoutRegistry.Record(layoutId, cur);
     }
@@ -1459,6 +1569,8 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     [JSInvokable]
     public async Task OnPointerDown_Drag()
     {
+        // Before the overlay: it must not take the transform over from the drag (see BeginDrag).
+        Engine.BeginDrag(_id);
         var props = ResolveProps(WhileDrag);
         if (props != null)
             await Engine.ActivateGestureLayerAsync(_id, "drag", props.ToJsDictionary(), BuildEffectiveTransition(props));
@@ -1787,6 +1899,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             if (DragConstraints != null) d["dragConstraints"] = DragConstraints.ToJsObject();
             if (DragDirectionLock) d["dragDirectionLock"] = true;
             if (DragPropagation) d["dragPropagation"] = true;
+            if (DragAutoScroll) d["dragAutoScroll"] = true;
             if (!string.IsNullOrWhiteSpace(DragHandle)) d["dragHandle"] = DragHandle;
             if (!DragListener) d["dragListener"] = false;
             // Without synchronous interop (Blazor Server) the bridge reports drag positions through
@@ -2021,6 +2134,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         _valueSubscriptions.Clear();
         _attachedDragControls?.Detach(this);
         PresenceCtx?.Unregister(this);
+        if (EffectiveLayoutId is { } layoutId) LayoutRegistry.Release(layoutId, this);
         if (_variantChildIndex >= 0) VariantCtx?.UnregisterChild(_variantChildIndex);
         if (_timelineToken != 0)
         {

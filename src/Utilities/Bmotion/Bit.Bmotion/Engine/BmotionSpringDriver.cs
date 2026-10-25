@@ -27,8 +27,9 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
     private double _pos;
     private double _vel;
     private double _currentDelayMs;
-    private double _lastTs = -1;
-    private double _startTs = -1;
+    private double _fastForwardMs;
+    private double _lastTs = double.NaN; // NaN = not started: a timestamp can be negative (a fast-forward from a clock near 0)
+    private double _startTs = double.NaN;
     private int _iteration;
     private bool _cancelled;
     // Reverse plays forward once then replays reversed; latches after the first swap so later
@@ -93,7 +94,10 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
         const double minRest = 1e-4;
         _restSpeed = Math.Max(config.RestSpeed * restScale, minRest);
         _restDelta = Math.Max(config.RestDelta * restScale, minRest);
-        _currentDelayMs = config.Delay * 1000;
+        // A negative delay starts the spring that far into its motion (WAAPI semantics, and what seeking a playing
+        // animation relies on): the time is simulated on the first frame.
+        _currentDelayMs = Math.Max(0, config.Delay * 1000);
+        _fastForwardMs = Math.Max(0, -config.Delay * 1000);
         _repeatDelayMs = config.RepeatDelay * 1000;
         _repeat = config.Repeat;
         _isInfinite = config.IsInfiniteRepeat;
@@ -110,10 +114,20 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
     {
         if (_cancelled) return true;
 
-        if (_startTs < 0) _startTs = timestamp;
+        if (_fastForwardMs > 0)
+        {
+            // Started part-way in: the skipped time is played frame by frame, so the spring is exactly where it would
+            // have been had it played (one big step would integrate it far more coarsely than frames do).
+            double ahead = _fastForwardMs;
+            _fastForwardMs = 0;
+            for (double t = timestamp - ahead; t < timestamp; t += 1000.0 / 60)
+                if (Tick(t)) return true;
+        }
+
+        if (double.IsNaN(_startTs)) _startTs = timestamp;
         if (timestamp - _startTs < _currentDelayMs) { _apply(_pos); return false; }
 
-        if (_lastTs < 0) _lastTs = timestamp;
+        if (double.IsNaN(_lastTs)) _lastTs = timestamp;
 
         double dt = Math.Min((timestamp - _lastTs) / 1000.0, 0.064);
         _lastTs = timestamp;
@@ -158,7 +172,7 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
                 }
                 _pos = _from;
                 _vel = _initialVel;
-                _lastTs = -1;
+                _lastTs = double.NaN;
                 _startTs = timestamp;            // re-arm the delay window for this repeat
                 _currentDelayMs = _repeatDelayMs;
                 return false;

@@ -53,11 +53,12 @@ and `BmotionAnimateService` for the complete API surface.
   zero-velocity springs on transform/opacity) are pre-sampled in C# and run on the browser's
   Web Animations API off the main thread; everything else runs on the C# rAF engine over
   synchronous interop.
-- ⚠️ **Blazor Server** - the compositor path works (it needs only async interop), so
-  enter/exit/hover/tap/variant animations on transform + opacity play normally, and drag follows
-  the pointer a round trip behind (one position, and one `OnDrag`, per frame). Features that require the per-frame
-  loop - inertia (a throw lands where it would have come to rest), color/dimension interpolation,
-  keyframe arrays off the compositor - degrade to instant state changes.
+- ✅ **Blazor Server** - the browser plays the same animations: transforms, opacity, colours,
+  sizes, filters, keyframes, springs, inertia and arcs, on enter, exit, gestures and variants
+  alike. What only a timeline can't express is recorded by the engine and played by the browser.
+  Drag stays under the pointer: the browser shows it until .NET catches up, and `OnDrag` runs
+  once per frame, a round trip behind. Only what needs the per-frame loop - `OnUpdate`/`OnFrame`
+  callbacks and SVG `d`/`points` morphs - lands on its target at once.
 - ✅ **Prerendering / static SSR** - by default elements render their `Initial` state and animate
   once interactive. Set `o.Prerender = BmPrerenderMode.Final` to serve them at rest (visible,
   indexable), or `BmPrerenderMode.Animate` to play the enter animation in pure CSS straight from the
@@ -67,7 +68,7 @@ and `BmotionAnimateService` for the complete API surface.
   takes each prerendered element over at rest instead of replaying its enter animation.
 
 Inject **`BmotionCapabilities`** to detect the current mode instead of guessing:
-`Caps.SupportsFrameLoop` is `false` on Server (inertia/interpolation degrade to instant),
+`Caps.SupportsFrameLoop` is `false` on Server (per-frame callbacks and SVG path morphs land at once),
 `Caps.SupportsCompositor` is always `true`, and `Caps.IsPrerendering` is `true` while the page is
 being prerendered (when the other flags describe the server, not the runtime that takes over). On
 Server, the first animation that collapses to an instant change also logs a one-time warning so the

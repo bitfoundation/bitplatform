@@ -274,11 +274,11 @@ public static class BmotionRecipeCatalog
                     <div class="handle" />
                 </Bmotion>
                 """,
-            Notes = "On Blazor Server drag works a round trip behind the pointer - each position travels to the " +
-                    "server and back before the element moves - and the throw's momentum plays in the browser as a " +
-                    "recording. Gate it on BmotionCapabilities.SupportsFrameLoop where that lag is not acceptable, " +
-                    "and give the server path a non-dragging equivalent. DragElastic controls how far past the " +
-                    "constraint the element can be pulled before it resists."
+            Notes = "On Blazor Server the browser keeps the dragged element under the pointer while each position " +
+                    "travels to the server (OnDrag runs a round trip behind), and the throw's momentum plays in the " +
+                    "browser as a recording. Don't put a CSS translate of your own on a draggable element there: the " +
+                    "drag uses it while .NET catches up. DragElastic controls how far past the constraint the element " +
+                    "can be pulled before it resists."
         },
         new()
         {

@@ -14,7 +14,7 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
     private readonly BmColorSpace _colorSpace;
     private readonly Action<string> _apply;
 
-    private double _startTime = -1;
+    private double _startTime = double.NaN; // NaN = not started: a start can be negative (a negative delay near clock 0)
     private bool _cancelled;
     private int _iteration;
     private bool _reversed;
@@ -89,7 +89,7 @@ internal sealed class BmotionColorKeyframesDriver : IBmotionAnimationDriver
         // remove the driver immediately after Cancel(), so this branch is defensive only.
         if (_cancelled) return true;
 
-        if (_startTime < 0) _startTime = timestamp + _delayMs;
+        if (double.IsNaN(_startTime)) _startTime = timestamp + _delayMs;
         if (timestamp < _startTime) { _apply(_curFrames[0]); return false; }
 
         double t = _durationMs > 0 ? Math.Min((timestamp - _startTime) / _durationMs, 1.0) : 1.0;

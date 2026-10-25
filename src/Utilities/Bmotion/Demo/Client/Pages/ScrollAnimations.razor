@@ -60,7 +60,21 @@
                 <div class="scroll-fill full-width" />
             </Bmotion>
         </div>
+        <span class="demo-label">BmScrollTimeline.Page().Smoothed() &middot; the same, through a spring</span>
+        <div class="scroll-track">
+            <Bmotion Timeline="BmScrollTimeline.Page().Smoothed()" Animate="Bm.To(scaleX: [0, 1])">
+                <div class="scroll-fill full-width" />
+            </Bmotion>
+        </div>
     </div>
+
+    <p>
+        <code>.Smoothed()</code> makes the animation follow the scroll through a spring instead of exactly -
+        motion.dev's <code>useSpring(scrollYProgress)</code> - so a flick of the wheel glides rather than jumps.
+        Pass your own <code>Bm.Spring(...)</code> for a different feel. A native timeline can't be smoothed, so a
+        smoothed one is scrubbed by the bridge with the spring stepped in the browser: still no interop per frame,
+        on WebAssembly and Blazor Server alike.
+    </p>
 
     <div class="demo-row">
         @foreach (var card in _timelineCards)
@@ -386,6 +400,13 @@
            the browser's own ScrollTimeline drives it on the compositor. *@
         <div class="scroll-track">
             <Bmotion Timeline="BmScrollTimeline.Page()" Animate="Bm.To(scaleX: [0, 1])">
+                <div class="scroll-fill" />
+            </Bmotion>
+        </div>
+
+        @* The same bar following the scroll through a spring: a flick glides instead of jumping. *@
+        <div class="scroll-track">
+            <Bmotion Timeline="BmScrollTimeline.Page().Smoothed()" Animate="Bm.To(scaleX: [0, 1])">
                 <div class="scroll-fill" />
             </Bmotion>
         </div>

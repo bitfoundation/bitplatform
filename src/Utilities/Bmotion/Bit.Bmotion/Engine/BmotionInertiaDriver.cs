@@ -28,9 +28,10 @@ internal sealed class BmotionInertiaDriver : IBmotionAnimationDriver
     private readonly Action<double> _apply;
 
     private double _elapsed;
-    private double _lastTs = -1;
-    private double _startTs = -1;
+    private double _lastTs = double.NaN; // NaN = not started: a timestamp can be negative (a fast-forward from a clock near 0)
+    private double _startTs = double.NaN;
     private bool _cancelled;
+    private double _fastForwardMs;
     private BmotionSpringDriver? _bounce;
 
     public BmotionInertiaDriver(double from, BmotionTransitionConfig config, Action<double> apply)
@@ -53,7 +54,9 @@ internal sealed class BmotionInertiaDriver : IBmotionAnimationDriver
         // Rest delta must be strictly positive, otherwise the completion test
         // (|target - pos| < restDelta) can never pass and the driver runs forever.
         _restDelta = config.InertiaRestDelta > 0 ? config.InertiaRestDelta : 0.01;
-        _delayMs = config.Delay * 1000;
+        // A negative delay starts the coast that far in (WAAPI semantics, and what seeking relies on).
+        _delayMs = Math.Max(0, config.Delay * 1000);
+        _fastForwardMs = Math.Max(0, -config.Delay * 1000);
         _min = config.InertiaMin;
         _max = config.InertiaMax;
         _bounceStiffness = config.BounceStiffness is > 0 and var k ? k : 500;
@@ -128,19 +131,29 @@ internal sealed class BmotionInertiaDriver : IBmotionAnimationDriver
     {
         if (_cancelled) return true;
 
-        if (_startTs < 0) _startTs = timestamp;
+        if (_fastForwardMs > 0)
+        {
+            // Started part-way in: the skipped time is played frame by frame, so a bound crossed meanwhile still
+            // hands over to the bounce exactly where it would have.
+            double ahead = _fastForwardMs;
+            _fastForwardMs = 0;
+            for (double t = timestamp - ahead; t < timestamp; t += 1000.0 / 60)
+                if (Tick(t)) return true;
+        }
+
+        if (double.IsNaN(_startTs)) _startTs = timestamp;
         if (timestamp - _startTs < _delayMs) { _apply(_start); return false; }
 
         if (_bounce is not null) return _bounce.Tick(timestamp);
 
         // Let go outside the bounds: straight back, carrying the release velocity.
-        if (_lastTs < 0 && IsOutOfBounds(_start))
+        if (double.IsNaN(_lastTs) && IsOutOfBounds(_start))
         {
             _bounce = BounceFrom(_start, _startVelocity);
             return _bounce.Tick(timestamp);
         }
 
-        if (_lastTs < 0) _lastTs = timestamp;
+        if (double.IsNaN(_lastTs)) _lastTs = timestamp;
 
         _elapsed += Math.Min((timestamp - _lastTs) / 1000.0, 0.064);
         _lastTs = timestamp;

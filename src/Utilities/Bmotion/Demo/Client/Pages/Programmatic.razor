@@ -23,8 +23,9 @@
         element and animates them together, with the optional <strong>stagger</strong> spreading
         their start times. The call returns <strong>BmAnimationControls</strong>: awaitable for
         completion, and holding <code>Pause</code>, <code>Play</code>, <code>SetSpeed</code>,
-        <code>Stop</code> (freeze where it is) and <code>Complete</code> (jump to the end). Start
-        the slow run below and then interfere with it.
+        <code>Stop</code> (freeze where it is) and <code>Complete</code> (jump to the end). It also knows where
+        it is - <code>Duration</code>, <code>Time</code>, <code>Progress</code> and <code>State</code> - and
+        <code>Seek</code> moves it: the slider below scrubs the run. Start the slow run and then interfere with it.
     </p>
 
     <div class="demo-row">
@@ -46,6 +47,13 @@
         <button class="btn btn-secondary" @onclick="@(() => _controls?.Complete())">Complete</button>
         <button class="btn btn-secondary" @onclick="ResetDotsAsync">Reset</button>
         <span class="demo-label">@_runState</span>
+    </div>
+
+    <div class="bb-toolbar">
+        <label class="demo-label" for="prog-scrub">Scrub</label>
+        <input id="prog-scrub" type="range" min="0" max="1000" value="@_scrub" disabled="@(_controls is null)"
+               @oninput="Scrub" />
+        <span class="demo-label">@_scrubLabel</span>
     </div>
 
     <CodeSnippet Code="@_selectorCode" />
@@ -238,6 +246,8 @@
     private BmAnimationControls? _controls;
     private BmAnimationControls? _sequenceControls;
     private string _runState = "idle";
+    private int _scrub;
+    private string _scrubLabel = "";
 
     private double _count;
 
@@ -275,6 +285,8 @@
     private async Task RunAsync()
     {
         _runState = "running…";
+        _scrub = 0;
+        _scrubLabel = "";
         var controls = await Motion.AnimateAsync(
             ".prog-dot",
             Bm.To(y: [0, -60, 0], scale: [1, 1.25, 1]),
@@ -292,8 +304,21 @@
         StateHasChanged();
     }
 
+    // The slider holds the run where it is put: paused on the first touch, Play carries on from there.
+    private void Scrub(ChangeEventArgs e)
+    {
+        if (_controls is null || int.TryParse(e.Value?.ToString(), out var value) is false) return;
+        _scrub = value;
+        if (_controls.State is BmPlaybackState.Running) _controls.Pause();
+        _controls.Seek(value / 1000.0 * _controls.Duration);
+        _scrubLabel = $"{_controls.Time:0.00} s of {_controls.Duration:0.00} s · {_controls.State}";
+        _runState = "scrubbing";
+    }
+
     private async Task ResetDotsAsync()
     {
+        _scrub = 0;
+        _scrubLabel = "";
         _controls?.Stop();
         _controls = null;
         _runState = "idle";
@@ -366,6 +391,14 @@
             void Pause()    => _controls?.Pause();
             void Faster()   => _controls?.SetSpeed(3);
             void JumpToEnd()=> _controls?.Complete();   // Stop() freezes it where it is instead
+
+            // A scrubber: <input type="range" min="0" max="1000" @oninput="Scrub" />
+            void Scrub(ChangeEventArgs e)
+            {
+                if (_controls is null) return;
+                _controls.Pause();
+                _controls.Seek(int.Parse(e.Value!.ToString()!) / 1000.0 * _controls.Duration);
+            }
         }
         """;
 

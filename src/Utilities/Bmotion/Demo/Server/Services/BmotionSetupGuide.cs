@@ -238,7 +238,7 @@ public static class BmotionSetupGuide
         | Tweens and zero-velocity springs on transforms, opacity, colours, same-unit lengths, filters, shadows, clip paths | **Full.** A two-keyframe Web Animation with the curve as its easing, handed over in one async call |
         | Keyframe arrays, per-property transitions, mirrored repeats, repeat delays, arc paths, springs with velocity, inertia, gradients, custom properties | **Full.** Recorded by the engine at 60 Hz and played by the browser - more keyframes than a timeline, but no frame loop |
         | Enter, exit, hover, tap and variant animations | **Full** |
-        | Drag | **Works**, a round trip behind the pointer: one position (and one `OnDrag`) per frame over async interop. A throw's momentum plays in the browser as a recording |
+        | Drag | **Full.** The browser keeps the element under the pointer (the CSS `translate` property covers the round trip); one position, and one `OnDrag`, reach .NET per frame. A throw's momentum plays in the browser as a recording |
         | `Transition.OnUpdate` | **Not available** - a per-frame callback needs the frame loop, so the animation lands at once |
         | A component's `OnUpdate` | The animation plays in the browser, but `OnUpdate` is not called frame by frame |
         | SVG `d`/`points` morphs | **Jumps to the target** - Web Animations cannot animate attributes |
@@ -318,8 +318,8 @@ public static class BmotionSetupGuide
            recording, either way - so the first visit and the second look the same. Prefer `x`, `y`,
            `scale`, `rotate` and `opacity` where they do the job: they run on the compositor.
         2. Gate what only the frame loop plays - `Transition.OnUpdate`, SVG `d` morphs, an endless
-           `BmRepeat.Reverse` - and anything that should feel immediate under the pointer, like drag
-           (a round trip behind it on Server), on the capability flag, and give the Server path a static
+           `BmRepeat.Reverse` - and any `OnDrag` handler whose result must track the pointer frame by frame (it
+           runs a round trip behind on Server), on the capability flag, and give the Server path a static
            equivalent:
 
         ```razor

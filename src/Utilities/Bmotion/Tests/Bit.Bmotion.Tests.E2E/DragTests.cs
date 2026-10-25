@@ -3,7 +3,8 @@
 /// <summary>
 /// Drag with a real pointer: movement, axes, constraints, elasticity, momentum, snapping, handles, drag controls,
 /// WhileDrag and direction lock. Positions are asserted on every runtime; how the element gets there differs (the
-/// WebAssembly frame loop follows the pointer frame by frame, Blazor Server follows it a round trip behind).
+/// WebAssembly frame loop follows the pointer frame by frame; on Blazor Server the bridge shows the drag itself while
+/// .NET catches up a round trip later).
 /// </summary>
 [TestClass]
 public sealed class DragTests : BmotionPageTest
@@ -22,6 +23,51 @@ public sealed class DragTests : BmotionPageTest
         // Once per pointer move on WebAssembly; on Blazor Server the moves are coalesced to one per frame.
         Assert.IsTrue(await Event("free:move").CountAsync() >= 1, "OnDrag should fire while the pointer moves.");
         await WaitForStateAsync("#free", "s => Math.abs(s.x - 80) < 1 && Math.abs(s.y - 30) < 1");
+    }
+
+    [TestMethod]
+    public async Task WhileDragging_TheElementIsUnderThePointer_WithoutWaitingForDotNet()
+    {
+        await ExpectEventAsync("armed:free");
+        // How far the element is from where the pointer has dragged it: in the pointermove itself (after Bmotion's
+        // own listener) and on the next frame - from where the pointer is by then, the last move that frame.
+        await Page.EvaluateAsync("""
+            () => {
+                const el = document.getElementById('free');
+                window.__inEvent = []; window.__nextFrame = [];
+                let start = null, last = null, queued = false;
+                const offBy = e => {
+                    const r = el.getBoundingClientRect();
+                    return Math.hypot((r.left - start.left) - (e.clientX - start.x), (r.top - start.top) - (e.clientY - start.y));
+                };
+                el.addEventListener('pointerdown', e => {
+                    const r = el.getBoundingClientRect();
+                    start = { x: e.clientX, y: e.clientY, left: r.left, top: r.top };
+                });
+                el.addEventListener('pointermove', e => {
+                    if (!start || !e.buttons) return;
+                    last = e;
+                    window.__inEvent.push(offBy(e));
+                    if (queued) return;
+                    queued = true;
+                    requestAnimationFrame(() => { queued = false; window.__nextFrame.push(offBy(last)); });
+                });
+            }
+            """);
+
+        await DragByAsync("#free", 120, 40, steps: 10);
+        await ExpectEventAsync("free:end");
+
+        var inEvent = await Page.EvaluateAsync<double[]>("() => window.__inEvent");
+        var nextFrame = await Page.EvaluateAsync<double[]>("() => window.__nextFrame");
+        Assert.IsTrue(nextFrame.Length >= 5 && nextFrame.All(d => d < 1), $"Behind the pointer on the frame after a move: {string.Join(", ", nextFrame.Select(d => d.ToString("0.#")))}");
+        // Without a frame loop (Blazor Server) .NET hears of a move a round trip later; the element mustn't wait for it.
+        if (!FrameLoop)
+            Assert.IsTrue(inEvent.All(d => d < 1), $"Waited for the server: {string.Join(", ", inEvent.Select(d => d.ToString("0.#")))}");
+
+        // Once .NET has caught up, nothing of the local offset is left.
+        await WaitForStateAsync("#free", "s => Math.abs(s.x - 120) < 1 && Math.abs(s.y - 40) < 1");
+        await Page.WaitForFunctionAsync("() => document.getElementById('free').style.translate === ''");
     }
 
     [TestMethod]
@@ -58,7 +104,9 @@ public sealed class DragTests : BmotionPageTest
         await ExpectEventAsync("pixels:end");
         await WaitForStateAsync("#pixels", "s => Math.abs(s.x - 50) < 1");
 
-        await DragByAsync("#pixels", -300, 0);
+        // Far enough past the -50 bound, while staying inside the viewport: Firefox under automation reports a move
+        // outside it at a wrong position and never delivers the release.
+        await DragByAsync("#pixels", -180, 0);
         await ExpectEventAsync("pixels:end", 2);
         await WaitForStateAsync("#pixels", "s => Math.abs(s.x + 50) < 1");
     }
@@ -82,8 +130,9 @@ public sealed class DragTests : BmotionPageTest
     {
         await ExpectEventAsync("armed:parent");
 
-        // The track is 400x80 and the element 30x30: it can travel 370 across and 50 down.
-        await DragByAsync("#parent", 600, 200);
+        // The track is 400x80 and the element 30x30: it can travel 370 across and 50 down. The pointer goes past both,
+        // but stays inside the viewport (see PixelConstraints_WithoutElasticity_StopAtTheBound).
+        await DragByAsync("#parent", 600, 150);
 
         await ExpectEventAsync("parent:end");
         await WaitForStateAsync("#parent", "s => Math.abs(s.x - 370) < 1 && Math.abs(s.y - 50) < 1");
@@ -189,6 +238,21 @@ public sealed class DragTests : BmotionPageTest
         Assert.IsTrue(furthest < 150 + 60, $"It flew {furthest - 150:0.##}px past the bound: {trace}");
         var rest = await WaitForRestAsync("#bounce");
         Assert.AreEqual(150, rest.X, 0.5, "and it settles on the bound");
+    }
+
+    [TestMethod]
+    public async Task Momentum_HeldStillBeforeTheRelease_ThrowsNothing()
+    {
+        await ExpectEventAsync("armed:bounce");
+
+        // A quick move, then the pointer stands still a while before it lets go: nothing is left to throw.
+        await DragByAsync("#bounce", 60, 0, steps: 3, release: false);
+        await Page.WaitForTimeoutAsync(250);
+        await Page.Mouse.UpAsync();
+
+        await ExpectEventAsync("bounce:end");
+        var rest = await WaitForRestAsync("#bounce");
+        Assert.AreEqual(60, rest.X, 1, "it stays where it was let go");
     }
 
     [TestMethod]

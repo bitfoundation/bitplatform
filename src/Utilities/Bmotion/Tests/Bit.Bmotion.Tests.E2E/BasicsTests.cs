@@ -103,6 +103,20 @@ public sealed class BasicsTests : BmotionPageTest
     }
 
     [TestMethod]
+    public async Task ALengthBetweenUnits_PassesThroughTheSizesBetween_AndKeepsTheUnitItWasGiven()
+    {
+        // 100px to 50% of a 400px track: it grows through the widths between instead of jumping to 200px.
+        await ClickAsync("play");
+        var samples = await SampleAsync("#units", 400);
+        await ExpectEventAsync("units:complete");
+        await WaitForStateAsync("#units", "s => Math.abs(s.width - 200) < 0.5");
+
+        Assert.IsTrue(samples.Any(s => s.Width is > 110 and < 190), $"it jumped: {string.Join(" ", samples.Select(s => s.Width.ToString("0")))}");
+        // And it is 50% now, not 200px: it follows its track.
+        Assert.AreEqual("50%", await Page.Locator("#units").EvaluateAsync<string>("el => el.style.width"));
+    }
+
+    [TestMethod]
     public async Task Spring_OvershootsItsTargetThenSettlesOnIt()
     {
         await ClickAsync("play");

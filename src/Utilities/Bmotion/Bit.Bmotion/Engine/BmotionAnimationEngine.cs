@@ -363,6 +363,58 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         }
     }
 
+    // ── Seeking (BmAnimationControls) ─────────────────────────────────────────
+
+    /// <summary>
+    /// The element's values for <paramref name="keys"/> as an animation about to start on them would start from -
+    /// reading off the page any it has never seen - which is where a seek puts the element back to before it plays the
+    /// animation again from part-way in.
+    /// </summary>
+    internal async ValueTask<Dictionary<string, object?>> CaptureStartAsync(string elementId, IReadOnlyCollection<string> keys)
+    {
+        if (!_elements.TryGetValue(elementId, out var state)) return new();
+        // A browser animation still playing on these keys is where the new one starts from: folded in now (as the
+        // start would do a moment later anyway) rather than read as the value it set out from.
+        InterruptWaapiOverlaps(elementId, state, keys);
+        if (state.UnknownKeys(keys) is { } unknown)
+            await ReadStylesheetAsync(elementId, state, new Dictionary<string, object?>(), unknown, null, null, null);
+        return CaptureValues(elementId, keys);
+    }
+
+    /// <summary>
+    /// Puts the element back to <paramref name="start"/> so an animation can be played again from part-way in: what
+    /// plays on it is cancelled without committing, and leaves no velocity behind for the replay to inherit.
+    /// </summary>
+    internal void ResetForSeek(string elementId, Dictionary<string, object?> start)
+    {
+        if (!_elements.TryGetValue(elementId, out var state)) return;
+        var tokens = state.RealizeWaapiPlans(null);
+        if (tokens != null) CancelWaapiTokens(elementId, tokens, commit: false);
+        state.CancelAll();
+        state.SetInstant(start);
+        state.ForgetVelocity();
+        KickFlush(elementId, state);
+    }
+
+    /// <summary>
+    /// Moves the browser animations playing on the element to <paramref name="playedMs"/> of animation time (delay
+    /// included) - in place and exact, cheap enough to scrub with. False when the element has anything else playing (a
+    /// frame-loop driver) or nothing at all: the seek then plays the animation again from there instead.
+    /// </summary>
+    internal bool TrySeekBrowserAnimations(string elementId, double playedMs)
+    {
+        if (!_elements.TryGetValue(elementId, out var state) || !state.HasWaapiPlans || state.HasActiveAnimations) return false;
+        state.SeekWaapiPlans(Environment.TickCount64, playedMs);
+        _ = SeekAsync();
+        return true;
+
+        async Task SeekAsync()
+        {
+            try { await _interop.SeekWaapiAnimationsAsync(elementId, playedMs); }
+            catch { /* the element may be gone */ }
+        }
+    }
+
     /// <summary>Stop animations on specific properties (or all when <paramref name="properties"/> is null/empty).</summary>
     public void Stop(string elementId, string[]? properties)
     {
@@ -456,6 +508,18 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     /// synchronous JS pointer-move call. The position will be included in the
     /// next <see cref="ComputeFrame"/> output.
     /// </summary>
+    /// <summary>
+    /// A drag starts. On WebAssembly the drag owns the element's transform from the press, not only from its first
+    /// move: an overlay it starts with (<c>WhileDrag</c>) then plays on the frame loop, composed with the drag, rather
+    /// than in the browser - whose transform keyframes would hold the element at its starting place, the drag's moves
+    /// hidden underneath, until they ended. On Blazor Server the frame loop has nothing to animate with, and the bridge
+    /// shows the drag on top of a browser-played overlay anyway (the CSS translate property), so nothing changes there.
+    /// </summary>
+    internal void BeginDrag(string elementId)
+    {
+        if (_interop.IsInProcess && _elements.TryGetValue(elementId, out var state)) state.BeginDrag();
+    }
+
     public void SetDragPosition(string elementId, double x, double y)
     {
         if (!_elements.TryGetValue(elementId, out var state)) return;
@@ -1271,6 +1335,10 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             return (from, to, length);
         }
 
+        // Different units: the browser interpolates the two ends as calc() of both, as the mirror does.
+        if (IsInterpolableProperty(key) && BmotionElementAnimationState.MixedLengthMix(from, to) is { } lengths)
+            return (from, to, new BmotionElementAnimationState.WaapiPlan.StringTrack(lengths, to) { RewriteFinal = true });
+
         // A "none" end plays as the other end's neutral values, sent explicitly so the browser and the mirror agree;
         // the authored "none" is written once it is over.
         var (mixFrom, mixTo) = BmotionStringMixer.MixEnds(key, from, to);
@@ -1347,7 +1415,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         int iterations = 1;
         if (!perKey)
         {
-            delayMs = Math.Max(0, config.Delay * 1000);
+            delayMs = config.Delay * 1000; // a negative delay starts the recording that far in, as it does a timeline
             record.Delay = 0;
         }
         if (config.IsInfiniteRepeat)
@@ -1484,7 +1552,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         }
         if (native is null) return 0;
 
-        if (native == false)
+        if (native == false && timeline.Smoothing is null) // a smoothed one is always scrubbed
             _logger?.LogDebug(
                 "Bit.Bmotion: element '{ElementId}' is scroll-driven through the scroll-scrub fallback; "
                 + "this browser has no native ScrollTimeline/ViewTimeline.", elementId);

@@ -159,6 +159,37 @@ public class GestureLifecycleTests
     }
 
     [TestMethod]
+    public async Task WhileDrag_StartedAtThePress_DoesntTakeTheTransformFromTheDrag()
+    {
+        // On WebAssembly the overlay plays on the frame loop, composed with the drag: in the browser its transform
+        // keyframes would hold the element where the press found it, the drag's moves hidden, until they ended.
+        foreach (var inProcess in new[] { true, false })
+        {
+            using var ctx = new BmotionTestContext();
+            ctx.Interop.IsInProcess = inProcess;
+            var cut = RenderDraggable(ctx, null, []);
+            var el = Events(ctx, "box");
+
+            await cut.InvokeAsync(el.OnPointerDown_Drag); // no move yet
+            var overlay = ctx.Interop.ArgsOf("playWaapiAnimation").Where(a => (string?)a[0] == "box").ToList();
+            if (inProcess)
+            {
+                Assert.AreEqual(0, overlay.Count, "WebAssembly: the overlay is the frame loop's");
+                await cut.InvokeAsync(() => el.SetDragPosition(30, 0));
+                await ctx.RunFramesAsync(0, 600);
+                var state = State(ctx, "box");
+                Assert.AreEqual(30, state.Transforms["x"], 1e-6);
+                Assert.AreEqual(1.1, state.Transforms["scale"], 1e-6, "and plays alongside the drag");
+            }
+            else
+            {
+                // Blazor Server: the browser plays it (the frame loop can't), and the bridge shows the drag on top.
+                Assert.AreEqual(1, overlay.Count);
+            }
+        }
+    }
+
+    [TestMethod]
     public async Task Drag_SnapToOrigin_ReturnsHome_AndRaisesTheLifecycleInOrder()
     {
         using var ctx = new BmotionTestContext();

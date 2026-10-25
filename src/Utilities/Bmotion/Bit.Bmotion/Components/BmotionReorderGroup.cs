@@ -16,7 +16,8 @@ namespace Bit.Bmotion;
 /// </code>
 /// The reorder preview is transform-based: the list itself only re-renders once, on release,
 /// so item state is preserved and the drag stays smooth. Works for vertical (default) and
-/// horizontal lists; wrapping grids are not supported.
+/// horizontal lists, and wrapping grids (<see cref="Axis"/> = <see cref="BmDragAxis.Both"/>), where the dragged item
+/// takes the cell nearest its centre.
 /// <para>
 /// Keyboard users reorder too (<see cref="Keyboard"/>): Space or Enter on a focused item picks it up, the arrow keys
 /// along the list move it - the others making way as for a drag - Space or Enter drops it and Escape puts it back.
@@ -40,7 +41,11 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
     /// </summary>
     [Parameter] public Func<TItem, object>? ItemKey { get; set; }
 
-    /// <summary>The axis items are laid out (and dragged) along. Default: vertical.</summary>
+    /// <summary>
+    /// How the items are laid out, and dragged: <see cref="BmDragAxis.Y"/> (a column, the default),
+    /// <see cref="BmDragAxis.X"/> (a row), or <see cref="BmDragAxis.Both"/> - a wrapping grid, where an item is dragged
+    /// freely and takes the cell nearest its centre, and the arrow keys move it a cell at a time (up and down, a row).
+    /// </summary>
     [Parameter] public BmDragAxis Axis { get; set; } = BmDragAxis.Y;
 
     /// <summary>Template for each item. Its first root element becomes the draggable row.</summary>
@@ -60,6 +65,12 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
 
     /// <summary>Fires after a reorder is committed to <see cref="Items"/>.</summary>
     [Parameter] public EventCallback OnReorder { get; set; }
+
+    /// <summary>
+    /// Whether dragging an item near the edge of the list's scroll container - or the page - scrolls it, so an item
+    /// can be carried past what is in view (<see cref="Bmotion.DragAutoScroll"/>). Default: <c>true</c>.
+    /// </summary>
+    [Parameter] public bool AutoScroll { get; set; } = true;
 
     /// <summary>
     /// Whether keyboard users can reorder: Space/Enter picks the focused item up and drops it, the arrow keys along
@@ -88,12 +99,17 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
     private List<Entry> _visualOrder = new();
     private readonly Dictionary<object, double> _origStart = new(); // untransformed main-axis start per key
     private readonly Dictionary<object, double> _extent = new();    // main-axis size per key
-    private readonly Dictionary<object, double> _dispTarget = new();// last displacement target per key
+    private readonly Dictionary<object, (double X, double Y)> _dispTarget = new(); // last displacement target per key
+    // A grid's cells (Axis = Both) - where each item sat when the session started, which the items move between - and
+    // each item's own untransformed box.
+    private readonly List<(double Left, double Top, double Width, double Height)> _cells = new();
+    private readonly Dictionary<object, (double Left, double Top, double Width, double Height)> _box = new();
     private double _listStart;
     private double _gap;
     private bool _pendingTransformClear;
 
     private bool Horizontal => Axis == BmDragAxis.X;
+    private bool Grid => Axis == BmDragAxis.Both;
 
     protected override void OnParametersSet()
     {
@@ -142,7 +158,7 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
             builder.OpenComponent<Bmotion>(0);
             builder.SetKey(captured.Key);
             builder.AddComponentParameter(1, "Id", captured.Id);
-            builder.AddComponentParameter(2, "Drag", Horizontal ? BmDrag.X : BmDrag.Y);
+            builder.AddComponentParameter(2, "Drag", Grid ? BmDrag.Both : Horizontal ? BmDrag.X : BmDrag.Y);
             builder.AddComponentParameter(3, "DragMomentum", false);
             builder.AddComponentParameter(4, "WhileDrag", WhileDrag ?? (BmTarget?)Bm.To(scale: 1.03));
             builder.AddComponentParameter(5, "OnDragStart",
@@ -152,9 +168,10 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
             builder.AddComponentParameter(7, "OnDragEnd",
                 EventCallback.Factory.Create(this, () => HandleDragEndAsync(captured)));
             builder.AddComponentParameter(8, "DragHandle", HandleSelector);
-            builder.AddComponentParameter(9, "ChildContent",
+            builder.AddComponentParameter(9, "DragAutoScroll", AutoScroll);
+            builder.AddComponentParameter(10, "ChildContent",
                 (RenderFragment)(b => b.AddContent(0, ChildContent, captured.Item)));
-            builder.AddComponentReferenceCapture(10, o => captured.Ref = (Bmotion)o);
+            builder.AddComponentReferenceCapture(11, o => captured.Ref = (Bmotion)o);
             builder.CloseComponent();
         }
     }
@@ -222,6 +239,8 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
         _origStart.Clear();
         _extent.Clear();
         _dispTarget.Clear();
+        _cells.Clear();
+        _box.Clear();
 
         // Measure every row's untransformed position (its rect minus any in-flight transform
         // from a previous, still-settling reorder).
@@ -233,7 +252,9 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
             var xy = e.Ref.GetCurrentXY();
             _origStart[e.Key] = (Horizontal ? rect.Left - xy.X : rect.Top - xy.Y);
             _extent[e.Key] = Horizontal ? rect.Width : rect.Height;
+            _box[e.Key] = (rect.Left - xy.X, rect.Top - xy.Y, rect.Width, rect.Height);
         }
+        foreach (var e in _visualOrder) _cells.Add(_box[e.Key]);
 
         _listStart = _entries.Min(e => _origStart[e.Key]);
         // Derive the inter-item gap from the first adjacent pair (uniform-gap flex/grid lists).
@@ -258,6 +279,18 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
         if (_dragged != entry || !_measured || entry.Ref is null) return;
 
         var xy = entry.Ref.GetCurrentXY();
+        if (Grid)
+        {
+            // The cell nearest the dragged item's centre is its place; the others close up around it.
+            var box = _box[entry.Key];
+            int nearest = NearestCell(box.Left + (box.Width / 2) + xy.X, box.Top + (box.Height / 2) + xy.Y);
+            int at = _visualOrder.IndexOf(entry);
+            if (nearest == at) return;
+            _visualOrder.RemoveAt(at);
+            _visualOrder.Insert(nearest, entry);
+            AnimateDisplacements();
+            return;
+        }
         double offset = Horizontal ? xy.X : xy.Y;
         double center = _origStart[entry.Key] + _extent[entry.Key] / 2 + offset;
 
@@ -298,10 +331,7 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
     // move once the item is dropped.
     private async Task CommitAsync(Entry entry)
     {
-        int index = _visualOrder.IndexOf(entry);
-        double target = SlotStart(index) - _origStart[entry.Key];
-        var values = new Dictionary<string, object?> { [Horizontal ? "x" : "y"] = target };
-        await Engine.AnimateToAwaitAsync(entry.Id, values, DisplacementConfig());
+        await Engine.AnimateToAwaitAsync(entry.Id, DisplacementValues(entry, _visualOrder.IndexOf(entry)), DisplacementConfig());
 
         if (_dragged != entry) return; // a new drag or external change superseded this session
         _dragged = null;
@@ -348,7 +378,7 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
         foreach (var entry in _entries.ToArray()) // a snapshot: a parameter update can rebuild the list while this awaits
         {
             if (!_keysAttached.Add(entry.Id)) continue;
-            try { await Interop.AttachReorderKeysAsync(entry.Id, _keysRef, Horizontal, HandleSelector); }
+            try { await Interop.AttachReorderKeysAsync(entry.Id, _keysRef, Grid ? "both" : Horizontal ? "x" : "y", HandleSelector); }
             catch { _keysAttached.Remove(entry.Id); /* not attached yet: the next render retries */ }
         }
     }
@@ -376,7 +406,11 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
 
     /// <summary>An arrow key while an item is held: moves it one place. Not for direct use.</summary>
     [JSInvokable]
-    public Task OnReorderMove(string elementId, int delta) => Step(() => MoveHeldAsync(elementId, delta));
+    public Task OnReorderMove(string elementId, int delta) => Step(() => MoveHeldAsync(elementId, Math.Sign(delta)));
+
+    /// <summary>Up or down while an item of a grid is held: moves it a row. Not for direct use.</summary>
+    [JSInvokable]
+    public Task OnReorderMoveRow(string elementId, int rows) => Step(() => MoveHeldAsync(elementId, Math.Sign(rows) * Columns()));
 
     /// <summary>Space, Enter or focus leaving a held item: drops it where it is. Not for direct use.</summary>
     [JSInvokable]
@@ -408,15 +442,13 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
     {
         if (_held is not { } entry || entry.Id != elementId || _dragged != entry || !_measured) return;
         int from = _visualOrder.IndexOf(entry);
-        int to = Math.Clamp(from + Math.Sign(delta), 0, _visualOrder.Count - 1);
+        int to = Math.Clamp(from + delta, 0, _visualOrder.Count - 1);
         if (to == from) return;
         _visualOrder.RemoveAt(from);
         _visualOrder.Insert(to, entry);
         // The others make way exactly as for a drag; the held item moves into its new slot itself.
         AnimateDisplacements();
-        _ = Engine.AnimateToAsync(entry.Id,
-            new Dictionary<string, object?> { [Horizontal ? "x" : "y"] = SlotStart(to) - _origStart[entry.Key] },
-            DisplacementConfig());
+        _ = Engine.AnimateToAsync(entry.Id, DisplacementValues(entry, to), DisplacementConfig());
         await AnnounceAsync(BmReorderEvent.Moved, entry);
     }
 
@@ -442,9 +474,7 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
             // Everything goes back to where it was; nothing is committed.
             _visualOrder = before;
             AnimateDisplacements();
-            _ = Engine.AnimateToAsync(entry.Id,
-                new Dictionary<string, object?> { [Horizontal ? "x" : "y"] = SlotStart(_visualOrder.IndexOf(entry)) - _origStart[entry.Key] },
-                DisplacementConfig());
+            _ = Engine.AnimateToAsync(entry.Id, DisplacementValues(entry, _visualOrder.IndexOf(entry)), DisplacementConfig());
             _dragged = null;
             try { await Interop.ApplyStylesAsync(entry.Id, new Dictionary<string, string> { ["position"] = "", ["zIndex"] = "" }); }
             catch { /* cosmetic only */ }
@@ -482,12 +512,51 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
         {
             var e = _visualOrder[i];
             if (e == _dragged) continue;
-            double target = SlotStart(i) - _origStart[e.Key];
-            if (_dispTarget.TryGetValue(e.Key, out double prev) && prev == target) continue;
+            var target = Displacement(e, i);
+            if (_dispTarget.TryGetValue(e.Key, out var prev) && prev == target) continue;
             _dispTarget[e.Key] = target;
-            var values = new Dictionary<string, object?> { [Horizontal ? "x" : "y"] = target };
-            _ = Engine.AnimateToAsync(e.Id, values, DisplacementConfig());
+            _ = Engine.AnimateToAsync(e.Id, DisplacementValues(e, i), DisplacementConfig());
         }
+    }
+
+    // How far the item at visual index `index` is moved from its own place: along the list, or to a grid's cell.
+    private (double X, double Y) Displacement(Entry e, int index)
+    {
+        if (Grid)
+        {
+            var (cell, box) = (_cells[index], _box[e.Key]);
+            return (cell.Left - box.Left, cell.Top - box.Top);
+        }
+        double along = SlotStart(index) - _origStart[e.Key];
+        return Horizontal ? (along, 0) : (0, along);
+    }
+
+    private Dictionary<string, object?> DisplacementValues(Entry e, int index)
+    {
+        var (x, y) = Displacement(e, index);
+        if (Grid) return new() { ["x"] = x, ["y"] = y };
+        return Horizontal ? new() { ["x"] = x } : new() { ["y"] = y };
+    }
+
+    // The grid cell whose centre is nearest (x, y).
+    private int NearestCell(double x, double y)
+    {
+        int nearest = 0;
+        double best = double.MaxValue;
+        for (int i = 0; i < _cells.Count; i++)
+        {
+            var c = _cells[i];
+            double d = Math.Pow(c.Left + (c.Width / 2) - x, 2) + Math.Pow(c.Top + (c.Height / 2) - y, 2);
+            if (d < best) (best, nearest) = (d, i);
+        }
+        return nearest;
+    }
+
+    // How many cells a grid row holds: those level with the first.
+    private int Columns()
+    {
+        if (!Grid || _cells.Count == 0) return 1;
+        return Math.Max(1, _cells.Count(c => Math.Abs(c.Top - _cells[0].Top) < 1));
     }
 
     private BmotionTransitionConfig DisplacementConfig()

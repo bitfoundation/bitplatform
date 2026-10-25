@@ -144,8 +144,8 @@ public sealed class BmotionInterop : IBmotionInterop
         => await (await Module()).InvokeVoidAsync("setInert", elementId, inert);
 
     public async ValueTask AttachReorderKeysAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(
-        string elementId, DotNetObjectReference<T> dotnetRef, bool horizontal, string? handleSelector) where T : class
-        => await (await Module()).InvokeVoidAsync("attachReorderKeys", elementId, dotnetRef, horizontal, handleSelector);
+        string elementId, DotNetObjectReference<T> dotnetRef, string axis, string? handleSelector) where T : class
+        => await (await Module()).InvokeVoidAsync("attachReorderKeys", elementId, dotnetRef, axis, handleSelector);
 
     public async ValueTask FocusAsync(string elementId)
         => await (await Module()).InvokeVoidAsync("focusElement", elementId);
@@ -224,6 +224,27 @@ public sealed class BmotionInterop : IBmotionInterop
             "playWaapiFlip", elementId, dx, dy, sx, sy, durationMs, easingStr, finalTransform,
             originX, originY, dotnetRef);
 
+    public async ValueTask<BmotionBoundingRect?> MeasureAndHoldLayoutAsync(string elementId, BmotionMeasureOptions options,
+        bool translate, bool scale, double anchorX, double anchorY)
+        => await (await Module()).InvokeAsync<BmotionBoundingRect?>("measureAndHoldLayout", elementId,
+            new Dictionary<string, object?>
+            {
+                ["trackScroll"] = options.TrackScroll,
+                ["fixedRoot"] = options.FixedRoot,
+            },
+            translate, scale, anchorX, anchorY);
+
+    public async ValueTask ReleaseLayoutHoldAsync(string elementId)
+        => await (await Module()).InvokeVoidAsync("releaseLayoutHold", elementId);
+
+    public async ValueTask PlayLayoutCrossfadeAsync(string leadId, string followId, double dx, double dy, double sx, double sy,
+        double durationMs, string easingStr, double originX, double originY)
+        => await (await Module()).InvokeVoidAsync(
+            "playLayoutCrossfade", leadId, followId, dx, dy, sx, sy, durationMs, easingStr, originX, originY);
+
+    public async ValueTask CancelLayoutCrossfadeAsync(string elementId)
+        => await (await Module()).InvokeVoidAsync("cancelLayoutCrossfade", elementId);
+
     // ── WAAPI compositor offload ──────────────────────────────────────────────
 
     /// <summary>Whether the browser supports the <c>linear()</c> easing function (spring offload).</summary>
@@ -261,6 +282,12 @@ public sealed class BmotionInterop : IBmotionInterop
     }
 
     /// <summary>Sets the playback rate of the element's compositor animations (1 = realtime, 0 = paused).</summary>
+    public async ValueTask SeekWaapiAnimationsAsync(string elementId, double playedMs)
+    {
+        if (!_moduleTask.IsValueCreated) return;
+        await (await Module()).InvokeVoidAsync("seekWaapiAnimations", elementId, playedMs);
+    }
+
     public async ValueTask SetWaapiPlaybackRateAsync(string elementId, double rate)
     {
         if (!_moduleTask.IsValueCreated) return;

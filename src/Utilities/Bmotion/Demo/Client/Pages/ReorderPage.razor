@@ -56,8 +56,7 @@
     <p>
         <code>Axis="BmDragAxis.X"</code> runs the same machinery sideways for a row of tabs, a
         toolbar or a card rail. Only the axis changes - the displacement, the commit and the binding
-        all behave identically. Wrapping grids are not supported: the group needs a single line to
-        reason about order along.
+        all behave identically.
     </p>
 
     <div class="demo-row">
@@ -73,6 +72,52 @@
     <p class="reorder-readout">Current order: @string.Join(" → ", _stages)</p>
 
     <CodeSnippet Code="@_horizontalCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Grids</h3>
+    <p>
+        <code>Axis="BmDragAxis.Both"</code> reorders a layout that wraps - a CSS grid, a
+        <code>flex-wrap</code> row. The dragged tile takes the cell nearest its centre and the others close up
+        around it in reading order. From the keyboard, <kbd>←</kbd>/<kbd>→</kbd> move a held tile one place and
+        <kbd>↑</kbd>/<kbd>↓</kbd> a row.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card">
+            <div class="tile-grid">
+                <BmotionReorderGroup @bind-Items="_tiles" Axis="BmDragAxis.Both" Context="tile">
+                    <div class="tile">@tile</div>
+                </BmotionReorderGroup>
+            </div>
+        </div>
+    </div>
+
+    <p class="reorder-readout">Current order: @string.Join(" ", _tiles)</p>
+
+    <CodeSnippet Code="@_gridCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Long lists</h3>
+    <p>
+        A list longer than its scroller scrolls while an item is held near its edge - faster the closer it gets -
+        and the item travels with it, so it can be carried past what is in view. It stops at the end of the list.
+        This is on by default; <code>AutoScroll="false"</code> turns it off. The page scrolls the same way when the
+        list itself is taller than the window.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card">
+            <div class="scroll-list-stage">
+                <BmotionReorderGroup @bind-Items="_chapters" Context="chapter">
+                    <div class="track-row"><span class="track-title">@chapter</span></div>
+                </BmotionReorderGroup>
+            </div>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_longListCode" />
 </section>
 
 <section class="bb-card">
@@ -107,6 +152,10 @@
     ];
 
     private List<string> _stages = ["Draft", "Review", "Approved", "Shipped"];
+
+    private List<string> _tiles = ["🍎", "🍐", "🍊", "🍋", "🍌", "🍉", "🍇", "🍓", "🍒"];
+
+    private List<string> _chapters = [.. Enumerable.Range(1, 14).Select(i => $"Chapter {i}")];
 
     // Another source of order next to the drag and the built-in keyboard reordering: the group observes external
     // Items mutations, so moving an item in the bound list reorders the rendered rows.
@@ -163,7 +212,7 @@
     private const string _horizontalCode = """
         @using Bit.Bmotion
 
-        @* Same machinery, sideways. A single line only - wrapping grids are not supported. *@
+        @* Same machinery, sideways. For a layout that wraps, see Axis="BmDragAxis.Both" below. *@
         <div style="display:flex;gap:.5rem;flex-wrap:nowrap">
             <BmotionReorderGroup @bind-Items="_stages" Axis="BmDragAxis.X" Context="stage">
                 <div class="chip">@stage</div>
@@ -173,6 +222,38 @@
         @code {
             // No ItemKey needed here: the strings are their own identity, and they are unique.
             private List<string> _stages = ["Draft", "Review", "Approved", "Shipped"];
+        }
+        """;
+
+    private const string _gridCode = """
+        @using Bit.Bmotion
+
+        <style>
+            .tile-grid { display: grid; grid-template-columns: repeat(3, 5rem); gap: .5rem; }
+            .tile { aspect-ratio: 1; display: grid; place-items: center; font-size: 1.6rem; cursor: grab; }
+        </style>
+
+        <div class="tile-grid">
+            <BmotionReorderGroup @bind-Items="_tiles" Axis="BmDragAxis.Both" Context="tile">
+                <div class="tile">@tile</div>
+            </BmotionReorderGroup>
+        </div>
+
+        @code {
+            private List<string> _tiles = ["🍎", "🍐", "🍊", "🍋", "🍌", "🍉", "🍇", "🍓", "🍒"];
+        }
+        """;
+
+    private const string _longListCode = """
+        @* Held near the scroller's edge, the list scrolls and the row travels with it (AutoScroll, on by default). *@
+        <div style="max-height: 14rem; overflow-y: auto; display: flex; flex-direction: column; gap: .5rem">
+            <BmotionReorderGroup @bind-Items="_chapters" Context="chapter">
+                <div class="row">@chapter</div>
+            </BmotionReorderGroup>
+        </div>
+
+        @code {
+            private List<string> _chapters = [.. Enumerable.Range(1, 14).Select(i => $"Chapter {i}")];
         }
         """;
 

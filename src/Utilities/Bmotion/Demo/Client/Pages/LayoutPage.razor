@@ -86,6 +86,37 @@
 </section>
 
 <section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Crossfade</h3>
+    <p>
+        When the old holder of a LayoutId is still on screen as the new one mounts - it is playing its exit under a
+        presence in <code>Sync</code> mode - the two <strong>crossfade</strong>: the new one grows out of the old
+        one's box as it fades in, and the old one travels onto the new one's box as it fades out. Click the card.
+        The fade multiplies with the elements' own opacity, so their own enter and exit fades play on underneath;
+        <code>LayoutCrossfade="false"</code> leaves just the FLIP.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card xfade-stage">
+            <BmotionPresenceSwitch Item="_expanded" Mode="BmPresenceMode.Sync" Context="expanded">
+                <Bmotion LayoutId="xfade-card" Exit="Bm.To(opacity: 0)" Transition="Bm.Tween(0.5, BmEase.InOut)">
+                    <button type="button" class="@(expanded ? "xfade-detail" : "xfade-thumb")"
+                            aria-label="@(expanded ? "Collapse the card" : "Expand the card")"
+                            @onclick="() => _expanded = !_expanded">
+                        @if (expanded)
+                        {
+                            <strong>Shared element</strong>
+                            <span>Click to collapse</span>
+                        }
+                    </button>
+                </Bmotion>
+            </BmotionPresenceSwitch>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_crossfadeCode" />
+</section>
+
+<section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Size correction</h3>
     <p>
         Animating a box's size by scaling it is fast but wrong: the text inside stretches and the
@@ -166,6 +197,7 @@
 @code {
     private readonly string[] _tabs = ["Home", "Projects", "About", "Contact"];
     private string _activeTab = "Home";
+    private bool _expanded;
     private bool _big;
     private bool _anchored;
     private int _layoutCompletions;
@@ -235,6 +267,23 @@
                 "center"     => "flex-end",
                 _            => "flex-start"
             };
+        }
+        """;
+
+    private const string _crossfadeCode = """
+        @using Bit.Bmotion
+
+        @* Sync: the old card plays its exit while the new one enters, so the two crossfade. *@
+        <BmotionPresenceSwitch Item="_expanded" Mode="BmPresenceMode.Sync" Context="expanded">
+            <Bmotion LayoutId="card" Exit="Bm.To(opacity: 0)" Transition="Bm.Tween(0.5, BmEase.InOut)">
+                <button class="@(expanded ? "detail" : "thumb")" @onclick="() => _expanded = !_expanded">
+                    @if (expanded) { <strong>Shared element</strong> }
+                </button>
+            </Bmotion>
+        </BmotionPresenceSwitch>
+
+        @code {
+            private bool _expanded;
         }
         """;
 

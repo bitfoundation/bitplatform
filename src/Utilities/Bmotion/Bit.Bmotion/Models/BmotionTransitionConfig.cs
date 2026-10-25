@@ -250,6 +250,21 @@ internal sealed class BmotionTransitionConfig
         }
     }
 
+    /// <summary>
+    /// How long the whole transition lasts in seconds - its delay, every repeat and the repeat delays between them,
+    /// and the longest per-property override - with a spring's settling time estimated; infinity when it repeats
+    /// forever.
+    /// </summary>
+    internal double TotalSeconds()
+    {
+        if (IsInfiniteRepeat) return double.PositiveInfinity;
+        double total = Math.Max(0, Delay) + EstimatedDurationSeconds() * (Repeat + 1) + Math.Max(0, RepeatDelay) * Repeat;
+        if (Properties is { } overrides)
+            foreach (var config in overrides.Values)
+                total = Math.Max(total, config.TotalSeconds());
+        return total;
+    }
+
     // ── Per-property overrides ────────────────────────────────────────────────
     /// <summary>
     /// Override transition for specific properties, e.g.

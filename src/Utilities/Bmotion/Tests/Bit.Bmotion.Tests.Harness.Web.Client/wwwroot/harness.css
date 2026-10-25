@@ -11,7 +11,8 @@ h1 { font-size: 18px; margin: 0 0 8px; }
 
 h2 { font-size: 15px; margin: 16px 0 8px; }
 
-#log { max-height: 120px; overflow: auto; font-size: 11px; margin: 0 0 8px; }
+/* A fixed height: a log that grew as events arrived moved everything below it - under a pointer about to click. */
+#log { height: 120px; overflow: auto; font-size: 11px; margin: 0 0 8px; }
 
 section { margin: 12px 0; padding: 8px; border: 1px dashed #ccc; position: relative; }
 
@@ -39,6 +40,14 @@ section { margin: 12px 0; padding: 8px; border: 1px dashed #ccc; position: relat
 
 .hlist .item { width: 60px; height: 40px; background: #ddd; }
 
+.reorder-grid { display: grid; grid-template-columns: repeat(3, 60px); gap: 4px; }
+
+.reorder-grid .cell { height: 40px; background: #ddd; display: flex; align-items: center; justify-content: center; }
+
+.scroll-list { position: relative; display: flex; flex-direction: column; gap: 4px; width: 200px; height: 150px; overflow: auto; border: 1px solid #999; }
+
+.scroll-list .item { flex: none; height: 40px; background: #ddd; display: flex; align-items: center; padding: 0 8px; }
+
 .tabs { display: flex; gap: 8px; }
 
 .tab { position: relative; width: 80px; height: 32px; }
@@ -50,6 +59,14 @@ section { margin: 12px 0; padding: 8px; border: 1px dashed #ccc; position: relat
 .layout-row.end { justify-content: flex-end; }
 
 .grip { display: inline-block; width: 16px; height: 16px; background: #333; }
+
+.xfade-stage { position: relative; width: 400px; height: 80px; background: #eee; }
+
+.xfade-card { position: absolute; background: rgb(108, 71, 255); }
+
+.xfade-card-1 { left: 0; top: 0; width: 30px; height: 30px; }
+
+.xfade-card-2 { left: 200px; top: 10px; width: 60px; height: 60px; }
 
 .progress { height: 6px; width: 400px; background: rgb(108, 71, 255); transform-origin: 0 50%; }
 

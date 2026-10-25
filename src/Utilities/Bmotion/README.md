@@ -4,7 +4,7 @@ A Blazor-native animation library inspired by [Motion](https://motion.dev) (Fram
 
 **Hybrid engine:** the animation math runs in C#, and the browser plays whatever it can reproduce exactly. A tween or spring between two values goes to the **Web Animations API** as a two-keyframe timeline. Anything the browser can't express directly is recorded frame by frame in C#, against a copy of the element's state, and handed over as keyframes. That covers per-property transitions, springs that carry velocity into a retarget, arcs, inertia, keyframe sequences and mirrored loops. Either way it plays off the main thread with no per-frame interop. The C# frame loop keeps only what the browser can't own: per-frame callbacks (`OnUpdate`/`OnFrame`), SVG `d`/`points` morphs, motion-value bindings and drag.
 
-> Targets **.NET 8, 9, and 10** · **Blazor WebAssembly** and **Blazor Server** play the same animations. Transforms, opacity, colours (any CSS colour syntax), sizes (to and from `auto` too), filters, shadows, keyframes, springs, inertia and arcs all animate on both. On Server, what needs the per-frame loop (`OnUpdate`/`OnFrame` callbacks, SVG `d`/`points` morphs) lands on its target at once and logs a warning once. Drag there follows the pointer a round trip behind: one position, and one `OnDrag`, per frame.
+> Targets **.NET 8, 9, and 10** · **Blazor WebAssembly** and **Blazor Server** play the same animations. Transforms, opacity, colours (any CSS colour syntax), sizes (to and from `auto` too), filters, shadows, keyframes, springs, inertia and arcs all animate on both. On Server, what needs the per-frame loop (`OnUpdate`/`OnFrame` callbacks, SVG `d`/`points` morphs) lands on its target at once and logs a warning once. Drag there stays under the pointer: the browser shows it until .NET catches up, and `OnDrag` runs once per frame, a round trip behind.
 
 ---
 
@@ -130,6 +130,10 @@ to it, and then it is set to `auto` itself so it keeps following its content:
     <div style="overflow: hidden">…</div>
 </Bmotion>
 ```
+
+A length can change units on the way: `width: "100px"` → `"50%"`, `"2rem"` → `"40vw"`. It plays
+through `calc()` of both ends, the way CSS interpolates such a pair, so nothing is measured and it's
+exact in any unit. It lands on the value you wrote, so `50%` keeps following its container.
 
 > **Security:** string-valued properties are written verbatim into the element's inline style.
 > They are intended for developer-authored values; binding untrusted end-user input risks CSS
@@ -394,17 +398,35 @@ release:
 |---|---|---|
 | `Items` / `ItemsChanged` | `List<TItem>` | The list being reordered (`@bind-Items` supported) |
 | `ItemKey` | `Func<TItem, object>?` | Stable identity across renders; keys must be unique |
-| `Axis` | `BmDragAxis` | `Y` (vertical, default) or `X` (horizontal); wrapping grids are not supported |
+| `Axis` | `BmDragAxis` | `Y` (vertical, default), `X` (horizontal) or `Both`: a wrapping grid, where the dragged item takes the cell nearest its centre |
 | `WhileDrag` | `BmTarget?` | Overlay while dragging (default: slight scale-up) |
 | `HandleSelector` | `string?` | CSS selector of a drag grip inside each item; the rest of the row stays clickable |
 | `Transition` | `BmTransition?` | Spring for sibling displacement and the release settle |
 | `OnReorder` | `EventCallback` | Fires after a reorder is committed |
+| `AutoScroll` | `bool` | Default `true`: an item held near the edge of the list's scroller (or the page) scrolls it |
 | `Keyboard` | `bool` | Default `true`: keyboard users can reorder too (see below) |
 | `Announce` | `Func<BmReorderAnnouncement<TItem>, string>?` | What screen readers hear at each keyboard step (default: English) |
 
+**Grids.** With `Axis="BmDragAxis.Both"` the items can sit in any wrapping layout - a CSS grid,
+a `flex-wrap` row. The dragged item takes the cell nearest its centre and the others close up
+around it in reading order:
+
+```razor
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px">
+    <BmotionReorderGroup @bind-Items="_photos" Axis="BmDragAxis.Both" Context="photo">
+        <img class="tile" src="@photo.Url" alt="@photo.Title" />
+    </BmotionReorderGroup>
+</div>
+```
+
+**Long lists.** An item held near the edge of the list's scroll container - or of the page -
+scrolls it, faster the closer it gets, and travels with the scroll, so it can be carried past
+what's in view. It stops at the end of the list. Turn it off with `AutoScroll="false"`.
+
 **Keyboard.** Every item is focusable (it is made so if it isn't). <kbd>Space</kbd> or
 <kbd>Enter</kbd> on a focused item picks it up, and it lifts with the `WhileDrag` overlay. The
-arrow keys along the list's axis move it while the others make way, as for a drag.
+arrow keys along the list's axis move it while the others make way, as for a drag. In a grid,
+<kbd>←</kbd>/<kbd>→</kbd> move it one place and <kbd>↑</kbd>/<kbd>↓</kbd> a row.
 <kbd>Space</kbd> or <kbd>Enter</kbd> drops it and commits the order, and focus stays on the item.
 <kbd>Escape</kbd> puts it back. Moving focus away also drops it. Each step is announced through a
 polite live region ("Picked up, position 1 of 4…", "Position 2 of 4.", "Dropped at position
@@ -808,6 +830,23 @@ of a drag let go outside its constraints, unless the `DragTransition` inertia se
 </Bmotion>
 ```
 
+**Scrolling during a drag.** A dragged element stays under the pointer when anything scrolls
+underneath it - the page, the container it's in, a wheel turned mid-drag. `DragAutoScroll="true"`
+also scrolls the nearest scrollable container, or the page, while the pointer is near its edge
+(`BmotionReorderGroup` turns it on for its items).
+
+**The throw.** The release velocity that momentum starts from is the pointer's average over its
+last 100 ms (as in motion.dev). A pointer that stood still that long before letting go throws
+nothing, and moves the browser delivers in a burst don't produce a spike.
+
+**On Blazor Server** the browser keeps the element under the pointer on its own: .NET hears of each
+move a round trip later, and until its transform catches up the bridge makes up the difference
+with the CSS `translate` property. Nothing waits for the circuit while the pointer moves, and
+`translate` is cleared once .NET has caught up after the release. `OnDrag` handlers still run on
+the server, a round trip behind the pointer. (On WebAssembly the drag runs in-process and needs
+none of this.) So on Blazor Server, don't put a `translate` of your own on a draggable element:
+the drag overrides it while it lasts and removes an inline one. Move it with `x`/`y` instead.
+
 **Reconfiguring a drag mid-gesture ends it.** Changing any gesture parameter (`Drag`, `DragConstraints`,
 `DragElastic`, `DragHandle`, ...) while a drag is in progress re-attaches the element's listeners,
 which releases the drag first (`OnDragEnd` fires, momentum and snap-back run as for a pointer-up).
@@ -834,6 +873,9 @@ Keep those parameters stable for the duration of a drag - bind them to state you
     <div />
 </Bmotion>
 ```
+
+On Blazor Server the FLIP arrives a round trip after the render that moved the element. Until then
+the bridge holds the element where it was, so it doesn't flash at its new place first.
 
 Four options control how the projection is measured:
 
@@ -869,6 +911,23 @@ idiom:
 ```
 
 Wrap independent groups in `<BmotionLayoutGroup Name="sidebar">` to namespace their ids.
+
+**Crossfade.** When the old holder is still on screen as the new one mounts - it is exiting
+under `BmotionAnimatePresence` or a `Sync` `BmotionPresenceSwitch` - the two crossfade, as in
+motion.dev. The new one grows out of the old one's box while it fades in, and the old one
+travels onto the new one's box while it fades out:
+
+```razor
+<BmotionPresenceSwitch Item="_selected" Mode="BmPresenceMode.Sync" Context="item">
+    <Bmotion LayoutId="card" Exit="Bm.To(opacity: 0)">
+        <div class="@(item.Expanded ? "detail" : "thumb")">@item.Title</div>
+    </Bmotion>
+</BmotionPresenceSwitch>
+```
+
+The fade is a `filter: opacity()`, so it multiplies with the elements' own opacity: their own
+enter and exit fades play on underneath. `LayoutCrossfade="false"` turns it off, leaving only
+the FLIP.
 
 ### View transitions
 
@@ -929,6 +988,39 @@ compositor.
 
 `range` takes CSS `animation-range` syntax (`"entry 0% cover 50%"`) and needs native support.
 
+**Smoothing.** `.Smoothed()` makes the animation follow the scroll through a spring instead of
+exactly - motion.dev's `useSpring(scrollYProgress)` - so a flick of the wheel glides instead of
+jumping:
+
+```razor
+<Bmotion Timeline="BmScrollTimeline.Page().Smoothed()" Animate="Bm.To(scaleX: [0, 1])">
+    <div class="progress-bar" style="transform-origin:0 50%;" />
+</Bmotion>
+
+@* a springier follow *@
+<Bmotion Timeline="BmScrollTimeline.Page().Smoothed(Bm.Spring(stiffness: 300, damping: 20))" ...>
+```
+
+The default spring is motion.dev's recipe: stiffness 100, damping 30, no overshoot. A native
+scroll timeline can't be smoothed, so a smoothed one always plays through the bridge's scrub: a
+passive scroll listener and a spring stepped once a frame in the browser. That works the same on
+WebAssembly and Blazor Server, still with no .NET interop per frame. Like the scrub fallback, it
+covers the full journey and ignores `range`.
+
+**Pinning** (GSAP ScrollTrigger's `pin`) is `position: sticky` in CSS: a tall section with a
+sticky stage inside it. Drive what plays while it's pinned from the section's journey:
+
+```razor
+<section id="story" style="height: 300vh">
+    <div style="position: sticky; top: 0; height: 100vh">
+        <Bmotion Timeline='BmScrollTimeline.ViewOf("#story", range: "contain 0% contain 100%")'
+                 Animate="Bm.To(x: [0, -1200])">
+            <div class="filmstrip" />
+        </Bmotion>
+    </div>
+</section>
+```
+
 - Only **transform components and `opacity`** can be scroll-driven - they are what the browser can
   interpolate for us. A target touching anything else falls back to the ordinary time-based path.
 - `Transition` does not apply while a timeline is attached: scroll position *is* the progress.
@@ -961,6 +1053,9 @@ the browser can't own.
         await controls;            // directly awaitable
     }
 
+    // Where it is, and moving it: Time / Duration / Progress / State, and Seek (or set Time)
+    void Scrub(double fraction) => _controls.Seek(fraction * _controls.Duration);
+
     // Stagger across all matched elements
     Task Cascade() => Motion.AnimateAsync(".item", Bm.To(opacity: 1, y: 0),
         Bm.Spring(), stagger: Bm.Stagger(0.08, from: BmStaggerFrom.Center)).AsTask();
@@ -970,6 +1065,27 @@ the browser can't own.
         v => { _count = (int)v; StateHasChanged(); }, Bm.Tween(1.5));
 }
 ```
+
+**Time.** The controls report where the animation is: `Time` (seconds of animation time, so a speed of
+2 advances it twice as fast), `Duration` (delays, staggers and repeats included; a spring's settling
+time is estimated; infinity for a loop), `Progress` (0–1) and `State` (`Running`, `Paused`,
+`Finished`, `Stopped`). `Seek(seconds)`, or setting `Time`, moves it and keeps its speed: a playing
+animation plays on from there, and a paused one holds there.
+
+* What the browser plays (nearly everything, see the hosting note at the top) moves in place. That
+  is exact and cheap, so binding a slider to `Seek` scrubs smoothly.
+* Anything else plays again from that point, starting from the values the animation started from.
+  A spring or an inertia is simulated up to the point, so it is exactly where it would have been.
+* A finished or stopped animation that is sought is taken hold of again and holds there until
+  `Play()`. `Play()` on a finished animation plays it again from the start.
+
+```razor
+<input type="range" min="0" max="1" step="0.001" @oninput="e => _controls?.Seek(double.Parse((string)e.Value!, CultureInfo.InvariantCulture) * _controls.Duration)" />
+```
+
+A sequence seeks by playing again from the point. Steps over by then land on their end values, and
+a step under way starts part-way through it, so two steps that overlap on one property start the
+later one from the earlier's end value.
 
 ### Sequences
 

@@ -318,9 +318,9 @@
         }
         else
         {
-            @* Drag works here too, a round trip behind the pointer; offer a more immediate control alongside it. *@
+            @* Drag works here too: the browser keeps the element under the pointer. Buttons still serve whoever can't drag. *@
             <Bmotion Drag="true"><div class="box" /></Bmotion>
-            <p>Dragging responds instantly only on Blazor WebAssembly - the buttons move it too.</p>
+            <p>Drag it, or move it with the buttons.</p>
         }
         """;
 
