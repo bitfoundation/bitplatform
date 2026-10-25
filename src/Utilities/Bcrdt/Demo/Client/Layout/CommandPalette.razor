@@ -14,7 +14,8 @@
    turns that half off with SiteInfo.PaletteCtrlK. *@
 
 <button type="button" class="bb-search-trigger" @ref="_trigger" @onclick="Open"
-        aria-label="Search documentation" title="@(SiteInfo.PaletteCtrlK ? $"Search documentation ({(_isApple ? "⌘K" : "Ctrl+K")})" : "Search documentation (/)")">
+        aria-label="@SearchLabel" aria-keyshortcuts="@(SiteInfo.PaletteCtrlK ? (_isApple ? "Meta+K" : "Control+K") : "/")"
+        title="@(SiteInfo.PaletteCtrlK ? $"Search documentation ({(_isApple ? "⌘K" : "Ctrl+K")})" : "Search documentation (/)")">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
     </svg>
@@ -22,7 +23,7 @@
     <span class="bb-search-trigger-keys" aria-hidden="true">
         @if (SiteInfo.PaletteCtrlK)
         {
-            <kbd>@(_isApple ? "⌘" : "Ctrl")</kbd><kbd>K</kbd>
+            <kbd>@(_isApple ? "⌘" : "Ctrl")</kbd> <kbd>K</kbd>
         }
         else
         {
@@ -108,8 +109,8 @@
                                      aria-selected="@(position == _activeIndex ? "true" : "false")"
                                      class="@(position == _activeIndex ? "bb-palette-hit bb-active" : "bb-palette-hit")"
                                      @key="hit.Url"
-                                     @onmouseenter="() => _activeIndex = position"
-                                     @onmousedown="() => Go(hit)" @onmousedown:preventDefault>
+                                     @onmousemove="e => Hover(position, e)"
+                                     @onmousedown="e => Press(hit, e)" @onmousedown:preventDefault>
                                     <span class="bb-palette-hit-title">@hit.Title</span>
                                     <span class="bb-palette-hit-desc">@hit.Description</span>
                                     <span class="bb-palette-hit-url">@hit.Url</span>
@@ -213,6 +214,7 @@
         _open = true;
         _query = "";
         _activeIndex = 0;
+        _pointer = null;
         // An empty query is not "no results": with nothing typed the palette is a table of
         // contents, which is a more useful blank state than an empty box.
         _results = Suggest();
@@ -286,6 +288,49 @@
         Close(restoreFocus: false);
         Nav.NavigateTo(hit.Url);
     }
+
+    /// <summary>
+    /// Opens a row the primary button pressed. A right-click or a middle-click is the reader asking for something
+    /// else - a menu, another tab the row cannot give - and it navigated this tab away all the same.
+    /// </summary>
+    private void Press(Hit hit, MouseEventArgs e)
+    {
+        if (e.Button == 0) Go(hit);
+    }
+
+    private (double X, double Y)? _pointer;
+    private bool _skipRender;
+
+    /// <summary>
+    /// The row under the pointer takes the cursor - once the pointer has moved. mouseenter fired as well when the
+    /// palette opened, or the list scrolled, under a pointer that stood still: the row that slid under it took the
+    /// keyboard's place, so Enter opened whatever the mouse happened to rest on and a held ArrowDown kept jumping
+    /// back. The first event only notes where the pointer is; the browser sends those for a pointer at rest too.
+    /// </summary>
+    private void Hover(int position, MouseEventArgs e)
+    {
+        var at = (e.ClientX, e.ClientY);
+        var moved = _pointer is { } last && last != at;
+        _pointer = at;
+        if (!moved || position == _activeIndex)
+        {
+            _skipRender = true;
+            return;
+        }
+        _activeIndex = position;
+    }
+
+    // A pointer moving within one row asks for nothing to be drawn.
+    protected override bool ShouldRender()
+    {
+        if (!_skipRender) return true;
+        _skipRender = false;
+        return false;
+    }
+
+    // The visible label and the key hints, in the order they appear: someone using speech input says what they see
+    // (WCAG 2.5.3), and a screen reader still hears the name when a narrow screen hides both.
+    private string SearchLabel => SiteInfo.PaletteCtrlK ? $"Search docs {(_isApple ? "⌘" : "Ctrl")} K" : "Search docs /";
 
     /// <summary>The blank state: the reading order of the docs.</summary>
     private static Hit[] Suggest() => Regroup(Pages().Take(12));

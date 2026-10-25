@@ -1,0 +1,255 @@
+﻿@page "/localization"
+@implements IDisposable
+
+<PageTitle>Translating a form · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Translating a form</h1>
+    <p class="bb-subtitle">
+        The schema's own words - its title, labels, help, placeholders, affixes and the labels of its options - can
+        travel with it in every language it is offered in. <code>Translate(culture, texts)</code> adds them in C#,
+        <code>x-translations</code> carries them in JSON Schema, and an <code>IBormSchemaLocalizer</code> wraps the
+        resource files an application already has.
+    </p>
+</div>
+
+<div class="bb-note">
+    Pick a language. By default a form follows the UI culture; this one is given its own with
+    <code>state.Language</code>, which needs no culture data - this site runs with <code>InvariantGlobalization</code>,
+    as many WebAssembly apps do - and marks the form with a <code>lang</code> a screen reader follows. A dialect
+    without a table of its own, <code>de-CH</code>, reads its language's. The library's own words - "This field is
+    required." and the buttons - follow the same language: this site registers <code>AddBormTranslations()</code>,
+    which speaks twelve languages besides English, and an <code>IBormMessageProvider</code> of your own can replace it.
+    Submit the empty form in each language to see the messages.
+    <br /><br />
+    <em>العربية</em> shows the two layers apart: the schema carries no Arabic, so its labels stay as written, while
+    the library's words - the button, the messages - are Arabic. It also ticks <em>Right to left</em>, which sets
+    <code>dir="rtl"</code> on the container; the library sets no <code>dir</code> itself, and its layout uses logical
+    CSS properties throughout, so it mirrors as the page does.
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
+    <div class="bb-toolbar">
+        <span class="bb-soft" id="language-label">Language</span>
+        <div class="bb-segmented" role="group" aria-labelledby="language-label">
+            @foreach (var (language, name) in Languages)
+            {
+                <button type="button" lang="@language" aria-pressed="@(language == (_state.Language ?? "en") ? "true" : "false")"
+                        @onclick="() => SetLanguage(language)">@name</button>
+            }
+        </div>
+        <label class="bb-check">
+            <input type="checkbox" checked="@_rtl" @onchange="e => _rtl = e.Value is true" /> Right to left
+        </label>
+    </div>
+    <div dir="@(_rtl ? "rtl" : null)">
+        <BormView State="_state" OnValidSubmit="HandleSubmit" />
+    </div>
+</div>
+
+@if (_submitted)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Ordered ✓</strong><pre>@_json</pre></div>
+}
+
+<div class="bb-toolbar">
+    <button type="button" class="btn btn-secondary" aria-expanded="@(_showSchema ? "true" : "false")" @onclick="() => _showSchema = !_showSchema">
+        @(_showSchema ? "Hide" : "Show") the translations as JSON Schema
+    </button>
+</div>
+@if (_showSchema)
+{
+    <div class="demo-readout">
+        <p class="bb-overline">BormJsonSchemaExporter.Export - the tables travel as x-translations</p>
+        <pre>@BormJsonSchemaExporter.Export(_state.Definition)</pre>
+    </div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Two kinds of text, two ways to translate them</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>Text</th><th>Whose</th><th>Translated by</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Labels, help, placeholders, prefixes and suffixes, option labels, step titles, the form's title</td>
+                    <td>The schema's</td>
+                    <td><code>Translate(culture, texts)</code> in C#, <code>x-translations</code> in JSON Schema, or an <code>IBormSchemaLocalizer</code> over your resource files</td>
+                </tr>
+                <tr>
+                    <td>Validation messages, the buttons, the error summary, announcements, the designer</td>
+                    <td>The library's</td>
+                    <td><code>AddBormTranslations()</code> for twelve languages, or an <code>IBormMessageProvider</code> of your own</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="bb-card-desc">
+        A schema text is found under its key: <code>{field}.label</code>, <code>.help</code>, <code>.placeholder</code>,
+        <code>.prefix</code>, <code>.suffix</code>, <code>{field}.options.{value}</code>, <code>steps.{id}.title</code>,
+        <code>steps.{id}.description</code>, <code>form.title</code> and <code>form.description</code>. <code>{field}</code> is the
+        field's path with the rows taken out (<code>Lines.Product</code> for every line's product), or the key a field names
+        itself with <code>x-i18n</code>. A text the tables do not have is shown as written - as the plan "Team" is in German here.
+        A message passed to a rule, or a label passed to <code>BormView</code>, is used as it is in every language.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Over the resource files you already have</h3>
+    <p class="bb-card-desc">
+        Both layers can wrap <code>IStringLocalizer</code>. Return null from a schema localizer to keep the text as written,
+        and fall back to <code>BormDefaultMessageProvider</code> for a key your resources do not cover - the keys are listed on
+        <code>BormMessageKeys</code>.
+    </p>
+    <pre class="bb-code"><span class="c">// Program.cs</span>
+builder.Services.AddBormSchemaLocalizer&lt;FormText&gt;();
+builder.Services.AddBormMessages&lt;MyMessages&gt;();          <span class="c">// instead of AddBormTranslations()</span>
+
+<span class="k">public sealed class</span> FormText(IStringLocalizer&lt;FormText&gt; localizer) : IBormSchemaLocalizer
+{
+    <span class="k">public string</span>? Localize(<span class="k">string</span> key, <span class="k">string</span>? text)
+        =&gt; localizer[key] <span class="k">is</span> { ResourceNotFound: <span class="k">false</span> } found ? found.Value : <span class="k">null</span>;
+}
+
+<span class="k">public sealed class</span> MyMessages(IStringLocalizer&lt;MyMessages&gt; localizer) : IBormMessageProvider
+{
+    <span class="k">public string</span> Get(<span class="k">string</span> key, <span class="k">params object</span>?[] args)
+        =&gt; localizer[key, args] <span class="k">is</span> { ResourceNotFound: <span class="k">false</span> } found
+            ? found.Value
+            : BormDefaultMessageProvider.Instance.Get(key, args);
+}</pre>
+    <p class="bb-card-desc">
+        A provider that should answer in each form's own <code>Language</code> implements
+        <code>IBormLocalizedMessageProvider</code>, whose <code>Get(language, key, args)</code> the form calls.
+        <code>BormValidator.Language</code> does the same for a form judged on its own on the server, and
+        <code>BormDesigner</code> takes a <code>Language</code> parameter. Dates and numbers in a review follow
+        <code>CurrentCulture</code>; the date and number inputs themselves are the browser's, in the user's own locale.
+    </p>
+</div>
+
+@code {
+    private const string Source =
+"""
+@page "/localization"
+
+<button type="button" @onclick='() => _state.Language = "de"'>Deutsch</button>
+<BormView State="_state" OnValidSubmit="HandleSubmit" />
+
+@code {
+    private readonly TeamOrder _model = new();
+    private BormState _state = default!;
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<TeamOrder>()
+            .Title("Order")
+            .Description("Tell us who the seats are for.")
+            .Field(x => x.Company, f => f.Required().Placeholder("Contoso Ltd").Help("As it appears on the invoice."))
+            .Field(x => x.Plan, f => f.AsRadio()
+                .Options(("solo", "Solo"), ("team", "Team"), ("enterprise", "Enterprise")))
+            .Field(x => x.Seats, f => f.Range(1, 500).Suffix("users"))
+            .Field(x => x.Notes, f => f.AsTextArea(3))
+            // Keys: {field}.label / .help / .placeholder / .prefix / .suffix, {field}.options.{value},
+            // steps.{id}.title, form.title and form.description.
+            .Translate("de", new Dictionary<string, string>
+            {
+                ["form.title"] = "Bestellung",
+                ["form.description"] = "Sagen Sie uns, für wen die Plätze sind.",
+                ["Company.label"] = "Firma",
+                ["Company.placeholder"] = "Contoso GmbH",
+                ["Company.help"] = "So, wie sie auf der Rechnung steht.",
+                ["Plan.label"] = "Tarif",
+                ["Plan.options.solo"] = "Einzelplatz",
+                ["Plan.options.enterprise"] = "Unternehmen",
+                ["Seats.label"] = "Plätze",
+                ["Seats.suffix"] = "Nutzer",
+                ["Notes.label"] = "Anmerkungen",
+            })
+            .Translate("fr", new Dictionary<string, string> { /* ... */ })
+            .Build();
+
+        // Null follows CultureInfo.CurrentUICulture; a name gives this form a language of its own.
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+    }
+
+    public void Dispose() => _state.Dispose();
+}
+""";
+
+    private static readonly (string Language, string Name)[] Languages =
+        [("en", "English"), ("de", "Deutsch"), ("de-CH", "Deutsch (Schweiz)"), ("fr", "Français"), ("ar", "العربية")];
+
+    private readonly TeamOrder _model = new();
+    private BormState _state = default!;
+    private bool _rtl;
+    private bool _showSchema;
+    private bool _submitted;
+    private string _json = "";
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<TeamOrder>()
+            .Title("Order")
+            .Description("Tell us who the seats are for.")
+            .Field(x => x.Company, f => f.Required().Placeholder("Contoso Ltd").Help("As it appears on the invoice."))
+            .Field(x => x.Plan, f => f.AsRadio()
+                .Options(("solo", "Solo"), ("team", "Team"), ("enterprise", "Enterprise")))
+            .Field(x => x.Seats, f => f.Range(1, 500).Suffix("users"))
+            .Field(x => x.Notes, f => f.AsTextArea(3))
+            .Translate("de", new Dictionary<string, string>
+            {
+                ["form.title"] = "Bestellung",
+                ["form.description"] = "Sagen Sie uns, für wen die Plätze sind.",
+                ["Company.label"] = "Firma",
+                ["Company.placeholder"] = "Contoso GmbH",
+                ["Company.help"] = "So, wie sie auf der Rechnung steht.",
+                ["Plan.label"] = "Tarif",
+                ["Plan.options.solo"] = "Einzelplatz",
+                ["Plan.options.enterprise"] = "Unternehmen",
+                ["Seats.label"] = "Plätze",
+                ["Seats.suffix"] = "Nutzer",
+                ["Notes.label"] = "Anmerkungen",
+            })
+            .Translate("fr", new Dictionary<string, string>
+            {
+                ["form.title"] = "Commande",
+                ["form.description"] = "Dites-nous pour qui sont les places.",
+                ["Company.label"] = "Société",
+                ["Company.placeholder"] = "Contoso SARL",
+                ["Company.help"] = "Telle qu'elle figure sur la facture.",
+                ["Plan.label"] = "Formule",
+                ["Plan.options.solo"] = "Individuelle",
+                ["Plan.options.team"] = "Équipe",
+                ["Plan.options.enterprise"] = "Entreprise",
+                ["Seats.label"] = "Places",
+                ["Seats.suffix"] = "utilisateurs",
+                ["Notes.label"] = "Remarques",
+            })
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+    }
+
+    // English is what the schema is written in, so it is no language of its own: the form follows the page again.
+    // Arabic is written right to left - the page's decision, since the library sets no dir of its own.
+    private void SetLanguage(string language)
+    {
+        _state.Language = language == "en" ? null : language;
+        if (language == "ar") _rtl = true;
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+
+    public void Dispose() => _state.Dispose();
+}

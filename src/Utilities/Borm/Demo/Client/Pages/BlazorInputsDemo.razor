@@ -1,0 +1,132 @@
+﻿@page "/blazor-inputs"
+
+<PageTitle>Blazor's own inputs · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Blazor's own inputs</h1>
+    <p class="bb-subtitle">
+        <code>InputText</code>, <code>InputNumber</code>, <code>ValidationSummary</code> and the inputs of most
+        component libraries need a Blazor <code>EditContext</code>. <code>ProvideEditContext</code> cascades one that
+        tells the same story as the form, so those controls can sit in a custom renderer and show the field's errors
+        as their own - while the values still go through Borm.
+    </p>
+</div>
+
+<div class="bb-note">
+    The name, email and age below are Blazor's <code>InputText</code> and <code>InputNumber</code>; the city is
+    Borm's own text box. Submit the empty form: both kinds turn invalid together, and the
+    <code>ValidationSummary</code> at the bottom of the form - a stock Blazor component - lists what Borm found.
+    A message reaches the edit context when the form would show it, so nothing turns red before it should.
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
+    <BormView Definition="_schema" Model="_model" ProvideEditContext="true" OnValidSubmit="HandleSubmit" SubmitText="Save card">
+        <ValidationSummary class="demo-validation-summary" />
+    </BormView>
+</div>
+
+@if (_submitted)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Saved ✓</strong><pre>@_json</pre></div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> How the edit context behaves</h3>
+    <ul class="bb-detail-list">
+        <li><strong>The form stays the source of truth.</strong> Values are written through the field context, never the
+            <code>EditContext</code>, so conditions, computed values and dirty tracking stay right.
+            <code>Context.ValueExpression&lt;T&gt;()</code> names the property that owns the field - the model, a nested object, a
+            list's row, or a dictionary key - so Blazor files the field's messages under the right identifier. Ask for the
+            property's own type: <code>ValueExpression&lt;string&gt;()</code> over an <code>int</code> throws rather than read it wrongly.</li>
+        <li><strong>A message reaches the context when the form would show it</strong> - the field touched, or the form submitted.
+            Only errors are copied: an <code>EditContext</code> has no severity, so warnings stay Borm's.</li>
+        <li><strong><code>EditContext.Validate()</code> runs the form's validation</strong>, which is what a hand-written submit
+            button over the context does.</li>
+        <li><code>Context.EditContext</code> and <code>Context.FieldIdentifier</code> are there for a component that wants them,
+            and null while the view provides no context. For a state rendered without a view, construct a
+            <code>BormEditContextAdapter</code> over it and cascade its <code>EditContext</code>.</li>
+    </ul>
+    <p class="bb-card-desc">Off by default: a form that does not use these controls has no cascade in its tree.</p>
+</div>
+
+@code {
+    private const string Source =
+"""
+@page "/blazor-inputs"
+
+<BormView Definition="_schema" Model="_model" ProvideEditContext="true" OnValidSubmit="HandleSubmit">
+    <ValidationSummary />
+</BormView>
+
+@code {
+    private readonly ContactCard _model = new();
+    private BormDefinition _schema = default!;
+
+    protected override void OnInitialized()
+    {
+        // Program.cs: services.AddBorm(r => r.RegisterCustom<BlazorTextInput>("blazor-text")
+        //                                    .RegisterCustom<BlazorNumberInput>("blazor-number"));
+        _schema = BormBuilder.For<ContactCard>()
+            .Title("Contact card")
+            .Field(x => x.Name, f => f.Required().CustomRenderer("blazor-text"))
+            .Field(x => x.Email, f => f.Required().Email().CustomRenderer("blazor-text"))
+            .Field(x => x.Age, f => f.Range(18, 120).CustomRenderer("blazor-number"))
+            .Object(x => x.Address, a => a.Field(c => c.City, f => f.Required()))
+            .Build();
+    }
+}
+
+@* Renderers/BlazorTextInput.razor *@
+@inherits BormInputBase
+
+<InputText @ref="_input"
+           id="@Context.ElementId"
+           class="@CssClass"
+           Value="@Context.StringValue"
+           ValueChanged="@((string? value) => Context.SetFromStringAsync(value))"
+           ValueExpression="@(Context.ValueExpression<string?>())"
+           disabled="@Disabled"
+           aria-describedby="@DescribedBy" />
+
+@code {
+    private InputText? _input;
+
+    // A component is no element: hand the form the one InputText renders, so it can be focused.
+    public override async ValueTask<bool> FocusAsync()
+    {
+        if (_input?.Element is not { } element) return false;
+        await element.FocusAsync();
+        return true;
+    }
+}
+""";
+
+    private readonly ContactCard _model = new();
+    private BormDefinition _schema = default!;
+    private bool _submitted;
+    private string _json = "";
+
+    protected override void OnInitialized()
+    {
+        _schema = BormBuilder.For<ContactCard>()
+            .Title("Contact card")
+            .Field(x => x.Name, f => f.Required().CustomRenderer("blazor-text"))
+            .Field(x => x.Email, f => f.Required().Email().CustomRenderer("blazor-text"))
+            .Field(x => x.Age, f => f.Range(18, 120).CustomRenderer("blazor-number"))
+            .Object(x => x.Address, a => a.Field(c => c.City, f => f.Required()))
+            .Build();
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+}

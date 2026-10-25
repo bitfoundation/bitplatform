@@ -8,9 +8,10 @@
 {
     <textarea @attributes="ExtraAttributes"
               id="@Context.ElementId"
+              name="@Context.InputName"
               @ref="Element"
               class="@CssClass"
-              placeholder="@Field.Placeholder"
+              placeholder="@Context.Placeholder"
               disabled="@Disabled"
               readonly="@ReadOnly"
               maxlength="@MaxLengthAttribute"
@@ -30,9 +31,10 @@ else
 {
     <textarea @attributes="ExtraAttributes"
               id="@Context.ElementId"
+              name="@Context.InputName"
               @ref="Element"
               class="@CssClass"
-              placeholder="@Field.Placeholder"
+              placeholder="@Context.Placeholder"
               disabled="@Disabled"
               readonly="@ReadOnly"
               maxlength="@MaxLengthAttribute"

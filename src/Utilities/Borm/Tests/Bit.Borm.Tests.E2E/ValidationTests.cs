@@ -208,6 +208,7 @@ public sealed class ValidationTests : BormTest
         await Expect(page.Locator(".bit-borm-message--error")).ToHaveCountAsync(0);
 
         // The arrival window is enforced, not merely offered to the date picker.
+        await AssumeInputTypeAsync(page, "date");
         await EnterAsync(Control(page, "Arrival"), DateTime.Today.AddMonths(-1).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
         await Expect(Control(page, "Arrival")).ToHaveAttributeAsync("aria-invalid", "true");
         await Expect(Errors(page, "Arrival")).ToHaveCountAsync(1);

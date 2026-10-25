@@ -12,7 +12,9 @@ namespace Bit.Borm;
 /// </summary>
 /// <remarks>
 /// A single condition is <c>{ "field": "Country", "op": "Equals", "value": "US" }</c>; a group is
-/// <c>{ "all": [ … ] }</c> or <c>{ "any": [ … ] }</c>. Conditions backed by a delegate
+/// <c>{ "all": [ … ] }</c> or <c>{ "any": [ … ] }</c>; and a string is an expression
+/// (<see cref="BormExpression"/>), <c>"{Country} = 'US' and {Amount} &gt; 1000"</c>, which can stand
+/// anywhere a condition can — inside a group too. Conditions backed by a delegate
 /// (<see cref="BormPredicateCondition"/>) cannot be represented and are skipped on export.
 /// </remarks>
 public static class BormConditionJson
@@ -22,14 +24,26 @@ public static class BormConditionJson
     /// is one this library cannot read faithfully.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// "Faithfully" is the point. An <c>op</c> that names no operator (<c>"neq"</c>, <c>"!="</c>, a
     /// number) used to fall back to <c>Equals</c>, which turned "hide when not X" into "hide when X";
     /// and a group with one unreadable member kept the others, which widens an <c>all</c> and narrows
     /// an <c>any</c>. Both are now unreadable as a whole — the same rule the writer follows when it
     /// refuses to export a group with a member it cannot represent.
+    /// </para>
+    /// <para>
+    /// An expression that does not parse is the one exception: it throws rather than being read as no
+    /// condition. An unknown operator name may be one a later version knows; broken expression syntax
+    /// is never anything but a mistake, and dropping it silently turns a field meant to be hidden into
+    /// one that always shows, or a field meant to be required into one that never is.
+    /// </para>
     /// </remarks>
+    /// <exception cref="BormExpressionException">The element is a string that is not a valid expression.</exception>
     public static IBormCondition? Read(JsonElement element)
     {
+        if (element.ValueKind == JsonValueKind.String)
+            return element.GetString() is { Length: > 0 } text ? new BormExpressionCondition(text) : null;
+
         if (element.ValueKind != JsonValueKind.Object) return null;
 
         if (element.TryGetProperty("all", out var all) && all.ValueKind == JsonValueKind.Array)
@@ -96,6 +110,10 @@ public static class BormConditionJson
                 writer.WriteEndObject();
                 return true;
 
+            case BormExpressionCondition expression:
+                writer.WriteStringValue(expression.Expression.Text);
+                return true;
+
             case BormConditionGroup group:
                 // A group with an unrepresentable child would silently change meaning, so it is
                 // dropped as a whole rather than exported half-complete.
@@ -120,6 +138,7 @@ public static class BormConditionJson
     {
         null => false,
         BormFieldCondition field => IsWritable(field.Value),
+        BormExpressionCondition => true,
         BormConditionGroup group => group.Conditions.All(CanWrite),
         _ => false
     };

@@ -1,5 +1,21 @@
 ﻿namespace Bit.Borm;
 
+/// <summary>A field's validity in one word. See <see cref="BormFieldState.Status"/>.</summary>
+public enum BormFieldStatus
+{
+    /// <summary>No validation pass has judged the current value yet.</summary>
+    Unvalidated,
+
+    /// <summary>An asynchronous rule is checking it right now.</summary>
+    Pending,
+
+    /// <summary>Judged, and carries an error.</summary>
+    Invalid,
+
+    /// <summary>Judged, and nothing is wrong with it.</summary>
+    Valid
+}
+
 /// <summary>
 /// A snapshot of one field's interaction and validation state, returned by
 /// <see cref="BormState.GetFieldState"/>.
@@ -22,6 +38,25 @@ public readonly record struct BormFieldState(
     IReadOnlyList<BormValidationMessage> Messages,
     bool IsValidating = false)
 {
+    /// <summary>
+    /// Whether every rule of the field has judged its current value — a validation pass that reached it
+    /// since it last changed. What tells "valid" from "nobody has looked yet": a field with no messages
+    /// is both until this says which.
+    /// </summary>
+    public bool IsValidated { get; init; }
+
+    /// <summary>
+    /// The field's validity in one word: <see cref="BormFieldStatus.Pending"/> while an asynchronous rule
+    /// is running, <see cref="BormFieldStatus.Invalid"/> with an error on it,
+    /// <see cref="BormFieldStatus.Valid"/> once judged and found fine, and
+    /// <see cref="BormFieldStatus.Unvalidated"/> before that — what a "✓ available" beside a username
+    /// binds to without claiming it before the lookup has answered.
+    /// </summary>
+    public BormFieldStatus Status => IsValidating ? BormFieldStatus.Pending
+        : IsInvalid ? BormFieldStatus.Invalid
+        : IsValidated ? BormFieldStatus.Valid
+        : BormFieldStatus.Unvalidated;
+
     /// <summary>The first error-severity message, or null when the field has none.</summary>
     public BormValidationMessage? Error
     {

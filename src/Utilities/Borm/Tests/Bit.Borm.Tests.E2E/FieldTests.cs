@@ -88,7 +88,8 @@ public sealed class FieldTests : BormTest
         await reveal.ClickAsync();
         await Expect(passcode).ToHaveAttributeAsync("type", "text");
         await Expect(reveal).ToHaveAttributeAsync("aria-pressed", "true");
-        await Expect(reveal).ToHaveAttributeAsync("aria-label", "Hide password");
+        // The same name, pressed: aria-pressed says the password shows.
+        await Expect(reveal).ToHaveAttributeAsync("aria-label", "Show password");
         await Expect(passcode).ToHaveValueAsync("s3cret-code");
 
         await reveal.ClickAsync();
@@ -145,6 +146,13 @@ public sealed class FieldTests : BormTest
         await SubmitButton(page).ClickAsync();
         await Expect(Errors(page, "rating")).ToHaveTextAsync("Please pick a rating.");
         await Expect(Result(page)).ToHaveCountAsync(0);
+
+        // Each star is a radio with a name of its own, so the failed submit's focus lands on one and the arrow keys
+        // move through them, as through any radio group.
+        await Expect(page.GetByRole(AriaRole.Radio, new() { Name = "1 star", Exact = true })).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(page.Locator(".star-rating__value")).ToHaveTextAsync("2 / 5");
+        await Expect(page.GetByRole(AriaRole.Radio, new() { Name = "2 stars", Exact = true })).ToBeCheckedAsync();
 
         await stars.Nth(3).ClickAsync();
         await Expect(page.Locator(".star-rating__value")).ToHaveTextAsync("4 / 5");

@@ -1,0 +1,31 @@
+﻿@inherits BormInputBase
+
+@* A custom renderer made of Blazor's own InputText, registered as "blazor-text". InputText needs an EditContext
+   to exist at all: the view provides one (ProvideEditContext), mirroring the form's validation, so the input's
+   "invalid" class and aria-invalid follow the field's errors. The value is written through the field context,
+   never through the EditContext, so conditions and dirty tracking stay the form's. *@
+<InputText @ref="_input"
+           id="@Context.ElementId"
+           class="@CssClass"
+           Value="@Context.StringValue"
+           ValueChanged="@((string? value) => Context.SetFromStringAsync(value))"
+           ValueExpression="@(Context.ValueExpression<string?>())"
+           disabled="@Disabled"
+           aria-required="@AriaRequired"
+           aria-describedby="@DescribedBy"
+           autocomplete="@Field.Autocomplete" />
+
+@code {
+    private InputText? _input;
+
+    /// <summary>
+    /// The input InputText renders, for "take me to the first error" and the summary's links: a component is no
+    /// element, so without this the form had nothing to focus here and moved on to the next field with a problem.
+    /// </summary>
+    public override async ValueTask<bool> FocusAsync()
+    {
+        if (_input?.Element is not { } element) return false;
+        await element.FocusAsync();
+        return true;
+    }
+}

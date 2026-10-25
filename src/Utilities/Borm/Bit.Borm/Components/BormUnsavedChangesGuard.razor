@@ -1,0 +1,75 @@
+﻿@namespace Bit.Borm
+@using Microsoft.AspNetCore.Components.Routing
+@implements IDisposable
+@inject IJSRuntime JS
+
+@* Blazor's own lock: an external navigation (closing the tab, typing another address) gets the
+   browser's built-in "leave site?" prompt, and an internal one comes to OnBeforeInternalNavigation. *@
+<NavigationLock ConfirmExternalNavigation="@Guarding" OnBeforeInternalNavigation="OnNavigating" />
+
+@code {
+    /// <summary>
+    /// Asks before the user navigates away from a form with unsaved changes — to another page of the
+    /// app, or out of it. Renders nothing visible.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// "Unsaved" is <see cref="BormState.IsFormDirty"/>, which compares with the values the form opened
+    /// with, so a field typed into and put back again is not a change, and a successful submit followed
+    /// by <see cref="BormState.AcceptChanges"/> (or navigating away from inside the submit handler)
+    /// leaves without asking.
+    /// </para>
+    /// <para>
+    /// Leaving the app is confirmed by the browser's own prompt, whose text the browser chooses.
+    /// Navigating within it asks <see cref="OnConfirm"/> when it is set — a dialog of the app's own —
+    /// and otherwise the browser's <c>confirm()</c> with <see cref="Message"/>. This needs an
+    /// interactive render mode; a statically rendered page has no navigation to intercept.
+    /// </para>
+    /// </remarks>
+    [Parameter, EditorRequired] public BormState State { get; set; } = default!;
+
+    /// <summary>The question put to the user before an in-app navigation. Defaults to the message provider's text.</summary>
+    [Parameter] public string? Message { get; set; }
+
+    /// <summary>
+    /// Asks the user in a dialog of the application's own; return true to leave. Without it, the
+    /// browser's <c>confirm()</c> asks.
+    /// </summary>
+    [Parameter] public Func<string, Task<bool>>? OnConfirm { get; set; }
+
+    /// <summary>Set false to stop guarding without removing the component (default true).</summary>
+    [Parameter] public bool Enabled { get; set; } = true;
+
+    private BormState? _subscribed;
+
+    private bool Guarding => Enabled && State.IsFormDirty && !State.IsSubmitting;
+
+    private string Question => Message ?? State.Text(BormMessageKeys.UnsavedChanges);
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(_subscribed, State)) return;
+        if (_subscribed is not null) _subscribed.StateChanged -= OnStateChanged;
+        _subscribed = State;
+        _subscribed.StateChanged += OnStateChanged;
+    }
+
+    // The browser's prompt has to be armed or disarmed as the form becomes dirty or clean again.
+    private void OnStateChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private async Task OnNavigating(LocationChangingContext context)
+    {
+        if (!Guarding) return;
+
+        var leave = OnConfirm is not null
+            ? await OnConfirm(Question)
+            : await JS.InvokeAsync<bool>("confirm", Question);
+        if (!leave) context.PreventNavigation();
+    }
+
+    public void Dispose()
+    {
+        if (_subscribed is not null) _subscribed.StateChanged -= OnStateChanged;
+        _subscribed = null;
+    }
+}

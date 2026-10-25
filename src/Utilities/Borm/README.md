@@ -38,10 +38,14 @@ wizard, which is what makes a form testable without a browser.
 
 - **Three ways in**: generate a schema from a model's properties and DataAnnotations, build one with a strongly
   typed fluent API (`x => x.Address.City`, refactor-safe), or import a JSON Schema document (draft-07 to 2020-12,
-  with `$ref`, `allOf`, `if`/`then`/`else` and `dependentRequired`) - and export any form back out again.
+  with `$ref`, `allOf`, `if`/`then`/`else`, `dependentRequired`, `dependentSchemas` and discriminated
+  `oneOf`/`anyOf` subforms) - and export any form back out again.
 - **Rich field types**: text, search, password, email, URL, number, select, combobox, multi-select, radio,
-  checkbox and switch, date and time, range, colour, file upload, tags, static headings, nested objects and
-  repeating arrays.
+  checkbox and switch, date, time, date-time, month and week, range, colour, file upload, tags, formatted text
+  (Markdown with a safe preview), a signature pad with a typed alternative, static headings, nested objects and
+  repeating arrays - and input masks (`(000) 000-0000`) on any text field.
+- **Uploads that start when a file is chosen**: progress, cancel and retry beside each file, the files judged before
+  they are sent, what the server returned stored in their place, and a submit made meanwhile that waits for them.
 - **Validation**: required, length, range (numbers, dates and times), pattern, email, URL, UUID, compare,
   multiple-of, unique items, collection size, file size and type, custom sync and async rules, form-level rules,
   conditional rules, DataAnnotations' `IValidatableObject`, and FluentValidation through
@@ -50,15 +54,30 @@ wizard, which is what makes a form testable without a browser.
   fields revalidate when the field they read changes; async rules are debounced, superseded and cancelled.
 - **Conditional behaviour**: show, hide, disable, lock (read-only) or require fields and wizard steps based on
   other values - per row inside a repeater - and clear the values of branches the user abandoned.
-- **Data that follows the form**: computed values, async and cascading options, change handlers, value
-  normalisation (`Trim()`, `Normalize(...)`), dirty and touched tracking, snapshots and resets.
-- **Wizards**: ordered steps with per-step validation, conditional steps and a clickable stepper.
+- **Data that follows the form**: computed values, async and cascading options, lookups that search a service as
+  the user types, change handlers, value normalisation (`Trim()`, `Normalize(...)`), dirty and touched tracking,
+  snapshots and resets.
+- **Expressions**: totals, conditions and rules written as text (`{Quantity} * {UnitPrice}`, `{Total} >= 10000`) -
+  exported to JSON Schema and back, so a form a server sends can compute and judge with no code behind it, and
+  evaluated by a bounded interpreter that can read the answers and nothing else.
+- **Steps**: a wizard with per-step validation, conditional steps and a clickable stepper - or the same steps as
+  tabs, an accordion or titled sections - and a review that reads every answer back in words.
+- **Long forms**: undo and redo of every change, typing coalesced into one step; a repeater of hundreds of rows
+  shown a page at a time, with rows needing attention on other pages pointed out and focus taken to them.
+- **No interactivity needed**: a named form posts like any HTML form from a page rendered on the server alone, judged
+  there exactly as an interactive one would be.
+- **A designer**: `BormDesigner` builds a form by clicking - its fields, their rules and conditions, a live preview
+  and the JSON Schema it comes to - out of the same builder an application uses.
+- **Unfinished work kept**: versioned drafts without the sensitive answers, autosave, and a guard that asks before
+  the user leaves unsaved changes; a submit that says how it ended (invalid, rejected, failed, cancelled or
+  succeeded) and can be cancelled, with a server's `ProblemDetails` errors placed on their fields.
 - **Accessible by default**: real labels, `aria-required` / `aria-invalid` / `aria-describedby`, grouped radio and
   multi-select controls, focus management after a failed submit, live announcements and an error summary that
   links to each field.
 - **Yours to restyle and extend**: every colour is a `--bit-borm-*` custom property with light and dark themes,
-  every built-in string goes through `IBormMessageProvider`, and any control can be replaced through the renderer
-  registry.
+  every built-in string goes through `IBormMessageProvider` - and comes in twelve languages besides English with
+  `AddBormTranslations()` - the schema's own text through `IBormSchemaLocalizer` or the translations it carries, any control can be replaced through the renderer registry, and Blazor's own
+  `InputBase` controls and `ValidationSummary` work inside a form through the `EditContext` it can provide.
 
 ## Quick start
 
@@ -94,12 +113,19 @@ Then render a `BormView` with a `Definition` and a `Model`, as above. The full w
 
 The demo site, [borm.bitplatform.dev](https://borm.bitplatform.dev), opens on an overview with a live form, and its
 documentation - starting at `/getting-started` - is a set of working forms, one per topic of this guide:
-`/quickstart` (a schema from a C# type), `/builder` (the fluent builder and conditions), `/array` (repeaters and
-computed totals), `/wizard`, `/layout`, `/field-polish`, `/combobox-tags`, `/per-row-conditions`, `/settled-answers`,
-`/composition`, `/state-api`, `/validation`, `/dependent-fields`, `/cascading`, `/files`, `/json-schema` (a live JSON
-Schema editor with round-trip export), `/data-annotations`, `/fluent-validation` and `/custom-renderer`. Every page can
-show its own source, and Ctrl+K (or `/`) searches them all. The site re-tints Borm's `--bit-borm-*` tokens to its own
-light and dark theme, which is what [Theming](#theming) describes.
+`/quickstart` (a schema from a C# type), `/builder` (the fluent builder), `/conditions` (every kind of condition),
+`/json-schema` (a live JSON Schema editor with round-trip export and the schema's checks), `/designer` (the visual
+designer), `/field-types` (every built-in control), `/layout`, `/field-polish`, `/combobox-tags`, `/search-lookup`,
+`/files`, `/rich-fields` (masks, Markdown, signatures and uploads), `/composition`, `/custom-renderer`,
+`/blazor-inputs` (Blazor's own inputs through the provided `EditContext`), `/theming` (the tokens, colour modes and
+accessibility), `/localization`, `/static-form` (a form with no interactivity), `/array` (repeaters and computed
+totals), `/per-row-conditions`, `/wizard`, `/tabs-review` (tabs, accordion, sections and a review step),
+`/undo-long-lists`, `/validation`, `/dependent-fields`, `/settled-answers`, `/data-annotations`, `/fluent-validation`,
+`/cascading`, `/state-api`, `/saving` (how a submit ends, and a server's errors), `/expressions` (with a console that
+evaluates any expression), `/drafts` (autosave and the unsaved-changes guard), `/api-reference` (`BormView` and
+`BormState` at a glance) and `/mcp-server`. Every page can show its own source, and Ctrl+K (or `/`) searches them
+all. The site re-tints Borm's `--bit-borm-*` tokens to its own light and dark theme, which is what
+[Theming](#theming) describes.
 
 To run it locally:
 
@@ -165,8 +191,10 @@ read-only.
 - [Conditional fields and wizards](#conditional-fields-and-wizards)
 - [Async and cascading options](#async-and-cascading-options)
 - [Computed values](#computed-values)
+- [Expressions](#expressions)
 - [Combobox and tags](#combobox-and-tags)
 - [Change handlers](#change-handlers)
+- [Drafts and autosave](#drafts-and-autosave)
 - [Layout](#layout)
 - [Field presentation](#field-presentation)
 - [Checking a schema](#checking-a-schema)
@@ -373,10 +401,21 @@ validator looks for them - and the older top-level `enum` spelling still imports
 
 `anyOf`/`oneOf` is handled for the two shapes that describe a single control: a null union
 (`{"anyOf":[{"type":"string"},{"type":"null"}]}`) collapses to the branch it wraps, and a list of `const` branches
-with titles (with or without a `{"type":"null"}` branch, and with or without `$ref`s) becomes a labelled select. A
-union of genuinely different *object* shapes describes a choice of subforms rather than a choice of values - it
-needs a selector and a form that swaps with it - so it is left alone rather than bound to a branch the document
-never committed to.
+with titles (with or without a `{"type":"null"}` branch, and with or without `$ref`s) becomes a labelled select.
+
+A union of *object* shapes describes a choice of subforms, and becomes one when the data says which branch an
+answer is - when a property tells them apart. That property is OpenAPI's `discriminator.propertyName` when the
+schema names one (its values from each branch's `const`, the `mapping`, or the definition's name, which is what
+Swashbuckle and NSwag write for an `allOf` hierarchy), and otherwise the first property every branch pins to a
+`const` of its own. It becomes a required choice labelled by the branches' titles; every other property a branch
+adds shows only while that branch is chosen, is cleared when it stops being, and is required while its branch
+requires it; properties every branch shares always show. A union with nothing in the data to tell its branches
+apart is still left alone rather than bound to a branch the document never committed to.
+
+`dependentSchemas` (and draft-07's schema-valued `dependencies`) adds fields that show once the property they hang
+off is answered, and makes properties already there required then. The react-jsonschema-form idiom - a dependency
+whose `oneOf` branches each pin the answer to one of its values - asks a different set of questions per answer.
+The export writes the form these become (a choice and conditional fields), not the original union.
 
 ### Untrusted documents
 
@@ -399,7 +438,7 @@ UI intent that JSON Schema has no vocabulary for travels in `x-` extensions, and
 
 | Extension | Meaning |
 | --- | --- |
-| `x-widget` | Force a control: `select`, `textarea`, `radio`, `combobox`, `multiselect`, `tags`, `range`, `switch`, `file`, `static`, `hidden`, `array`, … A document that names its control is taken at its word; one that does not gets the friendliest default for the shape it describes. |
+| `x-widget` | Force a control: `select`, `textarea`, `radio`, `combobox`, `multiselect`, `tags`, `range`, `switch`, `file`, `static`, `hidden`, `array`, `month`, `week`, `markdown`, `signature`, … A document that names its control is taken at its word; one that does not gets the friendliest default for the shape it describes. JSON Schema has no format for a month or a week, so their values travel as the pickers' text (`2024-05`, `2024-W19`). |
 | `x-allowCustom`, `x-enum` | A combobox that also accepts answers on no list. Its choices travel as `x-enum`, because `enum` means "one of these and nothing else" to every validator; a combobox with a plain `enum` is a closed choice and rejects anything else. |
 | `x-renderer` | A custom renderer key registered with `RegisterCustom`. |
 | `x-order`, `x-group`, `x-placeholder`, `x-autocomplete`, `x-inputMode`, `x-autofocus` | Field metadata. |
@@ -408,17 +447,56 @@ UI intent that JSON Schema has no vocabulary for travels in `x-` extensions, and
 | `x-updateOn`, `x-debounce` | When the value is written back. |
 | `x-step` | The control's granularity, as distinct from a `multipleOf` constraint. |
 | `x-accept`, `x-multiple`, `x-maxFileSize` | File upload constraints. |
-| `x-visibleWhen`, `x-disabledWhen`, `x-readOnlyWhen`, `x-requiredWhen` | Conditions, as `{"field":…,"op":…,"value":…}` or `{"all":[…]}` / `{"any":[…]}`. `op` is an operator name (any case) and defaults to `Equals` when absent; a condition whose `op` names no operator, or a group with a member that cannot be read, is dropped as a whole rather than guessed at. |
+| `x-visibleWhen`, `x-disabledWhen`, `x-readOnlyWhen`, `x-requiredWhen` | Conditions, as an [expression](#expressions) string (`"{total} > 100 and {country} = 'NL'"`), as `{"field":…,"op":…,"value":…}`, or as `{"all":[…]}` / `{"any":[…]}` of either. `op` is an operator name (any case) and defaults to `Equals` when absent; a condition whose `op` names no operator, or a group with a member that cannot be read, is dropped as a whole rather than guessed at. An expression that does not parse fails the import instead, naming the field and the keyword. |
+| `x-computed` | An [expression](#expressions) the field's value is derived from - `"{quantity} * {unitPrice}"`. Its dependencies are read from it, and the field is read-only unless the document says `"readOnly": false`. |
+| `x-rules` | [Expressions](#expressions) the value must satisfy: `[{"expression": "len({code}) = 6", "message": "…", "severity": "warning"}]`, or a bare string. On the root, a rule may name the `field` its message belongs on. A rule with no message uses the provider's `BormMessageKeys.Rule` text. |
 | `x-revalidateOn` | Paths whose change revalidates this field - the other half of a cross-field rule. |
 | `x-clearOnHide` | Clear the value when the field is hidden. |
+| `x-sensitive` | The value must not outlive the page: left out of [drafts](#drafts-and-autosave). Passwords are sensitive without it. |
+| `x-pageSize` | How many rows of a [long list](#long-lists) are shown at once. |
+| `x-mask` / `x-maskStoresRaw` | The [shape](#values-in-a-fixed-shape) the value is written in, `(000) 000-0000`, and whether the model holds only what filled its slots. |
+| `x-version` | On the root: which version of the form this is, recorded in every draft so one saved against an older version can be recognised and migrated. |
+| `x-i18n` | The key a field's texts are translated under (see [the schema's own text](#the-schemas-own-text)). |
+| `x-translations` | On the root: the form's texts per culture, `{"de": {"form.title": "…", "name.label": "…"}}`. |
 | `x-attributes`, `x-inputAttributes` | Renderer hints and extra HTML attributes. |
 | `x-steps` | Wizard steps, each with `id`, `title`, `fields` and an optional `visibleWhen`. |
+| `x-stepLayout` | How the steps are shown: `wizard` (the default), `tabs`, `accordion` or `sections`. |
 | `enumNames`, `x-enumGroups`, `x-enumDisabled` | Labels matching the `enum` values, the `<optgroup>` each belongs to, and the values that may not be chosen. |
 | `examples` | `<datalist>` suggestions. A tag list's go on `items` with its per-tag `minLength`, `maxLength` and `pattern`. |
 
-Conditions, rules and renderer hints backed by code (`VisibleWhen(predicate)`, `Must`, `MustAsync`, `Computed`,
+Conditions, computed values and rules written as [expressions](#expressions) export as the strings they were
+written as. Those backed by code (`VisibleWhen(predicate)`, `Must(predicate)`, `MustAsync`, `Computed(delegate)`,
 `OnChange`, `Normalize`, a delegate stashed in `Attributes`) have no JSON form and are omitted from the export
 rather than approximated.
+
+## Designing a form visually
+
+`BormDesigner` builds a form without code - for the people who own a form's questions but not the application:
+
+```razor
+<BormDesigner @bind-Value="_definition" />
+
+@code {
+    private BormDefinition? _definition;   // an existing schema to edit, or null to start empty
+}
+```
+
+A palette adds any kind of field; the list of fields chooses one, and moves, copies or deletes it; its properties -
+kind, name, label, help, placeholder, required and read-only, lengths and limits, a pattern or a mask, options one per
+line, a group and a column span, and [expressions](#expressions) for when it shows, when it is required and what it
+is computed as - are a Borm form of their own, which says when an expression or a mask does not read or a name is
+taken. The form's title, description and columns are settings of their own. A live preview renders the form as it
+stands, and keeps its answers as fields change; the JSON Schema beneath it can be copied out, or replaced and loaded
+back in. Every change is built through the same builder an application uses, and handed out through `ValueChanged`.
+
+Read in, an existing schema keeps what the designer has no place for: an options provider, a condition or a rule
+written in code, renderer hints, steps (a new field joins the last one), translations and form-level rules - and a
+field holding such code says so. Objects, repeaters, hidden values and fields drawn by a renderer of their own are kept
+as they are, kind and all - their label, help, conditions and the like can still be changed - and edited in JSON.
+
+The list is a list of buttons first: each field is chosen, moved, copied and deleted with buttons named for it ("Move
+Email up"), focus stays where the user is, and each change is announced ("Email is now number 2 of 3"). Dragging a
+field onto another moves it too, for a mouse. Every word it shows goes through `IBormMessageProvider`.
 
 ## Validation
 
@@ -460,6 +538,13 @@ which is what debouncing is for:
 `state.IsValidatingField(path)` reports the lookup while it is in flight, so a spinner goes beside *that* box rather
 than the whole form declaring itself busy. A run that is superseded - the user typed again, pressed Next twice,
 reset the form - has its answer discarded, and `ctx.CancellationToken` is signalled so the lookup itself can stop.
+
+A field's synchronous rules run first, and its asynchronous ones only when those found no error: a username that
+does not match its pattern is not sent to the server to ask whether it is taken, which would cost a request and
+answer with a second complaint about a value the user has to change anyway. Set `RunAsyncRulesOnInvalidFields` to
+run them regardless. `GetFieldState(path).Status` says where a field stands - `Unvalidated`, `Pending` (a lookup in
+flight), `Invalid` or `Valid` - so a "✓ available" can appear once the lookup has answered and not before; a value
+that changes is `Unvalidated` again until it is judged.
 
 ### Rules that read another field
 
@@ -521,6 +606,27 @@ tidied too. Never per keystroke, which would eat the space between two words the
 a value that is nothing but whitespace into null, so a required field is not satisfied by `"   "`. React Hook Form
 spells this `setValueAs`.
 
+### Values in a fixed shape
+
+`Mask` writes a value in a fixed shape - a phone number, an IBAN, a postcode:
+
+```csharp
+.Field(x => x.Phone, f => f.Mask("(000) 000-0000"))
+.Field(x => x.Iban, f => f.Mask("AA00 0000 0000 0000 0000 00", storeRaw: true))
+```
+
+`0` is a digit, `A` a letter (written in capitals), `a` a letter as typed and `*` either; a backslash makes the next
+character literal, and anything else is literal already. When the user leaves the box what they typed is put into
+the shape: the literals they type stand for themselves and any other separator is passed over, so `5551234567`,
+`555-123-4567` and `(555) 123-4567` are the same answer. A value that does not fit is left as typed and reported
+with the shape to write it in (`Enter it in the form (###) ###-####.`, `BormMessageKeys.Mask`). `storeRaw: true`
+stores only what filled the slots - `5551234567` - while the box and a review still show it formatted. A mask of
+digits alone asks a phone for its number pad. `x-mask` and `x-maskStoresRaw` carry it through JSON Schema.
+
+The box is not rewritten under the caret as the user types. That needs script to put the caret back, and a box that
+changes what is being typed into it is one assistive technology describes badly - which is why GOV.UK's advice is
+not to use input masks at all. Formatting the answer once it is given keeps the benefit and drops the cost.
+
 ### Date and time windows
 
 `Range` takes dates and times as well as numbers. The bound is rendered as the control's own `min` / `max` - so the
@@ -536,6 +642,12 @@ picker is reported rather than quietly accepted:
 
 A `DateTimeOffset` is shown on its own clock, and what the user types is given back the offset the value already
 had, so editing one never shifts it to another instant or another zone.
+
+`AsMonth()` and `AsWeek()` put the browser's month and week pickers on a field - a card's expiry, a delivery
+slot. A `DateOnly`, `DateTime` or `DateTimeOffset` holds the period's first day (the 1st of the month, the ISO
+week's Monday); with no CLR type, or a `string` property, the value is the picker's own text, `2024-05` or
+`2024-W19`. Firefox and Safari on the desktop have no such pickers and show a text box, so anything else typed into
+one is reported as an entry the field cannot accept rather than stored. `Range` bounds work as they do for dates.
 
 ### Details worth knowing
 
@@ -598,10 +710,13 @@ state.Reset(new Dictionary<string, object?>
 included - which is exactly what `Reset(values)` takes back, so the two together are a draft save and restore:
 
 ```csharp
-var draft = state.Snapshot();     // stash it in session storage
+var draft = state.Snapshot();     // keep it in memory
 // … the user comes back …
 state.Reset(draft);
 ```
+
+A snapshot holds live objects; for a draft that has to outlive the page - written to storage as JSON, without
+passwords, and restored into a newer version of the form - use [`BormDraft`](#drafts-and-autosave).
 
 `ValidateFieldAsync(path)` checks one answer without judging the whole form, and `GetFieldState(path)` answers
 everything about one field at once:
@@ -614,7 +729,44 @@ var field = state.GetFieldState("Customer");
 ```
 
 Errors the server finds after a submit go back onto the fields they belong to with `SetServerError(path, message)`,
-or `SetServerErrors(...)`, which replaces the form's messages with a whole batch from one failed request.
+or `SetServerErrors(...)`, which replaces the form's messages with a whole batch from one failed request. An ASP.NET
+Core `ValidationProblemDetails` goes in as it arrives - keys are matched to fields without regard to case, and the
+`$.` System.Text.Json puts in front of its own is dropped - with an optional map for an API whose names are not the
+form's:
+
+```csharp
+private async Task Save(BormState state, CancellationToken cancellationToken)
+{
+    var response = await http.PostAsJsonAsync("api/orders", _model, cancellationToken);
+    if (response.StatusCode == HttpStatusCode.BadRequest
+        && await response.Content.ReadFromJsonAsync<ValidationProblemDetails>(cancellationToken) is { } problem)
+        state.SetServerErrors(problem.Errors);              // the submit now reports Rejected
+    else
+        response.EnsureSuccessStatusCode();                 // throwing reports Failed
+}
+
+// await state.SubmitAsync(Save);
+```
+
+### How a submit ends
+
+`SubmitOutcome` says how the last submit ended, which is more than valid-or-not: `Invalid` (the form's own rules
+refused it, and the handler never ran), `Rejected` (the handler recorded errors with `SetServerError` or
+`SetServerErrors` - a server that said no), `Failed` (the handler threw; the exception is in `SubmitError` and is
+rethrown), `Cancelled`, or `Succeeded`. `SubmitAsync` returns true only for the last of those, and
+`IsSubmitSuccessful` is the same thing. An error the user makes while the handler runs - letters typed into a number
+box during a slow save - is theirs to fix, and does not turn a save that went through into a rejected one.
+
+The overload whose handlers take `(state, cancellationToken)` hands them a token that `CancelSubmit()` and disposing
+the form signal; a handler wired through `BormView.OnValidSubmit` reads it from `state.SubmitCancellationToken`.
+`ReadOnlyWhileSubmitting` holds every field still while the handler runs, so a slow save cannot leave the form
+showing values other than the ones sent. Nothing is ever retried behind the application's back, and the values
+are left exactly as they were, so "try again" is simply submitting again.
+
+Every message also says where it came from - `Source` is `Rule`, `External`, `Server` or `Conversion` - and, for a
+rule with a key, `Code` is that key (`required`, `maxLength`, …), stable across languages for a test or a custom
+message component to key off. Neither takes part in equality: two messages saying the same thing about the same
+field are one message.
 
 ### DataAnnotations and `IValidatableObject`
 
@@ -739,6 +891,54 @@ form refuses to submit. If a condition hides the step the user is standing on, t
 visible one rather than stranding them. Changing step moves focus to the new step's content, so the change is not
 invisible to a keyboard or screen-reader user.
 
+### Tabs, accordion and sections
+
+A long record the user moves around in freely - a settings page, a customer's details - is not a process to walk
+through in order. The same steps can be shown as tabs, an accordion or titled sections:
+
+```csharp
+BormBuilder.For<Customer>()
+    .StepLayout(BormStepLayout.Tabs)         // or Accordion, Sections; Wizard is the default
+    .Step("contact", s => s.Title("Contact").Fields("Name", "Email", "Phone"))
+    .Step("billing", s => s.Title("Billing").Fields("Vat", "Address"))
+    .Step("tax", s => s.Title("Tax").Fields("TaxId").VisibleWhen("{Country} = 'NL'"))
+    .Build();
+```
+
+- **Tabs** follow the WAI-ARIA tabs pattern: one tab stop for the list, the arrow keys, Home and End moving
+  between tabs, and the panel labelled by its tab. Any tab can be opened without validating the one left.
+- **Accordion** uses the browser's own `<details>` disclosure, the first section open; a closed section keeps its
+  fields in the page, so nothing it holds is lost.
+- **Sections** are titled regions one after another, all open.
+
+In all three, Submit validates everything (a hidden tab or section never blocks it), and Enter in a text box
+submits rather than moving on. A failed submit turns to the first tab with something to fix, or opens every section
+that has something, so focus and the error summary's links can reach it; a tab or section holding errors the user
+has been shown carries a count that is also read out (`BormMessageKeys.StepErrors`), never colour alone. Drafts
+remember which tab was open. `x-stepLayout` carries the choice through JSON Schema, and `BormStepsView` renders the
+layouts for a page that composes its own form.
+
+### Review before submitting
+
+`Review(name, heading)` adds a "check your answers" summary - put it on a wizard's last step:
+
+```csharp
+BormBuilder.For<Application>()
+    .Step("you", s => s.Title("About you").Fields("Name", "Email"))
+    .Step("plan", s => s.Title("Your plan").Fields("Plan", "Seats", "Start"))
+    .Review("summary", "Check your answers")
+    .Step("review", s => s.Title("Review").Fields("summary"))
+    .Build();
+```
+
+Every answer of every other visible step is read back in words - an option's label rather than its stored value,
+Yes or No, a number with its prefix and suffix, a date as the reader's culture writes it, a file by its name, a
+repeater row by row - and a question nobody answered says so. A sensitive answer (a password, a field marked
+`Sensitive()`) is never shown. Each step has a "Change" button back to it, named for the step for assistive
+technology, which moves focus with the step as the stepper does. `<BormReview State="…" />` places the same
+summary anywhere - a confirmation page, a printable record - and `x-attributes: {"review": true}` on a static field
+carries it through JSON Schema.
+
 ## Async and cascading options
 
 Options can be loaded on demand and refreshed when another field changes:
@@ -794,7 +994,104 @@ dependency changes - including changes inside an array. One computed field may d
 that reference each other in a cycle settles rather than recursing.
 
 Dependencies are named relative to the object that owns the field, so `"Quantity"` on a repeater row means that
-row's quantity. The untyped builder takes a context instead: `f.Computed(ctx => ctx.Sibling("width"), "width")`.
+row's quantity. The untyped builder takes a context instead: `f.Computed(ctx => ctx.Sibling("width"), "width")`,
+or an [expression](#expressions): `f.Computed("{width} * {height}")`.
+
+## Expressions
+
+A condition, a computed value or a rule can be written as text instead of C#. Nothing changes about how it
+behaves, but text travels: it is exported to JSON Schema and imported back, so a form a server sends as JSON can
+compute, decide and judge with no code behind it.
+
+```csharp
+BormBuilder.For<Invoice>()
+    .Array(x => x.Lines, line => line
+        .Field(l => l.Quantity)
+        .Field(l => l.UnitPrice)
+        .Computed(l => l.LineTotal, "{Quantity} * {UnitPrice}"))         // this row's quantity and price
+    .Field(x => x.Discount)
+    .Computed(x => x.Total, "sum({Lines[].LineTotal}) - coalesce({Discount}, 0)")
+    .Field(x => x.Approver, f => f.RequiredWhen("{Total} >= 10000"))
+    .Field(x => x.DueDate, f => f.Must("{DueDate} > {IssueDate}", "The due date comes after the issue date."))
+    .MustAll("count({Lines}) > 0", "Add at least one line.", nameof(Invoice.Lines))
+    .Build();
+```
+
+```json
+"total":    { "type": "number", "x-computed": "sum({lines[].lineTotal}) - coalesce({discount}, 0)" },
+"approver": { "type": "string", "x-requiredWhen": "{total} >= 10000" },
+"dueDate":  { "type": "string", "format": "date",
+              "x-rules": [{ "expression": "{dueDate} > {issueDate}", "message": "The due date comes after the issue date." }] }
+```
+
+`VisibleWhen`, `DisabledWhen`, `ReadOnlyWhen`, `RequiredWhen`, `When` and a step's `VisibleWhen` each take an
+expression; `Computed(expression)` makes the field read-only; `Must(expression, message, severity)` registers
+`RevalidateOn` for every other field it reads, so correcting either side of a comparison clears the message; and
+`MustAll(expression, message, field)` is a form-level rule. The fields an expression reads are its dependencies,
+so it is re-evaluated exactly when one of them changes - there is no `dependsOn` to keep in step.
+
+### The language
+
+- **Fields** are written in braces: `{Email}`, `{Address.City}`, `{Lines[0].Product}`. A path resolves against the
+  object that owns the field first, so on a repeater's row template `{Quantity}` is that row's. `[]` means every
+  row: `{Lines[].Total}` is the list of every line's total, and `{Orders[].Lines[].Qty}` flattens a list of lists.
+- **Values**: numbers (`12`, `0.5`, `1e3`), text in single or double quotes (a doubled quote or a backslash
+  escapes one; any other backslash is kept, so a pattern reads as itself), `true`, `false`, `null`, and lists
+  `['a', 'b']`.
+- **Operators**: `+ - * / %`, `=` (or `==`), `!=` (or `<>`), `< <= > >=`, `in`, `not in`, `and` (`&&`), `or`
+  (`||`), `not` (`!`). Keywords ignore case. Comparisons do not chain: `1 < {x} < 5` is refused; write
+  `1 < {x} and {x} < 5`.
+- **Numbers are decimals**, so `0.1 + 0.2` is `0.3` and money adds up. Dividing by zero has no answer (null).
+- **Text** joins with `+`, and a missing part joins as nothing: `{First} + ' ' + {Last}`.
+- **Dates** compare as points in time whether they are `DateOnly`, `DateTime`, `DateTimeOffset` or ISO text;
+  a date plus a number moves it by that many days, and one date minus another is the days between them.
+- **Comparisons** are the ones `BormConditionOperator` makes: numbers by value, text without regard to case.
+
+| Kind | Functions |
+| --- | --- |
+| Logic | `iif(condition, then, else)` (evaluates only the branch it takes), `coalesce(a, b, …)`, `isEmpty(x)`, `isNotEmpty(x)` |
+| Text | `len(x)` / `length(x)` (a list's item count too), `lower`, `upper`, `trim`, `concat(…)`, `substring(text, start, length?)`, `contains`, `startsWith`, `endsWith`, `matches(text, 'pattern')` |
+| Numbers | `abs`, `round(x, digits?)` (halves away from zero), `floor`, `ceil`, `number(x)`, `text(x)` |
+| Aggregates | `sum`, `avg`, `min`, `max`, `count` - each takes values, lists or both, and skips what has not been answered |
+| Dates | `today()`, `now()`, `year`, `month`, `day`, `age(birthDate)`, `dateDiff(from, to, unit?)` (`'days'`, `'weeks'`, `'months'`, `'years'`, `'hours'`, `'minutes'`), `addDays`, `addMonths`, `addYears` |
+
+### Missing answers
+
+A field nobody has answered reads as `null`, and in a yes/no position null is no: `not {Subscribe}` holds for a
+box nobody ticked, exactly as `BormConditionOperator.IsFalse` does. A comparison that needs a missing answer is
+*unknown* instead, and unknown follows SQL's three-valued logic: while the age is missing, `{Age} >= 18 or
+{Override}` is true once the override is ticked and unknown otherwise, and `{Age} >= 18 and {Override}` is false
+while the override is unticked and unknown otherwise. A condition that is
+unknown is false, so a field depending on a missing answer stays hidden. A **rule** that is unknown passes - a
+rule comparing two dates has nothing to say until both are given, and saying a value is missing is `Required()`'s
+job. `=` and `!=` treat null as a value, so `{Notes} = null` asks whether the notes are empty.
+
+### Safety
+
+An expression is not a program. It can read the form's values and call the functions listed above, and nothing
+else: no member access, no reflection, no assignment, no loops, so evaluating one from an untrusted document always
+finishes and can read nothing but the answers. Parsing is bounded - 4,096 characters, 48 levels of nesting, 1,024
+parts - and `matches` only takes its pattern as a literal in the expression, never one read from a field, with the
+same 250 ms time limit every pattern gets. Evaluating never throws for the values it meets: text multiplied by a
+number, a date that does not parse or a division by zero is simply no answer. A document whose expression does not
+parse fails `TryImport`, saying which field and keyword it was in, rather than having the condition quietly dropped
+- which would show a field meant to be hidden, or make one meant to be required optional.
+
+### Functions of your own
+
+```csharp
+BormExpressionFunctions.Register("vatRate", args => args[0] is "DE" ? 0.19m : 0.20m, minArgs: 1, maxArgs: 1);
+// "x-computed": "round({net} * (1 + vatRate({country})), 2)"
+```
+
+Registered functions are the trust boundary: an expression from any document can call them, so they must be safe
+with any arguments (they are given evaluated values, a missing answer as null) and should return null rather than
+throw. Register them at startup; a built-in function cannot be replaced. `today()` and `now()` read
+`BormExpressionFunctions.TimeProvider`, which a test can replace with a fixed clock; it is the local time of the
+process evaluating the expression - on Blazor Server, the server's.
+
+Expressions are synchronous and pure. A rule that calls a service, a lookup, or anything asynchronous stays a
+delegate (`MustAsync`, `OptionsFrom`), and keeps working alongside them.
 
 ## Combobox and tags
 
@@ -823,6 +1120,39 @@ holds the value that label stands for, and half a label stands for nothing.
 `AsCombobox()` adds a rule reporting an answer that is on no list - it is *reported*, never silently discarded. The
 rule can only check options the schema itself declares; choices that arrive from an `OptionsFrom` provider live in the
 form's runtime state rather than the schema, so validate those on the server where the same lookup lives.
+
+### Lookups that search as you type
+
+A customer out of a hundred thousand fits no list. `SearchFrom` makes the combobox ask as the user types:
+
+```csharp
+.Field(x => x.CustomerId, f => f.SearchFrom(
+    search: ctx => customers.SearchAsync(ctx.SearchText, ctx.CurrentValue as string, ctx.CancellationToken),
+    value:  c => c.Id,
+    label:  c => c.Name,
+    minLength: 2,                 // nothing is asked before two characters
+    debounceMilliseconds: 250))   // and only once the user pauses
+```
+
+- The search runs once `minLength` characters are typed and the user pauses; a search typed past is cancelled
+  (`ctx.CancellationToken`) and its answer never lands over a newer one. A `minLength` of 0 searches with empty
+  text before anything is typed - "the top results".
+- A field that opens holding a value - an edit form - is asked once with no `SearchText` and the value in
+  `ctx.CurrentValue`, so it can return the one option the box should show instead of a bare id. The option the
+  user picks is remembered, so its label stays in the box after a later search no longer returns it.
+- Text committed before its results arrived (typed quickly, tabbed away) is searched for exactly, and matched if it
+  is a result. Text that names no result is **refused** - left in the box with a message while the model keeps its
+  last value - because a search field stands for a record; `allowCustom: true` stores it as typed instead. A submit
+  or a wizard's Next pressed while that search is out waits for its answer rather than sending the value from
+  before; `state.TrackEntryAsync(task)` does the same for a control of your own whose commit awaits something.
+- Until enough is typed the box tells assistive technology how much is needed; then how many results there are.
+  Nothing is written to the model per keystroke: only a choice, or leaving the box, commits.
+- `state.SearchOptionsAsync(field, path, text)` runs the same search for a control of your own.
+
+Search providers are code, so they are not exported to JSON Schema; validate the chosen id on the server, where the
+same lookup lives.
+
+### Tags
 
 A list of short strings is a set of chips rather than a repeater:
 
@@ -856,6 +1186,94 @@ do not run while the form is being constructed, and a pair that answer each othe
 A handler runs after the form has settled the change it reacts to - computed values are up to date and any select
 cascading off the field has already been emptied - so it reads current totals and may set the dependent field itself.
 
+## Drafts and autosave
+
+A long form owes its user "you were halfway through this - carry on?" when the tab closes or the session expires.
+`BormDraft` writes the form's unfinished answers as a small JSON document and puts them back; where it is kept -
+browser storage, the server, a database - is the application's choice:
+
+```razor
+<BormView State="_state" OnValidSubmit="Submit" />
+<BormAutosave State="_state" OnSave="json => drafts.SaveAsync(DraftKey, json)" OnDiscard="() => drafts.DeleteAsync(DraftKey)" />
+<BormUnsavedChangesGuard State="_state" />
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        _state = new BormState(_definition, new BormModelDataAccessor(_model), Services);
+        if (await drafts.LoadAsync(DraftKey) is { } json)
+            BormDraft.Restore(_state, json);    // back as unsaved changes, on the step it was saved on
+    }
+
+    private async Task Submit(BormState state)
+    {
+        await api.SaveAsync(_model);
+        await drafts.DeleteAsync(DraftKey);      // a submitted form has no draft
+        state.AcceptChanges();                   // and nothing left to warn about
+    }
+}
+```
+
+- **What a draft holds**: every value the schema binds to, one per path (`Lines[2].Quantity`), with each repeater's
+  row count and the wizard step. Types come back as they went - enums, dates, a timestamp's offset, a multi-select's
+  list. Computed values are not saved; they are computed again.
+- **What it never holds**: files (a browser file cannot outlive the page that chose it) and sensitive values -
+  passwords, and fields marked `Sensitive()` (`x-sensitive`) - unless `BormDraftOptions.IncludeSensitive` asks.
+  `ExcludeHidden` also leaves out the answers of branches the user hid.
+- **Restoring** writes the answers as unsaved changes on top of what the form opened with, so `IsFormDirty` and an
+  unsaved-changes prompt stay meaningful and `Reset()` takes them away. Change handlers stay silent and a cascading
+  select keeps the answer it is given. What the form has no field for, or can no longer hold, is listed in the
+  result's `Skipped` rather than left on a field as an error the user never made - and so are rows past
+  `BormDraft.MaxRows` (10,000, all the draft's repeaters together) and a row count for a row that is not there.
+- **Versions**: a draft records `BormDefinition.Version` (`.Version("3")`, `x-version`). When it differs from the
+  form's, `BormDraftOptions.Migrate` gets the draft to bring up to date first:
+  `m => { if (m.FromVersion == "2") m.Rename("Phone", "Contact.Phone").Remove("Fax"); }`.
+
+`BormAutosave` writes one a moment after the user stops changing the form (`DelayMilliseconds`, default 1000) -
+only while there are unsaved changes, and once more as the page goes away if a save was still waiting. A draft
+put back by `BormDraft.Restore` is not saved again, and `OnDiscard` runs once the form is back where it started -
+`Reset()`, or every change undone - so the stored draft can go with it. Clear the
+stored draft once the form is submitted. Autosave and the guard below hear what a field has committed, and a text box commits what is typed
+in it when it is left: give the fields whose half-written answers a draft should keep `UpdateOnInput(300)`, and they
+commit as the user types. `BormUnsavedChangesGuard` asks before the user leaves a form with unsaved
+changes: Blazor's `NavigationLock` gives an external navigation the browser's own "leave site?" prompt, and an
+in-app one asks `OnConfirm` (a dialog of yours) or the browser's `confirm()` with `BormMessageKeys.UnsavedChanges`.
+
+`state.Snapshot(new BormSnapshotOptions { ExcludeHidden = true, ExcludeSensitive = true })` is the payload-shaped
+counterpart: a hidden answer is *retained* while the user can still toggle back to it, *cleared* when the field is
+`ClearOnHide`, and *excluded* from what is sent when the snapshot says so.
+
+A draft is plain JSON holding personal data. Keep it where the user's other data is kept, and not in storage another
+user of the same machine can read.
+
+## Undo and redo
+
+`ShowUndo` puts Undo and Redo buttons beside Submit; `state.UndoAsync()` and `state.RedoAsync()` do the same from
+code, with `CanUndo`, `CanRedo` and `NextUndoPath` to drive buttons of your own.
+
+```razor
+<BormView Definition="_definition" Model="_model" ShowUndo="true" />
+```
+
+- **A change is everything one answer set off**: the value itself, a field a condition then hid and cleared, a
+  sibling a change handler filled in, a city an abandoned country took with it. They are taken back together, and the
+  handler is not run again on the way - what it did is part of the change. Computed values are not recorded; they
+  follow the answers back.
+- **Rows keep their identity.** Adding, removing, moving, swapping, copying and clearing rows are changes like any
+  other, and undoing a removal puts back the same row object - with whatever it held - rather than a copy.
+- Two writes to one field within a second are one change, so a field that writes as the user types is not undone a
+  character at a time, and the tidying a field does as the user leaves it (`Trim()`, a mask) belongs to that answer.
+  `ResetField` and `SetValues` are changes of their own.
+- A field put back is judged again as a change would be, so an error the user has been shown comes back with the
+  value that caused it.
+- `HistoryLimit` is how many changes are kept - 0, the default, keeps none; `ShowUndo` makes it 100. `Reset()` and
+  restoring a draft start the history again. Only changes made through the state are recorded: a model edited behind
+  the form's back has nothing to undo.
+
+The buttons keep the focus, so they can be pressed again; each is named for the field it acts on ("Undo the change to
+Full name"), and what it did is announced ("Undone: Full name"). Ctrl+Z inside a text box still undoes the typing in
+that box, as the browser always has - the form's Undo takes back answers already given.
+
 ## Layout
 
 Set a column count on the form and let individual fields span more than one. The grid collapses to a single column
@@ -869,6 +1287,23 @@ BormBuilder.For<Profile>()
     .Field(x => x.Bio, f => f.AsTextArea(4).ColumnSpan(2))
     .Build();
 ```
+
+### Long lists
+
+A list of hundreds or thousands of rows is shown a page at a time:
+
+```csharp
+.Array(x => x.Lines, line => line.Field(l => l.Product), f => f.PageSize(25))
+```
+
+The pager offers Previous and Next, a page picker and the rows a page holds ("26–50 of 1,000"), and says how many rows
+on other pages need attention, with a button to the first of them. Every way of reaching a row still reaches it: the
+error summary's links and focus-the-first-error turn to the row's page before they move the focus - a list inside a
+row of another paged list included - and adding, copying or moving a row turns to the page it lands on. Row numbers
+and the rows' accessible names stay those of the whole list. `x-pageSize` carries it through JSON Schema.
+
+It is paged rather than virtualised on purpose. A virtualised list leaves the rows out of view out of the page, where
+neither the keyboard, nor the error summary, nor a screen reader can reach them; a page is always whole.
 
 ### Groups
 
@@ -956,12 +1391,63 @@ anyway; a list of files counts against `Items(min, max)` like any other collecti
 which is used only for its own failure, whichever order they are called in. Read the files in your submit
 handler with `OpenReadStream`, exactly as you would with Blazor's `InputFile`.
 
+Or send each file as soon as it is chosen, and keep what your storage returns for it instead:
+
+```csharp
+.Field(x => x.ResumeId, f => f.Accept(".pdf").MaxFileSize(5_000_000).UploadWith(async upload =>
+{
+    using var content = new StreamContent(upload.OpenReadStream());       // the bar follows these bytes
+    var response = await http.PostAsync("api/files", content, upload.CancellationToken);
+    response.EnsureSuccessStatusCode();
+    return await response.Content.ReadAsStringAsync(upload.CancellationToken);   // what the field stores
+}))
+```
+
+The field then holds a string - or a list of them for a field taking several files - and never the file itself, so it
+is an answer like any other: it goes into a draft, survives a reload and reaches the server as the id it is. A field
+taking several adds each new file to the ones it opened with, which are listed - each with its own Remove - beside
+them; one taking a single file lets go of the one it had as soon as another is chosen, so a replacement that fails
+leaves it empty rather than quietly still holding the file the user replaced. Each file
+is judged by `Accept` and `MaxFileSize` before anything is sent, then listed with a progress bar and a Cancel button
+while it goes, Remove once it is there, and Retry - with the reason - if the uploader throws. Completion and failure
+are announced once each, not per percent. A submit pressed while a file is on its way waits for it, and Cancel,
+clearing the field or leaving the form cancels `upload.CancellationToken`. `state.UploadsFor(path)` lists them for a
+control of your own. Uploaders are code, so they are not exported to JSON Schema.
+
+### Formatted text and signatures
+
+```csharp
+.Field(x => x.CoverLetter, f => f.AsMarkdown().MaxLength(4000))
+.Field(x => x.Signature, f => f.AsSignature().Required())
+```
+
+`AsMarkdown()` is a text area for formatted text written in Markdown - paragraphs and line breaks, headings, bulleted
+and numbered lists, quotes, code, rules, `**bold**`, `*italic*`, `~~struck~~`, `` `code` `` and `[links](https://…)` -
+with a preview beneath it that follows the typing, a short guide to the syntax, and a review that shows it formatted.
+The value is the Markdown text, so its length rules count what the user typed. `BormMarkdown.ToHtml` renders it
+anywhere else, and `ToPlainText` takes the formatting out.
+
+What it renders is safe to put on a page: everything the user wrote is HTML-encoded, only the elements listed above
+are written, a link goes only to an `http`, `https` or `mailto` address - `javascript:` and every other scheme stay
+text - and links carry `rel="nofollow noopener noreferrer"`. Rendering is linear in the length of the text, however
+it is crafted. It is not a WYSIWYG editor: that needs a `contenteditable` element and script to read it, and Borm
+ships no script.
+
+`AsSignature()` is a signature pad: an SVG drawn on with a mouse, a finger or a pen (the page does not scroll while it
+is being signed), stroke by stroke, with Clear beside it - and **Type it instead**, for anyone who cannot draw, which
+writes the typed name in a handwriting face. Either way the value is an SVG image as a `data:` URL that an `<img>`
+shows as it is; `BormSignature` builds, checks and decodes them, and a review shows the signature as an image. Only a
+value in that shape is ever shown, and SVG shown through an `<img>` cannot run script. A signature is personal data:
+mark it `Sensitive()` if it should not be kept in a draft. `x-widget: markdown` and `x-widget: signature` carry both
+through JSON Schema.
+
 ## Checking a schema
 
 `Validate()` reports the mistakes that are easy to make and hard to see - duplicate field names, arrays with no item
-template, steps naming fields that do not exist, conditions pointing nowhere, a comparison rule that never
-revalidates, and settings a control can never honour. It is a development aid, never run automatically - a schema
-being edited at runtime has every right to be incomplete:
+template, steps naming fields that do not exist, conditions and expressions pointing nowhere (past a `[]` too), a
+comparison rule that never revalidates, computed values that feed each other in a cycle, and settings a control can
+never honour. It is a development aid, never run automatically - a schema being edited at runtime has every right
+to be incomplete:
 
 ```csharp
 foreach (var problem in definition.Validate())
@@ -1003,6 +1489,43 @@ A field of type `BormFieldType.Custom` whose renderer key is not registered thro
 rather than silently falling back to a text box. Calling `AddBorm` twice configures the registry that is already
 there, so a module can add its renderers after the application has registered its own.
 
+### Blazor's own inputs inside a renderer
+
+`InputText`, `InputNumber<T>`, `ValidationMessage<T>`, `ValidationSummary` and the inputs of most component libraries
+need a Blazor `EditContext` to exist at all. Set `ProvideEditContext` on the view and it cascades one that tells the
+same story as the form, so such a control can sit in a custom renderer and show the field's errors as its own:
+
+```razor
+<BormView Definition="_definition" Model="_model" ProvideEditContext="true">
+    <ValidationSummary />
+</BormView>
+```
+
+```razor
+@inherits BormInputBase
+
+<InputText id="@Context.ElementId"
+           Value="@Context.StringValue"
+           ValueChanged="@((string? v) => Context.SetFromStringAsync(v))"
+           ValueExpression="@(Context.ValueExpression<string?>())" />
+```
+
+- **The form stays the source of truth.** Values are written through the field context, never through the
+  `EditContext`, so conditions, computed values and dirty tracking stay right. `Context.ValueExpression<T>()` names
+  the property of the object that owns the field - the model, a nested object, a list's row - or the key of a
+  dictionary-backed one, so the field identifier Blazor works out is the one the form's messages are filed under.
+  Ask for the property's own type: `ValueExpression<string>()` over an `int` throws rather than read it wrongly.
+- **A message reaches the context when the form would show it** - the field touched, or the form submitted - so a
+  Blazor input reads `invalid` no sooner than Borm's own controls do. Only errors are copied: an `EditContext` has no
+  severity, so warnings and notes stay Borm's.
+- **`EditContext.Validate()` runs the form's validation**, which is what a hand-written submit button over the
+  context does; the synchronous rules have answered before it returns.
+- `Context.EditContext` and `Context.FieldIdentifier` are there for a component that wants them directly, and are
+  null while the view provides no context. For a state rendered without a view, construct a `BormEditContextAdapter`
+  over it and cascade its `EditContext`; give it your component's `InvokeAsync`, and dispose it with the state.
+
+Off by default: a form that does not use these controls has no cascade in its tree.
+
 ## The BormView component
 
 | Parameter | Description |
@@ -1014,11 +1537,13 @@ there, so a module can add its renderers after the application has registered it
 | `ConfigureState` | Runs against the state the view builds from `Definition`, before it renders - set the validation triggers, wire up a validator, subscribe to an event. Saves constructing and disposing a state by hand just to change one setting. |
 | `OnValidSubmit` | Raised with the state after a successful (valid) submit. |
 | `OnInvalidSubmit` | Raised after a submit that failed validation. |
+| `OnSubmitError` | Raised with the exception when `OnValidSubmit` throws. While it is set the failure is handled here, rather than escaping into the renderer - where, on Blazor Server, an unhandled exception ends the circuit. |
 | `OnFieldChanged` | Raised with the path of a field whose value changed. |
 | `ReadOnly` | Renders every field read-only (review mode) and hides the buttons. Pressing Enter in a read-only form does not submit it. |
 | `Disabled` | Disables every field and button - a save in flight, a locked record. Unlike `ReadOnly` the fields cannot be tabbed through or read out, so reach for it only when the form is genuinely inoperable. |
 | `ShowSubmitButton` / `SubmitText` / `SubmittingText` | The built-in submit button (default `true` / `"Submit"`). While the form is validating or saving the button says so, rather than only going grey. |
 | `ShowResetButton` / `ResetText` | A button restoring the values the form started with. |
+| `ShowUndo` | Undo and Redo buttons, and the history they need - see [Undo and redo](#undo-and-redo). |
 | `ShowErrorSummary` | Lists every error above the form, each linking to its field - or to its step on a wizard. The links name the current page in full, so they work under any `<base href>`. |
 | `FocusFirstError` | Moves focus to the first invalid field after a failed submit (default `true`; suppressed while `ShowErrorSummary` is on, since the summary takes focus itself). |
 | `AllowStepNavigation` | Lets the user click back to a completed wizard step (default `true`). |
@@ -1026,6 +1551,8 @@ there, so a module can add its renderers after the application has registered it
 | `Header` / `Footer` / `Actions` | Render fragments for extra content and a custom button row. |
 | `Class` | Extra CSS classes for the `<form>` element. |
 | `IdPrefix` | What every DOM id in the form starts with (default `borm_`). Give two forms on one page a prefix each. |
+| `ProvideEditContext` | Cascades a Blazor `EditContext` mirroring the form's validation, for `InputBase`-derived controls, `ValidationSummary` and component-library inputs placed in the form (default `false`). See [Blazor's own inputs inside a renderer](#blazors-own-inputs-inside-a-renderer). |
+| `FormName` / `PostedModelName` | Makes the form one the browser can post with no interactivity, its controls named for the page's `[SupplyParameterFromForm]` model (default `Model`). See [Forms that work with no interactivity](#forms-that-work-with-no-interactivity). |
 | `ChildContent` | Extra content rendered inside the `<form>`. |
 
 Any other attribute you set is splatted onto the `<form>` element.
@@ -1048,15 +1575,20 @@ an options load or an async rule still in flight instead of letting it finish ag
 | Member | Purpose |
 | --- | --- |
 | `GetValue` / `SetValue` / `SetValueQuietly` | Read and write by path; the quiet variant does not mark the field touched. |
+| `For<TModel>()` | The same state addressed by expression - `state.For<Order>().SetValue(x => x.Lines[i].Quantity, 3)`, `GetFieldState(x => x.Email)`, `FocusAsync`, `ResetField`, `SetServerError` - so a rename renames every read and write, and a typo does not compile. |
 | `SetValues` / `Batch` | Write many values as one change - one re-render, not one per field. |
 | `IsFormDirty`, `DirtyFields`, `TouchedFields` | Change tracking. Dirtiness is a comparison against the values the form opened with, so a field typed into and put back is clean again. |
 | `ResetField(path)` | Puts one field - and anything nested beneath it - back to the value it started with. |
 | `IsValidating`, `IsSubmitting`, `IsSubmitted`, `SubmitCount`, `IsValid`, `HasValidated` | Submission state. `IsValid` reports what validation has *found*, so check `HasValidated` before treating it as a verdict - a form nobody has validated has no errors. |
-| `IsSubmitSuccessful` | Whether the last submit passed validation *and* its handler returned without throwing - what a "Saved." banner binds to. |
+| `IsSubmitSuccessful` | Whether the last submit passed validation *and* its handler returned without throwing, being cancelled or recording errors - what a "Saved." banner binds to. |
+| `SubmitOutcome`, `SubmitError` | How the last submit ended - `Invalid`, `Rejected`, `Failed`, `Cancelled`, `Succeeded` - and the exception behind a `Failed` one. |
+| `CancelSubmit()`, `SubmitCancellationToken`, `ReadOnlyWhileSubmitting` | Stop a save in flight, the token its handler passes on, and holding the fields still while it runs. |
+| `NotifyDefinitionChanged()` | The schema was changed in place (a field added, removed or reconfigured): new fields get defaults and baselines, computed values are evaluated again, and what was recorded against removed paths is dropped. |
 | `IsValidatingField(path)`, `ValidatingFields` | Whether an async rule is in flight for one field, so a remote uniqueness check can put a spinner beside its own box rather than declaring the whole form busy. |
-| `GetFieldState(path)` | Touched, dirty, invalid, validating, the first error and every message for one field, in a single read. |
+| `GetFieldState(path)` | Touched, dirty, invalid, validating, validated, the first error and every message for one field, in a single read - and `Status` (`Unvalidated`, `Pending`, `Invalid`, `Valid`) for a control that wants it in one word. |
+| `RunAsyncRulesOnInvalidFields` | Run a field's async rules even when its sync rules already found an error (off by default). |
 | `NormalizeField(field, path)` / `NormalizeAll()` | Run the schema's normalizers. The built-in controls call these for you on blur and on submit. |
-| `SubmitAsync` | Marks everything touched, validates, and dispatches - ignoring re-entrant calls. |
+| `SubmitAsync` | Normalizes, marks everything touched, validates, and dispatches - ignoring re-entrant calls. See [How a submit ends](#how-a-submit-ends). |
 | `ValidateAsync` / `ValidateStepAsync` / `ValidateFieldAsync` | Validation at three scopes; newer runs supersede older ones, and a superseded run reports false rather than a verdict it never reached. `ValidateFieldAsync(path)` resolves the field from the schema for you. |
 | `ValidateDependentsAsync(path)` | Revalidates every field that declared `RevalidateOn(path)`. The built-in controls call it for you; this is the hook for a custom one. |
 | `SingleErrorPerField` | Show a field's first error rather than every rule it breaks. Every rule still runs. |
@@ -1090,6 +1622,7 @@ instead:
 | `--bit-borm-border` | `#d1d5db` | `#4b5563` | Control and card borders. |
 | `--bit-borm-border-focus` | `var(--bit-borm-accent)` | `var(--bit-borm-accent)` | The border of a focused control. |
 | `--bit-borm-error` | `#dc2626` | `#f87171` | Error text, invalid borders, the required marker. |
+| `--bit-borm-error-contrast` | `#ffffff` | `#111827` | Text drawn on the error colour: a step's error count. |
 | `--bit-borm-error-surface` | `#fef2f2` | `#2a1215` | The error summary's background and a tag's remove button on hover. |
 | `--bit-borm-warning` | `#d97706` | `#fbbf24` | Warning messages. |
 | `--bit-borm-text` | `#111827` | `#f9fafb` | Labels and values. |
@@ -1142,6 +1675,9 @@ The markup uses BEM-style classes under the `bit-borm-` prefix. The ones most wo
 | `bit-borm-group`, `bit-borm-fieldgroup` | A nested object, and a run of fields sharing a group name. |
 | `bit-borm-array` | A repeater; `__item`, `__item-body`, `__item-actions`, `__header`, `__empty` are its parts. |
 | `bit-borm-stepper` | A wizard's step list; `__step`, `__link`, `__num`, `__label` are its parts. |
+| `bit-borm-tabs` | Steps shown as tabs; `__list`, `__tab`, `__label`, `__badge` (a count of errors) and `__panel` are its parts. |
+| `bit-borm-section` | A step shown as a section, `--collapsible` in an accordion; `__title` and `__body` are its parts, `has-errors` its state. |
+| `bit-borm-review` | A review of the answers; `__section`, `__header`, `__heading`, `__list`, `__entry`, `__label`, `__value`, `__rows` and `__empty` are its parts. |
 | `bit-borm-summary` | The error summary. |
 | `bit-borm-btn` | Every button; `--primary`, `--ghost`, `--danger`, `--add`, `--icon` and `--sm` are its variants. |
 | `bit-borm-grid` | The form body when `Columns(...)` is set. |
@@ -1162,6 +1698,20 @@ Accessibility is the default rather than an option:
 - Repeater, tag and character-count changes are announced through live regions.
 - `ReadOnlyWhen` keeps a settled value focusable and readable, where a disabled control would leave the tab order.
 - `Autofocus()` focuses a field when the form first renders.
+- A message's severity is said in words as well as shown in colour: "Error:" is read before an error (which is also
+  set in a heavier weight), and "Warning:" or "Note:" is shown and read before the others, so a warning is never
+  told from an error by colour alone. The words come from the message provider and are no part of the message's
+  own text.
+- Tabs follow the WAI-ARIA tabs pattern (one tab stop, arrow keys, Home and End); an accordion is the browser's
+  own `<details>`; a tab or section with errors carries a count that is read out too; a review's "Change" buttons
+  are named for their step.
+- Every target the stylesheet draws is at least 24 × 24 CSS pixels, WCAG 2.2's minimum, by its own size rather than
+  by its spacing.
+- The layout uses logical CSS properties only, so a form mirrors correctly inside `dir="rtl"`.
+
+What the library cannot vouch for: a custom renderer's own markup, the browser's built-in pickers (the date, month
+and week controls, `<datalist>` and `<select>` popups) and the colours a host app re-tints the tokens to - check
+contrast against WCAG 1.4.3 when you do.
 
 ## Localization
 
@@ -1189,6 +1739,84 @@ recognise should fall through to the default provider (or to the key itself).
 
 Messages passed explicitly to a rule - and labels passed explicitly to `BormView` - always win over the provider.
 
+### Built-in translations
+
+The library's own words come translated, too: German, Spanish, French, Italian, Dutch, Portuguese, Russian, Turkish,
+Persian, Arabic, Japanese and simplified Chinese.
+
+```csharp
+builder.Services.AddBormTranslations();
+```
+
+Every validation message, button, announcement and accessible name the library renders, and the designer, is then
+said in the form's `state.Language` when it has one, else in `CurrentUICulture`, and in English for any other
+language. Regional cultures read their language's table (`de-CH`, `pt-BR`); simplified Chinese answers to `zh`,
+`zh-Hans`, `zh-CN` and `zh-SG`, and a traditional-Chinese culture is answered in English rather than in the wrong
+script. Counts are phrased to read right for any number ("Anzahl: 3") instead of imposing English plural rules on
+other languages, with a wording of its own for exactly one where a language has one. Changing `state.Language`
+rewrites the form's words at once; a rule's message already on screen is rewritten when its field is next validated.
+
+A provider of your own can answer in a form's language as well: implement `IBormLocalizedMessageProvider`, whose
+`Get(language, key, args)` the form calls with its `Language`. `BormValidator.Language` does the same for a form
+validated on its own, such as one posted to the server, and `BormDesigner` takes a `Language` parameter. The words a
+schema supplies - labels, options, a repeater's item noun - are the schema's to translate, below.
+
+### The schema's own text
+
+The message provider translates the library's words; the schema's - labels, help, placeholders, the labels of its
+own options, step titles, the form's title - go through an `IBormSchemaLocalizer`, typically one wrapping
+`IStringLocalizer`:
+
+```csharp
+builder.Services.AddBormSchemaLocalizer<FormText>();
+
+public sealed class FormText(IStringLocalizer<FormText> localizer) : IBormSchemaLocalizer
+{
+    public string? Localize(string key, string? text)
+        => localizer[key] is { ResourceNotFound: false } found ? found.Value : null;   // null keeps the text
+}
+```
+
+| Key | Text |
+| --- | --- |
+| `{field}.label`, `.help`, `.placeholder`, `.prefix`, `.suffix` | A field's texts. `{field}` is its `TextKey` (`x-i18n`) when set, else its path with the rows taken out - `Lines.Product` for every line's product. |
+| `{field}.options.{value}` | The label of one of the field's own options (a provider's options are its own to translate). |
+| `steps.{id}.title`, `steps.{id}.description` | A step's texts. |
+| `form.title`, `form.description` | The form's. |
+
+A form described in JSON can carry its translations itself, as `x-translations` on the root - culture to key to
+text - consulted after any registered localizer, for the current UI culture and then its parent (`de-CH`, then
+`de`):
+
+```json
+"x-translations": {
+  "de": { "form.title": "Bestellung", "Lines.Product.label": "Artikel", "plan.options.team": "Team" },
+  "fr": { "form.title": "Commande" }
+}
+```
+
+The builders add the same tables in C#, and they are exported as `x-translations` with the rest of the schema:
+
+```csharp
+BormBuilder.For<Order>()
+    .Title("Order")
+    .Translate("de", new Dictionary<string, string> { ["form.title"] = "Bestellung", ["Plan.options.team"] = "Team" })
+    .Translate("fr", new Dictionary<string, string> { ["form.title"] = "Commande" })
+    .Build();
+```
+
+Both are asked each time the text renders, so a page that changes culture shows the new language on its next render.
+
+`state.Language` gives one form a language of its own - a public form in the visitor's language, whatever the page's
+culture. It needs no culture data, which matters on WebAssembly: under `InvariantGlobalization` the UI culture is
+always the invariant one, and no translation would ever apply. The document's translations are looked up by the name
+and then by its language (`de-CH`, then `de`), and `BormView` marks the form with it as its `lang`, so a screen
+reader reads it in that language. Null, the default, follows `CurrentUICulture`.
+A translated option label is what a combobox matches typed text against and what a review reads back. A form with
+nothing to translate pays nothing for any of this. Dates and numbers a review reads back follow `CurrentCulture`;
+the inputs themselves are the browser's, which format them for the user's own locale. The library sets no `dir`:
+its layout uses logical CSS properties throughout, so a form inside `dir="rtl"` mirrors as the page does.
+
 ## Hosting models
 
 Borm has no JavaScript and no browser-only API, so it runs the same way under every Blazor hosting model.
@@ -1198,12 +1826,65 @@ Borm has no JavaScript and no browser-only API, so it runs the same way under ev
   its keystrokes over the circuit, so prefer the default update-on-change, or a debounce, on a busy form.
 - **Blazor Web App**: register `AddBorm()` in both the server and the client project - the page is prerendered on the
   server and then runs on the client, and both containers must resolve the renderer registry. The form prerenders as
-  plain HTML and becomes interactive once the page does; give the page an interactive render mode, since a form in
-  static server rendering cannot respond to input.
+  plain HTML and becomes interactive once the page does. A page in static server rendering - no interactive render
+  mode at all - can post a Borm form too; see below.
+
+### Forms that work with no interactivity
+
+Give the view a `FormName`, and bind the page's model from the post:
+
+```razor
+@page "/apply"
+@attribute [ExcludeFromInteractiveRouting]      @* .NET 9+: this page stays static in an interactive app *@
+
+<BormView Definition="_definition" Model="Model" FormName="apply" OnValidSubmit="SaveAsync" />
+
+@code {
+    [SupplyParameterFromForm(FormName = "apply")] public Application? Model { get; set; }
+
+    protected override void OnInitialized() => Model ??= new();
+}
+```
+
+The form then posts like any HTML form - in a page with no interactive render mode, or in a browser with no script -
+with an antiforgery token, each control under the name model binding reads (`Model.Address.City`,
+`Model.Lines[0].Product`, `PostedModelName` to change `Model`). On the server the view judges the posted answers
+exactly as an interactive one would and calls `OnValidSubmit`, or renders the page again with every message in place;
+text the binder could not read - letters in a number box - is shown back as the user typed it, with the reason. A
+combobox posts the label the user saw, and it is turned back into its value; tags post one entry each. A read-only
+select, radio group, checkbox, multi-select or slider - drawn disabled, which a browser never posts - sends its answer
+in a hidden input instead, and so does a signature the field holds; a disabled field posts nothing. Interactive, the
+same form is a Blazor form as before.
+
+With nothing to click, the form shows what a click would have: a wizard's steps, and tabs, as sections one after
+another (an accordion is the browser's own and still opens); a repeater's rows as they stand, every row of a paged one
+included, without add, remove or move buttons. Conditions are judged when the page is rendered, so a field that
+depends on another appears after the post that answered it. A box left unticked posts nothing and binds as `false`, so
+a `bool` whose default is `true` cannot be turned off without script; a file, a signature and a search lookup need an
+interactive page. Telling a static render from a prerender needs .NET 9 or later; on .NET 8 a named form still posts,
+but keeps its interactive shape - only the step and the page of rows on screen are posted - so give a form meant to
+work there without script a single step and no `PageSize`.
 - **Blazor Hybrid**: register `AddBorm()` in `MauiProgram.cs` and link the stylesheet from `wwwroot/index.html`.
 
-Generating a schema reads a model's properties by reflection, so `Bit.Borm` is not marked as trimmable: a trimmed
-app keeps it whole, and the models it binds to are kept by the app that declares them.
+### Trimming
+
+A Blazor WebAssembly app is trimmed when it is published. `Bit.Borm` is not marked as trimmable, so the default
+(`TrimMode` partial) keeps it whole, and keeps the app's own assembly, where its models live: the demo is published
+this way, and its end-to-end suite passes against that build. A bound model is read, written and generated from by
+reflection over its properties, all the way down through its objects and lists, which no annotation can describe;
+marking the package trimmable would mean hiding that from the trimmer, or a warning on every `BormView` that binds a
+model. With `TrimMode` full, keep Borm and the assemblies holding your models whole - the end-to-end suite passes
+against the demo published this way too:
+
+```xml
+<ItemGroup>
+    <TrimmerRootAssembly Include="Bit.Borm" />
+    <TrimmerRootAssembly Include="$(AssemblyName)" />   <!-- and any other assembly holding models -->
+</ItemGroup>
+```
+
+A control registered with `RegisterCustom<TComponent>()` keeps its constructor and parameters in a trimmed app: the
+registry's component types carry the annotation Blazor gives its own.
 
 ## Key types
 
@@ -1213,6 +1894,7 @@ app keeps it whole, and the models it binds to are kept by the app that declares
 | `BormFieldDefinition` / `BormFieldType` | A single field and its logical type. |
 | `BormBuilder` / `BormBuilder<TModel>` | Fluent schema builders. |
 | `BormSchemaGenerator` | Reflection + DataAnnotations schema generation. |
+| `BormExpression`, `BormExpressionCondition`, `BormExpressionRule`, `BormExpressionFunctions` | The [expression](#expressions) language: parse and evaluate one, use it as a condition or a rule, register functions of your own. |
 | `BormJsonSchemaImporter` / `BormJsonSchemaExporter` | JSON Schema import and export. |
 | `BormState` | Runtime state: data, validation, dirty/touched tracking, wizard position. |
 | `BormView` / `BormField` | Render a whole schema, or one field of it inside your own layout. |
@@ -1220,4 +1902,8 @@ app keeps it whole, and the models it binds to are kept by the app that declares
 | `BormModelDataAccessor` / `BormDictionaryDataAccessor` | Data backing stores. |
 | `IBormFieldRendererRegistry`, `BormInputBase` | Maps field types to renderer components, and the base class for your own. |
 | `IBormMessageProvider`, `BormMessageKeys` | Supplies the text of every built-in message and label. |
+| `BormTranslatedMessageProvider`, `IBormLocalizedMessageProvider` | The library's words in twelve more languages (`AddBormTranslations()`), and a provider that answers in a form's own `Language`. |
+| `BormMask`, `BormMarkdown`, `BormSignature` | An input mask; the safe Markdown renderer; a signature's SVG data URL, drawn or typed. |
+| `BormFileUploader`, `BormUpload`, `BormUploadContext` | Uploading a file as it is chosen (`UploadWith`), and following it. |
+| `BormDesigner` | The visual form designer: `Value` in, a new definition out through `ValueChanged`. |
 | `BormConditionOperator`, `BormValidationTrigger`, `BormUpdateTrigger` | The vocabulary of conditions, validation timing and write-back timing. |

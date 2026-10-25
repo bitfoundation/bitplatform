@@ -7,12 +7,31 @@ namespace Bit.Borm;
 /// </summary>
 public static class BormPath
 {
+    private static readonly IReadOnlyList<BormPathSegment> NoSegments = Array.AsReadOnly(Array.Empty<BormPathSegment>());
+
+    // Every read and write of a value parses its path, and a render reads every field's: the same few
+    // hundred strings, parsed again and again into the same segments. Remembered here, read-only so
+    // no caller can change what the next one is handed, and bounded, because row paths are built from
+    // indices and a long-lived process should not keep every one it ever saw.
+    private const int CacheLimit = 16_384;
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, IReadOnlyList<BormPathSegment>> Cache = new(StringComparer.Ordinal);
+
     /// <summary>Parses a path string into segments.</summary>
     /// <exception cref="FormatException">The path has an unterminated or non-numeric index.</exception>
     public static IReadOnlyList<BormPathSegment> Parse(string path)
     {
+        if (string.IsNullOrEmpty(path)) return NoSegments;
+        if (Cache.TryGetValue(path, out var cached)) return cached;
+
+        var parsed = Array.AsReadOnly(ParseUncached(path).ToArray());
+        if (Cache.Count >= CacheLimit) Cache.Clear();
+        Cache[path] = parsed;
+        return parsed;
+    }
+
+    private static List<BormPathSegment> ParseUncached(string path)
+    {
         var segments = new List<BormPathSegment>();
-        if (string.IsNullOrEmpty(path)) return segments;
 
         var i = 0;
         var current = new System.Text.StringBuilder();
@@ -59,6 +78,7 @@ public static class BormPath
     /// <summary>Returns true when <paramref name="path"/> is a well-formed form path.</summary>
     public static bool IsValid(string path)
     {
+        // A path parsed before is valid by definition, and asking is a dictionary read.
         try
         {
             Parse(path);

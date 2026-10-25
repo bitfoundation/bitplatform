@@ -81,6 +81,30 @@ public class MessageIdentityTests : ComponentTestBase
         Assert.ContainsSingle(state.MessagesFor("name"));
         Assert.AreEqual("First.", state.MessagesFor("name")[0].Message);
     }
+
+    [TestMethod]
+    public async Task Switching_SingleErrorPerField_applies_to_the_messages_already_on_screen()
+    {
+        // The setting was read only as each message arrived: switched on, the two complaints already there stayed
+        // until the field was validated again - and switched off, the one kept stayed alone.
+        var form = BormBuilder.Create().Text("code", f => f.MinLength(5).Pattern("^[0-9]+$")).Build();
+        var state = new BormState(form, new BormDictionaryDataAccessor(new Dictionary<string, object?> { ["code"] = "ab" }));
+        await state.ValidateAsync();
+        Assert.HasCount(2, state.MessagesFor("code"));
+
+        state.SingleErrorPerField = true;
+        await WaitUntil(() => state.MessagesFor("code").Count == 1);
+        Assert.ContainsSingle(state.MessagesFor("code"));
+
+        state.SingleErrorPerField = false;
+        await WaitUntil(() => state.MessagesFor("code").Count == 2);
+        Assert.HasCount(2, state.MessagesFor("code"));
+    }
+
+    private static async Task WaitUntil(Func<bool> condition)
+    {
+        for (var i = 0; i < 100 && !condition(); i++) await Task.Delay(10);
+    }
 }
 
 /// <summary>

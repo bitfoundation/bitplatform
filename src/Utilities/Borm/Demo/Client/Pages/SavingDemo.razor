@@ -1,0 +1,235 @@
+@page "/saving"
+@implements IDisposable
+
+<PageTitle>Saving &amp; server errors · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Saving &amp; server errors</h1>
+    <p class="bb-subtitle">
+        A valid form is only half a save. The server can still say no - with a reason for each field - fail outright, or
+        take long enough that the user gives up on it. <code>SubmitOutcome</code> says which of those happened,
+        <code>SetServerErrors</code> puts a server's complaints on the fields they are about, and <code>CancelSubmit()</code>
+        stops a save in flight. Nothing is retried behind the application's back, and the values are left as they were, so
+        "try again" is simply saving again.
+    </p>
+</div>
+
+<div class="bb-note">
+    Choose what the pretend server does, then press <em>Save</em>. <em>Refuse</em> answers like an ASP.NET Core
+    <code>ValidationProblemDetails</code>: the username and the email get their own messages, and one about the request as a
+    whole goes to the summary. <em>Fail</em> throws, as a 503 would. <em>Take its time</em> waits five seconds - press
+    <em>Cancel</em>, and with <em>Hold the fields still</em> ticked the form cannot be edited while it waits. Empty the email
+    and the server is never asked at all.
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
+    <div class="bb-toolbar">
+        <span class="bb-soft" id="server-label">The server will</span>
+        <div class="bb-segmented" role="group" aria-labelledby="server-label">
+            @foreach (var (reply, name) in Replies)
+            {
+                <button type="button" aria-pressed="@(reply == _reply ? "true" : "false")" @onclick="() => _reply = reply">@name</button>
+            }
+        </div>
+        <label class="bb-check">
+            <input type="checkbox" checked="@_state.ReadOnlyWhileSubmitting" @onchange="e => _state.ReadOnlyWhileSubmitting = e.Value is true" />
+            Hold the fields still while saving
+        </label>
+    </div>
+
+    <BormView State="_state" ShowErrorSummary="true"
+              OnValidSubmit="SaveAsync" OnInvalidSubmit="() => _invalidAttempts++" OnSubmitError="ex => _failure = ex.Message">
+        <Actions Context="form">
+            @* A button row of the page's own: the view's Submit, plus a Cancel that only means something mid-save. *@
+            <button type="submit" class="bit-borm-btn bit-borm-btn--primary" disabled="@form.IsSubmitting">
+                @(form.IsSubmitting ? "Saving…" : "Save")
+            </button>
+            <button type="button" class="bit-borm-btn" disabled="@(!form.IsSubmitting)" @onclick="form.CancelSubmit">Cancel</button>
+        </Actions>
+    </BormView>
+
+    <p class="demo-status" role="status">
+        outcome: <strong>@_state.SubmitOutcome</strong> ·
+        saving: <strong>@_state.IsSubmitting</strong> ·
+        refused by the form's own rules: <strong>@_invalidAttempts</strong> time(s)
+        @if (_state.SubmitOutcome == BormSubmitOutcome.Failed && _failure is not null)
+        {
+            <text> · failed with: <strong>@_failure</strong></text>
+        }
+    </p>
+</div>
+
+@if (_state.IsSubmitSuccessful)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Saved ✓</strong> The server accepted the settings.</div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> How a submit ends</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th><code>SubmitOutcome</code></th><th>What happened</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>Invalid</code></td><td>The form's own rules refused it; the handler never ran. <code>OnInvalidSubmit</code> is raised and focus goes to the first problem.</td></tr>
+                <tr><td class="bb-table-key"><code>Rejected</code></td><td>The handler recorded errors with <code>SetServerError</code> or <code>SetServerErrors</code> - a server that said no. Focus goes to the first of them, as for an invalid form.</td></tr>
+                <tr><td class="bb-table-key"><code>Failed</code></td><td>The handler threw. The exception is in <code>SubmitError</code>; <code>BormView</code> hands it to <code>OnSubmitError</code>, or lets it escape when that is not set - which on Blazor Server ends the circuit.</td></tr>
+                <tr><td class="bb-table-key"><code>Cancelled</code></td><td>The handler stopped because <code>CancelSubmit()</code>, or disposing the form, signalled its token.</td></tr>
+                <tr><td class="bb-table-key"><code>Succeeded</code></td><td>Valid, and the handler returned without recording an error. <code>IsSubmitSuccessful</code> is true - what a "Saved" banner binds to.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="bb-card-desc">
+        A second press while a save is in flight is ignored, so a double click never posts twice. An error the user makes
+        while the handler runs - letters typed into a number box during a slow save - is theirs to fix, and does not turn a
+        save that went through into a rejected one; <code>ReadOnlyWhileSubmitting</code> prevents that altogether.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> A server's errors, on the right fields</h3>
+    <p class="bb-card-desc">
+        <code>SetServerErrors(problem.Errors)</code> takes an ASP.NET Core <code>ValidationProblemDetails</code>'s errors as they
+        arrive: keys are matched to fields without regard to case, and the <code>$.</code> System.Text.Json puts in front of its
+        own is dropped; an empty key (or <code>$</code>) is about the request as a whole. Pass a <code>mapPath</code> for an API
+        whose names are not the form's. The messages stay until the field is next validated - the user correcting it, or the
+        next submit - and then the field's own rules speak for it again.
+    </p>
+    <pre class="bb-code"><span class="k">private async</span> Task Save(BormState state, CancellationToken cancellationToken)
+{
+    <span class="k">var</span> response = <span class="k">await</span> http.PostAsJsonAsync(<span class="s">"api/account"</span>, _model, cancellationToken);
+    <span class="k">if</span> (response.StatusCode == HttpStatusCode.BadRequest
+        &amp;&amp; <span class="k">await</span> response.Content.ReadFromJsonAsync&lt;ValidationProblemDetails&gt;(cancellationToken) <span class="k">is</span> { } problem)
+        state.SetServerErrors(problem.Errors, key =&gt; key == <span class="s">"user_name"</span> ? <span class="s">"Username"</span> : key);   <span class="c">// Rejected</span>
+    <span class="k">else</span>
+        response.EnsureSuccessStatusCode();                                                    <span class="c">// throwing: Failed</span>
+}
+
+<span class="c">// await state.SubmitAsync(Save);   - or, through BormView.OnValidSubmit, read state.SubmitCancellationToken</span></pre>
+    <p class="bb-card-desc">
+        Every message says where it came from - <code>Source</code> is <code>Rule</code>, <code>External</code> (a
+        FluentValidation or DataAnnotations validator), <code>Server</code> or <code>Conversion</code> (text the model
+        cannot hold) - and a rule's <code>Code</code> is its key (<code>required</code>, <code>maxLength</code>, …), the same
+        in every language, for a test or a message component to key off. <code>state.For&lt;T&gt;().SetServerError(x =&gt; x.Email, …)</code>
+        names the field by expression.
+    </p>
+</div>
+
+@code {
+    private const string Source =
+"""
+@page "/saving"
+
+<BormView State="_state" ShowErrorSummary="true"
+          OnValidSubmit="SaveAsync" OnInvalidSubmit="() => _invalidAttempts++" OnSubmitError="ex => _failure = ex.Message">
+    <Actions Context="form">
+        @* A button row of the page's own, in place of the built-in one. *@
+        <button type="submit" disabled="@form.IsSubmitting">@(form.IsSubmitting ? "Saving…" : "Save")</button>
+        <button type="button" disabled="@(!form.IsSubmitting)" @onclick="form.CancelSubmit">Cancel</button>
+    </Actions>
+</BormView>
+
+<p>@_state.SubmitOutcome</p>   @* None, Invalid, Rejected, Failed, Cancelled or Succeeded *@
+
+@code {
+    private readonly AccountSettings _model = new();
+    private BormState _state = default!;
+    private int _invalidAttempts;
+    private string? _failure;
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<AccountSettings>()
+            .Title("Account settings")
+            .Field(x => x.Username, f => f.Required())
+            .Field(x => x.Email, f => f.Required())
+            .Field(x => x.DisplayName)
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model))
+        {
+            ReadOnlyWhileSubmitting = true      // nothing can change under a save in flight
+        };
+    }
+
+    // Through BormView the handler is handed only the state; the token that CancelSubmit() and
+    // disposing the form signal is state.SubmitCancellationToken.
+    private async Task SaveAsync(BormState state)
+    {
+        var token = state.SubmitCancellationToken;
+        await Task.Delay(TimeSpan.FromSeconds(5), token);          // ... await http.PutAsJsonAsync(...) ...
+
+        // A 400 with a ValidationProblemDetails: each key a field, "" the request as a whole.
+        state.SetServerErrors(new Dictionary<string, string[]>
+        {
+            ["$.username"] = ["That username is taken."],
+            ["email"] = ["This address belongs to another account."],
+            [""] = ["Nothing was saved."],
+        });
+        // ... or a 503: throw new HttpRequestException("503 Service Unavailable");
+    }
+
+    public void Dispose() => _state.Dispose();
+}
+""";
+
+    private enum Reply { Accept, Refuse, Fail, Slow }
+
+    private static readonly (Reply Reply, string Name)[] Replies =
+        [(Reply.Accept, "Accept"), (Reply.Refuse, "Refuse"), (Reply.Fail, "Fail"), (Reply.Slow, "Take its time")];
+
+    private readonly AccountSettings _model = new();
+    private BormState _state = default!;
+    private Reply _reply = Reply.Accept;
+    private int _invalidAttempts;
+    private string? _failure;
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<AccountSettings>()
+            .Title("Account settings")
+            .Field(x => x.Username, f => f.Required())
+            .Field(x => x.Email, f => f.Required())
+            .Field(x => x.DisplayName)
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model)) { ReadOnlyWhileSubmitting = true };
+        _state.StateChanged += OnStateChanged;
+    }
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    /// <summary>Stands in for the request: a short wait, then whatever the server was told to answer.</summary>
+    private async Task SaveAsync(BormState state)
+    {
+        _failure = null;
+        var token = state.SubmitCancellationToken;
+        await Task.Delay(_reply == Reply.Slow ? TimeSpan.FromSeconds(5) : TimeSpan.FromMilliseconds(600), token);
+
+        switch (_reply)
+        {
+            case Reply.Refuse:
+                state.SetServerErrors(new Dictionary<string, string[]>
+                {
+                    ["$.username"] = ["That username is taken."],
+                    ["email"] = ["This address belongs to another account."],
+                    [""] = ["Nothing was saved."],
+                });
+                break;
+            case Reply.Fail:
+                throw new HttpRequestException("503 Service Unavailable");
+        }
+    }
+
+    public void Dispose()
+    {
+        _state.StateChanged -= OnStateChanged;
+        // Disposing cancels a save still in flight: its handler's token is signalled.
+        _state.Dispose();
+    }
+}

@@ -5,6 +5,7 @@
     @* Splat first so the renderer's own attributes below always win. *@
     <input @attributes="ExtraAttributes"
            id="@Context.ElementId"
+           name="@Context.InputName"
            @ref="Element"
            class="bit-borm-range__slider"
            type="range"
@@ -22,6 +23,10 @@
            aria-describedby="@DescribedBy"
            @onblur="OnBlur" />
     <output class="bit-borm-range__value" for="@Context.ElementId" aria-live="off">@Display</output>
+    @if (ReadOnlyPostedName is { } posted)
+    {
+        <input type="hidden" name="@posted" value="@Context.StringValue" />
+    }
 </div>
 
 @code {
@@ -33,7 +38,7 @@
     private Task OnSlide(string? value) => Context.SetFromStringAsync(value);
 
     /// <summary>The readout beside the slider, with the field's affixes so "70" can read as "70 kg".</summary>
-    private string Display => $"{Field.Prefix}{Context.StringValue}{Field.Suffix}";
+    private string Display => $"{Context.Prefix}{Context.StringValue}{Context.Suffix}";
 
     /// <summary>
     /// What a screen reader announces as the slider moves. Null unless the field carries an affix: the
@@ -41,5 +46,5 @@
     /// it worse. With a unit attached, "70" and "70 kg" are not the same announcement.
     /// </summary>
     private string? ValueText
-        => string.IsNullOrEmpty(Field.Prefix) && string.IsNullOrEmpty(Field.Suffix) ? null : Display;
+        => string.IsNullOrEmpty(Context.Prefix) && string.IsNullOrEmpty(Context.Suffix) ? null : Display;
 }

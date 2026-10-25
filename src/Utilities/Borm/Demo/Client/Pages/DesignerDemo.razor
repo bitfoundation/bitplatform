@@ -1,0 +1,64 @@
+﻿@page "/designer"
+
+<PageTitle>Form designer · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Form designer</h1>
+    <p class="bb-subtitle">
+        <code>BormDesigner</code> builds a form without code. Add fields from the palette, choose one to edit its
+        properties - which are a Borm form of their own - and watch the preview and the JSON Schema follow. Every
+        change is a <code>BormDefinition</code>, handed out through <code>@@bind-Value</code>.
+    </p>
+</div>
+
+<div class="bb-note">
+    It opens on a small contact form. Choose a field, change its label, make it required or give it a condition such as
+    <code>{Topic} = 'billing'</code>; move fields with the arrow buttons (or drag them); paste a JSON Schema of your own
+    into the box at the bottom and load it. The list is buttons first, so it works from the keyboard and every change
+    is announced.
+</div>
+
+<div class="bb-page-wide">
+    <BormDesigner @bind-Value="_definition" />
+</div>
+
+@if (_definition is not null)
+{
+    <p class="demo-status" role="status">The form has <strong>@_definition.Fields.Count</strong> field(s).</p>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+"""
+@page "/designer"
+
+<BormDesigner @bind-Value="_definition" />
+
+@code {
+    // An existing form to edit - or null to start from nothing. Whatever the designer has no place for
+    // (an options provider, a condition written in code, steps) is kept as it is.
+    private BormDefinition? _definition = BormBuilder.Create()
+        .Title("Contact us")
+        .Text("Name", f => f.Required())
+        .Email("Email", f => f.Required())
+        .Select("Topic", f => f.Options(("sales", "Sales"), ("billing", "Billing"), ("other", "Something else")))
+        .Text("Invoice", f => f.Label("Invoice number").VisibleWhen("{Topic} = 'billing'"))
+        .TextArea("Message", f => f.Required().MaxLength(1000))
+        .Build();
+}
+""";
+
+    private BormDefinition? _definition = BormBuilder.Create()
+        .Title("Contact us")
+        .Text("Name", f => f.Required())
+        .Email("Email", f => f.Required())
+        .Select("Topic", f => f.Options(("sales", "Sales"), ("billing", "Billing"), ("other", "Something else")))
+        .Text("Invoice", f => f.Label("Invoice number").VisibleWhen("{Topic} = 'billing'"))
+        .TextArea("Message", f => f.Required().MaxLength(1000))
+        .Build();
+}

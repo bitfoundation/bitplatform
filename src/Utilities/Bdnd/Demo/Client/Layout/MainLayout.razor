@@ -14,7 +14,7 @@
    data-interactive turns true once the page runs in the browser. Prerendered markup is on screen
    long before its event handlers are, which is what an E2E suite waits out with it. *@
 
-<div class="page" data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")">
+<div class="page" data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")" data-static="@(IsStatic ? "true" : null)">
     @* First in the tab order on purpose: a keyboard reader lands here before the navigation and
        can jump straight past the chrome to the page. The click itself is site.js's - it moves focus
        to <main>, which the router would not - so the href only has to be right for a link opened
@@ -25,7 +25,9 @@
     @* The header's menu and the docs layout's nav panel are both drawers over the page at narrow
        widths; this is how each one hears that the other opened. *@
     <CascadingValue Value="_drawers" IsFixed="true">
-        <Header />
+        @* An island of its own on a page that stays on the server (see IsStatic); part of the page's interactive tree
+           everywhere else. *@
+        <Header @rendermode="@(IsStatic ? RenderMode.InteractiveWebAssembly : null)" />
 
         <div class="bb-site-content">
             <main id="bb-main" tabindex="-1">
@@ -41,6 +43,14 @@
 
 @code {
     private readonly Drawers _drawers = new();
+
+    /// <summary>
+    /// Whether this page stays on the server - [ExcludeFromInteractiveRouting], rendered with no interactivity at all - rather
+    /// than being prerendered on its way to the browser. Every control in the shell is a Blazor handler, and on such a page
+    /// none of them ever ran: the search, the theme toggle, the menus, Back to top. The header comes to life there as an
+    /// island, and site.js works the docs drawer and Back to top for a page marked data-static.
+    /// </summary>
+    private bool IsStatic => AssignedRenderMode is null && !RendererInfo.IsInteractive;
 
     /// <summary>
     /// Keeps the site's drawers - the header menu, the docs nav panel - to one open at a time: opening one
