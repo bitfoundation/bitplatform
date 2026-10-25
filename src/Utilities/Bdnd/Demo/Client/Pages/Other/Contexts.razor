@@ -1,0 +1,127 @@
+﻿@page "/other/contexts"
+
+<PageTitle>Other - Separate contexts · Bdnd</PageTitle>
+
+<div class="bb-intro">
+    <h1>Other - Separate contexts</h1>
+    <p class="bb-subtitle">
+        Each <code>BdndProvider</code> is a drag context of its own: its draggables are seen by its drop targets only.
+        Every note on this page has the same type, <code>"note"</code>, and every bin accepts it - yet a note of board A
+        cannot go into board B's bin: each board has a provider, and while a note is in the air only the bins of its
+        own context light up (<code>CanDrop</code>), and the keyboard only visits those. The corner of board A has a
+        provider nested in A's: it ignores A's notes, and A's bin ignores its note. Two providers given the same
+        <code>Manager</code>, on the other hand, are one context however far apart they are on the page: the shelf at
+        the top and the tray at the bottom share one, and notes move between them.
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="bb-demo">
+    <h2 class="demo-result-title contexts-heading">One provider each</h2>
+    <div class="contexts-boards">
+        <BdndProvider>
+            <section class="contexts-board" aria-label="Board A">
+                <h3>Board A</h3>
+                <div class="contexts-notes">
+                    @foreach (var note in _boardA) { @NoteView(note) }
+                </div>
+                <BdndDropTarget TItem="Note" Accept="note" Label="board A's bin" class="contexts-bin"
+                                OnDrop="@(e => Bin(e.Item!, _boardA, _binA))">
+                    Bin A: @Took(_binA)
+                </BdndDropTarget>
+
+                @* A provider inside a provider: a context of its own, which the outer one does not reach into. *@
+                <BdndProvider>
+                    <div class="contexts-inner">
+                        <h4>A nested provider</h4>
+                        <div class="contexts-notes">
+                            @foreach (var note in _inner) { @NoteView(note) }
+                        </div>
+                        <BdndDropTarget TItem="Note" Accept="note" Label="the nested bin" class="contexts-bin"
+                                        OnDrop="@(e => Bin(e.Item!, _inner, _binInner))">
+                            Nested bin: @Took(_binInner)
+                        </BdndDropTarget>
+                    </div>
+                </BdndProvider>
+            </section>
+        </BdndProvider>
+
+        <BdndProvider>
+            <section class="contexts-board" aria-label="Board B">
+                <h3>Board B</h3>
+                <div class="contexts-notes">
+                    @foreach (var note in _boardB) { @NoteView(note) }
+                </div>
+                <BdndDropTarget TItem="Note" Accept="note" Label="board B's bin" class="contexts-bin"
+                                OnDrop="@(e => Bin(e.Item!, _boardB, _binB))">
+                    Bin B: @Took(_binB)
+                </BdndDropTarget>
+            </section>
+        </BdndProvider>
+    </div>
+
+    <h2 class="demo-result-title contexts-heading">One manager, two providers</h2>
+
+    <BdndProvider Manager="_shared">
+        <BdndDropTarget TItem="Note" Accept="note" Label="the shelf" class="contexts-shelf"
+                        OnDrop="@(e => MoveTo(e.Item!, _shelf))">
+            <h3>Shelf</h3>
+            <div class="contexts-notes">
+                @foreach (var note in _shelf) { @NoteView(note) }
+                @if (_shelf.Count == 0) { <span class="contexts-empty">Empty</span> }
+            </div>
+        </BdndDropTarget>
+    </BdndProvider>
+
+    <p class="demo-caption">
+        This line is outside both providers: what holds the shelf and the tray together is the
+        <code>BdndDragDropManager</code> the page hands to each of them.
+    </p>
+
+    <BdndProvider Manager="_shared">
+        <BdndDropTarget TItem="Note" Accept="note" Label="the tray" class="contexts-shelf"
+                        OnDrop="@(e => MoveTo(e.Item!, _tray))">
+            <h3>Tray</h3>
+            <div class="contexts-notes">
+                @foreach (var note in _tray) { @NoteView(note) }
+                @if (_tray.Count == 0) { <span class="contexts-empty">Empty</span> }
+            </div>
+        </BdndDropTarget>
+    </BdndProvider>
+</div>
+
+@code {
+    public sealed record Note(string Name);
+
+    private readonly List<Note> _boardA = [new("A1"), new("A2")];
+    private readonly List<Note> _inner = [new("Nested")];
+    private readonly List<Note> _boardB = [new("B1"), new("B2")];
+    private readonly List<string> _binA = [];
+    private readonly List<string> _binInner = [];
+    private readonly List<string> _binB = [];
+
+    // One manager for two providers: the shelf's notes and the tray's are one context.
+    private readonly BdndDragDropManager _shared = new();
+    private readonly List<Note> _shelf = [new("S1"), new("S2"), new("S3")];
+    private readonly List<Note> _tray = [];
+
+    // A note: every one has the type "note", whichever context it is in.
+    private RenderFragment NoteView(Note note) =>
+        @<BdndDraggable TItem="Note" Type="note" Item="note" Label="@note.Name" class="contexts-note" @key="note">@note.Name</BdndDraggable>;
+
+    private static string Took(List<string> bin) => bin.Count == 0 ? "empty" : string.Join(", ", bin);
+
+    private static void Bin(Note note, List<Note> from, List<string> bin)
+    {
+        if (from.Remove(note)) bin.Add(note.Name);
+    }
+
+    private void MoveTo(Note note, List<Note> to)
+    {
+        if (to.Contains(note)) return;
+        _shelf.Remove(note);
+        _tray.Remove(note);
+        to.Add(note);
+    }
+}

@@ -5,9 +5,14 @@
 <div class="bb-intro">
     <h1>Sortable - Simple</h1>
     <p class="bb-subtitle">
-        Each card is <em>both</em> a <code>BdndDraggable</code> and a <code>BdndDropTarget</code>. While
-        dragging, the <code>OnHover</code> handler compares the pointer against each card's
-        midpoint and reorders the list live. Reordering happens during hover, not on drop.
+        React DnD's sortable recipe. Each card is <em>both</em> a <code>BdndDraggable</code> and a
+        <code>BdndDropTarget</code>. While dragging, the <code>OnHover</code> handler measures the hovered card
+        (<code>BdndInterop.GetBoundingClientRectAsync</code>), compares the pointer
+        (<code>Monitor.GetClientOffset()</code>) against its midpoint and reorders the list live. Reordering happens
+        during hover, not on drop. The keyboard reorders the same way - <kbd>Space</kbd> on a card, then each arrow
+        key moves it one place - because a keyboard drag runs <code>OnHover</code> as it moves too. The list itself is
+        a drop target as well, so the gaps between the cards are no "no-drop" zones. For most lists the
+        <a href="sortable/indicators">drop indicators</a> page shows a simpler way, which measures nothing.
     </p>
 </div>
 

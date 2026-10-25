@@ -1,0 +1,71 @@
+﻿@page "/nesting/tree"
+
+<PageTitle>Nesting - Tree · Bdnd</PageTitle>
+
+<div class="bb-intro">
+    <h1>Nesting - Tree</h1>
+    <p class="bb-subtitle">
+        A folder tree built from nested drop targets. Each row has <code>Edges="BdndEdges.Vertical"</code>: a node
+        dropped on its top half goes before it, on its bottom half after it. Below each row, the list of its children
+        is a drop target too: a node dropped there - the indented area, which grows while a node is dragged - becomes
+        its last child. Only the innermost target under the pointer shows an edge, and a node can never be dropped
+        into its own subtree. With the keyboard, the arrows visit every place: before, after and into every node.
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="bb-demo">
+    <BdndProvider>
+        <ul class="tree" aria-label="Folders">
+            @for (var i = 0; i < _root.Children.Count; i++)
+            {
+                <TreeNodeView Node="_root.Children[i]" Parent="_root" Index="i" OnMove="MoveNode" @key="_root.Children[i]" />
+            }
+        </ul>
+    </BdndProvider>
+
+    <p class="demo-caption tree-outline">@Outline(_root)</p>
+</div>
+
+@code {
+    public const string NodeType = "node";
+
+    public sealed class Node(string name, params Node[] children)
+    {
+        public string Name { get; } = name;
+        public List<Node> Children { get; } = [.. children];
+    }
+
+    /// <summary>A node going under <paramref name="Parent"/> at <paramref name="Index"/> (an index in its children as they are now).</summary>
+    public sealed record NodeMove(Node Item, Node Parent, int Index);
+
+    private readonly Node _root = new("root",
+        new Node("Documents", new Node("Invoices"), new Node("Letters")),
+        new Node("Photos", new Node("2025"), new Node("2026")),
+        new Node("Music"));
+
+    /// <summary>Whether <paramref name="node"/> is <paramref name="ancestor"/> or under it.</summary>
+    public static bool Contains(Node ancestor, Node node) =>
+        ReferenceEquals(ancestor, node) || ancestor.Children.Any(child => Contains(child, node));
+
+    private void MoveNode(NodeMove move)
+    {
+        if (Contains(move.Item, move.Parent) || ParentOf(_root, move.Item) is not { } from) return;
+        BdndList.Move(from.Children, from.Children.IndexOf(move.Item), move.Parent.Children, move.Index);
+    }
+
+    private static Node? ParentOf(Node parent, Node node)
+    {
+        if (parent.Children.Contains(node)) return parent;
+        foreach (var child in parent.Children)
+        {
+            if (ParentOf(child, node) is { } found) return found;
+        }
+        return null;
+    }
+
+    // "Documents (Invoices, Letters), Photos (2025, 2026), Music"
+    private static string Outline(Node node) => string.Join(", ", node.Children.Select(child =>
+        child.Children.Count == 0 ? child.Name : $"{child.Name} ({Outline(child)})"));
+}

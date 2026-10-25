@@ -1,0 +1,127 @@
+﻿@page "/sortable/indicators"
+
+<PageTitle>Sortable - Drop indicators · Bdnd</PageTitle>
+
+<div class="bb-intro">
+    <h1>Sortable - Drop indicators</h1>
+    <p class="bb-subtitle">
+        Each card sits in a drop target with <code>Edges="BdndEdges.Vertical"</code>: while a card is dragged over
+        it, the target reports the edge the pointer is closest to, and a line drawn from the
+        <code>data-bit-bdnd-edge</code> attribute shows where the card will land. The drop carries the edge as
+        <code>ClosestEdge</code>, and <code>BdndList.InsertionIndex</code> and <code>BdndList.Move</code> do the index
+        arithmetic - within a list or across the two. Nothing is measured over interop. With the keyboard, the arrows
+        step through the places between the cards, one place per key. The labels below are a horizontal list
+        (<code>BdndEdges.Horizontal</code>) with no drop target around it: the line is drawn left or right of a
+        label.
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="bb-demo">
+    <BdndProvider>
+        <div class="indicator-board">
+            @foreach (var list in _lists)
+            {
+                <BdndDropTarget TItem="Card" Accept="@ItemTypes.Card" Tag="section" Label="@($"the end of {list.Name}")"
+                                class="indicator-list" OnDrop="@(e => DropAtEnd(e, list))" Context="listDrop">
+                    <h2 class="indicator-list__title">@list.Name</h2>
+                    @for (var i = 0; i < list.Cards.Count; i++)
+                    {
+                        var index = i;
+                        var card = list.Cards[i];
+                        <BdndDropTarget TItem="Card" Accept="@ItemTypes.Card" Edges="BdndEdges.Vertical" Label="@card.Title"
+                                        class="indicator-slot" OnDrop="@(e => DropOn(e, list, index))" @key="card" Context="slot">
+                            <BdndDraggable TItem="Card" Type="@ItemTypes.Card" Item="card" Label="@card.Title"
+                                           class="sortable-card indicator-card" Context="drag">
+                                @card.Title
+                            </BdndDraggable>
+                        </BdndDropTarget>
+                    }
+                    @if (list.Cards.Count == 0)
+                    {
+                        <p class="indicator-empty">Drop cards here</p>
+                    }
+                </BdndDropTarget>
+            }
+        </div>
+
+        <div class="indicator-chips-bar">
+            <h2 class="demo-result-title">Labels</h2>
+            <label class="bb-check"><input type="checkbox" @bind="_rtl" /> Right to left</label>
+        </div>
+        <div class="indicator-chips" dir="@(_rtl ? "rtl" : null)">
+            @for (var i = 0; i < _labels.Count; i++)
+            {
+                var index = i;
+                var label = _labels[i];
+                <BdndDropTarget TItem="string" Accept="label" Edges="BdndEdges.Horizontal" Label="@label"
+                                class="indicator-chip-slot" OnDrop="@(e => MoveLabel(e, index))" @key="label" Context="slot">
+                    <BdndDraggable TItem="string" Type="label" Item="label" Label="@label" class="indicator-chip" Context="drag">
+                        @label
+                    </BdndDraggable>
+                </BdndDropTarget>
+            }
+        </div>
+    </BdndProvider>
+
+    <p class="demo-caption indicator-labels">Labels: @string.Join(", ", _labels)</p>
+
+    <p class="demo-caption indicator-order">@string.Join(" | ", _lists.Select(l => $"{l.Name}: {string.Join(", ", l.Cards.Select(c => c.Title))}"))</p>
+</div>
+
+<div class="bb-note">
+    Each list is a drop target too: a drop below its cards, or on an empty list, lands on the list, which puts the card
+    at its end - unless a card of the list took the drop first, which <code>Monitor.DidDrop()</code> tells, since drops
+    reach the innermost target first. The keyboard visits that place as well ("Alpha is over the end of Backlog"), and
+    every other place between two cards once ("Alpha is after Bravo"). Edges are where they are on screen: laid out
+    right to left, the left edge of a label is <em>after</em> it, so the drop passes <code>reversed: true</code> to
+    <code>BdndList.InsertionIndex</code> - the keyboard turns its arrows around by itself.
+</div>
+
+@code {
+    public sealed record Card(int Id, string Title);
+
+    private sealed record CardList(string Name, List<Card> Cards);
+
+    private readonly CardList[] _lists =
+    [
+        new("Backlog", [new(1, "Alpha"), new(2, "Bravo"), new(3, "Charlie"), new(4, "Delta")]),
+        new("Sprint", [new(5, "Echo"), new(6, "Foxtrot")]),
+    ];
+
+    // Dropped on a card: before or after it, as the edge says.
+    private void DropOn(BdndDropEventArgs<Card> e, CardList list, int index)
+    {
+        if (e.Item is not { } card || Find(card) is not (CardList from, int fromIndex)) return;
+        BdndList.Move(from.Cards, fromIndex, list.Cards, BdndList.InsertionIndex(index, e.ClosestEdge));
+    }
+
+    // Dropped on the list itself (below the cards, or on an empty list): at its end - unless a card of the list took
+    // the drop already (drops reach the targets innermost first).
+    private void DropAtEnd(BdndDropEventArgs<Card> e, CardList list)
+    {
+        if (e.Monitor.DidDrop() || e.Item is not { } card || Find(card) is not (CardList from, int fromIndex)) return;
+        BdndList.Move(from.Cards, fromIndex, list.Cards, list.Cards.Count);
+    }
+
+    private readonly List<string> _labels = ["bug", "urgent", "docs", "ui"];
+    private bool _rtl;
+
+    // Edges are where they are on screen: right to left, a label's left edge is after it in the list.
+    private void MoveLabel(BdndDropEventArgs<string> e, int index)
+    {
+        if (e.Item is not { } label) return;
+        BdndList.Move(_labels, _labels.IndexOf(label), _labels, BdndList.InsertionIndex(index, e.ClosestEdge, reversed: _rtl));
+    }
+
+    private (CardList List, int Index)? Find(Card card)
+    {
+        foreach (var list in _lists)
+        {
+            var index = list.Cards.IndexOf(card);
+            if (index >= 0) return (list, index);
+        }
+        return null;
+    }
+}

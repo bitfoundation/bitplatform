@@ -5,8 +5,10 @@
 <div class="bb-intro">
     <h1>Sortable - Stress Test</h1>
     <p class="bb-subtitle">
-        A long sortable list (@_cards.Count items). Reordering still runs the per-item midpoint
-        hit-test on every hover. Handy for spotting performance regressions.
+        A long sortable list (@_cards.Count items) in a scrolling tray. Reordering still runs the per-item midpoint
+        hit-test on every hover, yet a hover re-renders only the cards whose state changed, not the hundred. Hold a
+        card near the tray's top or bottom edge and the tray scrolls. Handy for spotting performance
+        regressions.
     </p>
 </div>
 

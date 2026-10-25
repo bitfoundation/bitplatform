@@ -82,8 +82,12 @@ public class McpController : ControllerBase
 
         if (section is not null) return Truncate(section);
 
+        // The closest first: top-level sections, then headings that start with what was asked for - so the main
+        // sections stay among the suggestions however many sub-sections mention the word.
         var candidates = BdndSourceCatalog.GuideSections
             .Where(s => s.Heading.Contains(heading, StringComparison.OrdinalIgnoreCase) || heading.Contains(s.Heading, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(s => s.Level)
+            .ThenBy(s => s.Heading.StartsWith(heading, StringComparison.OrdinalIgnoreCase) ? 0 : 1)
             .Select(s => $"'{s.Key}'")
             .Distinct(StringComparer.Ordinal)
             .Take(10)

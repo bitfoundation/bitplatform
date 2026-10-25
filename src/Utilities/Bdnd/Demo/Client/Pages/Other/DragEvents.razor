@@ -1,0 +1,150 @@
+﻿@page "/other/drag-events"
+@implements IDisposable
+
+<PageTitle>Other - Drag events and undo · Bdnd</PageTitle>
+
+<div class="bb-intro">
+    <h1>Other - Drag events and undo</h1>
+    <p class="bb-subtitle">
+        Everything a drag goes through, as it happens, in the log below. The provider's <code>OnDragStart</code> and
+        <code>OnDragEnd</code> run for every drag of its context, whichever chip it is and whichever input makes it -
+        <code>Native</code> (the mouse, through the browser's drag and drop), <code>Pointer</code> (touch and pen) or
+        <code>Keyboard</code> - and the end carries <code>DidDrop</code> and the result the tray's <code>OnDrop</code>
+        published, which is all an undo history needs: <em>Undo</em> puts the last move back. Each tray reports
+        <code>OnEnter</code> and <code>OnLeave</code> as a drag moves onto it and off it. A closed tray is
+        <code>Disabled</code>: it takes nothing - no hover, no drop - and the keyboard skips it. The line at the top
+        reads the drag state from outside the provider, through the manager the page hands it with
+        <code>Manager</code>, whose <code>StateChanged</code> event tells the page when to look again.
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="bb-demo">
+    <div class="bb-demo-bar">
+        <span class="bb-demo-label events-now">@Now</span>
+        <button type="button" class="btn btn-secondary" disabled="@(_undo.Count == 0)" @onclick="Undo">Undo</button>
+        <button type="button" class="btn btn-secondary" disabled="@(_log.Count == 0)" @onclick="_log.Clear">Clear the log</button>
+    </div>
+
+    <BdndProvider Manager="_manager" OnDragStart="Started" OnDragEnd="Ended">
+        <div class="events-trays">
+            @foreach (var tray in _trays)
+            {
+                <BdndDropTarget TItem="Chip" Accept="chip" Tag="section" Label="@tray.Name" Disabled="tray.Closed"
+                                class="@($"events-tray{(tray.Closed ? " events-tray--closed" : "")}")"
+                                OnEnter="@(e => Log($"OnEnter: {e.Item?.Name} is over {tray.Name}."))"
+                                OnLeave="@(e => Log($"OnLeave: {e.Item?.Name} left {tray.Name}."))"
+                                OnDrop="@(e => Drop(e, tray))" Context="drop">
+                    <h2 class="events-tray__title">
+                        @tray.Name
+                        <label class="bb-check"><input type="checkbox" @bind="tray.Closed" /> Closed</label>
+                    </h2>
+                    @foreach (var chip in tray.Chips)
+                    {
+                        <BdndDraggable TItem="Chip" Type="chip" Item="chip" Label="@chip.Name" class="events-chip" @key="chip">
+                            @chip.Name
+                        </BdndDraggable>
+                    }
+                    @if (tray.Chips.Count == 0)
+                    {
+                        <p class="events-empty">Empty</p>
+                    }
+                </BdndDropTarget>
+            }
+        </div>
+    </BdndProvider>
+
+    <h2 class="demo-result-title">Event log</h2>
+    <ol class="events-log">
+        @if (_log.Count == 0)
+        {
+            <li>Nothing yet: drag a chip from one tray to another.</li>
+        }
+        @foreach (var line in _log)
+        {
+            <li>@line</li>
+        }
+    </ol>
+</div>
+
+@code {
+    public sealed record Chip(string Name);
+
+    public sealed class Tray(string name, params Chip[] chips)
+    {
+        public string Name { get; } = name;
+        public List<Chip> Chips { get; } = [.. chips];
+        public bool Closed { get; set; }
+    }
+
+    /// <summary>What a drop did: the result a tray publishes, and what Undo reverses.</summary>
+    public sealed record Moved(Chip Chip, Tray From, int Index, Tray To)
+    {
+        public override string ToString() => $"{Chip.Name} from {From.Name} to {To.Name}";
+    }
+
+    // The page owns the manager, so it can read the drag state outside the provider.
+    private readonly BdndDragDropManager _manager = new();
+
+    private readonly Tray[] _trays =
+    [
+        new("Inbox", new Chip("Red"), new Chip("Green"), new Chip("Blue")),
+        new("Today"),
+        new("Later", new Chip("Gold")),
+    ];
+
+    private readonly Stack<Moved> _undo = new();
+    private readonly List<string> _log = [];
+
+    protected override void OnInitialized() => _manager.StateChanged += OnManagerChanged;
+
+    private void OnManagerChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private string Now => _manager.Monitor.IsDragging()
+        ? $"Dragging {(_manager.Monitor.GetItem() as Chip)?.Name} - {_manager.Monitor.GetDragInput()}"
+        : "Not dragging";
+
+    private void Started(BdndDragEventArgs e) =>
+        Log($"OnDragStart: {(e.Item as Chip)?.Name} (type \"{e.ItemType}\"), {InputOf(e.Input)}.");
+
+    private void Ended(BdndDragEventArgs e)
+    {
+        Log($"OnDragEnd: DidDrop is {(e.DidDrop ? "true" : "false")}, DropResult is {(e.DropResult is null ? "null" : $"\"{e.DropResult}\"")}.");
+        if (e.DidDrop && e.DropResult is Moved move) _undo.Push(move);
+    }
+
+    private void Drop(BdndDropEventArgs<Chip> e, Tray to)
+    {
+        if (e.Item is not { } chip || _trays.FirstOrDefault(t => t.Chips.Contains(chip)) is not { } from || from == to) return;
+        var index = from.Chips.IndexOf(chip);
+        from.Chips.RemoveAt(index);
+        to.Chips.Add(chip);
+        // the drag's end carries it: the provider's OnDragEnd and the chip's OnEnd both read it as DropResult
+        e.Result = new Moved(chip, from, index, to);
+        Log($"OnDrop: {to.Name} took {chip.Name} and published the result \"{e.Result}\".");
+    }
+
+    private void Undo()
+    {
+        if (_undo.TryPop(out var move) is false) return;
+        move.To.Chips.Remove(move.Chip);
+        move.From.Chips.Insert(Math.Min(move.Index, move.From.Chips.Count), move.Chip);
+        Log($"Undo: {move.Chip.Name} went back to {move.From.Name}.");
+    }
+
+    private void Log(string line)
+    {
+        _log.Add(line);
+        if (_log.Count > 14) _log.RemoveAt(0);
+    }
+
+    private static string InputOf(BdndDragInput input) => input switch
+    {
+        BdndDragInput.Native => "Native - the browser's own drag and drop",
+        BdndDragInput.Pointer => "Pointer - touch or pen",
+        _ => "Keyboard",
+    };
+
+    public void Dispose() => _manager.StateChanged -= OnManagerChanged;
+}

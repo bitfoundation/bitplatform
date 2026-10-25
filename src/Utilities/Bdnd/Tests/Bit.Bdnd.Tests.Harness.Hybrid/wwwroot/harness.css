@@ -1,0 +1,79 @@
+﻿body {
+    margin: 0;
+    font: 16px/1.4 system-ui, sans-serif;
+    background: #fff;
+    color: #222;
+}
+
+.hybrid-check {
+    padding: 1rem 2rem;
+}
+
+.hybrid-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.hybrid-box {
+    padding: .5rem 1rem;
+    border: 1px dashed #888;
+    border-radius: 4px;
+    background: #fafafa;
+    cursor: move;
+}
+
+.hybrid-box[data-bit-bdnd-dragging] {
+    opacity: .4;
+}
+
+.hybrid-zone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 14rem;
+    height: 6rem;
+    margin-bottom: 1.5rem;
+    border: 2px dashed #888;
+    border-radius: 8px;
+}
+
+.hybrid-zone[data-bit-bdnd-can-drop] {
+    border-color: #1565c0;
+}
+
+.hybrid-list {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    width: 14rem;
+}
+
+.hybrid-slot {
+    position: relative;
+}
+
+.hybrid-slot[data-bit-bdnd-edge]::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #1565c0;
+}
+
+.hybrid-slot[data-bit-bdnd-edge="top"]::after {
+    top: -4px;
+}
+
+.hybrid-slot[data-bit-bdnd-edge="bottom"]::after {
+    bottom: -4px;
+}
+
+.hybrid-row-item {
+    padding: .5rem 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #fff;
+    cursor: move;
+}
