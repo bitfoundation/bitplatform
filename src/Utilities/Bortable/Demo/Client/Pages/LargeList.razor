@@ -15,14 +15,32 @@
 <DemoCode />
 
 <div class="bb-demo">
-    <div class="large-controls">
-        <label><input id="large-isolate" type="checkbox" @bind="_isolate" /> <code>IsolateItems</code></label>
-        <label><input id="large-fallback" type="checkbox" @bind="_fallback" /> <code>ForceFallback</code></label>
+    <div class="demo-controls">
+        <label class="demo-check">
+            <input id="large-isolate" type="checkbox" @bind="_isolate" /> <code>IsolateItems</code> - render each row's template on its own
+        </label>
+        <label class="demo-check">
+            <input id="large-fallback" type="checkbox" @bind="_fallback" /> <code>ForceFallback</code> - the mouse drags like a finger, and Bortable scrolls for it
+        </label>
+        <label class="demo-check">
+            <input id="large-scroll" type="checkbox" @bind="_scroll" /> <code>Scroll</code> - a pointer drag near an edge scrolls
+        </label>
+        <label>
+            <code>ScrollSensitivity</code>: <strong id="large-sensitivity-value">@_sensitivity px</strong>
+            <input id="large-sensitivity" type="range" min="10" max="120" step="5" value="@_sensitivity"
+                   @oninput="e => _sensitivity = Parse(e, _sensitivity)" />
+        </label>
+        <label>
+            <code>ScrollSpeed</code>: <strong id="large-speed-value">@_speed px</strong>
+            <input id="large-speed" type="range" min="2" max="60" step="2" value="@_speed"
+                   @oninput="e => _speed = Parse(e, _speed)" />
+        </label>
     </div>
 
     <div class="large-panel" id="large-panel">
         <Bortable @bind-Items="_rows" TItem="Row" Id="large-list" AriaLabel="Rows"
                   IsolateItems="_isolate" ForceFallback="_fallback" ItemLabel="r => r.Name"
+                  Scroll="_scroll" ScrollSensitivity="_sensitivity" ScrollSpeed="_speed"
                   Class="demo-list" ItemClass="demo-item">
             <ItemTemplate Context="row">
                 <span class="large-name">@row.Name</span>
@@ -34,6 +52,75 @@
     <p class="demo-order"><strong>First five:</strong> <span id="large-order">@string.Join(", ", _rows.Take(5).Select(r => r.Name))</span></p>
 </div>
 
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
+    <ul class="bb-detail-list">
+        <li>
+            Tick <code>ForceFallback</code>, drag <em>Row 1</em> to the bottom edge of the panel and hold it there: the
+            panel scrolls, faster the closer the pointer is to the edge, and the row is carried along. Change
+            <code>ScrollSensitivity</code> (how wide the edge band is) and <code>ScrollSpeed</code> (the most pixels per
+            frame) and try again; untick <code>Scroll</code> and the panel stays put.
+        </li>
+        <li>Drag a row with the mouse and <code>ForceFallback</code> off: the browser scrolls the panel for its own drag.</li>
+        <li>
+            From the keyboard, pick <em>Row 1</em> up and hold <kbd>↓</kbd>: the row walks down, and the panel follows it
+            into view at every step.
+        </li>
+        <li>
+            Open the browser's console and run
+            <code>(await import('/_content/Bit.Bortable/bit-bortable.js')).diagnostics()</code> after a drag: the
+            positions sent to .NET (one per row crossed, not one per pointer move) and the average and slowest round trip.
+            Tick <code>IsolateItems</code>, call <code>resetDiagnostics()</code>, and compare.
+        </li>
+    </ul>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> What a drag costs</h3>
+    <ul class="bb-detail-list">
+        <li>
+            <strong>The pointer</strong> is followed and measured in the browser. A step that does not change the drop
+            position - the pointer resting, or moving within a row - never reaches .NET. A step that does is one call; while
+            it is on its way, the browser keeps the latest position for when it returns, so no position is lost and none
+            queues up. That keeps a drag smooth on Blazor Server, too.
+        </li>
+        <li>
+            <strong>A new position</strong> changes the bound list in place and renders the list once, and the browser
+            slides the rows when that render lands.
+        </li>
+        <li>
+            <strong>The render</strong> of a list renders all its items: a step through three hundred rows renders three
+            hundred templates. <code>IsolateItems="true"</code> puts each template in a component of its own that a step
+            skips - only the wrappers move. Leave it off when a template shows something other items' moves change, such
+            as the item's position number: that would only catch up when the drag ends.
+        </li>
+    </ul>
+    <div class="bb-note bb-note-warn">
+        A list renders every item it is given: Blazor's <code>Virtualize</code> is not supported, because rows that are not
+        rendered could be neither measured nor dropped beside. Page a list that is too long to render, or let a filter
+        narrow it.
+    </div>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Parameters on this page</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Parameter</th><th>Default</th><th>What it does</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>IsolateItems</code></td><td><code>false</code></td><td>Renders each item's template in a component of its own, skipped on the steps of a drag.</td></tr>
+                <tr><td class="bb-table-key"><code>ForceFallback</code></td><td><code>false</code></td><td>The mouse drags with pointer events and a preview, as a finger does.</td></tr>
+                <tr><td class="bb-table-key"><code>Scroll</code></td><td><code>true</code></td><td>A finger, pen or <code>ForceFallback</code> drag near an edge scrolls the innermost element under the pointer that can still scroll that way, then the page.</td></tr>
+                <tr><td class="bb-table-key"><code>ScrollSensitivity</code></td><td><code>40</code></td><td>How close (px) to an edge the pointer must come to scroll it.</td></tr>
+                <tr><td class="bb-table-key"><code>ScrollSpeed</code></td><td><code>16</code></td><td>The most pixels an edge scrolls per frame, at the very edge.</td></tr>
+                <tr><td class="bb-table-key"><code>ItemLabel</code></td><td></td><td>How announcements name a row: <code>r =&gt; r.Name</code> rather than the record's <code>ToString()</code>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
 @code {
     private sealed record Row(string Name, string Note);
 
@@ -43,4 +130,9 @@
 
     private bool _isolate;
     private bool _fallback;
+    private bool _scroll = true;
+    private int _sensitivity = 40;
+    private int _speed = 16;
+
+    private static int Parse(ChangeEventArgs e, int current) => int.TryParse(e.Value?.ToString(), out var v) ? v : current;
 }

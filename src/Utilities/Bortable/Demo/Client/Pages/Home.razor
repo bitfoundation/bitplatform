@@ -118,10 +118,34 @@
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Any layout</h3>
                 <p class="bb-card-desc">
-                    Vertical lists, horizontal strips, CSS grids and nested trees whose items move between
-                    branches and depths.
+                    Vertical lists, horizontal strips, CSS grids, right-to-left rows and nested trees whose
+                    items move between branches and depths.
                 </p>
                 <a href="nested" class="btn btn-outline">Nested sortables →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Keyboard and screen readers</h3>
+                <p class="bb-card-desc">
+                    Pick an item up with Space, move it with the arrows - across lists too - and drop it; every
+                    step is announced, in words you can translate, and buttons can move items without a drag.
+                </p>
+                <a href="accessibility" class="btn btn-outline">Keyboard →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Rules and rollback</h3>
+                <p class="bb-card-desc">
+                    Refuse a position as it is reached (<code>CanDrop</code>), cap a list (<code>MaxItems</code>),
+                    and let a server have the last word on a drop (<code>ConfirmDrop</code>) - refused, it slides back.
+                </p>
+                <a href="rules" class="btn btn-outline">Rules →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Touch, pen and mouse</h3>
+                <p class="bb-card-desc">
+                    A finger or a pen drags with pointer events - a long press picks an item up, a swipe still
+                    scrolls - and a drag near an edge scrolls the list or the page.
+                </p>
+                <a href="touch" class="btn btn-outline">Touch and pen →</a>
             </section>
         </div>
     </section>
@@ -237,9 +261,10 @@
                 <summary>Is this SortableJS running through JavaScript interop?</summary>
                 <p>
                     No. The sorting engine - where the item goes, which list may take it, what is moved,
-                    cloned or swapped, and which events are raised - is C#. A small module does only what
-                    needs the DOM: drag handles, measuring the pointer for the swap thresholds, and the
-                    FLIP animations.
+                    cloned or swapped, and which events are raised - is C#. A small module does what has to
+                    happen where the pointer is: it follows the drag, measures the pointer against the items
+                    for the swap thresholds, plays the FLIP animations, and calls .NET only when the drop
+                    position changes - so a drag stays smooth on Blazor Server too.
                 </p>
             </details>
             <details>
@@ -260,8 +285,27 @@
             <details>
                 <summary>Does it work on touch screens?</summary>
                 <p>
-                    It runs on the browser's HTML5 drag-and-drop events, so it drags wherever the browser
-                    raises them - every desktop browser, and the mobile browsers that support native drag.
+                    Yes. A mouse drags with the browser's own HTML5 drag and drop; a finger or a pen drags with
+                    pointer events, so touch works in every mobile browser and web view, whether or not it
+                    supports native drag. A long press picks an item up, so a swipe over the list still scrolls
+                    the page.
+                </p>
+            </details>
+            <details>
+                <summary>Can it be used without a mouse?</summary>
+                <p>
+                    Yes. Every list can be sorted from the keyboard - Space picks an item up, the arrows move it,
+                    Space drops it, Escape puts it back - and each step is announced to screen readers.
+                    <code>MoveAsync</code> and <code>MoveToAsync</code> move an item from code, for "move up"
+                    buttons and item menus.
+                </p>
+            </details>
+            <details>
+                <summary>Can my code refuse a drop?</summary>
+                <p>
+                    Yes: <code>CanDrop</code> vets every position before it is shown, <code>MaxItems</code> caps a
+                    list, and <code>ConfirmDrop</code> asks your code - a server, a dialog - once the item is
+                    dropped, putting everything back if it says no.
                 </p>
             </details>
         </div>

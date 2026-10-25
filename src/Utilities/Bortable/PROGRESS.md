@@ -275,6 +275,28 @@ Not defects of the library or the demo: under heavy memory pressure (other sessi
 pages sometimes never became interactive - WebAssembly downloads took 20-25 s and renderers crashed - and the
 shared site kit's search ranks "Swap thresholds" above "Swap" for "swap" (every Utilities demo has the same palette).
 
+### Round 12 - a demo for every feature
+
+Each demo page was checked against the public API. Not shown anywhere before: `Disabled`, `Pull="None"`,
+`ChildContent`, `Animation`, `Delay` / `DelayTolerance`, `ChosenClass` / `DragClass`, `@bind-SelectedItems` and
+Shift+click ranges, `Messages`, `AdditionalAttributes`, `OnSort` / `OnChange`, the `Input` / `IsClone` / `Canceled`
+event arguments, read-only lists as clone sources, horizontal and right-to-left lists, the stylesheet's custom
+properties and classes, and `BortableOptions`. The landing page still said touch worked only where the browser drags
+natively.
+
+- Every demo page now has "Try it" steps, a "How it works" or "Good to know" section and a table of the parameters it
+  uses. New samples: an empty state (`/shared`), a read-only palette (`/cloning`), `Pull="None"` and a `Disabled`
+  toggle (`/disable-sort`), rows with inputs (`/handle`), locks that change (`/filter`), an `Animation` slider
+  (`/simple-list`), delay sliders (`/touch`), auto-scroll controls (`/large-list`), a bound selection and the moved
+  `Items` (`/multi-drag`), `OnEnd`'s `Canceled` (`/rules`), translated announcements with a log of what is announced
+  (`/accessibility`), a horizontal row and a right-to-left one (`/grid`, now "Grid and layouts"), and a new
+  `/styling` page. `/getting-started` gained the render modes, the app-wide defaults and troubleshooting. The events
+  log shows all seven callbacks with the input and the flags.
+- The Filter page styles the library's `bit-bortable-filtered` instead of a class of its own.
+- `EventsTests` follow the new log, and test `OnChange` on request and a cancelled keyboard drag.
+- Checks: `Bit.Bortable.Tests.E2E` 93 / 93 (Chromium), `Bit.Bortable.Tests.Mcp` 111 / 111; every page at 1280 and
+  375 px, light and dark, with no overflow and no console error; every new sample driven by a script.
+
 ## Remaining limitations and follow-ups
 
 - Virtualization (G19) and tree-specific drop-on-node / expand-on-hover (G20) are deliberate boundaries, documented.

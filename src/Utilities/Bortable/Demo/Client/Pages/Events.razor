@@ -5,36 +5,48 @@
 <div class="bb-intro">
     <h1>Events</h1>
     <p class="bb-subtitle">
-        Every drag fires the SortableJS-style lifecycle callbacks. Drag items within and between the lists and
-        watch the log - the newest event is on top.
+        Every drag fires the SortableJS-style lifecycle callbacks - <code>OnStart</code>, <code>OnChange</code>,
+        <code>OnUpdate</code>, <code>OnRemove</code>, <code>OnAdd</code>, <code>OnSort</code> and <code>OnEnd</code>.
+        Drag items within and between the lists and watch the log - the newest event is on top.
     </p>
 </div>
 
 <DemoCode />
 
 <div class="bb-demo">
+    <div class="demo-controls">
+        <label class="demo-check">
+            <input id="events-log-change" type="checkbox" @bind="_logChange" />
+            Log <code>OnChange</code> too - one line for every new position the item takes during a drag
+        </label>
+    </div>
+
     <div class="demo-columns">
         <div class="demo-col">
             <div class="demo-col-title">events-left</div>
-            <Bortable @bind-Items="_left" TItem="string" Group="ev" Id="events-left"
+            <Bortable @bind-Items="_left" TItem="string" Group="ev" Id="events-left" AriaLabel="Left"
                       Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost"
-                      OnStart='e => Log("start", e)'
-                      OnEnd='e => Log("end", e)'
-                      OnAdd='e => Log("add", e)'
-                      OnRemove='e => Log("remove", e)'
-                      OnUpdate='e => Log("update", e)'>
+                      OnStart='e => Log("OnStart", "events-left", e)'
+                      OnChange='e => Log("OnChange", "events-left", e)'
+                      OnUpdate='e => Log("OnUpdate", "events-left", e)'
+                      OnRemove='e => Log("OnRemove", "events-left", e)'
+                      OnAdd='e => Log("OnAdd", "events-left", e)'
+                      OnSort='e => Log("OnSort", "events-left", e)'
+                      OnEnd='e => Log("OnEnd", "events-left", e)'>
                 <ItemTemplate Context="item">@item</ItemTemplate>
             </Bortable>
         </div>
         <div class="demo-col">
             <div class="demo-col-title">events-right</div>
-            <Bortable @bind-Items="_right" TItem="string" Group="ev" Id="events-right"
+            <Bortable @bind-Items="_right" TItem="string" Group="ev" Id="events-right" AriaLabel="Right"
                       Class="demo-list" ItemClass="demo-item tinted" GhostClass="demo-ghost"
-                      OnStart='e => Log("start", e)'
-                      OnEnd='e => Log("end", e)'
-                      OnAdd='e => Log("add", e)'
-                      OnRemove='e => Log("remove", e)'
-                      OnUpdate='e => Log("update", e)'>
+                      OnStart='e => Log("OnStart", "events-right", e)'
+                      OnChange='e => Log("OnChange", "events-right", e)'
+                      OnUpdate='e => Log("OnUpdate", "events-right", e)'
+                      OnRemove='e => Log("OnRemove", "events-right", e)'
+                      OnAdd='e => Log("OnAdd", "events-right", e)'
+                      OnSort='e => Log("OnSort", "events-right", e)'
+                      OnEnd='e => Log("OnEnd", "events-right", e)'>
                 <ItemTemplate Context="item">@item</ItemTemplate>
             </Bortable>
         </div>
@@ -43,6 +55,11 @@
     <p class="demo-order"><strong>Left:</strong> <span id="events-left-order">@string.Join(", ", _left)</span></p>
     <p class="demo-order"><strong>Right:</strong> <span id="events-right-order">@string.Join(", ", _right)</span></p>
 
+    <div class="bb-toolbar demo-log-bar">
+        <span class="demo-log-legend">Each line: <code>[event @@list that raised it] item FromId#OldIndex -&gt; ToId#NewIndex (input, flags)</code></span>
+        <span class="bb-spacer"></span>
+        <button type="button" id="events-clear" class="btn btn-secondary" @onclick="() => _log.Clear()">Clear the log</button>
+    </div>
     <div class="bb-log event-log" id="events-log">
         @if (_log.Count == 0)
         {
@@ -55,14 +72,88 @@
     </div>
 </div>
 
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
+    <ul class="bb-detail-list">
+        <li>Drag <em>Item 1</em> below <em>Item 3</em>: <code>OnStart</code>, then on the drop <code>OnUpdate</code>, <code>OnSort</code> and <code>OnEnd</code>.</li>
+        <li>
+            Drag <em>Item 4</em> into the right list: <code>OnRemove</code> on the left, <code>OnAdd</code> on the right,
+            <code>OnSort</code> on both, and <code>OnEnd</code> on the left - the list the drag started in.
+        </li>
+        <li>Drag an item into the other list and back home before you drop it: nothing changed, so only <code>OnStart</code> and <code>OnEnd</code>.</li>
+        <li>Tick the box and drag again: an <code>OnChange</code> line for every place the item passes through.</li>
+        <li>
+            Pick an item up from the keyboard (<kbd>Space</kbd>), move it, and press <kbd>Escape</kbd>: <code>OnEnd</code>
+            alone, with <code>keyboard</code> and <code>canceled</code> in its flags.
+        </li>
+    </ul>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The lifecycle</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Event</th><th>Raised when</th><th>On</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>OnStart</code></td><td>A drag begins.</td><td>The source list.</td></tr>
+                <tr><td class="bb-table-key"><code>OnChange</code></td><td>The dragged item takes a new position during the drag.</td><td>The list it moves in.</td></tr>
+                <tr><td class="bb-table-key"><code>OnUpdate</code></td><td>The order of the list changed within the same list.</td><td>The list.</td></tr>
+                <tr><td class="bb-table-key"><code>OnRemove</code></td><td>An item was moved out to another list (not raised for a clone).</td><td>The source list.</td></tr>
+                <tr><td class="bb-table-key"><code>OnAdd</code></td><td>An item was dropped in from another list.</td><td>The destination list.</td></tr>
+                <tr><td class="bb-table-key"><code>OnSort</code></td><td>Any change to a list: add, remove or update.</td><td>Each list that changed.</td></tr>
+                <tr><td class="bb-table-key"><code>OnEnd</code></td><td>The drag ended, whatever its outcome.</td><td>The source list.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="bb-card-desc">
+        The completion events are raised after the bound lists have changed and <code>ItemsChanged</code> has been
+        raised, so a handler sees the final state. Within a list: <code>OnUpdate</code>, <code>OnSort</code>,
+        <code>OnEnd</code>. Across lists: <code>OnRemove</code> on the source (unless it is a clone), <code>OnAdd</code>
+        on the destination, <code>OnSort</code> on the source (unless it is a clone) and on the destination, then
+        <code>OnEnd</code>. A cancelled drag raises <code>OnEnd</code> alone. All of them are raised once the drag is
+        over, so a handler that takes its time - a save to a server, say - never holds up the next drag.
+    </p>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> The event arguments</h3>
+    <p class="bb-card-desc">Every event passes a <code>BortableEventArgs&lt;TItem&gt;</code>:</p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Member</th><th>What it says</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>Item</code></td><td>The dragged item - the copy, in the events after a clone was dropped.</td></tr>
+                <tr><td class="bb-table-key"><code>Items</code></td><td>Every item the drag moved: a <a href="multi-drag">multi-drag</a> selection, or just <code>Item</code>.</td></tr>
+                <tr><td class="bb-table-key"><code>OldIndex</code>, <code>NewIndex</code></td><td>Where the item was in the source list when the drag started, and where it is in the destination.</td></tr>
+                <tr><td class="bb-table-key"><code>FromId</code>, <code>ToId</code></td><td>The <code>Id</code> of the source and of the destination list.</td></tr>
+                <tr><td class="bb-table-key"><code>FromGroup</code>, <code>ToGroup</code></td><td>Their <code>Group</code>.</td></tr>
+                <tr><td class="bb-table-key"><code>CrossedLists</code></td><td><code>true</code> when the item moved between lists.</td></tr>
+                <tr><td class="bb-table-key"><code>Input</code></td><td>How the drag was made: <code>Mouse</code>, <code>Touch</code>, <code>Pen</code>, <code>Keyboard</code>, or <code>Api</code> for a move made by code.</td></tr>
+                <tr><td class="bb-table-key"><code>IsClone</code></td><td><code>true</code> when a copy goes into another list and the original stays (see <a href="cloning">cloning</a>).</td></tr>
+                <tr><td class="bb-table-key"><code>Canceled</code></td><td>On <code>OnEnd</code>: the drag kept nothing - cancelled, spilled with <code>RevertOnSpill</code>, or refused by <code>ConfirmDrop</code> (see <a href="rules">rules</a>).</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
 @code {
     private IList<string> _left = new List<string> { "Item 1", "Item 2", "Item 3", "Item 4" };
     private IList<string> _right = new List<string> { "Item A", "Item B" };
     private readonly List<string> _log = new();
+    private bool _logChange;
 
-    private void Log(string name, BortableEventArgs<string> e)
+    // "[OnAdd @events-right] item='Item 4' events-left#3 -> events-right#0 (mouse)": the event, the list that raised
+    // it, the item, where it came from and where it went, then how it was dragged and the flags that are set.
+    private void Log(string name, string list, BortableEventArgs<string> e)
     {
-        _log.Insert(0, $"[{name}] item='{e.Item}' {e.FromId}#{e.OldIndex} -> {e.ToId}#{e.NewIndex}");
-        if (_log.Count > 30) _log.RemoveAt(_log.Count - 1);
+        if (name == "OnChange" && !_logChange) return;
+
+        var flags = string.Join(", ", new[] { e.Input.ToString().ToLowerInvariant(), e.IsClone ? "clone" : null, e.Canceled ? "canceled" : null }.OfType<string>());
+        _log.Insert(0, $"[{name} @{list}] item='{e.Item}' {e.FromId}#{e.OldIndex} -> {e.ToId}#{e.NewIndex} ({flags})");
+        if (_log.Count > 40) _log.RemoveAt(_log.Count - 1);
     }
 }

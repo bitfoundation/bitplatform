@@ -5,15 +5,24 @@
 <div class="bb-intro">
     <h1>Simple list</h1>
     <p class="bb-subtitle">
-        Drag the items to reorder them. Reordering happens live as you drag, and the bound list updates with
-        <code>@@bind-Items</code>.
+        Drag the items to reorder them. The list reorders live as you drag, the other items slide out of the way, and
+        your own <code>IList&lt;string&gt;</code> is changed in place through <code>@@bind-Items</code> - the order
+        under the list is read straight from it.
     </p>
 </div>
 
 <DemoCode />
 
 <div class="bb-demo">
-    <Bortable @bind-Items="_items" TItem="string" Id="simple-list"
+    <div class="demo-controls">
+        <label>
+            <code>Animation</code>: <strong id="simple-animation-value">@_animation ms</strong>
+            <input id="simple-animation" type="range" min="0" max="1000" step="50"
+                   value="@_animation" @oninput="OnAnimationChanged" />
+        </label>
+    </div>
+
+    <Bortable @bind-Items="_items" TItem="string" Id="simple-list" Animation="_animation"
               Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
         <ItemTemplate Context="item">@item</ItemTemplate>
     </Bortable>
@@ -21,9 +30,90 @@
     <p class="demo-order"><strong>Order:</strong> <span id="simple-order">@string.Join(", ", _items)</span></p>
 </div>
 
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
+    <ul class="bb-detail-list">
+        <li>
+            Drag <em>Item 1</em> down past <em>Item 3</em>. It moves in the list as soon as the pointer enters the next
+            item, the others slide out of its way, and <strong>Order</strong> changes when you drop it.
+        </li>
+        <li>
+            Move the <code>Animation</code> slider to <code>1000</code> to watch the slide in slow motion, or to
+            <code>0</code> to turn it off. A move that starts while a slide is still running picks it up from where the
+            item is, so nothing jumps.
+        </li>
+        <li>
+            Without a mouse: <kbd>Tab</kbd> into the list, pick the focused item up with <kbd>Space</kbd>, move it with
+            <kbd>↑</kbd> <kbd>↓</kbd>, and drop it with <kbd>Space</kbd> - or put it back with <kbd>Escape</kbd>. See
+            <a href="accessibility">keyboard and screen readers</a>.
+        </li>
+        <li>
+            On a touch screen, rest a finger on an item for a moment to pick it up; a quick swipe still scrolls the page.
+            See <a href="touch">touch and pen</a>.
+        </li>
+    </ul>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> How it works</h3>
+    <ul class="bb-detail-list">
+        <li>
+            Every item is wrapped in a <code>&lt;div&gt;</code> that carries the drag handlers;
+            <code>ItemTemplate</code> renders what goes inside it.
+        </li>
+        <li>
+            The wrappers are rendered with <code>@@key</code>, so when the item moves in your list Blazor moves its
+            existing DOM node instead of recreating it - which keeps the browser's drag alive while the list reorders
+            under it. That is also why the items of a list must be unique: a list of strings must not hold the same
+            string twice.
+        </li>
+        <li>
+            The bound list must be mutable - a <code>List&lt;T&gt;</code>, or anything else whose
+            <code>IsReadOnly</code> is <code>false</code>. Declare the field as <code>IList&lt;TItem&gt;</code>, the
+            parameter's own type, or <code>@@bind-Items</code> does not compile.
+        </li>
+        <li>
+            <code>ItemsChanged</code> is raised once per drag, after the drop, and only when the order actually
+            changed - a drag that ends where it started raises nothing.
+        </li>
+        <li>
+            Before each change the list records where every item is, lets Blazor update the DOM, then slides each item
+            from its old place to its new one (the FLIP technique). With the system's reduced-motion setting on, nothing
+            slides.
+        </li>
+    </ul>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Parameters on this page</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Parameter</th><th>Here</th><th>What it does</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>@@bind-Items</code></td><td><code>_items</code></td><td>The items to show and reorder. The list is changed in place, and <code>ItemsChanged</code> tells your field.</td></tr>
+                <tr><td class="bb-table-key"><code>TItem</code></td><td><code>string</code></td><td>The item type. Any type works; the items are passed to <code>ItemTemplate</code> and to every event, typed.</td></tr>
+                <tr><td class="bb-table-key"><code>ItemTemplate</code></td><td><code>@@item</code></td><td>What each item shows, inside its wrapper.</td></tr>
+                <tr><td class="bb-table-key"><code>Id</code></td><td><code>simple-list</code></td><td>The list's DOM id, and the <code>FromId</code> / <code>ToId</code> its events report. Generated when not set.</td></tr>
+                <tr><td class="bb-table-key"><code>Class</code>, <code>ItemClass</code></td><td><code>demo-list</code>, <code>demo-item</code></td><td>The CSS classes of the list container and of every item wrapper. The look of the list is yours.</td></tr>
+                <tr><td class="bb-table-key"><code>GhostClass</code></td><td><code>demo-ghost</code></td><td>Replaces <code>bit-bortable-ghost</code>, the class of the item being dragged: a dashed card here, instead of the stylesheet's dimmed one.</td></tr>
+                <tr><td class="bb-table-key"><code>Animation</code></td><td>the slider</td><td>How long, in milliseconds, items take to slide into place; <code>150</code> by default, <code>0</code> turns it off.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
 @code {
     private IList<string> _items = new List<string>
     {
         "Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6"
     };
+
+    private int _animation = 150;
+
+    private void OnAnimationChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var ms)) _animation = ms;
+    }
 }

@@ -18,6 +18,72 @@
     <p class="demo-order"><strong>Tree:</strong> <span id="nested-order">@Describe(_tree)</span></p>
 </div>
 
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
+    <ul class="bb-detail-list">
+        <li>Drag <em>Item 3.1</em> up into the top level, between <em>Item 1.1</em> and <em>Item 1.2</em>.</li>
+        <li>Drag <em>Item 1.2</em> into the empty dashed area under <em>Item 2.1</em>: it becomes a child of 2.1, one level deeper.</li>
+        <li>
+            Drag <em>Item 1.1</em> over its own children: none of them takes it - an item cannot be dropped inside
+            itself - and its whole branch moves with it wherever it does land.
+        </li>
+        <li>
+            From the keyboard, pick an item up with <kbd>Space</kbd>: the arrows carry it into a nested list and out
+            again, in the direction they point.
+        </li>
+    </ul>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> How it works</h3>
+    <ul class="bb-detail-list">
+        <li>
+            <code>NestedList</code> is a component of the page's own: a <code>Bortable</code> whose
+            <code>ItemTemplate</code> renders another <code>NestedList</code> for the item's children. Every level has
+            <code>Group="nested"</code>, so any list of the tree takes an item from any other.
+        </li>
+        <li>
+            The lists inside the dragged item's own subtree, and the lists inside the drop preview, refuse it - so an item
+            is never dropped inside itself.
+        </li>
+        <li>
+            Each list handles its own items only: a drag that starts in an inner list is not also a drag of the outer item
+            around it.
+        </li>
+        <li>
+            A nested list takes the pointer only for a drag it could receive. One of another group, of another item type,
+            or with <code>Put="false"</code> leaves the drag to the list around it - which is how the columns of a board
+            still sort while the pointer crosses the card lists inside them.
+        </li>
+        <li>
+            Every item renders a list of its own, empty or not, with padding and a minimum height in this page's
+            stylesheet, so an empty branch still has an area to drop into.
+        </li>
+        <li>
+            Each list is bound one way, with <code>Items</code>, to the item's <code>Children</code>, which the list changes
+            in place. <code>ItemsChanged</code> only tells the page to render the tree line again.
+        </li>
+    </ul>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Parameters on this page</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Parameter</th><th>Here</th><th>What it does</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>Items</code></td><td><code>item.Children</code></td><td>The children of the item the list belongs to, changed in place.</td></tr>
+                <tr><td class="bb-table-key"><code>ItemsChanged</code></td><td><code>OnItemsChanged</code></td><td>Raised once per drag for each list that changed - here, to show the new tree.</td></tr>
+                <tr><td class="bb-table-key"><code>Group</code></td><td><code>nested</code></td><td>Every level shares it, so items move between branches and depths.</td></tr>
+                <tr><td class="bb-table-key"><code>SwapThreshold</code></td><td><code>0.65</code></td><td>The value the SortableJS nested demo uses: the outer part of each item is a dead zone. See <a href="thresholds">swap thresholds</a>.</td></tr>
+                <tr><td class="bb-table-key"><code>Id</code></td><td><code>nested-item-1-1</code>, ...</td><td>Follows the item that owns the list, wherever the item moves.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
 @code {
     private List<NestedItem> _tree = new()
     {

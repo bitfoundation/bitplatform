@@ -16,15 +16,17 @@
 <DemoCode />
 
 <div class="bb-demo rules-board">
-    <label class="rules-approve">
-        <input id="rules-approve" type="checkbox" @bind="_approve" /> The server approves drops into Done
-    </label>
+    <div class="demo-controls">
+        <label class="demo-check">
+            <input id="rules-approve" type="checkbox" @bind="_approve" /> The server approves drops into Done
+        </label>
+    </div>
 
     <div class="demo-columns">
         <div class="demo-col">
             <div class="demo-col-title">To do</div>
             <Bortable @bind-Items="_todo" TItem="Card" Group="rules" Id="rules-todo" AriaLabel="To do"
-                      ItemLabel="c => c.Title" RevertOnSpill="true"
+                      ItemLabel="c => c.Title" RevertOnSpill="true" OnEnd="OnDragEnd"
                       Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
                 <ItemTemplate Context="card">@card.Title</ItemTemplate>
             </Bortable>
@@ -32,7 +34,7 @@
         <div class="demo-col">
             <div class="demo-col-title">In progress (3 at most)</div>
             <Bortable @bind-Items="_doing" TItem="Card" Group="rules" Id="rules-doing" AriaLabel="In progress"
-                      ItemLabel="c => c.Title" RevertOnSpill="true" MaxItems="3"
+                      ItemLabel="c => c.Title" RevertOnSpill="true" MaxItems="3" OnEnd="OnDragEnd"
                       Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
                 <ItemTemplate Context="card">@card.Title</ItemTemplate>
             </Bortable>
@@ -40,7 +42,7 @@
         <div class="demo-col">
             <div class="demo-col-title">Done (from In progress)</div>
             <Bortable @bind-Items="_done" TItem="Card" Group="rules" Id="rules-done" AriaLabel="Done"
-                      ItemLabel="c => c.Title" RevertOnSpill="true"
+                      ItemLabel="c => c.Title" RevertOnSpill="true" OnEnd="OnDragEnd"
                       CanDrop='e => e.FromId is "rules-doing" or "rules-done"' ConfirmDrop="ConfirmAsync"
                       Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
                 <ItemTemplate Context="card">@card.Title</ItemTemplate>
@@ -52,7 +54,101 @@
     <p class="demo-order"><strong>In progress:</strong> <span id="rules-doing-order">@string.Join(", ", _doing.Select(c => c.Title))</span></p>
     <p class="demo-order"><strong>Done:</strong> <span id="rules-done-order">@string.Join(", ", _done.Select(c => c.Title))</span></p>
     <p class="demo-order"><strong>Server:</strong> <span id="rules-status">@_status</span></p>
+    <p class="demo-order"><strong>Last drag (OnEnd):</strong> <span id="rules-last">@_last</span></p>
 </div>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
+    <ul class="bb-detail-list">
+        <li>
+            Drag <em>Write the spec</em> into In progress: it fits, and the column is full. Now drag <em>Draw the
+            icons</em> over it: In progress is no longer outlined and does not take it, but its own cards still sort.
+        </li>
+        <li>Drag a card from To do over Done: the column turns red, the pointer shows it cannot drop there, and nothing is previewed.</li>
+        <li>
+            Drag <em>Build the API</em> into Done: the server says yes after a moment, and the card stays. Untick the box
+            and drag another one: the card shows in Done while the server thinks, then slides back - and
+            <strong>Last drag</strong> says it was cancelled.
+        </li>
+        <li>
+            Drag a card and let go of it outside the board: it goes back where it came from, even if it was previewed in
+            another column, and <code>OnEnd</code> reports <code>Canceled</code>.
+        </li>
+        <li>
+            From the keyboard the same rules apply: carry a card toward Done with the arrows and the refusal is announced -
+            "Plan the launch cannot be moved there." - and the card stays put.
+        </li>
+    </ul>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> CanDrop - a rule for every position</h3>
+    <p class="bb-card-desc">
+        <code>CanDrop</code> is asked whether the dragged item may take a position in this list, as the item reaches it
+        and before anything is shown - for a reorder within the list and for an item coming from another list alike. It
+        receives the proposed move: <code>Item</code> (and <code>Items</code> for a multi-drag), <code>FromId</code> and
+        <code>FromGroup</code>, <code>OldIndex</code>, and <code>NewIndex</code>, the index the item would have here.
+        Return <code>false</code> and the item stays where it was. It is the SortableJS <code>onMove</code>; it runs while
+        the pointer moves, so keep it fast and free of side effects.
+    </p>
+    <pre class="bb-code">CanDrop='e =&gt; e.FromId is "rules-doing" or "rules-done"'</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> MaxItems - a limit per list</h3>
+    <p class="bb-card-desc">
+        A full list takes nothing from other lists - the pointer passes over it to the list around it, or shows that it
+        cannot drop - while its own items still sort. A multi-drag counts every item it carries; a swap brings one item
+        and takes one, so it is never refused for room.
+    </p>
+    <pre class="bb-code">MaxItems="3"</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> ConfirmDrop - the last word</h3>
+    <p class="bb-card-desc">
+        <code>ConfirmDrop</code> is asked once an item has been dropped into the list, for a check that has to wait: a
+        server call, a confirmation dialog. The drop shows at once and the lists stay as dropped while the task runs.
+        Return <code>true</code> to keep it, and the usual events follow. Return <code>false</code> to put back every list
+        the drag changed: the items slide back, <code>ItemsChanged</code> is raised for the lists put back, and
+        <code>OnEnd</code> reports <code>Canceled</code> - with no <code>OnUpdate</code>, <code>OnAdd</code>,
+        <code>OnRemove</code> or <code>OnSort</code>. No other drag starts until it answers; one that throws puts the lists
+        back too.
+    </p>
+    <pre class="bb-code">ConfirmDrop="ConfirmAsync"
+
+<span class="k">private async</span> Task&lt;<span class="k">bool</span>&gt; ConfirmAsync(BortableEventArgs&lt;Card&gt; e)
+    =&gt; <span class="k">await</span> Api.TryMoveAsync(e.Item.Id, e.ToId, e.NewIndex);   <span class="c">// NewIndex: where the card is now</span></pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> RevertOnSpill - released outside every list</h3>
+    <p class="bb-card-desc">
+        A mouse drag released outside every list keeps what it did, as in SortableJS: a card previewed in another column
+        lands there. <code>RevertOnSpill="true"</code> on the list the drag started in puts it back instead. (A keyboard,
+        touch or pen drag cancelled with <kbd>Escape</kbd> is always put back.)
+    </p>
+    <pre class="bb-code">RevertOnSpill="true"</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Showing where a card may go</h3>
+    <p class="bb-card-desc">
+        While a drag runs, the browser layer marks every list that takes it with <code>data-bortable-accepts</code>, the
+        list under the pointer with <code>data-bortable-over</code>, and that list with <code>data-bortable-refused</code>
+        when it refused the position. The stylesheet draws nothing for them until you set its custom properties - this
+        board sets three:
+    </p>
+    <pre class="bb-code"><span class="k">.rules-board</span> {
+    --bit-bortable-accepts-outline: 2px dashed color-mix(in srgb, var(--bb-primary) 45%, transparent);
+    --bit-bortable-over-outline: 2px solid var(--bb-primary);
+    --bit-bortable-refused-outline: 2px solid #dc2626;
+}</pre>
+    <p class="bb-card-desc">
+        The marks are attributes the browser layer sets, so they cost no render. See <a href="styling">styling</a> for
+        every custom property and class.
+    </p>
+</section>
 
 @code {
     private sealed record Card(int Id, string Title);
@@ -63,6 +159,7 @@
 
     private bool _approve = true;
     private string _status = "idle";
+    private string _last = "nothing yet";
 
     // Stands in for a call to a server that may refuse the move.
     private async Task<bool> ConfirmAsync(BortableEventArgs<Card> e)
@@ -74,4 +171,9 @@
         StateHasChanged();
         return _approve;
     }
+
+    private void OnDragEnd(BortableEventArgs<Card> e)
+        => _last = e.Canceled ? $"{e.Item.Title}: cancelled, everything put back"
+                 : e.CrossedLists ? $"{e.Item.Title}: {e.FromId} -> {e.ToId}#{e.NewIndex}"
+                 : $"{e.Item.Title}: #{e.OldIndex} -> #{e.NewIndex}";
 }

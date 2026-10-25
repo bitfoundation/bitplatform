@@ -98,10 +98,12 @@ The full walkthrough is in [getting started](#getting-started).
 
 ## The demo
 
-The demo site, [bortable.bitplatform.dev](https://bortable.bitplatform.dev), mirrors the SortableJS demo: a simple
-list, shared lists, cloning, disabling sorting, a handle, a filter, the swap thresholds with a live view of the
-swap zones, a grid, nested lists, an events log, and the multi-drag and swap plugins. Every page shows its own
-source.
+The demo site, [bortable.bitplatform.dev](https://bortable.bitplatform.dev), mirrors the SortableJS demo and goes
+past it: a simple list, shared lists with an empty state, cloning from a list and from a read-only palette, `Sort`,
+`Put`, `Pull` and `Disabled`, a handle, a filter, the swap thresholds with a live view of the swap zones, the
+keyboard and translated screen reader announcements, a board with rules, touch and pen, a large list, a grid with
+horizontal and right-to-left rows, nested lists, the stylesheet's custom properties and classes, an events log, and
+the multi-drag and swap plugins. Every page shows its own source and the parameters it uses.
 
 ## How it fits together
 

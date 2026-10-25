@@ -16,11 +16,21 @@
 <DemoCode />
 
 <div class="bb-demo">
+    <div class="demo-controls">
+        <div class="demo-control">
+            <span id="a11y-language-label">Announcements in</span>
+            <div class="bb-segmented" role="group" aria-labelledby="a11y-language-label">
+                <button type="button" id="a11y-english" aria-pressed="@(!_german ? "true" : "false")" @onclick="() => _german = false">English</button>
+                <button type="button" id="a11y-german" aria-pressed="@(_german ? "true" : "false")" @onclick="() => _german = true">Deutsch</button>
+            </div>
+        </div>
+    </div>
+
     <div class="demo-columns">
         <div class="demo-col">
             <div class="demo-col-title" id="a11y-backlog-title">Backlog</div>
             <Bortable @ref="_backlogList" @bind-Items="_backlog" TItem="string" Group="a11y" Id="a11y-backlog"
-                      AriaLabel="Backlog" OnEnd="Log"
+                      AriaLabel="Backlog" OnEnd="Log" Messages="Texts"
                       Class="demo-list" ItemClass="demo-item a11y-item" GhostClass="demo-ghost">
                 <ItemTemplate Context="item">
                     <span>@item</span>
@@ -35,7 +45,7 @@
         <div class="demo-col">
             <div class="demo-col-title" id="a11y-sprint-title">Sprint</div>
             <Bortable @ref="_sprintList" @bind-Items="_sprint" TItem="string" Group="a11y" Id="a11y-sprint"
-                      AriaLabel="Sprint" OnEnd="Log"
+                      AriaLabel="Sprint" OnEnd="Log" Messages="Texts"
                       Class="demo-list" ItemClass="demo-item a11y-item tinted" GhostClass="demo-ghost">
                 <ItemTemplate Context="item">
                     <span>@item</span>
@@ -52,17 +62,156 @@
     <p class="demo-order"><strong>Backlog:</strong> <span id="a11y-backlog-order">@string.Join(", ", _backlog)</span></p>
     <p class="demo-order"><strong>Sprint:</strong> <span id="a11y-sprint-order">@string.Join(", ", _sprint)</span></p>
 
-    <div class="bb-log event-log" id="a11y-log">
-        @if (_log.Count == 0)
-        {
-            <div class="bb-log-empty event-log__empty">No moves yet…</div>
-        }
-        @foreach (var line in _log)
-        {
-            <div class="bb-log-line event-log__line">@line</div>
-        }
+    <div class="demo-columns">
+        <div class="demo-col">
+            <p class="demo-log-title" id="a11y-heard-title">What a screen reader hears</p>
+            <div class="bb-log event-log" id="a11y-heard" aria-labelledby="a11y-heard-title">
+                @if (_heard.Count == 0)
+                {
+                    <div class="bb-log-empty event-log__empty">Nothing announced yet…</div>
+                }
+                @foreach (var line in _heard)
+                {
+                    <div class="bb-log-line event-log__line">@line</div>
+                }
+            </div>
+        </div>
+        <div class="demo-col">
+            <p class="demo-log-title" id="a11y-log-title">Moves (OnEnd, with its Input)</p>
+            <div class="bb-log event-log" id="a11y-log" aria-labelledby="a11y-log-title">
+                @if (_log.Count == 0)
+                {
+                    <div class="bb-log-empty event-log__empty">No moves yet…</div>
+                }
+                @foreach (var line in _log)
+                {
+                    <div class="bb-log-line event-log__line">@line</div>
+                }
+            </div>
+        </div>
     </div>
 </div>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
+    <ul class="bb-detail-list">
+        <li>
+            Click <strong>English</strong> and press <kbd>Tab</kbd> twice: the focus lands on a Backlog item - the items of
+            a list are a single tab stop, at the one focused last. <kbd>↓</kbd> moves the focus, <kbd>Space</kbd> picks the item up, <kbd>↓</kbd> moves it, <kbd>Space</kbd> drops
+            it. Each step shows up under <strong>What a screen reader hears</strong>.
+        </li>
+        <li>Pick an item up, press <kbd>→</kbd> to carry it into the Sprint, then <kbd>Escape</kbd>: it goes back to the Backlog.</li>
+        <li>Press the ↑ ↓ → buttons on an item: it moves without any drag, and the move is announced when it lands.</li>
+        <li>Switch the announcements to <strong>Deutsch</strong> and do it all again: the same steps, in another language.</li>
+        <li>
+            Drag an item with the mouse: a pointer drag is announced when it starts and when it ends, and the move log says
+            <code>mouse</code> instead of <code>keyboard</code> or <code>api</code>.
+        </li>
+    </ul>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The keys</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Key</th><th>Not dragging</th><th>Dragging</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><kbd>Tab</kbd></td><td>Enters the list at its last focused item; the list is a single tab stop.</td><td>Drops the item where it is, and moves on.</td></tr>
+                <tr><td class="bb-table-key">Arrow keys</td><td>Move the focus to the item in that direction.</td><td>Move the item to the next place in that direction; past the end of its list, into the nearest list of the group that way.</td></tr>
+                <tr><td class="bb-table-key"><kbd>Home</kbd> / <kbd>End</kbd></td><td>Focus the first / last item.</td><td>Move the item to the start / end of its list.</td></tr>
+                <tr><td class="bb-table-key"><kbd>Space</kbd> / <kbd>Enter</kbd></td><td>Pick the focused item up.</td><td>Drop it.</td></tr>
+                <tr><td class="bb-table-key"><kbd>Shift</kbd>+<kbd>Space</kbd></td><td>In a <a href="multi-drag">multi-drag</a> list, select or deselect the focused item.</td><td>-</td></tr>
+                <tr><td class="bb-table-key"><kbd>Escape</kbd></td><td>-</td><td>Put it back where it was.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <ul class="bb-detail-list">
+        <li>
+            The arrows follow the layout - up and down a vertical list, along a row, right to left in an RTL one, row to row
+            in a grid, from column to column of a board, into a nested list - because the browser looks for the next item,
+            or list, in the direction of the key.
+        </li>
+        <li>
+            A keyboard drag moves the item itself, into another list too, and the focus follows it. Every rule applies as
+            for a pointer: a refused position, a full list, a list of another group are announced as refused, and
+            <code>ConfirmDrop</code> is asked on the drop. In <a href="swap">swap mode</a> the arrows move the highlight.
+        </li>
+        <li>
+            Keys pressed inside an item - on these buttons, in an input - are left alone: only an item itself, or its drag
+            handle, answers them. <code>Keyboard="false"</code> turns it all off, and a <code>Disabled</code> list is not
+            focusable.
+        </li>
+    </ul>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> What is announced, in your words</h3>
+    <p class="bb-card-desc">
+        A list is a <code>list</code> of <code>listitem</code>s, each described as a "sortable item" with the keyboard
+        instructions, and named by <code>AriaLabel</code>. Each step of a drag is announced through a live region with the
+        item's name (<code>ItemLabel</code>, or its <code>ToString()</code>), its position and the list it is in. The texts
+        are a <code>BortableMessages</code>: pass your own through <code>Messages</code> - one list at a time, or every list
+        of the app through <a href="getting-started">the app-wide defaults</a>.
+    </p>
+    <pre class="bb-code"><span class="k">public static readonly</span> BortableMessages German = <span class="k">new</span>()
+{
+    Instructions = <span class="s">"Leertaste oder Eingabetaste nimmt das Element auf. ..."</span>,
+    RoleDescription = <span class="s">"sortierbares Element"</span>,
+    PickedUp = a =&gt; <span class="s">$"{a.Item} aufgenommen. Position {a.Position} von {a.Count} in {a.List}."</span>,
+    Moved = a =&gt; <span class="s">$"{a.Item} auf Position {a.Position} von {a.Count} in {a.List} verschoben."</span>,
+    <span class="c">// Dropped, Canceled, Refused, Locked, SwapTarget, Selected, Deselected ...</span>
+};</pre>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Message</th><th>When</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>Instructions</code></td><td>Read with every item (<code>aria-describedby</code>).</td></tr>
+                <tr><td class="bb-table-key"><code>RoleDescription</code></td><td>What an item is called in place of "list item" (<code>aria-roledescription</code>).</td></tr>
+                <tr><td class="bb-table-key"><code>PickedUp</code></td><td>A drag starts.</td></tr>
+                <tr><td class="bb-table-key"><code>Moved</code></td><td>A keyboard drag, or a move made by code, moves the item.</td></tr>
+                <tr><td class="bb-table-key"><code>SwapTarget</code></td><td>In swap mode, the item the dragged one will trade places with changes.</td></tr>
+                <tr><td class="bb-table-key"><code>Dropped</code></td><td>The drag ends with a drop.</td></tr>
+                <tr><td class="bb-table-key"><code>Canceled</code></td><td>The drag is cancelled, or <code>ConfirmDrop</code> refuses it.</td></tr>
+                <tr><td class="bb-table-key"><code>Refused</code></td><td>A position the keyboard asked for is refused.</td></tr>
+                <tr><td class="bb-table-key"><code>Locked</code></td><td>A locked (<code>Filter</code>) item is asked to be picked up.</td></tr>
+                <tr><td class="bb-table-key"><code>SelectionInstructions</code></td><td>Added to <code>Instructions</code> in a <code>MultiDrag</code> list.</td></tr>
+                <tr><td class="bb-table-key"><code>Selected</code> / <code>Deselected</code></td><td><kbd>Shift</kbd>+<kbd>Space</kbd> selects or deselects an item of a <code>MultiDrag</code> list.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="bb-card-desc">
+        Each message takes a <code>BortableAnnouncement</code>: <code>Item</code>, <code>Position</code> and
+        <code>Count</code> (from 1), <code>List</code>, <code>OldPosition</code>, <code>FromList</code>,
+        <code>Returned</code> (back where it was picked up), in swap mode <code>Target</code>, and for a selection
+        <code>Selected</code>, the number of items selected. A drag is announced in the messages of the list it started in.
+    </p>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Dragging is never the only way</h3>
+    <p class="bb-card-desc">
+        A keyboard drag covers keyboard and switch users. <code>MoveAsync(item, newIndex)</code> and
+        <code>MoveToAsync(item, listId, newIndex)</code> give an app the buttons and menus that WCAG 2.5.7 (dragging
+        movements) asks for, and that some screen readers in browse mode need. They move an item exactly as a drag would:
+        the same rules decide, <code>ConfirmDrop</code> is asked, the items slide, the events follow with
+        <code>Input</code> set to <code>Api</code>, and the move is announced. Both return <code>true</code> when the item
+        moved, and refuse while a drag is in progress.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">Bortable</span> @@ref=<span class="s">"_list"</span> @@bind-Items=<span class="s">"_items"</span> TItem=<span class="s">"string"</span>&gt;
+    &lt;<span class="k">ItemTemplate</span> Context=<span class="s">"item"</span>&gt;
+        @@item
+        &lt;<span class="k">button</span> @@onclick=<span class="s">"() =&gt; _list.MoveAsync(item, Math.Max(0, _items.IndexOf(item) - 1))"</span>&gt;↑&lt;/<span class="k">button</span>&gt;
+    &lt;/<span class="k">ItemTemplate</span>&gt;
+&lt;/<span class="k">Bortable</span>&gt;</pre>
+    <p class="bb-card-desc">
+        The focus outline of an item, and the dashed one of an item picked up, are drawn by the stylesheet - in forced
+        colours (Windows high contrast) too - and the slides are skipped when the system asks for reduced motion.
+    </p>
+</section>
 
 @code {
     private Bortable<string> _backlogList = default!;
@@ -70,6 +219,13 @@
     private IList<string> _backlog = new List<string> { "Sign-up page", "Password reset", "Audit log", "Dark mode" };
     private IList<string> _sprint = new List<string> { "Search", "Export to CSV" };
     private readonly List<string> _log = [];
+    private readonly List<string> _heard = [];
+    private bool _german;
+
+    private BortableMessages? _englishTexts, _germanTexts;
+
+    // The lists' texts. Wrapped only so this page can show what is announced; an app passes its messages as they are.
+    private BortableMessages Texts => _german ? (_germanTexts ??= Overheard(German)) : (_englishTexts ??= Overheard(BortableMessages.Default));
 
     private static Task MoveUp(Bortable<string> list, IList<string> items, string item)
         => list.MoveAsync(item, Math.Max(0, items.IndexOf(item) - 1));
@@ -82,5 +238,58 @@
         var what = e.Canceled ? "cancelled" : e.CrossedLists ? $"{e.FromId} -> {e.ToId}#{e.NewIndex}" : $"#{e.OldIndex} -> #{e.NewIndex}";
         _log.Insert(0, $"[{e.Input.ToString().ToLowerInvariant()}] {e.Item}: {what}");
         if (_log.Count > 12) _log.RemoveAt(_log.Count - 1);
+    }
+
+    private static readonly BortableMessages German = new()
+    {
+        Instructions = "Leertaste oder Eingabetaste nimmt das Element auf. Danach verschieben es die Pfeiltasten, Pos1 und Ende an den " +
+                       "Anfang oder das Ende der Liste, Leertaste oder Eingabetaste legt es ab, und Escape bringt es zurück.",
+        SelectionInstructions = "Umschalt und Leertaste wählen das Element aus oder ab; ein ausgewähltes Element nimmt die ganze Auswahl mit.",
+        RoleDescription = "sortierbares Element",
+        PickedUp = a => $"{a.Item} aufgenommen. Position {a.Position} von {a.Count}{In(a.List)}.",
+        Moved = a => $"{a.Item} auf Position {a.Position} von {a.Count}{In(a.List)} verschoben.",
+        SwapTarget = a => a.Target is null ? $"{a.Item} bleibt, wo es ist." : $"{a.Item} tauscht den Platz mit {a.Target}.",
+        Dropped = a => a.Returned
+            ? $"{a.Item} abgelegt. Wieder auf Position {a.Position} von {a.Count}{In(a.List)}."
+            : $"{a.Item} auf Position {a.Position} von {a.Count}{In(a.List)} abgelegt.",
+        Canceled = a => $"Abgebrochen. {a.Item} ist wieder auf Position {a.Position} von {a.Count}{In(a.List)}.",
+        Refused = a => $"{a.Item} kann nicht dorthin verschoben werden.",
+        Locked = a => $"{a.Item} kann nicht verschoben werden.",
+        Selected = a => $"{a.Item} ausgewählt. {a.Selected} ausgewählt.",
+        Deselected = a => $"{a.Item} abgewählt. {a.Selected} ausgewählt.",
+    };
+
+    private static string In(string? list) => list is null ? "" : $" in {list}";
+
+    // The same messages, each also written to the page's "What a screen reader hears" log.
+    private BortableMessages Overheard(BortableMessages m) => new()
+    {
+        Instructions = m.Instructions,
+        SelectionInstructions = m.SelectionInstructions,
+        RoleDescription = m.RoleDescription,
+        PickedUp = a => Heard(m.PickedUp(a)),
+        Moved = a => Heard(m.Moved(a)),
+        SwapTarget = a => Heard(m.SwapTarget(a)),
+        Dropped = a => Heard(m.Dropped(a)),
+        Canceled = a => Heard(m.Canceled(a)),
+        Refused = a => Heard(m.Refused(a)),
+        Locked = a => Heard(m.Locked(a)),
+        Selected = a => Heard(m.Selected(a)),
+        Deselected = a => Heard(m.Deselected(a)),
+    };
+
+    // A message is made while the list is busy with the drag: the log is shown once the list is done.
+    private string Heard(string text)
+    {
+        _heard.Insert(0, text);
+        if (_heard.Count > 12) _heard.RemoveAt(_heard.Count - 1);
+        _ = ShowHeardAsync();
+        return text;
+    }
+
+    private async Task ShowHeardAsync()
+    {
+        await Task.Yield();
+        StateHasChanged();
     }
 }
