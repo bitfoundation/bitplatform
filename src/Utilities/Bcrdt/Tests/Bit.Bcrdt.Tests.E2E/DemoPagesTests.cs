@@ -125,13 +125,14 @@ public sealed class DemoPagesTests : BcrdtTest
         var page = await OpenAsync("/text");
         await page.SetViewportSizeAsync(390, 844);
 
-        // The docs drawer. It takes the focus as it opens - Safari does not focus a clicked button, so without that
-        // the Escape below would reach <body>, where nothing listens for it - and gives it back to its button.
+        // The docs drawer. Its close button takes the focus as it opens - Safari does not focus a clicked button, so
+        // without that the Escape below would reach <body>, where nothing listens for it - and the drawer gives the
+        // focus back to its toggle.
         var docsToggle = page.Locator(".bb-docs-menu-toggle");
         var docsPanel = page.Locator("aside.bb-docs-sidebar");
         await docsToggle.ClickAsync();
         await Assertions.Expect(docsPanel).ToHaveClassAsync(new Regex("\\bbb-open\\b"));
-        await Assertions.Expect(docsPanel).ToBeFocusedAsync();
+        await Assertions.Expect(docsPanel.Locator(".bb-docs-close")).ToBeFocusedAsync();
         await page.Keyboard.PressAsync("Escape");
         await Assertions.Expect(docsPanel).Not.ToHaveClassAsync(new Regex("\\bbb-open\\b"));
         await Assertions.Expect(docsToggle).ToBeFocusedAsync();
