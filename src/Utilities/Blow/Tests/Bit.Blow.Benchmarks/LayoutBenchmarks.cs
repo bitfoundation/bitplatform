@@ -3,8 +3,9 @@
 namespace Bit.Blow.Benchmarks;
 
 /// <summary>
-/// The tree, radial and force layouts. Tree and radial are linear and measured at the sizes the other graph helpers
-/// are; force compares every pair of nodes on every iteration, so it is measured at the sizes it is meant for.
+/// The tree, radial and force layouts, at the sizes the other graph helpers are measured at. Tree and radial are
+/// linear; force pushes every pair apart exactly up to <see cref="BlowLayout.ExactRepulsionLimit"/> nodes and with
+/// Barnes-Hut past it, so an iteration costs n log n.
 /// </summary>
 [MemoryDiagnoser]
 public class LayoutBenchmarks
@@ -27,11 +28,15 @@ public class LayoutBenchmarks
     [Benchmark]
     public void RadialLayout() => BlowLayout.Radial(_nodes, _edges);
 
-    /// <summary>The default 300 iterations of the force simulation, then overlap removal. Skipped at 5,000 nodes.</summary>
+    /// <summary>The default 300 iterations of the force simulation, then overlap removal.</summary>
     [Benchmark]
-    public void ForceLayout()
+    public void ForceLayout() => BlowLayout.Force(_nodes, _edges);
+
+    /// <summary>The same with every pair pushed apart exactly (θ = 0), as every size was before Barnes-Hut. Skipped at 5,000 nodes.</summary>
+    [Benchmark]
+    public void ForceLayoutExact()
     {
         if (Nodes > 1000) return;
-        BlowLayout.Force(_nodes, _edges);
+        BlowLayout.Force(_nodes, _edges, new BlowForceLayoutOptions { Theta = 0 });
     }
 }

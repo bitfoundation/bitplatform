@@ -14,6 +14,36 @@ namespace Bit.Blow.Tests.E2E;
 public sealed class GestureTests : BlowTest
 {
     [TestMethod]
+    public async Task A_mouse_click_on_a_node_is_the_nodes_click_and_a_small_nudge_still_is()
+    {
+        // The press captures the pointer on the pane, so the browser fires the click at the pane: it must still be
+        // reported as the node's.
+        var page = await OpenAsync("/examples/click-distance");
+        await WaitForEdgesAnchoredAsync(page);
+        var status = page.Locator(".example-toolbar .bb-muted");
+
+        var node = await NodeBoxAsync(page, "2");
+        await page.Mouse.ClickAsync((float)(node.Centre.X), (float)(node.Centre.Y));
+        await Expect(status).ToContainTextAsync("node clicks: 1 · pane clicks: 0");
+        await Expect(status).ToContainTextAsync("click on node 2");
+
+        // Within the click distance (20 px) a press that moved a little is a click too; past it, a drag is not.
+        await page.Mouse.MoveAsync((float)(node.Centre.X), (float)(node.Centre.Y));
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync((float)(node.Centre.X + 6), (float)(node.Centre.Y), new() { Steps = 3 });
+        await page.Mouse.UpAsync();
+        await Expect(status).ToContainTextAsync("node clicks: 2 · pane clicks: 0");
+
+        node = await NodeBoxAsync(page, "2");
+        await page.Mouse.MoveAsync((float)(node.Centre.X), (float)(node.Centre.Y));
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync((float)(node.Centre.X + 80), (float)(node.Centre.Y + 40), new() { Steps = 8 });
+        await page.Mouse.UpAsync();
+        await WaitForQuietAsync(page);
+        await Expect(status).ToContainTextAsync("node clicks: 2 · pane clicks: 0");
+    }
+
+    [TestMethod]
     public async Task Dragging_a_node_moves_it_with_the_pointer_and_its_edges_follow()
     {
         var page = await OpenAsync("/basic-flow");

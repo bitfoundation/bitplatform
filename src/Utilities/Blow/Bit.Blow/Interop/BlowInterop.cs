@@ -22,10 +22,19 @@ internal sealed class BlowInterop : IAsyncDisposable
     // InvokeAsync<T> preserves what System.Text.Json needs of T, but T is an array here and the element types are
     // only ever built by System.Text.Json: without this the trimmer drops their constructors and every measurement
     // fails to deserialize in trimmed (release) builds.
+    /// <param name="viewport">The flow's viewport element.</param>
+    /// <param name="zoom">The zoom, should the scale the viewport is drawn at not be measurable.</param>
+    /// <param name="changedOnly">
+    /// Only the nodes whose size or handles changed since the last report for this viewport, those not reported
+    /// before, and <paramref name="include"/>; every node when false.
+    /// </param>
+    /// <param name="include">Nodes to report with <paramref name="changedOnly"/> whether they changed or not.</param>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BlowMeasuredNode))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BlowMeasuredHandle))]
-    public async ValueTask<BlowMeasuredNode[]> MeasureNodesAsync(BlowElementReferenceLike viewport, double zoom)
-        => await (await _moduleTask.Value).InvokeAsync<BlowMeasuredNode[]>("measureNodes", viewport.Reference, zoom)
+    public async ValueTask<BlowMeasuredNode[]> MeasureNodesAsync(BlowElementReferenceLike viewport, double zoom,
+        bool changedOnly = false, IReadOnlyCollection<string>? include = null)
+        => await (await _moduleTask.Value).InvokeAsync<BlowMeasuredNode[]>("measureNodes", viewport.Reference, zoom,
+               changedOnly, include ?? [])
            ?? [];
 
     /// <summary>

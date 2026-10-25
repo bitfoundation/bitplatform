@@ -128,7 +128,7 @@
 
     private static string Inv(double v) => v.ToString(CultureInfo.InvariantCulture);
 
-    private string AriaLabel => string.IsNullOrEmpty(Edge.Label)
+    private string AriaLabel => string.IsNullOrWhiteSpace(Edge.Label)
         ? AriaLabels.EdgeLabel(Settings.NodeName?.Invoke(Edge.Source) ?? Edge.Source, Settings.NodeName?.Invoke(Edge.Target) ?? Edge.Target)
         : Edge.Label;
 
@@ -141,7 +141,17 @@
 
     private Task OnPointerDown(PointerEventArgs e) => OnSelect.InvokeAsync(e);
 
-    /// <summary>Enter/Space toggles selection, matching how a focused node is activated.</summary>
-    private Task OnKeyDown(KeyboardEventArgs e) =>
-        e.Key is "Enter" or " " ? OnActivate.InvokeAsync(e.ShiftKey) : Task.CompletedTask;
+    /// <summary>Enter/Space toggles selection, matching how a focused node is activated; the connection key picks up an end.</summary>
+    private Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key is "Enter" or " ") return OnActivate.InvokeAsync(e.ShiftKey);
+
+        if (Settings.ConnectionKey is { } key && !e.CtrlKey && !e.MetaKey && !e.AltKey
+            && string.Equals(e.Key, key, StringComparison.OrdinalIgnoreCase))
+        {
+            return Callbacks.Connect.InvokeAsync();
+        }
+
+        return Task.CompletedTask;
+    }
 }

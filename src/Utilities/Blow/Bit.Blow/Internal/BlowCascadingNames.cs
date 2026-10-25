@@ -30,14 +30,16 @@ public static class BlowCascadingNames
     public const string ViewportVersion = "Bit.Blow.ViewportVersion";
 
     /// <summary>
-    /// Changes whenever nodes may have moved or changed size - every frame of a drag or a resize - and whenever
-    /// <see cref="GraphVersion"/> does.
+    /// Changes whenever nodes may have moved or changed size - every frame of a drag or a resize, and letting go,
+    /// when they stop being dragged - and whenever <see cref="GraphVersion"/> does. An add-on that shows which nodes
+    /// are being dragged takes this one.
     /// </summary>
     public const string GeometryVersion = "Bit.Blow.GeometryVersion";
 
     /// <summary>
-    /// Changes on every render that may have changed anything other than the viewport and the nodes' geometry:
-    /// selection, the node and edge lists, the canvas's parameters, a render of the component that hosts the canvas.
+    /// Changes on every render that may have changed anything other than the viewport and the nodes' geometry (where
+    /// they are, their size, whether they are being dragged): selection, the node and edge lists, the canvas's
+    /// parameters, a render of the component that hosts the canvas.
     /// </summary>
     public const string GraphVersion = "Bit.Blow.GraphVersion";
 

@@ -92,6 +92,10 @@ where they had the best documented answer. What it changed in this plan:
 | Validation and run states are shown by shape as well as colour (badges with distinct glyphs and shapes, dash patterns), and in the description. | WCAG 1.4.1 (use of colour) and 1.4.11 (non-text contrast); forced colours keep the shapes. |
 | Layouts are options classes that implement `IBlowLayout`; the canvas lays out one parent's children at a time and lifts child edges to their group. | One extension point for built-in layouts, an app's own, or an external engine; positions are parent-relative, so mixing depths would be meaningless. |
 | Routing is an A* over the sparse grid of obstacle margin lines, re-run on geometry changes only and only against nodes near the edge. | Deterministic, dependency-free and fast enough per edge (tens of microseconds); pan and zoom never re-route. |
+| The router is an interface the routing options implement, and the canvas parameter takes the interface. | Tuning the built-in router stays one line (`Routing="new BlowRoutingOptions { ... }"`) while any router can replace it; the parameter was new in this work, so its type could still change. |
+| Force layout is exact up to 500 nodes and Barnes-Hut past it. | Measured: the quadtree costs more than it saves below about 500 nodes; small graphs keep the exact picture they had. |
+| The browser layer diffs measurements against what it last reported, by node id, and the canvas names node objects it has no report for. | Reading the DOM costs 4 ms at 900 nodes; bringing it across costs 225 ms. Naming new objects covers the one thing a per-id memory cannot know: that .NET's object for an id was replaced. |
+| Keyboard reconnection reuses the pointer reconnect and the keyboard connection: the key on an edge, focus to aim, Enter, Escape. | One set of keys for both, and every rule and event is the pointer's. |
 | SVG export writes text escaped and colours only from an allow-list of plain colour values. | Graphs come from untrusted documents; the image must be safe to inline. |
 
 ## Requirements inventory
@@ -142,6 +146,7 @@ Verified with the existing tests that cover them.
 | CON-08 | Edge hit areas usable at any zoom | P1 | Verified (R1) | Interaction width is in flow units: 14 px at zoom 1, 2.8 px at 0.2 | Width in screen pixels via a zoom custom property | bUnit test of the style; E2E click at low zoom |
 | CON-09 | Obstacle-avoiding orthogonal routing | P2 | Verified (R8) | `BlowEdgeRouting.Orthogonal/Route` (sparse-grid A* with bend cost), `BlowEdgeType.Routed`, `Routing` parameter; re-routed on geometry changes only (RoutingExportAndRunTests; E2E RunAndRoutingTests; RoutingBenchmarks) | - | Done |
 | CON-10 | Edge path types, markers, labels, animation | P1 | Verified | EdgePathTests, CanvasApiTests | - | - |
+| CON-11 | A node click reported as one with a real mouse | P1 | Verified (R11) | Found by the round 11 review, older than this work: the press captures the pointer on the pane, so Chromium fires the click at the pane and `OnPaneClick` was raised instead of `OnNodeClick`. The press is remembered and its click reported as the node's (RoundElevenReviewTests; E2E GestureTests with the real mouse) | - | Done |
 
 ### CAN - canvas and viewport
 
@@ -180,6 +185,7 @@ Verified with the existing tests that cover them.
 | ALG-02 | Cycle detection, topological order, SCCs | P1 | Verified (R2) | None | `BlowGraphAlgorithms` (iterative, O(V+E)) | Unit tests incl. 100k-node chain (no stack overflow) |
 | ALG-03 | Reachability, ancestors/descendants, components, shortest path, roots/leaves/isolated | P1 | Verified (R2) | Incomers/outgoers only | Same class | Unit tests |
 | ALG-04 | Tree, force-directed and radial layouts; pluggable layout abstraction | P2 | Verified (R7) | `BlowLayout.Tree/Radial/Force`, `IBlowLayout` implemented by every options class (MoreLayoutTests: no overlaps, determinism, 20k-deep chain, pinned nodes; LayoutBenchmarks) | - | Done |
+| ALG-06 | Force layout of thousands of nodes | P2 | Verified (R11) | Past 500 nodes, Barnes-Hut repulsion over a quadtree (`Theta`, 0.9): 1,000 nodes 218 -> 120 ms, 5,000 nodes about 5.5 s -> 0.96 s; pushes within 0.7% of exact at the median (ForceLayoutScaleTests; LayoutBenchmarks) | - | Done |
 | ALG-05 | Layout of the selection only | P2 | Verified (R7) | `LayoutAsync(layout, nodes?, keepPlace)`: selection or top level, one parent, kept in place, child edges lifted to their group, one undo step (MoreLayoutTests) | - | Done |
 
 ### SRC - search and inspection
@@ -220,9 +226,12 @@ Verified with the existing tests that cover them.
 | A11Y-04 | Reduced motion | P1 | Verified (R1) | Animated edges and transitions ignore the preference | CSS media query + `MotionPreference` parameter honoured by transitions | bUnit + theme tests |
 | A11Y-05 | Forced colours (Windows high contrast) | P1 | Verified (R1, R9) | `@media (forced-colors: active)` rules for edges, handles, selection, focus, guides, minimap, validation and run badges; ThemeTests; E2E ForcedColorsAndPointerTests renders under emulated forced colours (selected outline, badges in CanvasText with their glyphs) | - | Done |
 | A11Y-06 | Handle targets usable at any zoom (WCAG 2.5.8 spirit) | P1 | Verified (R1) | 8 px dot scales with zoom | Invisible hit area with a screen-pixel minimum | bUnit/theme tests; E2E connect at low zoom |
-| A11Y-07 | Keyboard connection creation and reconnection | P1 | Partial (R6): creation verified (`ConnectionKey`: start, step ports, aim by focus, Enter, Escape, every rule and event as for a drag; KeyboardConnectionTests; E2E). Reconnecting an existing edge from the keyboard is not built: delete it and connect again | - | Keyboard reconnection | - |
+| A11Y-07 | Keyboard connection creation and reconnection | P1 | Verified (R6, R11) | Creation (R6): `ConnectionKey` starts, steps ports, focus aims, Enter, Escape, every rule and event as for a drag. Reconnection (R11): the key on a focused edge picks up its target end (again: its source end), focus aims, Enter attaches, Escape leaves it; the pointer reconnect's rules, events and single undo step (KeyboardReconnectionTests; E2E KeyboardAccessTests) | - | Done |
 | A11Y-08 | Node descriptions carry state (selected, connections, validation) | P2 | Verified (R6) | Hidden state element referenced first by `aria-describedby` (`aria-description` would be ignored beside `aria-describedby`); `NodeState`/`EdgeState` localizable; edges named by node names | - | Done |
 | A11Y-09 | Single-pointer alternative to dragging (WCAG 2.5.7) | P1 | Verified (R9) | Connections: keyboard and `ConnectOnClick`. Moving: arrow keys and `MoveSelectionAsync(dx, dy)` behind buttons (EditingTests; E2E move buttons on the `/examples/a11y` toolbar) | - | Done |
+| A11Y-10 | What a screen reader is given, checked on every page | P1 | Verified (R11) | E2E audit of Chromium's own accessibility tree (DevTools protocol) for every element Tab reaches in a flow on all 107 demo pages: a role, a name, a description where one is referenced, not hidden, one live region per flow. It found nodes with a blank label named with nothing, and unlabelled inputs on 4 demo pages; both fixed | - | Done |
+| A11Y-11 | A pointer neither steers nor completes what the keyboard is connecting | P1 | Verified (R11) | A pointer over a handle no longer re-aims a keyboard connection; a press on a handle or a drag handle abandons it and says so; `pointercancel` leaves it alone; Enter judges the target as of then and, on the node a connection starts from, aims before it loops back (KeyboardReconnectionReviewTests) | - | Done |
+| A11Y-12 | Listened to with real screen readers (NVDA, JAWS, VoiceOver, Narrator) | P1 | Open | The audit above checks what the browser hands a screen reader, not how each reader speaks it or how its browse and focus modes treat `role="application"` | A person runs the keyboard map with each reader | - |
 
 ### PERF - performance
 
@@ -233,7 +242,9 @@ Verified with the existing tests that cover them.
 | PERF-03 | Culling of off-screen elements | P1 | Verified | `OnlyRenderVisibleElements` | - | - |
 | PERF-05 | Level-of-detail rendering in templates without re-rendering every node per frame | P2 | Verified (R3) | `BlowViewportView` with `Select`; RenderScopeTests | - | - |
 | PERF-06 | No per-element allocation per frame | P1 | Verified (R3) | Cached callbacks, shared renderer settings, cached marker keys: 1,000-node frame 7.3 MB -> ~100 KB | - | Probe + benchmarks |
-| PERF-04 | Measurement cost on large graphs | P2 | Deferred | Every node is measured on every measurement pass, including after a drag, although moving a node changes neither its size nor its handle offsets | Measure only nodes whose size can have changed; deferred because it needs browser profiling to justify and touches how growing parents are re-measured | - |
+| PERF-04 | Measurement cost on large graphs | P2 | Verified (R11) | Profiled in a Release build: a full pass at 900 nodes cost 230-265 ms, 4 ms of it reading the DOM and the rest bringing 300 KB of measurements across to .NET; every drop ran one. The browser layer now remembers what it reported per node and reports only changes, plus the node objects the canvas names as new to it: 7-10 ms a pass | - | Probe in the browser before and after; unit tests; E2E suite |
+| PERF-08 | A drag frame of a large graph on WebAssembly | P2 | Open (R11) | 66 ms a frame at 900 nodes, culling off, Release without AOT. A Chrome trace puts style, layout and paint at about 3 ms; the rest is .NET walking the 900 node components to find the one that moved | Tell the moving nodes to render themselves so the node layer stays shut during a drag; until then culling or AOT | Browser trace; E2E performance test |
+| PERF-09 | Letting go of a drag renders only what moved | P1 | Verified (R11) | The render after a drop counted as a full one, so every node rendered again: about 400 ms at 900 nodes on WebAssembly. Now scoped to geometry (RenderScopeTests). A zoom right after a drop: 873 ms -> 113 ms (median, E2E). The click a real mouse drop is followed by renders nothing either (RoundElevenReviewTests) | - | Done |
 | PERF-07 | The node and edge layers skip a frame that cannot have changed them | P1 | Verified (R4) | `BlowRenderGate` around each layer: pan/zoom frame at 1,000 nodes 1.7 ms -> 11 us (RenderScopeTests; benchmarks) | - | Done |
 
 ### LIFE, SEC, EXT, DOC
@@ -244,7 +255,7 @@ Verified with the existing tests that cover them.
 | SEC-01 | Untrusted labels and content rendered as text | P0 | Verified | Razor encodes; no `MarkupString` in the library | - | Grep in review |
 | SEC-02 | Expensive algorithms bounded on hostile graphs | P1 | Verified (R4) | Algorithms iterative and linear (100k-deep test), validator report bounded by `MaxIssues`, import limits (SerializerTests) | - | Done |
 | EXT-01 | Custom renderers, templates, per-handle rules | P1 | Verified | Templates, `BlowHandleRegistration` | - | - |
-| EXT-02 | Pluggable layout and routing | P2 | Partial (R7, R8) | Layout pluggable through `IBlowLayout` (verified). Routing is a pure function an app can call from its own edge template; the canvas's routed type is not swappable | A routing interface on the canvas if asked for | - |
+| EXT-02 | Pluggable layout and routing | P2 | Verified (R7, R11) | Layout through `IBlowLayout` (R7). Routing through `IBlowEdgeRouter` (R11): `BlowCanvas.Routing` and the SVG export take any router, `BlowRoutingOptions` is the built-in one; routes cached per edge and asked for again when the ends, the nodes near them or the router change (EdgeRouterTests; E2E custom router on `/examples/edge-routing`) | - | Done |
 | DOC-01 | Requirements record, README, demos for each new capability | P1 | Verified (R9) | This file; README sections for every capability and an Upgrading table; package README; 6 new demos (typed ports, grouping, layouts and collapsing, edge routing, workflow runner, state machine) and 4 extended (save and restore, localization, viewport transitions, accessibility), all in the catalog and swept by `DemoPagesTests`; MCP reference generated from the code and README | - | Done |
 
 ## Round log
@@ -614,3 +625,97 @@ Status at the end: 78 requirements - 75 verified (54 by this work, 21 at the bas
 partial (A11Y-07: reconnecting an existing edge from the keyboard; EXT-02: the canvas's routed edge type is not
 swappable, though the router is a public function), 1 deferred (PERF-04: measuring only the nodes that changed,
 pending browser profiling). Every P0 requirement is verified.
+
+### Round 11 - the next steps: keyboard reconnection, a router interface, Barnes-Hut, measuring what changed
+
+Asked for after round 10: the five next steps it listed.
+
+Done:
+
+- **A11Y-07, keyboard reconnection.** The connection key on a focused edge picks up its target end (again: its source
+  end); focus aims it, Enter attaches it, Escape leaves the edge as it was. It is the pointer's reconnect underneath
+  (`BeginReconnect` is shared), so every rule, event and the single undo step are the same. Edge instructions mention
+  the key; five new localizable strings.
+- **EXT-02, a router interface.** `IBlowEdgeRouter` with `BlowRouteRequest` (the edge, its anchors and sides, the nodes
+  near it). `BlowRoutingOptions` implements it, so `Routing="new BlowRoutingOptions { ... }"` still reads the same; the
+  SVG export takes the canvas's router. The edge-routing demo switches to a router of its own that bends each corner
+  round a wide curve - kept within three margins of the corner, which a quadratic corner never lets reach the node
+  (the first version, curving between segment midpoints, cut through a block, which the E2E test caught).
+- **Force layout at scale (ALG-06).** Barnes-Hut repulsion over a quadtree rebuilt each iteration (leaves of up to 8,
+  centres of weight precomputed, an array stack). The first version was slower than the exact sums below about 1,000
+  nodes; after the leaves and stack it crosses over at about 500, measured at six sizes, which is where it starts
+  (`BlowLayout.ExactRepulsionLimit`). 1,000 nodes 218 -> 120 ms, 5,000 about 5.5 s -> 0.96 s; pushes within 0.7%
+  of exact at the median node, 2.5% at the 95th percentile. A test that asked every node to be nearer its own
+  cluster's centre failed for the exact layout too (ring-shaped clusters are not compact), so it was replaced by one
+  comparing how far apart lattice clusters end up with the exact layout's figure.
+- **PERF-04, profiled first.** Instrumented in a Release build on the 900-node stress page: a full measurement pass
+  cost 230-265 ms, of which reading the DOM was 3.3 ms and serialising it 1 ms; the rest was .NET deserialising 300 KB.
+  Every drop ran one. The browser layer now reports only what differs from its last report per node id, plus the
+  nodes the canvas names; a pass after a drop costs 7-10 ms.
+- **PERF-09, found by profiling.** A Chrome trace of drops and drag frames put the browser's style, layout and paint
+  at about 3 ms a frame - so round 10's guess that the remaining frame time was the browser drawing 900 nodes was
+  wrong; it is .NET, interpreted. The render after a drop counted as a full one and re-rendered every node (about
+  400 ms); it is now scoped to geometry. A zoom right after a drop: 873 ms (both fixes off) -> 446 ms (measurement
+  only) -> 112 ms. The drag frame itself, 66 ms, is the node layer walking 900 components: PERF-08, open.
+- **A11Y-10, the screen-reader pass a machine can do.** An E2E test reads Chromium's accessibility tree through the
+  DevTools protocol for everything Tab reaches in a flow, on all 107 demo pages. It found nodes whose label is `""`
+  named with nothing (the library; fixed for nodes, edges, ports and announcements) and text inputs without labels
+  on four demo pages (fixed). A pass with real screen readers is A11Y-12, open: it needs a person.
+
+Review (two independent reviewers, scratch tests against the code):
+
+- Keyboard reconnection, 9 confirmed, most of them shared with round 6's keyboard connections:
+  - An abandoned connection reported `IsValid` (the aim's verdict was kept in the field meaning "made").
+  - A refusal at the final check was silent and reported as valid.
+  - Aims were judged against the graph as of the pick-up.
+  - A pointer passing over a handle re-aimed it.
+  - A press on some handles, or on a drag handle, completed it or left it running.
+  - The staying end was written back from its value at pick-up, undoing an edit or a confirmed reconnect made
+    meanwhile.
+  - Deleting the picked-up edge left it running.
+  - `pointercancel` ended it silently.
+  - Turning reconnection off part-way did not stop it.
+
+  All fixed: aims rebuild the rules session, follow the staying end and keep their own verdict; Enter re-aims and,
+  on the node it starts from, only aims; the final check uses the edge as it is now and the flags; deletions end
+  what they orphan; the pointer cannot steer, and every press abandons. 21 regression tests, every one failing on
+  the code before the fixes.
+- Router, force, measurement, drop scope:
+  - The click after a real mouse drop still rendered everything (synthetic events in the perf test produce no click).
+  - Drag state now changing only the geometry version, against the cascade contract (the contract now says drag
+    state is geometry).
+  - A node object put back after another of its id kept a stale size (the canvas now remembers which object each id
+    was last reported to).
+  - `UpdateNodeInternals` ignored its ids.
+  - The SVG export read a custom router's `H`, `V`, relative and arc commands as absolute pairs (a real path reader now
+    sizes the picture, smooth-curve reflections included).
+  - A router answering `default` broke `ToSvg`.
+  - Edge objects rebuilt on every host render were re-routed every time (routes keyed by edge id, not object).
+  - An async drag-stop handler made the drop a full render again.
+  - Older, found on the way:
+    - A force layout starting from NaN, infinite or astronomic positions never ended (an overlap test that NaN
+      always passed).
+    - With a real mouse in Chromium a node click was reported as a pane click, because the press captures the
+      pointer on the pane (CON-11).
+    - `BlowRoutingOptions` changed in place did not re-route (now compared by value, as path options are).
+
+  All fixed; 28 regression tests (the 8 canvas-side ones checked failing on the canvas before the fixes) and a
+  real-mouse E2E test for node clicks.
+- Left as decisions:
+  - A router that throws fails the render, as a template does (documented).
+  - A template that shows state from outside the graph refreshes when the host re-renders, not on a drop by itself
+    (documented under Upgrading).
+
+Final runs, from `src/Utilities/Blow`:
+
+- `dotnet test Tests/Bit.Blow.Tests/Bit.Blow.Tests.csproj` (net8.0, net9.0, net10.0): 2,694 / 2,694 (898 per TFM).
+- `dotnet test Tests/Bit.Blow.Tests.Mcp/Bit.Blow.Tests.Mcp.csproj`: 88 / 88.
+- `dotnet build Bit.Blow.slnx -c Release --no-incremental`: 0 warnings, 0 errors.
+- E2E (`Tests/Bit.Blow.Tests.E2E`, Chromium, Debug): 279 / 279 (107 of them the accessibility-tree audit, one per
+  page).
+- E2E performance, Release: zoom 58 ms, drag 65 ms, zoom right after a drop 113 ms (medians, 900 nodes, no culling).
+- Layout benchmarks: in `Tests/Bit.Blow.Benchmarks/README.md`. Render benchmarks rerun: pan frame 5.4 us at 200 nodes
+  and 12.3 us at 1,000, drag frame 112 us and 547 us - unchanged.
+
+Status at the end: 85 requirements - 83 verified, 2 open (A11Y-12: listening with real screen readers; PERF-08: a
+drag frame of 900 nodes on WebAssembly). No commits were made.

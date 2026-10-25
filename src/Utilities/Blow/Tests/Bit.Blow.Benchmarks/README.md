@@ -96,9 +96,23 @@ list of references plus the changed elements: a full 100-step history at 5,000 n
 | Radial layout | 14 us, 67 KB | 83 us, 328 KB | 1.03 ms, 1.6 MB |
 | Force layout (300 iterations) | 9.1 ms, 49 KB | 217 ms, 243 KB | not run |
 
-Tree and radial are linear. Force compares every pair of nodes on every iteration: comfortable at a few hundred nodes,
-a noticeable pause at a thousand (several times longer on WebAssembly), which is why its documentation points large
-graphs at the linear layouts or at fewer iterations.
+Tree and radial are linear. Force compared every pair of nodes on every iteration: comfortable at a few hundred nodes,
+a noticeable pause at a thousand (several times longer on WebAssembly).
+
+### Force layout with Barnes-Hut (round 11)
+
+Past 500 nodes (`BlowLayout.ExactRepulsionLimit`) the push of a far-off group of nodes is taken as one heavy node's,
+from a quadtree rebuilt each iteration, so an iteration costs n log n. `ForceLayoutExact` is the same layout with
+`Theta = 0`, every pair exact, as every size was before.
+
+| Benchmark | 200 nodes | 1,000 nodes | 5,000 nodes |
+| --- | ---: | ---: | ---: |
+| Force layout (300 iterations) | 8.9 ms, 49 KB | 120 ms, 300 KB | 963 ms, 1.7 MB |
+| Force layout, exact | 9.0 ms, 49 KB | 218 ms, 243 KB | not run (about 5.5 s by the trend) |
+
+At 200 nodes both are the exact sum. The quadtree costs more than it saves below about 500 nodes - measured at 200,
+300, 400, 500, 700 and 1,000 - which is where the limit sits. Its pushes are within 0.7% of the exact ones for the
+median node and 2.5% at the 95th percentile (`ForceLayoutScaleTests`).
 
 ### Edge routing (round 8)
 

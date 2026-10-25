@@ -50,6 +50,20 @@ public class AccessibilityTests : BunitContext
     }
 
     [TestMethod]
+    public void ABlankLabelNamesNothingSoTheIdDoes()
+    {
+        // An empty label is a node drawn without text, not one called nothing: a screen reader would read a blank.
+        var nodes = new List<BlowNode> { new() { Id = "a", Label = "" }, new() { Id = "b", Label = "  ", AriaLabel = "" } };
+        var edges = new List<BlowEdge> { new() { Id = "e", Source = "a", Target = "b", Label = " " } };
+        var cut = Render(nodes, edges);
+
+        var rendered = cut.FindAll(".bit-blow-node");
+        Assert.AreEqual("Node a", rendered[0].GetAttribute("aria-label"));
+        Assert.AreEqual("Node b", rendered[1].GetAttribute("aria-label"));
+        Assert.AreEqual("Edge from a to b", cut.Find(".bit-blow-edge").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
     public void AnEdgeLabelBecomesItsAccessibleName()
     {
         var cut = Render(

@@ -11,6 +11,7 @@
                 <div class="edit-node">
                     <BlowDragHandle Class="edit-grip">⠿ @node.Id</BlowDragHandle>
                     <input class="edit-input"
+                           aria-label="@($"Label of {node.Id}")"
                            value="@node.Label"
                            @oninput="@(e => node.Label = e.Value?.ToString())" />
                     <textarea class="edit-notes"

@@ -56,6 +56,50 @@ public sealed class KeyboardAccessTests : BlowTest
     }
 
     [TestMethod]
+    public async Task An_end_of_an_edge_is_moved_with_the_connection_key_focus_and_Enter()
+    {
+        var page = await OpenAsync("/examples/typed-ports");
+        await WaitForEdgesAnchoredAsync(page);
+        var path = page.Locator(".bit-blow-edge[data-id=\"e2\"] .bit-blow-edge-path");
+        var before = await path.GetAttributeAsync("d");
+
+        // The second press picks up the source end: the second number is swapped for the third.
+        await page.Locator(".bit-blow-edge[data-id=\"e2\"]").FocusAsync();
+        await page.Keyboard.PressAsync("c");
+        await Expect(Live(page)).ToContainTextAsync("Moving the end of Edge from Number to Add at Add.");
+        await page.Keyboard.PressAsync("c");
+        await Expect(Live(page)).ToContainTextAsync("Moving the end of Edge from Number to Add at Number.");
+        await Expect(page.Locator(".bit-blow-connectionline")).ToHaveCountAsync(1);
+
+        await Node(page, "n3").FocusAsync();
+        await Expect(Live(page)).ToContainTextAsync("Press Enter to connect to Number, value.");
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(Live(page)).ToContainTextAsync("Reconnected Number to Add");
+        await Expect(page.Locator(".bit-blow-connectionline")).ToHaveCountAsync(0);
+        await EventuallyAsync(async () => await path.GetAttributeAsync("d") != before, "the edge was not redrawn from its new source");
+        await Expect(page.Locator(".bit-blow-edge")).ToHaveCountAsync(3);
+    }
+
+    [TestMethod]
+    public async Task Escape_leaves_an_edge_whose_end_was_picked_up_as_it_was()
+    {
+        var page = await OpenAsync("/examples/typed-ports");
+        await WaitForEdgesAnchoredAsync(page);
+        var path = page.Locator(".bit-blow-edge[data-id=\"e1\"] .bit-blow-edge-path");
+        var before = await path.GetAttributeAsync("d");
+
+        await page.Locator(".bit-blow-edge[data-id=\"e1\"]").FocusAsync();
+        await page.Keyboard.PressAsync("c");
+        await Node(page, "fmt").FocusAsync();
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(Live(page)).ToContainTextAsync("Reconnection cancelled. The edge is unchanged.");
+        await Expect(page.Locator(".bit-blow-connectionline")).ToHaveCountAsync(0);
+        Assert.AreEqual(before, await path.GetAttributeAsync("d"));
+    }
+
+    [TestMethod]
     public async Task Problems_are_marked_by_shape_as_well_as_colour_and_read_with_the_node()
     {
         var page = await OpenAsync("/examples/typed-ports");

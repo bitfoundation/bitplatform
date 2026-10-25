@@ -168,6 +168,26 @@ public sealed class BlowAriaLabels
     public Func<string, string> KeyboardConnectionUnavailable { get; init; } =
         node => $"No connection can start from {node}.";
 
+    /// <summary>
+    /// Announced when one end of an existing edge is picked up from the keyboard to be moved (the connection key on a
+    /// focused edge). Receives the edge's name, the name of the node the moving end is attached to and the connection
+    /// key, upper-cased.
+    /// </summary>
+    public Func<string, string, string, string> KeyboardReconnectionStarted { get; init; } = (edge, end, key) =>
+        $"Moving the end of {edge} at {end}. Move to another node and press Enter to attach it there, {key} to move "
+        + "its other end instead, or Escape to leave it as it was.";
+
+    /// <summary>Announced when moving an edge's end from the keyboard is abandoned: the edge stays as it was.</summary>
+    public string KeyboardReconnectionCancelled { get; init; } = "Reconnection cancelled. The edge is unchanged.";
+
+    /// <summary>Announced when the connection key is pressed on an edge whose ends cannot be moved. Receives the edge's name.</summary>
+    public Func<string, string> KeyboardReconnectionUnavailable { get; init; } =
+        edge => $"{edge} cannot be reconnected.";
+
+    /// <summary>Announced when an edge is reconnected. Receives the names of its source and target nodes as they now are.</summary>
+    public Func<string, string, string> Reconnected { get; init; }
+        = (source, target) => $"Reconnected {source} to {target}";
+
     private static string DefaultRejection(BlowConnectionRejection reason) => reason switch
     {
         BlowConnectionRejection.NotConnectable => "Cannot connect: that node does not take connections",
@@ -215,4 +235,11 @@ public sealed class BlowAriaLabels
     /// </summary>
     public string EdgeInstructions { get; init; }
         = "Press Enter or Space to select it, Delete to remove it and Escape to clear the selection.";
+
+    /// <summary>
+    /// Added to <see cref="EdgeInstructions"/> while edges can be reconnected from the keyboard. Receives the key, as
+    /// <c>BlowCanvas.ConnectionKey</c> names it, upper-cased.
+    /// </summary>
+    public Func<string, string> KeyboardReconnectionInstructions { get; init; }
+        = key => $"Press {key} to move its end to another node.";
 }

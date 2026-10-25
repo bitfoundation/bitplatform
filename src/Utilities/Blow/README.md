@@ -478,8 +478,9 @@ handle switched to another side, or moved by a style change. After such a change
 _flow.UpdateNodeInternals();
 ```
 
-Measuring is one pass over the whole flow, so there is no cheaper per-node form; the ids it accepts are only there
-so the call site reads naturally.
+The browser reads every node in one pass, which is cheap, and sends across only what changed since it last did;
+`UpdateNodeInternals("a", "b")` has the named nodes sent whatever it remembers, and with none named every node is.
+`Refresh(remeasure: true)` sends every node too.
 
 `OnNodesInitialized` is raised once every visible node has been measured, and again whenever that becomes true
 after nodes were added; `NodesInitialized` reports the same thing as a property. It is the cue to run a layout that
@@ -888,8 +889,9 @@ private void OnReconnectEnd(BlowEdgeReconnectEnd end)
 }
 ```
 
-Dropping an end back where it came from is allowed; the duplicate check ignores the edge being moved. Demo:
-`/examples/reconnect-edge`.
+Dropping an end back where it came from is allowed; the duplicate check ignores the edge being moved. An end can be
+moved from the keyboard too, with the same events: see [connecting from the keyboard](#connecting-from-the-keyboard).
+Demo: `/examples/reconnect-edge`.
 
 ### The connection line
 
@@ -954,9 +956,36 @@ A `Routed` edge leaves each handle straight, keeps a margin from every node near
 never cuts back across them; a node closer to a handle than its stub is kept clear by its own box rather than the
 whole margin - and takes the route with the fewest bends that is not much longer, the way a circuit
 or a BPMN diagram is drawn. It runs inside the groups its ends are in rather than round them. The canvas's `Routing`
-parameter (`BlowRoutingOptions`) sets the margin (16), the straight stub out of a handle (24), what a bend costs in
-length (60), the corner radius (6) and the most obstacles a route considers (100). When no route exists - the target
-walled in - the edge falls back to a smooth step.
+parameter takes the router: a `BlowRoutingOptions` tunes the built-in one - the margin (16), the straight stub out of
+a handle (24), what a bend costs in length (60), the corner radius (6) and the most obstacles a route considers
+(100). When no route exists - the target walled in - the edge falls back to a smooth step.
+
+Any `IBlowEdgeRouter` can take its place. It is handed a `BlowRouteRequest` - the edge, its two anchors and the sides
+they leave through, and the boxes of the nodes near it - and returns the path, or null for a smooth step. One that
+draws the built-in router's corners as wide curves:
+
+```csharp
+sealed class CurvedRouter(double margin) : IBlowEdgeRouter
+{
+    public BlowPathResult? Route(BlowRouteRequest r)
+    {
+        var corners = BlowEdgeRouting.Orthogonal(r.Source, r.SourceSide, r.Target, r.TargetSide, r.Obstacles,
+            new BlowRoutingOptions { Margin = margin });
+        return corners is null ? null : new BlowPathResult(CurveThrough(corners), labelX, labelY);
+    }
+}
+```
+
+```razor
+<BlowCanvas Nodes="_nodes" Edges="_edges" Routing="new CurvedRouter(16)" />
+```
+
+The canvas asks again only when the edge's ends or the nodes near it moved, or the router was replaced, so a router
+answers the same request the same way; one whose answer depends on something else is replaced with a new instance
+when that changes. A `BlowRoutingOptions` can be changed in place: the canvas compares its settings. A router that
+throws fails the render, as a template that throws does. The path may use any SVG path commands; the SVG export reads
+them all to size the picture. `ToSvg` routes with the canvas's router, and `BlowSvgExportOptions.Routing` takes one
+too.
 
 Routes are looked at again whenever a node moves or is resized, not on pan or zoom, and searched again only when the
 edge's ends or the nodes near them changed; each considers only the nodes near its two ends, so a few dozen routed
@@ -970,8 +999,8 @@ BlowPathResult? path = BlowEdgeRouting.Route(source, BlowPosition.Right, target,
 ```
 
 It is an A* search over the sparse grid formed by the obstacles' margin lines, with every turn charged a penalty;
-it uses no randomness, so the same layout always routes the same way. Demo: `/examples/edge-routing`,
-`/examples/state-machine`.
+it uses no randomness, so the same layout always routes the same way. Demo: `/examples/edge-routing` (with the curved
+router above to switch to), `/examples/state-machine`.
 
 ### Path options
 
@@ -1476,7 +1505,7 @@ _flow.FitView();
 | `Layered` | Flow chart or org chart. Each node sits one layer beyond the furthest node pointing at it; layers are ordered to reduce edge crossings and packed by their own thickness, so a layer of tall nodes never overlaps the next. Cycles are handled. |
 | `Tree` | A tidy tree: each node centred over the nodes it leads to, every subtree in a band of its own, so branches of any size never overlap. The tree is the graph's breadth-first spanning forest; other edges are drawn but do not shape it. |
 | `Radial` | The same tree in rings around its root - a mind map: each subtree in a wedge sized by its leaves, rings spaced so nothing overlaps. Several roots share the first ring around an empty centre. |
-| `Force` | A network with no hierarchy: connected nodes pull together, all nodes push apart, and leftover overlaps are pushed apart at the end. Deterministic - the same graph always gives the same picture - and able to keep pinned nodes in place. Quadratic in the node count; meant for a few hundred nodes. |
+| `Force` | A network with no hierarchy: connected nodes pull together, all nodes push apart, and leftover overlaps are pushed apart at the end. Deterministic - the same graph always gives the same picture - and able to keep pinned nodes in place. Exact up to 500 nodes; past that a far-off group of nodes pushes as one (Barnes-Hut), so 5,000 nodes lay out in about a second. |
 | `Grid` | Rows and columns in the order given, in uniform cells sized to the largest node - for tidying a scattered graph. |
 | `Circle` | An even ring, clockwise from twelve o'clock - for showing peers rather than a hierarchy. |
 
@@ -1496,6 +1525,7 @@ _flow.FitView();
 | `NodeGap` | 20 | Force. The least gap between any two nodes at the end. |
 | `StartFromCurrentPositions` | `false` | Force. Tidy the current arrangement instead of starting from a spiral. |
 | `IsPinned` | none | Force. Nodes that must not move. |
+| `Theta` | 0.9 | Force, past 500 nodes. How far off a group must be to push as one: its width under this fraction of its distance. Higher is faster and coarser; 0 is exact. |
 | `Columns` | square-ish | Grid. |
 | `ColumnGap`, `RowGap` | 40, 40 | Grid. |
 | `Radius` | derived | Circle. Null derives one at which neighbours do not overlap. |
@@ -1547,7 +1577,8 @@ an edge into the node, so a group is placed by what its contents connect to. The
 built-in layout for you. The change is reported as `Moved` with the label `layout`.
 
 Measured on .NET 10 (x64): tree and radial take about 0.1 ms at 1,000 nodes and 1 ms at 5,000; force takes 9 ms at
-200 nodes and 0.2 s at 1,000 - several times that on WebAssembly - so keep it for small graphs.
+200 nodes, 0.12 s at 1,000 and 0.96 s at 5,000 - several times that on WebAssembly, where a large force layout is
+better run on a server or ahead of time.
 
 Demo: `/examples/layouting`, `/examples/layouts-and-collapsing`.
 
@@ -2289,6 +2320,19 @@ picks another key, or turns this off with null; it is off anyway with `DisableKe
 `NodesConnectable`. The key is ignored with `Ctrl`, `Cmd` or `Alt` held, so `Ctrl+C` still copies. Ports are found
 from the measured handles, so a node shows the ports it can connect by as it is drawn.
 
+An existing edge's end moves the same way, so reconnecting needs no pointer either:
+
+1. Tab to the edge and press `C`. Its target end is picked up and announced ("Moving the end of Edge from Source to
+   Sink at Sink ..."); `C` again picks up its source end instead.
+2. Move focus to the node the end should go to. As above, the line follows focus and the reader hears whether
+   `Enter` would attach it there, and `C` steps through that node's ports.
+3. `Enter` attaches it and is announced ("Reconnected Source to Other sink"); `Escape` leaves the edge as it was.
+
+It is the pointer's reconnect in every respect: the same rules (the edge being moved is not counted against a port's
+limit or as a duplicate of itself), `OnReconnectStart`, `OnReconnect` and `OnReconnectEnd`, one undo step, and the edge
+keeps its `Id`. It is on while connecting from the keyboard is and `EdgesReconnectable` is; an edge whose
+`Reconnectable` is off says so. The edge instructions mention the key while it is on.
+
 ### Without dragging
 
 Everything a drag does has a way that needs no drag (WCAG 2.5.7): connections are made from the keyboard or, with
@@ -2392,6 +2436,11 @@ so a flow can be translated without reimplementing its accessibility:
 | `KeyboardConnectionCancelled` | `"Connection cancelled."` |
 | `KeyboardConnectionUnavailable` | `"No connection can start from {node}."` |
 | `KeyboardConnectionInstructions` | `"Press {key} to start a connection from it."`, added to the node instructions |
+| `KeyboardReconnectionStarted` | `"Moving the end of {edge} at {end}. Move to another node and press Enter to attach it there, {key} to move its other end instead, or Escape to leave it as it was."` |
+| `KeyboardReconnectionCancelled` | `"Reconnection cancelled. The edge is unchanged."` |
+| `KeyboardReconnectionUnavailable` | `"{edge} cannot be reconnected."` |
+| `KeyboardReconnectionInstructions` | `"Press {key} to move its end to another node."`, added to the edge instructions |
+| `Reconnected` | `"Reconnected {source} to {target}"` |
 | `PaneInstructions` | `"Press Tab to move between the nodes and edges of the diagram."` |
 | `NodeInstructions` | how to select, add to the selection, move, delete and deselect |
 | `EdgeInstructions` | how to select, delete and deselect |
@@ -2472,9 +2521,11 @@ Demo: `/examples/diagnostics`, `/examples/broken-nodes`.
   type and options, its markers and, for a loop, its node. Panning and zooming change only the viewport transform,
   so a pan of a large graph rebuilds no path strings and hands the diff identical markup.
 - **Arrowheads are shared**: one SVG marker per distinct shape, colour and size.
-- **Measuring costs a browser round trip over every node, so it is rare.** It runs after something that can change
-  sizes - content, a drag ending, a resize, nodes added - and never during a gesture, a wheel zoom or a viewport
-  transition, even when a controlled parent re-renders the canvas on every frame of one.
+- **Measuring is rare, and brings across only what changed.** It runs after something that can change sizes -
+  content, a drag ending, a resize, nodes added - and never during a gesture, a wheel zoom or a viewport transition,
+  even when a controlled parent re-renders the canvas on every frame of one. The browser reads every node, which is
+  cheap, but reports only those whose size or handles changed since its last report, and those the canvas names as
+  new to it; bringing 900 measurements across to .NET cost a quarter of a second on WebAssembly.
 - **Resize notifications are coalesced** to one per animation frame, and a page scroll only refreshes the pane's
   position without re-measuring.
 - **Listeners are attached only when needed**: the pane's pointer-move listener while a gesture runs, and node and
@@ -2509,18 +2560,27 @@ pan costs on WebAssembly and what every user's interaction costs a Blazor Server
 
 Before render scoping the same frames took 1.2 ms and 13.7 ms and re-rendered every node, edge and handle (1,250
 and 6,293 components). A drag still walks the node list once per frame to find the node that moved, which is why it
-grows with the graph while a pan does not. WebAssembly runs the same code several times slower, so on the browser
-side these are the numbers to multiply; the browser's own style, layout and paint come on top, and on a large graph
-they are most of a frame. The benchmark project's README has the method and the full tables, including layout, edge
-paths, undo steps and paste.
+grows with the graph while a pan does not. These are the numbers to multiply for the browser: a Release WebAssembly
+build without AOT runs the same code interpreted, about a hundred times slower (a drag frame of 900 nodes takes about
+65 ms there), and the browser's own style, layout and paint add only about 3 ms. The benchmark project's README has
+the method and the full tables, including layout, edge paths, undo steps and paste.
 
-In the browser the C# side is no longer what a frame costs on a large graph. The E2E suite's performance test drives
-the stress page with 900 nodes and culling off, in a Release build in headless Chromium, and times each step end to end
-- input, .NET, rendering, the browser's style, layout and paint: a zoom step takes about 58 ms and a drag step about
-66 ms (medians; the machine matters). The C# side of the same frames takes well under a millisecond on .NET (several
-times that on WebAssembly), so most of the rest is, as far as the measurements go, the browser updating 900 HTML nodes
-and their edges; it has not been profiled further. On a graph that size turn on `OnlyRenderVisibleElements`, which
-keeps what the browser has to draw to what is on screen.
+In the browser, the E2E suite's performance tests drive the stress page with 900 nodes and culling off, in a Release
+build in headless Chromium, and time each step end to end - input, .NET, rendering, the browser's style, layout and
+paint (medians; the machine matters):
+
+| Step, 900 nodes | Before | Now |
+| --- | ---: | ---: |
+| A zoom step | 83 ms | 58 ms |
+| A drag step | - | 66 ms |
+| A zoom right after letting go of a dragged node | 873 ms | 113 ms |
+
+A Chrome performance trace of those steps puts the browser's own style, layout and paint at about 3 ms a frame; the
+rest is .NET, which a Release WebAssembly build without AOT runs interpreted. Letting go of a node used to cost two
+full measurement passes (about 240 ms each, nearly all of it bringing the measurements across to .NET) and a render of
+every node; now the measurement brings across nothing that did not change and only the dragged node renders. A drag
+step is the canvas walking its 900 node components to find the one that moved, about 66 ms interpreted. On a graph
+that size turn on `OnlyRenderVisibleElements`, which keeps that walk to what is on screen, or compile with AOT.
 
 ### Templates and the viewport
 
@@ -2625,8 +2685,9 @@ connections, resizes and drags - which is how handles, resizers, toolbars, the c
 The interface is public, so an add-on of your own can read the viewport the same way. Taken unnamed
 (`[CascadingParameter] IBlowContext`), it re-renders the add-on on every render of the canvas - simple, and fine for
 a panel or two. The built-in parts take it by name instead, as a fixed value, together with version numbers that
-change exactly when the viewport, the nodes' geometry, the graph or the connection state do; an add-on of your own
-can do the same to re-render only when what it shows has changed:
+change exactly when the viewport, the nodes' geometry (where they are, their size, whether they are being dragged),
+the graph or the connection state do; an add-on of your own can do the same to re-render only when what it shows has
+changed:
 
 ```csharp
 [CascadingParameter(Name = BlowCascadingNames.Context)] private IBlowContext? Flow { get; set; }
@@ -2654,8 +2715,10 @@ render when nothing differs.
 Edge endpoints come from measured handle positions, which is what lets a custom node put its handles anywhere. After
 a render that may have changed geometry, the browser layer reads every node's size and every handle's centre,
 divided by the scale the viewport is actually drawn at - measured on screen rather than taken from .NET, which
-might be a step ahead mid-zoom, and which also accounts for a CSS transform on an ancestor. Results are compared with
-what the canvas holds, and only a real difference causes another render. A `ResizeObserver` on the pane and on every
+might be a step ahead mid-zoom, and which also accounts for a CSS transform on an ancestor. It remembers what it last
+reported of each node and reports only what differs, plus the nodes the canvas names: the node objects it has had no
+report for (just added, or replaced by others with the same id). Results are compared with what the canvas holds, and
+only a real difference causes another render. A `ResizeObserver` on the pane and on every
 node, and a `MutationObserver` for nodes and handles coming and going, trigger measurements C# could not otherwise
 know it needs.
 
@@ -2706,6 +2769,14 @@ These are the changes an existing application can notice.
 | `BlowLayoutOptions` declares `Arrange` (it implements `IBlowLayout`). | A class deriving from it - none should - implements `Arrange`. |
 | `BlowEdgeType.Routed` is a new last member. | A `switch` over the enum without a default case gains one value to handle. |
 | `BlowNode.Collapsed` is a new persistent property: compared by the history, written by the serializer. | Nothing. |
+| `BlowCanvas.Routing` and `BlowSvgExportOptions.Routing` are `IBlowEdgeRouter`, which `BlowRoutingOptions` implements. | Nothing, unless code reads the options back through the parameter: cast, or keep the options in a field. |
+| `C` on a focused edge picks up its end to move it, the edge instructions say so, and a reconnect is announced. | Set `ConnectionKey` to null, or `EdgesReconnectable` to false, to turn it off. |
+| A node or edge whose label is blank is named as one without a label ("Node a"), not with an empty name. | Nothing. |
+| Letting go of a dragged node re-renders the nodes that moved, not every node. A template that shows state from outside the graph refreshes when the host re-renders, as every template does. | Nothing, unless a template changes on a drop without the host re-rendering; re-render the host (handling `NodesChanged` does). |
+| A force layout of more than 500 nodes is approximated (Barnes-Hut), so its picture differs from before. | Set `Theta` to 0 for the exact layout. |
+| A mouse click on a node raises `OnNodeClick`. In Chromium it used to raise `OnPaneClick`, because the press captures the pointer on the pane and the browser fires the click there. | Drop any workaround that treated those pane clicks as node clicks. |
+| Letting go of a drag changes `BlowCascadingNames.GeometryVersion`, not `GraphVersion`, so an add-on that shows which nodes are being dragged takes the geometry version. | Take `GeometryVersion` in such an add-on. |
+| `UpdateNodeInternals(ids)` re-reads the named nodes only; `UpdateNodeInternals()` and `Refresh(remeasure: true)` re-read all of them. | Nothing; name the nodes whose handles moved, or none. |
 
 ## Coming from React Flow
 

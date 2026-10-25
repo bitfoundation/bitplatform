@@ -49,7 +49,8 @@ public class InstructionsAndMotionTests : BunitContext
         Assert.AreEqual(labels.PaneInstructions, DescriptionOf(cut, cut.Find(".bit-blow")));
         Assert.AreEqual($"{labels.NodeInstructions} {labels.KeyboardConnectionInstructions("C")}",
             InstructionsOf(cut, cut.Find(".bit-blow-node")));
-        Assert.AreEqual(labels.EdgeInstructions, DescriptionOf(cut, cut.Find(".bit-blow-edge")));
+        Assert.AreEqual($"{labels.EdgeInstructions} {labels.KeyboardReconnectionInstructions("C")}",
+            DescriptionOf(cut, cut.Find(".bit-blow-edge")));
 
         // A node's state comes first, then what can be done with it.
         Assert.AreEqual($"1 outgoing connection. {labels.NodeInstructions} {labels.KeyboardConnectionInstructions("C")}",
@@ -82,13 +83,14 @@ public class InstructionsAndMotionTests : BunitContext
             NodeInstructions = "Eingabe wählt den Knoten aus.",
             EdgeInstructions = "Eingabe wählt die Kante aus.",
             KeyboardConnectionInstructions = key => $"{key} verbindet.",
+            KeyboardReconnectionInstructions = key => $"{key} verschiebt ein Ende.",
             NodeState = s => $"{s.Outgoing} ausgehend.",
         };
         var cut = Render(p => p.Add(c => c.AriaLabels, labels));
 
         Assert.AreEqual(labels.PaneInstructions, DescriptionOf(cut, cut.Find(".bit-blow")));
         Assert.AreEqual("1 ausgehend. Eingabe wählt den Knoten aus. C verbindet.", DescriptionOf(cut, cut.Find(".bit-blow-node")));
-        Assert.AreEqual(labels.EdgeInstructions, DescriptionOf(cut, cut.Find(".bit-blow-edge")));
+        Assert.AreEqual("Eingabe wählt die Kante aus. C verschiebt ein Ende.", DescriptionOf(cut, cut.Find(".bit-blow-edge")));
     }
 
     [TestMethod]

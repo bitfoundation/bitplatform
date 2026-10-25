@@ -10,7 +10,7 @@
             {
                 <div class="data-node">
                     <strong>Source</strong>
-                    <input type="range" min="0" max="100" value="@c.Value" class="nodrag"
+                    <input type="range" min="0" max="100" value="@c.Value" class="nodrag" aria-label="Value"
                            @oninput="e => SetValue(c, e.Value?.ToString())" @onpointerdown:stopPropagation="true" />
                     <span>@c.Value</span>
                 </div>

@@ -95,4 +95,81 @@ public sealed class AccessibilityTests : BlowTest
         Assert.IsEmpty(problems, "dangling or empty descriptions: " + string.Join(", ", problems));
         Assert.IsGreaterThan(0, await page.Locator(".bit-blow-node[aria-describedby]").CountAsync());
     }
+
+    /// <summary>Every routable page of the demo.</summary>
+    public static IEnumerable<object[]> DemoRoutes => DemoPagesTests.DemoRoutes;
+
+    /// <summary>
+    /// What a screen reader is given for everything a keyboard can reach in a flow, on every demo page: the browser's
+    /// own accessibility tree, read through the DevTools protocol - the role, name and description it computed, not
+    /// the attributes they were computed from. Every reachable element has a role that says what it is and a name;
+    /// none is hidden from assistive technology; one with a description it points at gets that description; and each
+    /// flow has its live region. No substitute for listening with a screen reader, but it covers every page.
+    /// </summary>
+    [TestMethod]
+    [DynamicData(nameof(DemoRoutes))]
+    public async Task Everything_a_keyboard_reaches_in_a_flow_has_a_role_and_a_name_for_a_screen_reader(string path)
+    {
+        var page = await (await NewContextAsync()).NewPageAsync();
+        await GotoAsync(page, path);
+        await WaitForFlowAsync(page);
+        var flows = await page.Locator(".bit-blow").CountAsync();
+        if (flows == 0) return;
+        await WaitForQuietAsync(page);
+
+        // The elements to look at, tagged so the protocol can find them: visible, and reachable with Tab.
+        var tagged = await page.EvaluateAsync<string[]>(
+            """
+            () => {
+              const reachable = '[tabindex]:not([tabindex="-1"]), button:not([disabled]), a[href], input:not([disabled]), select, textarea';
+              const found = [...document.querySelectorAll('.bit-blow')]
+                .flatMap(flow => [flow, ...flow.querySelectorAll(reachable)])
+                .filter(el => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden')
+                .slice(0, 120);
+              return found.map((el, i) => {
+                el.setAttribute('data-ax-audit', String(i));
+                return `${el.tagName.toLowerCase()}.${(el.getAttribute('class') || '').trim().split(/\s+/).slice(0, 2).join('.')}`
+                  + (el.dataset.id ? `[${el.dataset.id}]` : '') + (el.hasAttribute('aria-describedby') ? ' (described)' : '');
+              });
+            }
+            """);
+        Assert.IsGreaterThan(0, tagged.Length, $"{path}: a flow with nothing reachable");
+
+        var cdp = await page.Context.NewCDPSessionAsync(page);
+        await cdp.SendAsync("DOM.enable");
+        await cdp.SendAsync("Accessibility.enable");
+        var root = (await cdp.SendAsync("DOM.getDocument", new() { ["depth"] = 0 }))!.Value.GetProperty("root").GetProperty("nodeId").GetInt32();
+
+        var problems = new List<string>();
+        for (var i = 0; i < tagged.Length; i++)
+        {
+            var nodeId = (await cdp.SendAsync("DOM.querySelector", new() { ["nodeId"] = root, ["selector"] = $"[data-ax-audit='{i}']" }))!
+                .Value.GetProperty("nodeId").GetInt32();
+            var ax = (await cdp.SendAsync("Accessibility.getPartialAXTree", new() { ["nodeId"] = nodeId, ["fetchRelatives"] = false }))!
+                .Value.GetProperty("nodes")[0];
+
+            string Value(string property) => ax.TryGetProperty(property, out var p) && p.TryGetProperty("value", out var v)
+                ? v.ToString().Trim()
+                : "";
+
+            var element = tagged[i];
+            if (ax.TryGetProperty("ignored", out var ignored) && ignored.GetBoolean())
+            {
+                problems.Add($"{element}: reachable with Tab but hidden from assistive technology");
+                continue;
+            }
+
+            var role = Value("role");
+            if (role is "" or "generic" or "none" or "presentation" or "GenericContainer")
+                problems.Add($"{element}: no role that says what it is ({(role == "" ? "none" : role)})");
+            if (Value("name") == "") problems.Add($"{element}: no accessible name");
+            if (element.EndsWith(" (described)", StringComparison.Ordinal) && Value("description") == "")
+                problems.Add($"{element}: points at a description that comes out empty");
+        }
+
+        var liveRegions = await page.Locator(".bit-blow .bit-blow-a11y-live[role=status][aria-live]").CountAsync();
+        if (liveRegions < flows) problems.Add($"{flows} flow(s) but {liveRegions} live region(s)");
+
+        Assert.IsEmpty(problems, $"{path}:\n  " + string.Join("\n  ", problems));
+    }
 }

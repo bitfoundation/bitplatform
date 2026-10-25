@@ -92,6 +92,37 @@ public sealed class RunAndRoutingTests : BlowTest
     }
 
     [TestMethod]
+    public async Task A_router_of_the_apps_own_replaces_the_built_in_one()
+    {
+        var page = await OpenAsync("/examples/edge-routing");
+        await WaitForEdgesAnchoredAsync(page);
+        var path = page.Locator(".bit-blow-edge[data-id=\"a-mid\"] .bit-blow-edge-path");
+        var builtIn = await path.GetAttributeAsync("d");
+
+        await page.GetByLabel("Router").SelectOptionAsync("curved");
+
+        // The page's router draws the same corners as one flowing curve, and still keeps clear of the block.
+        await EventuallyAsync(async () => await path.GetAttributeAsync("d") != builtIn, "the custom router was not used");
+        var clear = await page.EvaluateAsync<bool>(
+            """
+            () => {
+              const path = document.querySelector('.bit-blow-edge[data-id="a-mid"] .bit-blow-edge-path');
+              const block = document.querySelector('.bit-blow-node[data-id="block-1"]').getBoundingClientRect();
+              const m = path.getScreenCTM(), length = path.getTotalLength();
+              for (let d = 0; d <= length; d += 2) {
+                const p = path.getPointAtLength(d).matrixTransform(m);
+                if (p.x > block.left && p.x < block.right && p.y > block.top && p.y < block.bottom) return false;
+              }
+              return true;
+            }
+            """);
+        Assert.IsTrue(clear, "the curved route runs through the block");
+
+        await page.GetByLabel("Router").SelectOptionAsync("built-in");
+        await EventuallyAsync(async () => await path.GetAttributeAsync("d") == builtIn, "the built-in router did not come back");
+    }
+
+    [TestMethod]
     public async Task The_graph_exports_as_an_svg_image()
     {
         var page = await OpenAsync("/examples/edge-routing");

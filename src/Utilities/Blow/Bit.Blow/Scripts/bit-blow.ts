@@ -88,12 +88,34 @@ function screenScale(viewportEl: HTMLElement, fallback: number): number {
     return fallback > 0 ? fallback : 1;
 }
 
-// Measures every node and its handles inside the (transformed) viewport element.
-// Sizes/offsets are divided by the on-screen scale so they are expressed in flow units.
-export function measureNodes(viewportEl: HTMLElement | null, zoom: number): BlowMeasuredNode[] {
+// What each flow last reported of each of its nodes, by id: a pass with changedOnly reports only what differs.
+const lastReported = new WeakMap<HTMLElement, Map<string, BlowMeasuredNode>>();
+
+// Whether a node measures differently from what was reported of it, beyond rounding.
+function measuresDifferently(a: BlowMeasuredNode, b: BlowMeasuredNode): boolean {
+    const near = (x: number, y: number) => Math.abs(x - y) <= 0.01;
+    if (!near(a.width, b.width) || !near(a.height, b.height) || a.handles.length !== b.handles.length) return true;
+    for (let i = 0; i < a.handles.length; i++) {
+        const p = a.handles[i], q = b.handles[i];
+        if (p.handleId !== q.handleId || p.type !== q.type || p.position !== q.position
+            || p.connectableEnd !== q.connectableEnd || !near(p.offsetX, q.offsetX) || !near(p.offsetY, q.offsetY)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Measures the nodes and their handles inside the (transformed) viewport element. Sizes/offsets are divided by the
+// on-screen scale so they are expressed in flow units. With changedOnly, reports only the nodes whose size or handles
+// changed since this viewport's last report, those it has not reported before, and those named in include: taking
+// the measurements is cheap, but bringing 900 of them across to .NET is not.
+export function measureNodes(viewportEl: HTMLElement | null, zoom: number, changedOnly = false, include: string[] = []): BlowMeasuredNode[] {
     const result: BlowMeasuredNode[] = [];
     if (!viewportEl) return result;
     const z = screenScale(viewportEl, zoom);
+    const before = changedOnly ? lastReported.get(viewportEl) : undefined;
+    const named = include.length > 0 ? new Set(include) : null;
+    const reported = new Map<string, BlowMeasuredNode>();
 
     viewportEl.querySelectorAll<HTMLElement>(`.${NODE_CLASS}`).forEach(nodeEl => {
         // Only this flow's own nodes: a flow nested inside a node has nodes of its own.
@@ -120,14 +142,25 @@ export function measureNodes(viewportEl: HTMLElement | null, zoom: number): Blow
             });
         });
 
-        result.push({
+        const measured: BlowMeasuredNode = {
             id,
             width: rect.width / z,
             height: rect.height / z,
             handles
-        });
+        };
+
+        // Remembered as last reported, so a change creeping in below the rounding still adds up to one that is not.
+        const previous = id === null ? undefined : before?.get(id);
+        if (!previous || (named !== null && named.has(id!)) || measuresDifferently(previous, measured)) {
+            result.push(measured);
+            if (id !== null) reported.set(id, measured);
+        } else {
+            reported.set(id!, previous);
+        }
     });
 
+    // Only the nodes on the page now: one culled away is reported afresh when it comes back.
+    lastReported.set(viewportEl, reported);
     return result;
 }
 

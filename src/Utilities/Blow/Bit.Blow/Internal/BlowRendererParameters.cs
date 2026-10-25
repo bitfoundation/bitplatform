@@ -108,6 +108,9 @@ public sealed class BlowEdgeRenderSettings
     /// <summary>The canvas's accessible-name strings.</summary>
     public BlowAriaLabels AriaLabels { get; init; } = BlowAriaLabels.Default;
 
+    /// <summary>The key that picks up an end of a focused edge to move it, or null when that cannot be done from the keyboard.</summary>
+    public string? ConnectionKey { get; init; }
+
     /// <summary>An edge's state - validation issues - as of this graph version.</summary>
     internal Func<BlowEdge, BlowEdgeState>? State { get; init; }
 
@@ -115,9 +118,10 @@ public sealed class BlowEdgeRenderSettings
     internal Func<string, string>? NodeName { get; init; }
 
     internal bool SameAs(RenderFragment<BlowEdgeContext>? template, bool suppressLabel, int epoch, bool focusable,
-        string? describedBy, BlowAriaLabels ariaLabels)
+        string? describedBy, BlowAriaLabels ariaLabels, string? connectionKey)
         => ReferenceEquals(Template, template) && SuppressLabel == suppressLabel && RenderEpoch == epoch
-           && Focusable == focusable && DescribedBy == describedBy && ReferenceEquals(AriaLabels, ariaLabels);
+           && Focusable == focusable && DescribedBy == describedBy && ReferenceEquals(AriaLabels, ariaLabels)
+           && ConnectionKey == connectionKey;
 }
 
 /// <summary>
@@ -131,6 +135,9 @@ public sealed class BlowEdgeCallbacks
 
     /// <summary>A press on the edge: selects it.</summary>
     public EventCallback<PointerEventArgs> Select { get; init; }
+
+    /// <summary>The connection key on the focused edge. Empty while reconnecting from the keyboard is off.</summary>
+    public EventCallback Connect { get; init; }
 
     /// <summary>The DOM events of the edge, each empty unless the app handles it (a click always reports).</summary>
     public EventCallback<MouseEventArgs> Click { get; init; }

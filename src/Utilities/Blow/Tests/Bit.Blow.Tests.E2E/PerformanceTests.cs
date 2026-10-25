@@ -65,6 +65,59 @@ public sealed class PerformanceTests : BlowTest
             }
             """, new object[] { kind, count }) is [var median, var p90] ? (median, p90) : default;
 
+    /// <summary>
+    /// How long a zoom waits when it comes right after a node is let go of: everything the drop sets off - the node
+    /// measured again among them - runs before it. Median and 90th percentile, in milliseconds.
+    /// </summary>
+    private static async Task<(double Median, double P90)> MeasureZoomAfterDropAsync(IPage page, int count)
+        => await page.EvaluateAsync<double[]>(
+            """
+            async (count) => {
+              const pane = document.querySelector('.bit-blow');
+              const viewport = pane.querySelector('.bit-blow-viewport');
+              const r = pane.getBoundingClientRect();
+              const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+              const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
+              const times = [];
+              for (let i = 0; i < count; i++) {
+                const node = pane.querySelectorAll('.bit-blow-node')[(i * 37) % 900];
+                const nr = node.getBoundingClientRect();
+                const x = nr.left + 5, y = nr.top + 5;
+                node.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, button: 0, pointerId: 7, clientX: x, clientY: y }));
+                await pause(50);
+                for (let step = 1; step <= 3; step++) {
+                  pane.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, pointerId: 7, clientX: x + step * 6, clientY: y }));
+                  await pause(40);
+                }
+                await pause(100);
+
+                const before = viewport.style.transform;
+                const t0 = performance.now();
+                pane.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerId: 7, clientX: x + 18, clientY: y }));
+                pane.dispatchEvent(new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: i % 2 ? 40 : -40, clientX: cx, clientY: cy }));
+                await new Promise(resolve => {
+                  const check = () => viewport.style.transform !== before ? resolve() : requestAnimationFrame(check);
+                  check();
+                });
+                times.push(performance.now() - t0);
+                await pause(400);
+              }
+              times.sort((a, b) => a - b);
+              return [times[Math.floor(count / 2)], times[Math.floor(count * 0.9)]];
+            }
+            """, count) is [var median, var p90] ? (median, p90) : default;
+
+    [TestMethod]
+    public async Task Zooming_right_after_dropping_a_node_of_a_900_node_graph()
+    {
+        var page = await OpenStressAsync();
+
+        var (median, p90) = await MeasureZoomAfterDropAsync(page, 15);
+
+        TestContext.WriteLine($"zoom right after a drop, 900 nodes, no culling: median {median:0.0} ms, p90 {p90:0.0} ms");
+        Assert.IsLessThan(2000, p90, "a zoom after a drop waited seconds");
+    }
+
     [TestMethod]
     public async Task Zooming_a_900_node_graph()
     {

@@ -2,10 +2,17 @@
 <PageTitle>Edge Routing · Blow</PageTitle>
 
 <ExampleScaffold Title="Edge Routing"
-                 Summary="Edges of type BlowEdgeType.Routed go round the nodes in their way: horizontal and vertical segments that leave each handle straight, keep a margin from every node and prefer few bends. Drag the blocks about and the routes follow. The same router is a pure function, BlowEdgeRouting.Orthogonal, and the graph exports as a standalone SVG image with ToSvg.">
+                 Summary="Edges of type BlowEdgeType.Routed go round the nodes in their way: horizontal and vertical segments that leave each handle straight, keep a margin from every node and prefer few bends. Drag the blocks about and the routes follow. The same router is a pure function, BlowEdgeRouting.Orthogonal, and the router itself can be replaced: the custom one here bends each route round wide curves, as wide as its margin from the nodes allows. The graph exports as a standalone SVG image with ToSvg.">
     <Toolbar>
         <label>Margin <input type="range" min="0" max="40" step="2" value="@_margin" @oninput="SetMargin" aria-label="Routing margin" /></label>
         <span class="er-value">@_margin</span>
+        <label>
+            Router
+            <select @bind="_router" @bind:after="ApplyRouter">
+                <option value="built-in">Built-in (square corners rounded)</option>
+                <option value="curved">Custom (wide curves)</option>
+            </select>
+        </label>
         <label><input type="checkbox" @bind="_routed" @bind:after="ApplyType" /> Route round nodes</label>
         <a class="btn btn-secondary" download="routing.svg" href="@SvgUrl()">Export SVG</a>
     </Toolbar>
@@ -29,8 +36,9 @@
     private BlowCanvas? _flow;
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
-    private BlowRoutingOptions _routing = new() { Margin = 16 };
+    private IBlowEdgeRouter _routing = new BlowRoutingOptions { Margin = 16 };
     private int _margin = 16;
+    private string _router = "built-in";
     private bool _routed = true;
 
     protected override void OnInitialized()
@@ -71,8 +79,47 @@
     private void SetMargin(ChangeEventArgs e)
     {
         _margin = int.TryParse(e.Value?.ToString(), out var m) ? m : _margin;
-        // A new options object, so the canvas sees a new parameter and routes again.
-        _routing = new BlowRoutingOptions { Margin = _margin };
+        ApplyRouter();
+    }
+
+    // A new router, so the canvas sees a new parameter and routes again.
+    private void ApplyRouter()
+        => _routing = _router == "curved" ? new CurvedRouter(_margin) : new BlowRoutingOptions { Margin = _margin };
+
+    /// <summary>
+    /// A router of the page's own: the built-in router's corner points, each corner bent round a quadratic curve as
+    /// wide as the route's margin allows. A corner sits at least the margin from the node it turns round, and a curve
+    /// with legs shorter than four margins never reaches the node, so three margins keeps it clear.
+    /// </summary>
+    private sealed class CurvedRouter(double margin) : IBlowEdgeRouter
+    {
+        public BlowPathResult? Route(BlowRouteRequest r)
+        {
+            var points = BlowEdgeRouting.Orthogonal(r.Source, r.SourceSide, r.Target, r.TargetSide, r.Obstacles,
+                new BlowRoutingOptions { Margin = margin });
+            if (points is not { Count: >= 2 }) return null;
+
+            static string F(double v) => v.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+            static double Length(BlowXYPosition a, BlowXYPosition b) => Math.Abs(b.X - a.X) + Math.Abs(b.Y - a.Y);
+            static BlowXYPosition Toward(BlowXYPosition from, BlowXYPosition to, double by)
+            {
+                var length = Length(from, to);
+                return length == 0 ? from : new(from.X + (to.X - from.X) * by / length, from.Y + (to.Y - from.Y) * by / length);
+            }
+
+            var d = new System.Text.StringBuilder($"M{F(points[0].X)} {F(points[0].Y)}");
+            for (var i = 1; i < points.Count - 1; i++)
+            {
+                var leg = Math.Min(3 * margin, Math.Min(Length(points[i - 1], points[i]), Length(points[i], points[i + 1])) / 2);
+                var from = Toward(points[i], points[i - 1], leg);
+                var to = Toward(points[i], points[i + 1], leg);
+                d.Append($"L{F(from.X)} {F(from.Y)}Q{F(points[i].X)} {F(points[i].Y)} {F(to.X)} {F(to.Y)}");
+            }
+            d.Append($"L{F(points[^1].X)} {F(points[^1].Y)}");
+
+            var middle = points.Count / 2;
+            return new BlowPathResult(d.ToString(), (points[middle - 1].X + points[middle].X) / 2, (points[middle - 1].Y + points[middle].Y) / 2);
+        }
     }
 
     private string SvgUrl()

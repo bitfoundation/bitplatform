@@ -11,7 +11,7 @@
                 <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
                 <div class="text-updater">
                     <label>Text:</label>
-                    <input class="nodrag" value="@data.Text"
+                    <input class="nodrag" value="@data.Text" aria-label="Text"
                            @oninput="e => OnText(node, e.Value?.ToString())"
                            @onpointerdown:stopPropagation="true" />
                 </div>

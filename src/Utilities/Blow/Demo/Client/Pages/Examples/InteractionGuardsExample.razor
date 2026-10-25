@@ -13,7 +13,7 @@
 
                 @* Everything below opts out of dragging, so the widgets behave normally. *@
                 <div class="nodrag guard-body">
-                    <input type="range" min="0" max="100" @bind="_volume" @bind:event="oninput" />
+                    <input type="range" min="0" max="100" @bind="_volume" @bind:event="oninput" aria-label="Volume" />
                     <div class="guard-value">@_volume</div>
                     <p class="guard-hint">Select this text - the node stays put.</p>
                 </div>

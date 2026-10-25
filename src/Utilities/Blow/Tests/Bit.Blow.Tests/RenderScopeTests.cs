@@ -111,6 +111,28 @@ public class RenderScopeTests : BunitContext
     }
 
     [TestMethod]
+    public async Task LettingGoOfADraggedNodeRendersThatNodeOnly()
+    {
+        var stops = 0;
+        var cut = Render(Nodes(), Edges(), p => p.Add(c => c.OnNodeDragStop, _ => stops++));
+        var pane = cut.Find(".bit-blow");
+        cut.FindAll(".bit-blow-node")[2].PointerDown(new PointerEventArgs { Button = 0, PointerId = 1, ClientX = 300, ClientY = 0 });
+        pane.PointerMove(new PointerEventArgs { PointerId = 1, ClientX = 340, ClientY = 20 });
+        var dragged = Counts<BlowNodeRenderer>(cut);
+        var edges = Counts<BlowEdgeRenderer>(cut);
+        Assert.Contains("dragging", cut.FindAll(".bit-blow-node")[2].ClassList);
+
+        pane.PointerUp(new PointerEventArgs { PointerId = 1, ClientX = 340, ClientY = 20 });
+
+        // The node shows it is no longer being dragged; nothing else in the graph changed, so nothing else renders.
+        Assert.AreEqual(1, stops);
+        CollectionAssert.AreEqual(new[] { false, false, true }, Rendered(dragged, Counts<BlowNodeRenderer>(cut)));
+        CollectionAssert.AreEqual(new[] { false, false }, Rendered(edges, Counts<BlowEdgeRenderer>(cut)));
+        Assert.DoesNotContain("dragging", cut.FindAll(".bit-blow-node")[2].ClassList);
+        Assert.AreEqual(new BlowXYPosition(340, 20), cut.Instance.GetNode("c")!.Position);
+    }
+
+    [TestMethod]
     public async Task HandlesShowTheVerdictWhenAConnectionStartsAndForgetItWhenItEnds()
     {
         var cut = Render(Nodes(), Edges());

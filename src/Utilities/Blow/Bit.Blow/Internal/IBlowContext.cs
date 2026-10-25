@@ -150,6 +150,12 @@ public interface IBlowContext
     /// next - leaves it alone.
     /// </summary>
     void MarkKeyHandled(string key) { }
+
+    /// <summary>
+    /// Tells the canvas the pointer pressed a part inside it that keeps the press from the pane (a handle, say), so a
+    /// connection being made from the keyboard ends - and says so - as a press on the pane would end it.
+    /// </summary>
+    void AbandonKeyboardConnection() { }
 }
 
 /// <summary>

@@ -3,7 +3,7 @@
 <PageTitle>Accessibility · Blow</PageTitle>
 
 <ExampleScaffold Title="Accessibility"
-                 Summary="Nodes are keyboard focusable with descriptive aria labels. Tab to a node, then use the arrow keys to move it (hold Shift for larger steps), C to start a connection from it, Delete to remove the selection. A selected node also gets move buttons, so it can be moved with single clicks instead of a drag (WCAG 2.5.7); the canvas's ConnectOnClick does the same for connections.">
+                 Summary="Nodes are keyboard focusable with descriptive aria labels. Tab to a node, then use the arrow keys to move it (hold Shift for larger steps), C to start a connection from it, Delete to remove the selection. Tab on to an edge and C picks up its end to move it to another node. A selected node also gets move buttons, so it can be moved with single clicks instead of a drag (WCAG 2.5.7); the canvas's ConnectOnClick does the same for connections.">
     <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" DisableKeyboardA11y="false">
         <NodeTemplate Context="node">
             <BlowNodeToolbar Position="BlowPosition.Top">

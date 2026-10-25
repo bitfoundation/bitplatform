@@ -66,8 +66,8 @@ Give nodes your own markup with `NodeTemplate` and `BlowHandle`, and edges with 
 - Graph algorithms (topological order, cycles, components, reachability, shortest paths) and a rule-based graph
   validator, all usable with no UI.
 - Built-in `input`, `default`, `output` and `group` nodes, and custom node templates.
-- Bezier, simple bezier, straight, step and smooth-step edges, and orthogonal routes round the nodes in the way,
-  tunable per edge, with labels, arrowheads, animation and self-loops.
+- Bezier, simple bezier, straight, step and smooth-step edges, and orthogonal routes round the nodes in the way
+  from a router you can replace, tunable per edge, with labels, arrowheads, animation and self-loops.
 - Sub-flows with parent extents and growing parents, grouping and ungrouping, collapsible groups; node resizing
   and node and edge toolbars.
 - Background, controls, minimap, panels and a viewport portal.
@@ -77,8 +77,8 @@ Give nodes your own markup with `NodeTemplate` and `BlowHandle`, and edges with 
   collaborator made that local undo leaves alone, and copy and paste that rewires edges and keeps groups intact.
 - Versioned JSON documents with migrations and bounded imports, React Flow interchange, and SVG export.
 - Validation problems and run states shown on the graph by shape as well as colour.
-- Keyboard access including connections and the minimap, search and focus helpers, element state read by screen
-  readers, reduced motion, high contrast and localizable strings.
+- Keyboard access including connections, reconnecting edges and the minimap, search and focus helpers, element state
+  read by screen readers, reduced motion, high contrast and localizable strings.
 - `OnError` diagnostics for malformed graphs instead of exceptions.
 - Theming through `--bit-blow-*` CSS custom properties, with light, dark and system colour modes.
 - Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid on .NET 8, 9 and 10.

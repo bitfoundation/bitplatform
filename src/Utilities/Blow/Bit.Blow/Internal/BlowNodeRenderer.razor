@@ -96,7 +96,10 @@
         OnMouseMove.HasDelegate ? OnMouseMove : default;
 
     private string? TabIndex => (Focusable && Node.Focusable) ? "0" : null;
-    private string AriaLabel => AriaLabels.NodeLabel(Node.AriaLabel ?? Node.Label ?? $"Node {Node.Id}");
+    // A blank label names nothing: the node is called by its id rather than by nothing at all.
+    private string AriaLabel => AriaLabels.NodeLabel(Named(Node.AriaLabel) ?? Named(Node.Label) ?? $"Node {Node.Id}");
+
+    private static string? Named(string? text) => string.IsNullOrWhiteSpace(text) ? null : text;
 
     private string CssClass
     {

@@ -1,7 +1,10 @@
 ﻿namespace Bit.Blow;
 
-/// <summary>Settings for <see cref="BlowEdgeRouting.Orthogonal"/>.</summary>
-public sealed class BlowRoutingOptions
+/// <summary>
+/// The built-in router: <see cref="BlowEdgeRouting.Orthogonal"/> with these settings. Set as <c>BlowCanvas.Routing</c>
+/// to tune it, or set another <see cref="IBlowEdgeRouter"/> there to replace it.
+/// </summary>
+public sealed class BlowRoutingOptions : IBlowEdgeRouter
 {
     /// <summary>The least clearance a route keeps from every obstacle, in flow units.</summary>
     public double Margin { get; set; } = 16;
@@ -23,6 +26,16 @@ public sealed class BlowRoutingOptions
     /// router gives up and the caller falls back to a plain step path.
     /// </summary>
     public int MaxObstacles { get; set; } = 100;
+
+    /// <summary>The edge's orthogonal path round the obstacles, with these settings; see <see cref="BlowEdgeRouting.Route"/>.</summary>
+    public BlowPathResult? Route(BlowRouteRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return BlowEdgeRouting.Route(request.Source, request.SourceSide, request.Target, request.TargetSide, request.Obstacles, this);
+    }
+
+    /// <summary>The settings the canvas and the SVG export route with when they are given no router.</summary>
+    internal static readonly BlowRoutingOptions Default = new();
 }
 
 /// <summary>

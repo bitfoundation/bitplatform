@@ -43,8 +43,11 @@ public sealed class BlowSvgExportOptions
     /// <inheritdoc cref="FontFamily"/>
     public double FontSize { get; set; } = 12;
 
-    /// <summary>How <see cref="BlowEdgeType.Routed"/> edges are routed; the defaults when null.</summary>
-    public BlowRoutingOptions? Routing { get; set; }
+    /// <summary>
+    /// What routes <see cref="BlowEdgeType.Routed"/> edges: a <see cref="BlowRoutingOptions"/> or a router of the app's
+    /// own; the built-in router with its defaults when null.
+    /// </summary>
+    public IBlowEdgeRouter? Routing { get; set; }
 }
 
 /// <summary>
@@ -101,7 +104,8 @@ public static class BlowSvgExport
             if (ReferenceEquals(source, target))
                 path = BlowEdgePath.Loop(sx, sy, sp, tx, ty, tp, e.PathOptions?.LoopRadius ?? BlowEdgePath.DefaultLoopRadius, s);
             else if (e.Type == BlowEdgeType.Routed
-                     && BlowEdgeRouting.Route(new(sx, sy), sp, new(tx, ty), tp, Obstacles(rects, s, t, source, target, index), o.Routing) is { } routed)
+                     && (o.Routing ?? BlowRoutingOptions.Default).Route(
+                         new BlowRouteRequest(e, new(sx, sy), sp, new(tx, ty), tp, Obstacles(rects, s, t, source, target, index))) is { Path: not null } routed)
                 path = routed;
             else
                 path = BlowEdgePath.Compute(e.Type == BlowEdgeType.Routed ? BlowEdgeType.SmoothStep : e.Type, sx, sy, sp, tx, ty, tp, e.PathOptions);
@@ -117,8 +121,8 @@ public static class BlowSvgExport
             right = Math.Max(right, r.Right);
             bottom = Math.Max(bottom, r.Bottom);
         }
-        // A curve stays inside the box of its control points, so the points a path names bound it - a loop, a detour
-        // and an arrowhead's end included.
+        // A curve stays inside the box of its control points, so the points a path names bound it - a loop, a detour,
+        // an arrowhead's end, and whatever commands a router of the app's own draws with.
         foreach (var (_, path) in paths)
         {
             foreach (var (x, y) in PointsOf(path.Path))
@@ -234,15 +238,171 @@ public static class BlowSvgExport
         return null;
     }
 
-    /// <summary>The coordinate pairs in SVG path data, in order: every point the path names, control points included.</summary>
-    private static IEnumerable<(double X, double Y)> PointsOf(string path)
+    /// <summary>
+    /// Points whose box holds an SVG path: every end and control point, in absolute coordinates - relative commands,
+    /// <c>H</c> and <c>V</c> resolved - and for an arc the farthest its ellipse can reach from its ends. Reading stops
+    /// at anything malformed, keeping what was read.
+    /// </summary>
+    internal static List<(double X, double Y)> PointsOf(string path)
     {
-        var numbers = Number.Matches(path);
-        for (var i = 0; i + 1 < numbers.Count; i += 2)
-            yield return (double.Parse(numbers[i].Value, Inv), double.Parse(numbers[i + 1].Value, Inv));
-    }
+        var points = new List<(double X, double Y)>();
+        var i = 0;
+        var command = '\0';
+        double x = 0, y = 0, startX = 0, startY = 0;
 
-    private static readonly Regex Number = new(@"-?\d+(\.\d+)?([eE][-+]?\d+)?", RegexOptions.CultureInvariant, TimeSpan.FromMilliseconds(200));
+        // The control point a smooth curve (S, T) reflects: the last cubic's second, or the last quadratic's.
+        var previous = '\0';
+        double controlX = 0, controlY = 0;
+
+        void Skip()
+        {
+            while (i < path.Length && (char.IsWhiteSpace(path[i]) || path[i] == ',')) i++;
+        }
+
+        bool Number(out double value)
+        {
+            Skip();
+            var start = i;
+            if (i < path.Length && path[i] is '+' or '-') i++;
+            var digits = 0;
+            while (i < path.Length && char.IsAsciiDigit(path[i])) { i++; digits++; }
+            if (i < path.Length && path[i] == '.')
+            {
+                i++;
+                while (i < path.Length && char.IsAsciiDigit(path[i])) { i++; digits++; }
+            }
+            if (digits == 0)
+            {
+                i = start;
+                value = 0;
+                return false;
+            }
+            if (i < path.Length && path[i] is 'e' or 'E')
+            {
+                var mark = i++;
+                if (i < path.Length && path[i] is '+' or '-') i++;
+                var exponent = 0;
+                while (i < path.Length && char.IsAsciiDigit(path[i])) { i++; exponent++; }
+                if (exponent == 0) i = mark;
+            }
+            return double.TryParse(path.AsSpan(start, i - start), NumberStyles.Float, Inv, out value) && double.IsFinite(value);
+        }
+
+        // An arc's flags are single digits that need nothing between them and what follows.
+        bool Flag()
+        {
+            Skip();
+            if (i >= path.Length || path[i] is not ('0' or '1')) return false;
+            i++;
+            return true;
+        }
+
+        bool Pair(bool relative, out double px, out double py)
+        {
+            px = py = 0;
+            if (!Number(out var a) || !Number(out var b)) return false;
+            (px, py) = relative ? (x + a, y + b) : (a, b);
+            return true;
+        }
+
+        while (true)
+        {
+            Skip();
+            if (i >= path.Length) break;
+            if (char.IsAsciiLetter(path[i]))
+            {
+                command = path[i++];
+                if (command is 'Z' or 'z')
+                {
+                    (x, y) = (startX, startY);
+                    continue;
+                }
+            }
+            else if (command is '\0' or 'Z' or 'z')
+            {
+                break;
+            }
+
+            var relative = char.IsAsciiLetterLower(command);
+            var kind = char.ToUpperInvariant(command);
+            switch (kind)
+            {
+                case 'T':
+                    // Its control point is the last quadratic's reflected through the current point, or the point.
+                    (controlX, controlY) = previous is 'Q' or 'T' ? (2 * x - controlX, 2 * y - controlY) : (x, y);
+                    if (!Pair(relative, out var tx, out var ty)) return points;
+                    points.Add((controlX, controlY));
+                    (x, y) = (tx, ty);
+                    points.Add((x, y));
+                    break;
+                case 'M' or 'L':
+                    if (!Pair(relative, out var mx, out var my)) return points;
+                    (x, y) = (mx, my);
+                    points.Add((x, y));
+                    if (char.ToUpperInvariant(command) == 'M')
+                    {
+                        (startX, startY) = (x, y);
+                        command = relative ? 'l' : 'L'; // further pairs after a move are lines
+                    }
+                    break;
+                case 'H':
+                    if (!Number(out var h)) return points;
+                    x = relative ? x + h : h;
+                    points.Add((x, y));
+                    break;
+                case 'V':
+                    if (!Number(out var v)) return points;
+                    y = relative ? y + v : v;
+                    points.Add((x, y));
+                    break;
+                case 'C':
+                    if (!Pair(relative, out var c1x, out var c1y) || !Pair(relative, out var c2x, out var c2y) || !Pair(relative, out var cx, out var cy))
+                        return points;
+                    points.Add((c1x, c1y));
+                    points.Add((c2x, c2y));
+                    (controlX, controlY) = (c2x, c2y);
+                    (x, y) = (cx, cy);
+                    points.Add((x, y));
+                    break;
+                case 'S':
+                    // Its first control point is the last cubic's second reflected through the current point, or the point.
+                    var (s1x, s1y) = previous is 'C' or 'S' ? (2 * x - controlX, 2 * y - controlY) : (x, y);
+                    if (!Pair(relative, out var s2x, out var s2y) || !Pair(relative, out var sx, out var sy)) return points;
+                    points.Add((s1x, s1y));
+                    points.Add((s2x, s2y));
+                    (controlX, controlY) = (s2x, s2y);
+                    (x, y) = (sx, sy);
+                    points.Add((x, y));
+                    break;
+                case 'Q':
+                    if (!Pair(relative, out var qx, out var qy) || !Pair(relative, out var ex, out var ey)) return points;
+                    points.Add((qx, qy));
+                    (controlX, controlY) = (qx, qy);
+                    (x, y) = (ex, ey);
+                    points.Add((x, y));
+                    break;
+                case 'A':
+                    if (!Number(out var rx) || !Number(out var ry) || !Number(out _) || !Flag() || !Flag()
+                        || !Pair(relative, out var ax, out var ay))
+                    {
+                        return points;
+                    }
+
+                    // The ellipse passes through both ends with radii no smaller than given (scaled up when they
+                    // cannot span the ends), so every point of the arc is within its diameter of the start.
+                    var reach = 2 * Math.Max(Math.Max(Math.Abs(rx), Math.Abs(ry)), Math.Sqrt((ax - x) * (ax - x) + (ay - y) * (ay - y)) / 2);
+                    points.Add((x - reach, y - reach));
+                    points.Add((x + reach, y + reach));
+                    (x, y) = (ax, ay);
+                    points.Add((x, y));
+                    break;
+                default:
+                    return points;
+            }
+            previous = kind;
+        }
+        return points;
+    }
 
     private static bool IsShown(BlowNode node, Dictionary<string, BlowNode> index)
     {

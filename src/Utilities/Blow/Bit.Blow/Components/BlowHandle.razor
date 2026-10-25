@@ -135,6 +135,9 @@
     {
         if (!Attached || e.Button != 0) return;
 
+        // A press is the pointer starting something of its own: whatever the keyboard was connecting ends first.
+        Flow.AbandonKeyboardConnection();
+
         // In click-to-connect mode, a second handle click completes the pending connection.
         if (Flow.ConnectOnClick && Flow.IsConnecting)
         {
